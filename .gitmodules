@@ -1,0 +1,3 @@
+[submodule "RDFprocessor"]
+	path = RDFprocessor
+	url = https://github.com/emanca/RDFprocessor.git
