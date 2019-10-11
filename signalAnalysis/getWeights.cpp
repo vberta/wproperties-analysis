@@ -52,13 +52,13 @@ std::vector<ROOT::RDF::RResultPtr<TH3D>> getWeights::getTH3(){
     return _h3List;
 }
 
-std::vector<ROOT::RDF::RResultPtr<std::vector<std::unique_ptr<TH1D>>>> getWeights::getGroupTH1(){ 
+std::vector<ROOT::RDF::RResultPtr<std::vector<TH1D>>> getWeights::getGroupTH1(){ 
   return _h1Group;
 }
-std::vector<ROOT::RDF::RResultPtr<std::vector<std::unique_ptr<TH2D>>>> getWeights::getGroupTH2(){ 
+std::vector<ROOT::RDF::RResultPtr<std::vector<TH2D>>> getWeights::getGroupTH2(){ 
   return _h2Group;
 }
-std::vector<ROOT::RDF::RResultPtr<std::vector<std::unique_ptr<TH3D>>>> getWeights::getGroupTH3(){ 
+std::vector<ROOT::RDF::RResultPtr<std::vector<TH3D>>> getWeights::getGroupTH3(){ 
   return _h3Group;
 }
 

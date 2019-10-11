@@ -22,9 +22,9 @@ class defineHarmonics : public Module {
     std::vector<ROOT::RDF::RResultPtr<TH3D>> _h3List;
 
     // groups of histos
-    std::vector<ROOT::RDF::RResultPtr<std::vector<std::unique_ptr<TH1D>>>> _h1Group;
-    std::vector<ROOT::RDF::RResultPtr<std::vector<std::unique_ptr<TH2D>>>> _h2Group;
-    std::vector<ROOT::RDF::RResultPtr<std::vector<std::unique_ptr<TH3D>>>> _h3Group;
+    std::vector<ROOT::RDF::RResultPtr<std::vector<TH1D>>> _h1Group;
+    std::vector<ROOT::RDF::RResultPtr<std::vector<TH2D>>> _h2Group;
+    std::vector<ROOT::RDF::RResultPtr<std::vector<TH3D>>> _h3Group;
     
     public:
     
@@ -35,9 +35,9 @@ class defineHarmonics : public Module {
   	std::vector<ROOT::RDF::RResultPtr<TH2D>> getTH2() override;
   	std::vector<ROOT::RDF::RResultPtr<TH3D>> getTH3() override;
 
-    std::vector<ROOT::RDF::RResultPtr<std::vector<std::unique_ptr<TH1D>>>> getGroupTH1() override;
-    std::vector<ROOT::RDF::RResultPtr<std::vector<std::unique_ptr<TH2D>>>> getGroupTH2() override;
-    std::vector<ROOT::RDF::RResultPtr<std::vector<std::unique_ptr<TH3D>>>> getGroupTH3() override;
+    std::vector<ROOT::RDF::RResultPtr<std::vector<TH1D>>> getGroupTH1() override;
+    std::vector<ROOT::RDF::RResultPtr<std::vector<TH2D>>> getGroupTH2() override;
+    std::vector<ROOT::RDF::RResultPtr<std::vector<TH3D>>> getGroupTH3() override;
 
     void reset() override;
 

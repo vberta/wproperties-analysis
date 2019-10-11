@@ -33,7 +33,12 @@ RNode defineHarmonics::run(RNode d){
 
   };
 
-  auto d1 = d.Define("harmonicsVec", getHarmonicsVec, {"CStheta_preFSR", "CSphi_preFSR"});
+  auto multByWeight = [](float a, const ROOT::VecOps::RVec<float> &w){ return a*w;};
+  auto multSqByWeight = [](float a, const ROOT::VecOps::RVec<float> &w)-> ROOT::VecOps::RVec<float>{ return a*w*w;};
+
+  auto d1 = d.Define("harmonicsVec", getHarmonicsVec, {"CStheta_preFSR", "CSphi_preFSR"})
+            .Define("harmonicsVecWeighted", multByWeight, {"lumiweight", "harmonicsVec"})
+            .Define("harmonicsVecSqWeighted", multSqByWeight, {"lumiweight", "harmonicsVec"});
 
   return d1;
   
@@ -49,13 +54,13 @@ std::vector<ROOT::RDF::RResultPtr<TH3D>> defineHarmonics::getTH3(){
     return _h3List;
 }
 
-std::vector<ROOT::RDF::RResultPtr<std::vector<std::unique_ptr<TH1D>>>> defineHarmonics::getGroupTH1(){ 
+std::vector<ROOT::RDF::RResultPtr<std::vector<TH1D>>> defineHarmonics::getGroupTH1(){ 
   return _h1Group;
 }
-std::vector<ROOT::RDF::RResultPtr<std::vector<std::unique_ptr<TH2D>>>> defineHarmonics::getGroupTH2(){ 
+std::vector<ROOT::RDF::RResultPtr<std::vector<TH2D>>> defineHarmonics::getGroupTH2(){ 
   return _h2Group;
 }
-std::vector<ROOT::RDF::RResultPtr<std::vector<std::unique_ptr<TH3D>>>> defineHarmonics::getGroupTH3(){ 
+std::vector<ROOT::RDF::RResultPtr<std::vector<TH3D>>> defineHarmonics::getGroupTH3(){ 
   return _h3Group;
 }
 

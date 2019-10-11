@@ -1,5 +1,25 @@
 #include "AngCoeff.h"
 
+std::vector<std::string> AngCoeff::stringMultiplication (const std::vector<std::string> &v1, const std::vector<std::string> &v2){
+
+        std::vector<std::string> products;
+
+        if(v1.size()==0) return v2;
+        
+        else{
+
+            products.reserve(v1.size()*v2.size());
+            for (auto e1 : v1){
+                for (auto e2 : v2){
+                    products.push_back(e2+"_"+e1);
+                    
+                }
+            }
+
+            return products;
+        }
+
+    }
 
 RNode AngCoeff::run(RNode d){
     
@@ -8,9 +28,6 @@ RNode AngCoeff::run(RNode d){
     
     int nBinsY = 8;
     int nBinsPt = 11;
-
-    auto multByWeight = [](float a, const ROOT::VecOps::RVec<float> &w){ return a*w;};
-    auto multSqByWeight = [](float a, const ROOT::VecOps::RVec<float> &w)-> ROOT::VecOps::RVec<float>{ return a*w*w;};
 
     auto mapTot = d.Histo2D(TH2D("mapTot", "mapTot", nBinsY, yArr.data(), nBinsPt, ptArr.data()), "Wrap_preFSR_abs", "Wpt_preFSR", "lumiweight");
     auto mapAccEta = d.Filter("fabs(Mueta_preFSR)<2.4").Histo2D(TH2D("mapAccEta", "mapAccEta", nBinsY, yArr.data(), nBinsPt, ptArr.data()), "Wrap_preFSR_abs", "Wpt_preFSR", "lumiweight");
@@ -22,101 +39,18 @@ RNode AngCoeff::run(RNode d){
     _h2List.push_back(mapAcc);
     _h2List.push_back(sumw);
 
-    
     std::vector<std::string> coeff = {"A0", "A1", "A2", "A3", "A4", "A5", "A6", "A7", "AUL"};
-    TH2weightsHelper helper(std::string("harmonics"), std::string("harmonics"), nBinsY, yArr, nBinsPt, ptArr, coeff);
 
-    auto d1 = d.Define("harmonicsVecWeighted", multByWeight, {"lumiweight", "harmonicsVec"})
-            .Define("harmonicsVecSqWeighted", multSqByWeight, {"lumiweight", "harmonicsVec"});
-    auto helXsecs = d1.Book<float,  float, ROOT::VecOps::RVec<float>>(std::move(helper), {"Wrap_preFSR_abs", "Wpt_preFSR", "harmonicsVecWeighted"});
+    std::vector<std::string> total = stringMultiplication(_syst_name, coeff);
+
     
-    //auto helXsecsSq = d1.Book<float,  float, float, ROOT::VecOps::RVec<float>>(std::move(helper), {"Wrap_preFSR_abs", "Wpt_preFSR", "harmonicsVecSqWeighted"});
+    TH2weightsHelper helper(std::string("harmonics"), std::string("harmonics"), nBinsY, yArr, nBinsPt, ptArr, total);
 
-    // this trigger event loop and caches dCache
-    std::cout << "Triggering event loop and caching" << std::endl;
-    mapTot->GetName();
-
-    // this goes inside a function
-    
-    int i = 0;
-    for(auto it = helXsecs.begin(); it != helXsecs.end()-1; ++it){
-          
-        (*it)->Divide(&(mapTot.GetValue()));
-        
-        switch (i)
-        {
-            case 0: {
-                
-                for(int xbin = 1; xbin<(*it)->GetNbinsX()+1;xbin++){
-                    for(int ybin = 1; ybin<(*it)->GetNbinsY()+1;ybin++){
-
-                        auto content = (*it)->GetBinContent(xbin,ybin);
-                        (*it)->SetBinContent(xbin,ybin, 20./3.*(content + 1./10.));
-
-                        }
-                    }
-                break;
-            }
-            case 2: {
-                (*it)->Scale(20.);
-                break;
-            }
-            case 1: (*it)->Scale(5.);
-                break;
-            case 5: (*it)->Scale(5.);
-                break;
-            case 6: (*it)->Scale(5.);
-                break;
-            default:(*it)->Scale(4.);
-                break;
-        }
-        i++;
-    }
+    auto helXsecs = d.Book<float,  float, ROOT::VecOps::RVec<float>>(std::move(helper), {"Wrap_preFSR_abs", "Wpt_preFSR", Form("%sharmonicsVecWeighted",_syst_weight.c_str())});
 
     _h2Group.push_back(helXsecs);
-
-    auto getACValues = [helXsecs](float y, float pt)mutable{
-
-        ROOT::VecOps::RVec<float> AngCoeff;
-        
-        for(auto it = helXsecs.begin(); it != helXsecs.end()-1; ++it){
-        
-            int bin = (*it)->FindBin(y, pt);
-            AngCoeff.push_back((*it)->GetBinContent(bin));
-
-        }
-        
-        return AngCoeff;
-
-    };
-
-    mapAccEta->Divide(&(mapTot.GetValue()));
-
-    auto fillAccMapEta = [mapTot, mapAccEta](float y, float pt)mutable->float{
-
-        int bin = mapAccEta->FindBin(y, pt);
-        return mapAccEta->GetBinContent(bin);
-
-    };
-
-    mapAcc->Divide(&(mapTot.GetValue()));
-    auto fillAccMap = [mapTot, mapAcc](float y, float pt)mutable->float{
-
-        int bin = mapAcc->FindBin(y, pt);
-        return mapAcc->GetBinContent(bin);
-
-    };
-
-    auto fillTotMap = [mapTot](float y, float pt)mutable->float{
-
-        int bin = mapTot->FindBin(y, pt);
-        return mapTot->GetBinContent(bin);
-
-    };
-
-    auto d2 = d1.Define("AngCoeffVec", getACValues, {"Wrap_preFSR_abs", "Wpt_preFSR"}).Define("accMapEta", fillAccMapEta, {"Wrap_preFSR_abs", "Wpt_preFSR"}).Define("accMap", fillAccMap, {"Wrap_preFSR_abs", "Wpt_preFSR"}).Define("totMap", fillTotMap, {"Wrap_preFSR_abs", "Wpt_preFSR"});
     
-    return d2;
+    return d;
 
 }
 
@@ -130,13 +64,13 @@ std::vector<ROOT::RDF::RResultPtr<TH3D>> AngCoeff::getTH3(){
     return _h3List;
 }
 
-std::vector<ROOT::RDF::RResultPtr<std::vector<std::unique_ptr<TH1D>>>> AngCoeff::getGroupTH1(){ 
+std::vector<ROOT::RDF::RResultPtr<std::vector<TH1D>>> AngCoeff::getGroupTH1(){ 
   return _h1Group;
 }
-std::vector<ROOT::RDF::RResultPtr<std::vector<std::unique_ptr<TH2D>>>> AngCoeff::getGroupTH2(){ 
+std::vector<ROOT::RDF::RResultPtr<std::vector<TH2D>>> AngCoeff::getGroupTH2(){ 
   return _h2Group;
 }
-std::vector<ROOT::RDF::RResultPtr<std::vector<std::unique_ptr<TH3D>>>> AngCoeff::getGroupTH3(){ 
+std::vector<ROOT::RDF::RResultPtr<std::vector<TH3D>>> AngCoeff::getGroupTH3(){ 
   return _h3Group;
 }
 
