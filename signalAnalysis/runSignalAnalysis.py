@@ -5,6 +5,8 @@ from math import *
 
 from RDFtree import *
 
+sys.path.append('python/')
+
 from getLumiWeight import *
 from basicSelection import *
 
