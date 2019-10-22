@@ -1,5 +1,5 @@
-#ifndef DEFINEHARMONICS_H
-#define DEFINEHARMONICS_H
+#ifndef GETACCMAP_H
+#define GETACCMAP_H
 
 
 #include "ROOT/RDataFrame.hxx"
@@ -9,11 +9,12 @@
 #include "TH2D.h"
 #include "TString.h"
 #include "TMath.h"
-#include "../RDFprocessor/framework/module.h"
+#include "../interface/module.hpp"
+#include "../interface/TH2weightsHelper.hpp"
 
 using RNode = ROOT::RDF::RNode;
 
-class defineHarmonics : public Module {
+class getAccMap : public Module {
 
     private:
 
@@ -28,9 +29,16 @@ class defineHarmonics : public Module {
     
     public:
     
-    ~defineHarmonics() {};
+    getAccMap(std::vector<ROOT::RDF::RResultPtr<TH2D>> histos){
+
+        _h2List = histos;
+
+    };
+
+    ~getAccMap() {};
 
     RNode run(RNode) override;
+    
     std::vector<ROOT::RDF::RResultPtr<TH1D>> getTH1() override;
   	std::vector<ROOT::RDF::RResultPtr<TH2D>> getTH2() override;
   	std::vector<ROOT::RDF::RResultPtr<TH3D>> getTH3() override;

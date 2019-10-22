@@ -1,4 +1,4 @@
-#include "defineHarmonics.h"
+#include "interface/defineHarmonics.hpp"
 
 
 RNode defineHarmonics::run(RNode d){

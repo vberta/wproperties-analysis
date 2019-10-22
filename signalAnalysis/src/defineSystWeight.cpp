@@ -1,4 +1,4 @@
-#include "defineSystWeight.h"
+#include "interface/defineSystWeight.hpp"
 
 
 RNode defineSystWeight::run(RNode d){

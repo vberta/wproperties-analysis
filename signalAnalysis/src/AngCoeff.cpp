@@ -1,4 +1,4 @@
-#include "AngCoeff.h"
+#include "interface/AngCoeff.hpp"
 
 std::vector<std::string> AngCoeff::stringMultiplication (const std::vector<std::string> &v1, const std::vector<std::string> &v2){
 

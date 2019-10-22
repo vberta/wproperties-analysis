@@ -1,6 +1,5 @@
-#ifndef GETWEIGHTS_H
-#define GETWEIGHTS_H
-
+#ifndef TEMPLATEBUILDER_H
+#define TEMPLATEBUILDER_H
 
 #include "ROOT/RDataFrame.hxx"
 #include "ROOT/RVec.hxx"
@@ -9,16 +8,17 @@
 #include "TH2D.h"
 #include "TString.h"
 #include "TMath.h"
-#include "../RDFprocessor/framework/module.h"
+#include "../interface/module.hpp"
+#include "../interface/TH3weightsHelper.hpp"
+#include "../interface/TH2weightsHelper.hpp"
 
 using namespace ROOT::VecOps;
 using RNode = ROOT::RDF::RNode;
 using rvec_f = const RVec<float> &;
 using rvec_i = const RVec<int> &;
 
-
-class getWeights : public Module {
-
+class templateBuilder : public Module{
+  
     private:
 
     std::vector<ROOT::RDF::RResultPtr<TH1D>> _h1List;
@@ -32,7 +32,7 @@ class getWeights : public Module {
 
     public:
     
-    ~getWeights() {};
+    ~templateBuilder() {};
     RNode run(RNode) override;
     std::vector<ROOT::RDF::RResultPtr<TH1D>> getTH1() override;
     std::vector<ROOT::RDF::RResultPtr<TH2D>> getTH2() override;
@@ -41,9 +41,16 @@ class getWeights : public Module {
     std::vector<ROOT::RDF::RResultPtr<std::vector<TH1D>>> getGroupTH1() override;
     std::vector<ROOT::RDF::RResultPtr<std::vector<TH2D>>> getGroupTH2() override;
     std::vector<ROOT::RDF::RResultPtr<std::vector<TH3D>>> getGroupTH3() override;
-    
-    void reset() override;
 
+    void reset() override;
+    
 };
 
 #endif
+
+
+
+
+
+
+	
