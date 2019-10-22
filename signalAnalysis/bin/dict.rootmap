@@ -1,0 +1,18 @@
+[ libSignalAnalysis.so ]
+# List of selected classes
+class AngCoeff
+class dataObs
+class defineHarmonics
+class defineSystWeight
+class getACValues
+class getAccMap
+class getWeights
+class templateBuilder
+header AngCoeff.hpp
+header dataObs.hpp
+header defineHarmonics.hpp
+header defineSystWeight.hpp
+header getACValues.hpp
+header getAccMap.hpp
+header getWeights.hpp
+header templateBuilder.hpp

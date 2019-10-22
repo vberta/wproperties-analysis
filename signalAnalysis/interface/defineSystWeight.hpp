@@ -9,7 +9,7 @@
 #include "TH2D.h"
 #include "TString.h"
 #include "TMath.h"
-#include "../interface/module.hpp"
+#include "interface/module.hpp"
 
 using RNode = ROOT::RDF::RNode;
 

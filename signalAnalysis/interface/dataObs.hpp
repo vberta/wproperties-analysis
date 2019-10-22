@@ -8,9 +8,9 @@
 #include "TH2D.h"
 #include "TString.h"
 #include "TMath.h"
-#include "../interface/module.hpp"
-#include "../interface/TH3weightsHelper.hpp"
-#include "../interface/TH2weightsHelper.hpp"
+#include "interface/module.hpp"
+#include "interface/TH3weightsHelper.hpp"
+#include "interface/TH2weightsHelper.hpp"
 
 using namespace ROOT::VecOps;
 using RNode = ROOT::RDF::RNode;

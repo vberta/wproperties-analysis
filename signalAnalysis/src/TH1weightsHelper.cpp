@@ -54,6 +54,6 @@
            res_vec[i].Add(&histo_vec[i]);
       }
    }
-   std::string GetActionName(){
+   std::string TH1weightsHelper::GetActionName(){
       return "TH1weightsHelper";
    }
