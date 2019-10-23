@@ -13,7 +13,7 @@ ROOT.gSystem.Load('bin/libAnalysisOnData.so')
 
 c=64
 		
-ROOT.ROOT.EnableImplicitMT(2)
+ROOT.ROOT.EnableImplicitMT(c)
 
 print "running with {} cores".format(c)
 
@@ -37,7 +37,6 @@ weight = 'puWeight*' + \
                 'Muon_ISO_BCDEF_SF[Idx_mu1]'
 
 p = RDFtree(outputDir = 'TEST', inputFile = inputFile, outputFile="test.root")
-p.branch(nodeToStart = 'input', nodeToEnd = 'lumi', modules = [getLumiWeight(xsec=61526.7, inputFile=inputFile)])
 
 Muon_ISO_BCDEF_SF = ROOT.vector('string')()
 Muon_ISO_BCDEF_SF.push_back('Muon_ISO_BCDEF_SFstatUp')
@@ -46,8 +45,8 @@ Muon_ISO_BCDEF_SF.push_back('Muon_ISO_BCDEF_SFsystUp')
 Muon_ISO_BCDEF_SF.push_back('Muon_ISO_BCDEF_SFsystDown')
 
 
-p.branch(nodeToStart = 'lumi', nodeToEnd = 'muonHistos', modules = [ROOT.muonHistos(cut, weight)])
-p.branch(nodeToStart = 'lumi', nodeToEnd = 'muonHistos_ISO', modules = [ROOT.getSystWeight(Muon_ISO_BCDEF_SF,"Muon_ISO_syst"),ROOT.muonHistos(cut, weight,Muon_ISO_BCDEF_SF,"Muon_ISO_syst")])
+p.branch(nodeToStart = 'input', nodeToEnd = 'muonHistos', modules = [getLumiWeight(xsec=61526.7, inputFile=inputFile),ROOT.muonHistos(cut, weight)])
+p.branch(nodeToStart = 'input', nodeToEnd = 'muonHistos_ISO', modules = [getLumiWeight(xsec=61526.7, inputFile=inputFile),ROOT.getSystWeight(Muon_ISO_BCDEF_SF,"Muon_ISO_syst"),ROOT.muonHistos(cut, weight,Muon_ISO_BCDEF_SF,"Muon_ISO_syst")])
 p.getOutput()
 
 
