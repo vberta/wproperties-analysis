@@ -9,6 +9,7 @@ sys.path.append('python/')
 
 from getLumiWeight import *
 
+print "Loading"
 ROOT.gSystem.Load('bin/libAnalysisOnData.so')
 
 c=64
@@ -36,6 +37,7 @@ weight = 'puWeight*' + \
                 'Muon_ID_BCDEF_SF[Idx_mu1]*' + \
                 'Muon_ISO_BCDEF_SF[Idx_mu1]'
 
+print "RDFtree"
 p = RDFtree(outputDir = 'TEST', inputFile = inputFile, outputFile="test.root")
 
 Muon_ISO_BCDEF_SF = ROOT.vector('string')()
@@ -44,9 +46,16 @@ Muon_ISO_BCDEF_SF.push_back('Muon_ISO_BCDEF_SFstatDown')
 Muon_ISO_BCDEF_SF.push_back('Muon_ISO_BCDEF_SFsystUp')
 Muon_ISO_BCDEF_SF.push_back('Muon_ISO_BCDEF_SFsystDown')
 
-
-p.branch(nodeToStart = 'input', nodeToEnd = 'muonHistos', modules = [getLumiWeight(xsec=61526.7, inputFile=inputFile),ROOT.muonHistos(cut, weight)])
+hmap = ROOT.TH2F('hmap','',10,-2.5,2.5,101,25,65)
+for i in range(10):
+    for j in range(101):
+        hmap.SetBinContent(i,j,0.9)
+    
+print "First node"
+p.branch(nodeToStart = 'input', nodeToEnd = 'muonHistos', modules = [getLumiWeight(xsec=61526.7, inputFile=inputFile), ROOT.fakeRate( hmap ), ROOT.muonHistos(cut, weight+'*FakeRate')])
+print "Second node"
 p.branch(nodeToStart = 'input', nodeToEnd = 'muonHistos_ISO', modules = [getLumiWeight(xsec=61526.7, inputFile=inputFile),ROOT.getSystWeight(Muon_ISO_BCDEF_SF,"Muon_ISO_syst"),ROOT.muonHistos(cut, weight,Muon_ISO_BCDEF_SF,"Muon_ISO_syst")])
+print "Get"
 p.getOutput()
 
 
