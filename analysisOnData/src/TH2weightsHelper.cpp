@@ -40,12 +40,12 @@
    void TH2weightsHelper::InitTask(TTreeReader *, unsigned int) {}
    /// This is a method executed at every entry
 
-   void TH2weightsHelper::Exec(unsigned int slot, const float &var1, const float &var2, const  ROOT::VecOps::RVec<float> &weights)
+   void TH2weightsHelper::Exec(unsigned int slot, const float &var1, const float &var2, const float &weight, const  ROOT::VecOps::RVec<float> &weights)
 {
     auto& histos = *fHistos[slot];
     const auto n_histos = histos.size();
     for (unsigned int i = 0; i < n_histos; ++i)
-      histos[i].Fill(var1, var2, weights[i]);
+      histos[i].Fill(var1, var2, weight*weights[i]);
 }
    /// This method is called at the end of the event loop. It is used to merge all the internal THnTs which
    /// were used in each of the data processing slots.
