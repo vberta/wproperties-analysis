@@ -11,6 +11,7 @@
 #include "TMath.h"
 #include "interface/module.hpp"
 #include "interface/TH1weightsHelper.hpp"
+#include "interface/TH2weightsHelper.hpp"
 #include "interface/functions.hpp"
 
 using RNode = ROOT::RDF::RNode;
