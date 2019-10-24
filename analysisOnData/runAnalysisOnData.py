@@ -16,7 +16,7 @@ c=64
 		
 ROOT.ROOT.EnableImplicitMT(c)
 
-print "running with {} cores".format(c)
+print "Running with {} cores".format(c)
 
 
 inputFile = '/scratch/sroychow/NanoAOD2016-V1MCFinal/WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/tree.root'
@@ -32,12 +32,11 @@ cut = 'Vtype==0 && ' + \
                 'nVetoElectrons==0'
 
 weight = 'puWeight*' + \
-                'lumiweight*' + \
-                'Muon_Trigger_BCDEF_SF[Idx_mu1]*' + \
-                'Muon_ID_BCDEF_SF[Idx_mu1]*' + \
-                'Muon_ISO_BCDEF_SF[Idx_mu1]'
+         'lumiweight*' + \
+         'Muon_Trigger_BCDEF_SF[Idx_mu1]*' + \
+         'Muon_ID_BCDEF_SF[Idx_mu1]*' + \
+         'Muon_ISO_BCDEF_SF[Idx_mu1]'
 
-print "RDFtree"
 p = RDFtree(outputDir = 'TEST', inputFile = inputFile, outputFile="test.root")
 
 Muon_ISO_BCDEF_SF = ROOT.vector('string')()
@@ -50,13 +49,18 @@ hmap = ROOT.TH2F('hmap','',10,-2.5,2.5,101,25,65)
 for i in range(10):
     for j in range(101):
         hmap.SetBinContent(i,j,0.9)
-    
-print "First node"
-p.branch(nodeToStart = 'input', nodeToEnd = 'muonHistos', modules = [getLumiWeight(xsec=61526.7, inputFile=inputFile), ROOT.fakeRate( hmap ), ROOT.muonHistos(cut, weight+'*FakeRate')])
-print "Second node"
-p.branch(nodeToStart = 'input', nodeToEnd = 'muonHistos_ISO', modules = [getLumiWeight(xsec=61526.7, inputFile=inputFile),ROOT.getSystWeight(Muon_ISO_BCDEF_SF,"Muon_ISO_syst"),ROOT.muonHistos(cut, weight,Muon_ISO_BCDEF_SF,"Muon_ISO_syst")])
-print "Get"
-p.getOutput()
 
+
+p.branch(nodeToStart = 'input', nodeToEnd = 'fakeRate',    modules = [getLumiWeight(xsec=61526.7, inputFile=inputFile), 
+                                                                        ROOT.fakeRate( hmap )])
+    
+p.branch(nodeToStart = 'fakeRate', nodeToEnd = 'muonHistos',    modules = [ROOT.muonHistos(cut, weight+'*FakeRate')])
+
+p.branch(nodeToStart = 'fakeRate', nodeToEnd = 'muonHistos_ISO', modules = [ROOT.getSystWeight(Muon_ISO_BCDEF_SF,"Muon_ISO_syst"),
+                                                                            ROOT.muonHistos(cut, weight+'*FakeRate', Muon_ISO_BCDEF_SF,"Muon_ISO_syst")])
+
+print "Get output..."
+p.getOutput()
+#p.saveGraph()
 
 

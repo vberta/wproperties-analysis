@@ -3,7 +3,7 @@
 
 RNode fakeRate::run(RNode d){
 
-  auto applyFakeRate = [this](float pt, float eta){ 
+  auto applyFakeRate = [this](float pt, float eta)->float { 
     int binIdx = _hmap->FindBin(eta,pt);
     return _hmap->GetBinContent(binIdx);
   };   
