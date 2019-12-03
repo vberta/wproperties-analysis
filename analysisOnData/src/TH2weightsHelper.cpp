@@ -22,10 +22,13 @@
          std::vector<TH2D>& histos = *fHistos[slot];
          auto n_histos = _weightNames.size();
 
+	 std::string slotnum = "";
+         slotnum = slot>0 ? std::to_string(slot):"";
+
          for (unsigned int i = 0; i < n_histos; ++i){
         
-          histos.emplace_back(TH2D(std::string(_name+_weightNames[i]).c_str(), 
-                              std::string(_name+_weightNames[i]).c_str(), 
+          histos.emplace_back(TH2D(std::string(_name+_weightNames[i]+slotnum).c_str(), 
+                              std::string(_name+_weightNames[i]+slotnum).c_str(), 
                               _nbinsX, _xbins.data(), 
                               _nbinsY, _ybins.data()));
         

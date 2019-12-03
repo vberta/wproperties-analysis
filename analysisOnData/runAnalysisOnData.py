@@ -18,18 +18,17 @@ ROOT.ROOT.EnableImplicitMT(c)
 
 print "Running with {} cores".format(c)
 
-
 inputFile = '/scratch/sroychow/NanoAOD2016-V1MCFinal/WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/tree.root'
 
 muon = '_corrected'
 met = '_nom'
 
 cut = 'Vtype==0 && ' + \
-                'HLT_SingleMu24 && '+ \
-                ('Muon%s_pt[Idx_mu1]>25. && ' % muon) + \
-                ('Muon%s_MET%s_mt[Idx_mu1]>0. && ' % (muon, met) ) + \
-                'MET_filters==1 && ' + \
-                'nVetoElectrons==0'
+      'HLT_SingleMu24 && '+ \
+      ('Muon%s_pt[Idx_mu1]>25. && ' % muon) + \
+      ('Muon%s_MET%s_mt[Idx_mu1]>0. && ' % (muon, met) ) + \
+      'MET_filters==1 && ' + \
+      'nVetoElectrons==0'
 
 weight = 'puWeight*' + \
          'lumiweight*' + \
@@ -51,13 +50,15 @@ for i in range(10):
         hmap.SetBinContent(i,j,0.9)
 
 
-p.branch(nodeToStart = 'input', nodeToEnd = 'fakeRate',    modules = [getLumiWeight(xsec=61526.7, inputFile=inputFile), 
-                                                                        ROOT.fakeRate( hmap )])
+#p.branch(nodeToStart = 'input', nodeToEnd = 'fakeRate',    modules = [getLumiWeight(xsec=61526.7, inputFile=inputFile), 
+#                                                                        ROOT.fakeRate( hmap )])
     
-p.branch(nodeToStart = 'fakeRate', nodeToEnd = 'muonHistos',    modules = [ROOT.muonHistos(cut, weight+'*FakeRate')])
+p.branch(nodeToStart = 'input', nodeToEnd = 'muonHistos',    modules = [ROOT.getLumiWeight(inputFile, 35.9, 61526.7), 
+                                                                        ROOT.getSystWeight(Muon_ISO_BCDEF_SF,"Muon_ISO_syst"),
+                                                                        ROOT.muonHistos(cut, weight, Muon_ISO_BCDEF_SF,"Muon_ISO_syst")])
 
-p.branch(nodeToStart = 'fakeRate', nodeToEnd = 'muonHistos_ISO', modules = [ROOT.getSystWeight(Muon_ISO_BCDEF_SF,"Muon_ISO_syst"),
-                                                                            ROOT.muonHistos(cut, weight+'*FakeRate', Muon_ISO_BCDEF_SF,"Muon_ISO_syst")])
+#p.branch(nodeToStart = 'fakeRate', nodeToEnd = 'muonHistos_ISO', modules = [ROOT.getSystWeight(Muon_ISO_BCDEF_SF,"Muon_ISO_syst"), 
+#                                                                            ROOT.muonHistos(cut, weight+'*FakeRate', Muon_ISO_BCDEF_SF,"Muon_ISO_syst")])
 
 print "Get output..."
 p.getOutput()
