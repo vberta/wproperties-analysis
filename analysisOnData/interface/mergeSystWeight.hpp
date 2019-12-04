@@ -1,5 +1,5 @@
-#ifndef GETSYSTWEIGHT_H
-#define GETSYSTWEIGHT_H
+#ifndef MERGESYSTWEIGHT_H
+#define MERGESYSTWEIGHT_H
 
 #include "ROOT/RDataFrame.hxx"
 #include "ROOT/RVec.hxx"
@@ -10,10 +10,11 @@
 #include "TMath.h"
 #include "interface/module.hpp"
 #include "interface/functions.hpp"
+#include <utility>
 
 using RNode = ROOT::RDF::RNode;
 
-class getSystWeight : public Module {
+class mergeSystWeight : public Module {
 
 private:
   
@@ -26,20 +27,24 @@ private:
   std::vector<ROOT::RDF::RResultPtr<std::vector<TH2D>>> _h2Group;
   std::vector<ROOT::RDF::RResultPtr<std::vector<TH3D>>> _h3Group;
   
-  std::vector<std::string> _syst_name;
+  std::pair<std::string, std::string> _syst_name;
+  std::pair<float,float> _syst_ratios;  
   std::string _syst_weight;
-  
+  bool _scalar;
+
   std::string _filter;
   std::string _weight;
   
 public:
     
-  getSystWeight(std::vector<std::string> syst_name, std::string syst_weight){
+  mergeSystWeight(std::pair<std::string,std::string> syst_name, std::pair<float,float> syst_ratios, std::string syst_weight, bool scalar){
     _syst_name = syst_name;
+    _syst_ratios = syst_ratios;
     _syst_weight = syst_weight;
+    _scalar = scalar;
   };
   
-  ~getSystWeight() {};
+  ~mergeSystWeight() {};
   
   RNode run(RNode) override;
   std::vector<ROOT::RDF::RResultPtr<TH1D>> getTH1() override;

@@ -3,42 +3,34 @@
 
 RNode muonHistos::run(RNode d){
     
-    auto d1 = d.Filter(_filter).Define("weight",_weight).Define("dummy", dummy, {"event"});
+  auto d1 = d.Filter(_cut);
 
-    std::vector<float> pTArr(101); 
-    for(int i=0; i<101; i++) {
-        pTArr[i] = 25. + i*(65.-25.)/100;
-    }
-
-    std::vector<float> etaArr(11); 
-    for(int i=0; i<11; i++) {
-      etaArr[i] = -2.5 + i*(2.5-(-2.5))/11;
-    }
+  unsigned int nbins_pt = 100;
+  std::vector<float> pt_Arr(nbins_pt+1); 
+  for(unsigned int i=0; i<nbins_pt+1; i++) pt_Arr[i] = 25. + i*(65.-25.)/nbins_pt;
     
-    std::vector<std::string> total = _syst_name;
+  std::vector<std::string> total = _syst_name;
+  if(total.size()==0) total.emplace_back("");
+  
+  std::string hname = "";
+  hname = "Muon1_corrected_pt";
+  TH1weightsHelper w_helper_corrected_pt(hname, std::string(" ; muon p_{T} (Rochester corr.); "), nbins_pt, pt_Arr, total);         
+  _h1Group.emplace_back(d1.Book<float,float,ROOT::VecOps::RVec<float>>(std::move(w_helper_corrected_pt), {hname, _weight, _syst_name.size()>0 ? _syst_weight: "dummy"}) );  
 
-    if(total.size()==0) total.emplace_back("");
+  /*
+  hname = "Muon1_pt";
+  if(_var_modifier.find("corrected")!=std::string::npos){
+    hname = ("Muon1_"+_var_modifier+"_pt");
+    applies = true;
+  }
+  TH1weightsHelper w_helper_pt(hname, std::string(" ; muon p_{T}; "), nbins_pt, pt_Arr, total);
+  if(save_all || applies){
+    _h1Group.emplace_back(d1.Book<float,float,ROOT::VecOps::RVec<float>>(std::move(w_helper_corrected_pt), {hname, _weight, _syst_name.size()>0 ? _syst_weight: "dummy"}) );
+    applies = false;
+  } 
+  */ 
 
-    TH1weightsHelper helperPt(std::string("SelMuon_corrected_pt"),  std::string(" ; muon p_{T} (Rochester corr.); "), pTArr.size()-1, pTArr, total);
-
-    TH1weightsHelper helperEta(std::string("SelMuon_eta"), std::string(" ; eta p_{T} (Rochester corr.); "), etaArr.size()-1, etaArr, total);
- 
-    TH2weightsHelper helperPtEta(std::string("SelMuon_PtEta"), std::string(" ; eta p_{T} (Rochester corr.); muon p_{T} (Rochester corr.)"), etaArr.size()-1, etaArr, pTArr.size()-1, pTArr, total);
-
-    auto hpT = d1.Book<float,  float, ROOT::VecOps::RVec<float>>(std::move(helperPt), {"SelMuon_corrected_pt", "weight", _syst_name.size()>0 ? _syst_weight: "dummy"});
-
-    auto hEta = d1.Book<float,  float, ROOT::VecOps::RVec<float>>(std::move(helperEta), {"SelMuon_eta", "weight", _syst_name.size()>0 ? _syst_weight: "dummy"});
-    
-    auto hPtEta = d1.Book<float,  float, float, ROOT::VecOps::RVec<float>>(std::move(helperPtEta), {"SelMuon_eta", "SelMuon_corrected_pt", "weight", _syst_name.size()>0 ? _syst_weight: "dummy"});
-    
-    
-
-    _h1Group.emplace_back(hpT);
-    _h1Group.emplace_back(hEta);
-    _h2Group.emplace_back(hPtEta);
-
-    return d1;
-
+  return d1;
 }
 
 std::vector<ROOT::RDF::RResultPtr<TH1D>> muonHistos::getTH1(){ 

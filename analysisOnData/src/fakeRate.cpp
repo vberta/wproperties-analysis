@@ -7,11 +7,16 @@ RNode fakeRate::run(RNode d){
     int binIdx = _hmap->FindBin(eta,pt);
     return _hmap->GetBinContent(binIdx);
   };   
+
+  auto Mt = [](float muon_pt, float muon_phi, float met_phi, float met_pt)->float {
+    return 1.0;
+  };
   
   auto d1 = d.Define("SelMuon_corrected_pt", getFromIdx, {"Muon_corrected_pt", "Idx_mu1"})
     .Define("SelMuon_eta", getFromIdx, {"Muon_eta", "Idx_mu1"})
-    .Define("FakeRate", applyFakeRate, {"SelMuon_corrected_pt", "SelMuon_eta"});
- 
+    .Define("FakeRate", applyFakeRate, {"SelMuon_corrected_pt", "SelMuon_eta"})
+    .Define("SelMuon_Mt", Mt, {""});
+   
   return d1;
 
 }

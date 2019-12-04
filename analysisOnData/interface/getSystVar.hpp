@@ -1,5 +1,5 @@
-#ifndef GETSYSTWEIGHT_H
-#define GETSYSTWEIGHT_H
+#ifndef GETSYSTVAR_H
+#define GETSYSTVAR_H
 
 #include "ROOT/RDataFrame.hxx"
 #include "ROOT/RVec.hxx"
@@ -13,7 +13,7 @@
 
 using RNode = ROOT::RDF::RNode;
 
-class getSystWeight : public Module {
+class getSystVar : public Module {
 
 private:
   
@@ -27,19 +27,13 @@ private:
   std::vector<ROOT::RDF::RResultPtr<std::vector<TH3D>>> _h3Group;
   
   std::vector<std::string> _syst_name;
-  std::string _syst_weight;
-  
-  std::string _filter;
-  std::string _weight;
-  
+  std::string _syst_weight, _idx1;
+    
 public:
     
-  getSystWeight(std::vector<std::string> syst_name, std::string syst_weight){
-    _syst_name = syst_name;
-    _syst_weight = syst_weight;
-  };
+  getSystVar(std::vector<std::string> syst_name, std::string syst_weight, std::string idx1) : _syst_name(syst_name), _syst_weight(syst_weight), _idx1(idx1) {};
   
-  ~getSystWeight() {};
+  ~getSystVar() {};
   
   RNode run(RNode) override;
   std::vector<ROOT::RDF::RResultPtr<TH1D>> getTH1() override;

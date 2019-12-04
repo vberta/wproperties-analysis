@@ -6,9 +6,10 @@ RNode getLumiWeight::run(RNode d){
   auto getWeight = [this](float genWeight)->float {
     return _targetLumi*_xsec*genWeight/_genEventSumw;
   };
-  auto d1 = d.Define("lumiweight", getWeight, {"Generator_weight"});
-  return d1;
 
+  auto d1 = d.Define("lumiweight", getWeight, {"Generator_weight"});
+
+  return d1;
 }
 
 std::vector<ROOT::RDF::RResultPtr<TH1D>> getLumiWeight::getTH1(){ 
