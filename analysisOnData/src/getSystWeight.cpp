@@ -3,19 +3,17 @@
 
 RNode getSystWeight::run(RNode d){
     
-  //    auto getRVec = [](ROOT::VecOps::RVec<float> statUp, ROOT::VecOps::RVec<float> statDown, ROOT::VecOps::RVec<float> systUp, ROOT::VecOps::RVec<float> systDown, int idx){
-    auto getRVec = [](ROOT::VecOps::RVec<float> systUp, ROOT::VecOps::RVec<float> systDown, int idx){
-        ROOT::VecOps::RVec<float> v;
+  //auto getRVec = [](ROOT::VecOps::RVec<float> statUp, ROOT::VecOps::RVec<float> statDown, ROOT::VecOps::RVec<float> systUp, ROOT::VecOps::RVec<float> systDown, int idx){
+  //v.emplace_back(statUp[idx]);
+  //v.emplace_back(statDown[idx]);
+  auto getRVec = [](ROOT::VecOps::RVec<float> nominal, ROOT::VecOps::RVec<float> systUp, ROOT::VecOps::RVec<float> systDown, int idx){
+    ROOT::VecOps::RVec<float> v;
+    v.emplace_back(systUp[idx]/nominal[idx]);
+    v.emplace_back(systDown[idx]/nominal[idx]);
+    return v;
+  };
 
-        //v.emplace_back(statUp[idx]);
-        //v.emplace_back(statDown[idx]);
-        v.emplace_back(systUp[idx]);
-        v.emplace_back(systDown[idx]);
-
-        return v;
-    };
-
-    auto d1 = d.Define(_syst_weight,getRVec,{_syst_name[0],_syst_name[1], "Idx_mu1"});
+  auto d1 = d.Define(_syst_weight,getRVec,{_nomweight, _syst_name[0],_syst_name[1], "Idx_mu1"});
     return d1;
 
 }

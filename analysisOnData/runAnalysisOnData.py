@@ -45,7 +45,7 @@ def runRDFForaSample(nCores, sampleKey, inputFiles, xSec ="1.", dataType = "MC",
         wvec = ROOT.std.vector(ROOT.std.string)()
         for syst in systs:
             wvec.push_back(ROOT.std.string(syst))
-        nodeweightDict['muonHistos_' + wt]  = wvec
+        nodeweightDict[wt]  = wvec
 
     print nodeweightDict
 
@@ -66,7 +66,8 @@ def runRDFForaSample(nCores, sampleKey, inputFiles, xSec ="1.", dataType = "MC",
             #weight systematics  
             for en, wtvec in nodeweightDict.items():
                 ecol = region + "_" + en
-                p.branch(nodeToStart = region, nodeToEnd =  region + "/" + en, modules = [ROOT.getSystWeight(wtvec, ROOT.std.string(ecol) ), ROOT.muonHistos(cut, nomweight, wtvec, ROOT.std.string(ecol) )])
+                
+                p.branch(nodeToStart = region, nodeToEnd =  region + "/muonHistos_" + en, modules = [ROOT.getSystWeight(en, wtvec, ROOT.std.string(ecol) ), ROOT.muonHistos(cut, nomweight, wtvec, ROOT.std.string(ecol) )])
 
     else:
         for region, cut in cutMap.items():

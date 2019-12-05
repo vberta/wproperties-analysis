@@ -27,20 +27,21 @@ private:
   std::vector<ROOT::RDF::RResultPtr<std::vector<TH2D>>> _h2Group;
   std::vector<ROOT::RDF::RResultPtr<std::vector<TH3D>>> _h3Group;
   
+  std::string _nomweight;  
   std::vector<std::string> _syst_name;
   std::string _syst_weight;
-  
   std::string _filter;
   std::string _weight;
-  
+
   
 public:
   
   
-  getSystWeight(std::vector<std::string> syst_name, std::string syst_weight){
+  getSystWeight(std::string nomweight, std::vector<std::string> syst_name, std::string syst_weight){
     
     _syst_name = syst_name;
     _syst_weight = syst_weight;
+    _nomweight = nomweight;
   };
 
   ~getSystWeight() {};
