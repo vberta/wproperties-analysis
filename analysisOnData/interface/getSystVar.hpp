@@ -28,10 +28,11 @@ private:
   
   std::vector<std::string> _syst_name;
   std::string _syst_weight, _idx1;
+  bool _scalar;
     
 public:
     
-  getSystVar(std::vector<std::string> syst_name, std::string syst_weight, std::string idx1) : _syst_name(syst_name), _syst_weight(syst_weight), _idx1(idx1) {};
+  getSystVar(std::vector<std::string> syst_name, std::string syst_weight, std::string idx1, bool scalar) : _syst_name(syst_name), _syst_weight(syst_weight), _idx1(idx1), _scalar(scalar) {};
   
   ~getSystVar() {};
   

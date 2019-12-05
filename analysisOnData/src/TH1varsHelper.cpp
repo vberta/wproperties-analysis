@@ -39,24 +39,49 @@
    void TH1varsHelper::InitTask(TTreeReader *, unsigned int) {}
    /// This is a method executed at every entry
 
-   void TH1varsHelper::Exec(unsigned int slot, const float &var1, const float &weight, const  ROOT::VecOps::RVec<float> &weights)
+void TH1varsHelper::Exec(unsigned int slot, const ROOT::VecOps::RVec<float> &vars, const  ROOT::VecOps::RVec<float> &weights)
 {
-    auto& histos = *fHistos[slot];
-    const auto n_histos = histos.size();
-    for (unsigned int i = 0; i < n_histos; ++i)
-      histos[i].Fill(weights[i], weight);
+  auto& histos = *fHistos[slot];
+  const auto n_histos = histos.size();
+  for (unsigned int i = 0; i < n_histos; ++i)
+    histos[i].Fill(vars[i], weights[i]);
 }
-   /// This method is called at the end of the event loop. It is used to merge all the internal THnTs which
-   /// were used in each of the data processing slots.
-   void TH1varsHelper::Finalize()
-   {
-      auto &res_vec = *fHistos[0];
-      for (auto slot : ROOT::TSeqU(1, fHistos.size())) {
-         auto& histo_vec = *fHistos[slot];
-         for (auto i : ROOT::TSeqU(0, res_vec.size()))
-           res_vec[i].Add(&histo_vec[i]);
-      }
-   }
-   std::string TH1varsHelper::GetActionName(){
-      return "TH1varsHelper";
-   }
+
+void TH1varsHelper::Exec(unsigned int slot, const float& var, const  ROOT::VecOps::RVec<float> &weights)
+{
+  auto& histos = *fHistos[slot];
+  const auto n_histos = histos.size();
+  for (unsigned int i = 0; i < n_histos; ++i)
+    histos[i].Fill(var, weights[i]);
+}
+
+void TH1varsHelper::Exec(unsigned int slot, const ROOT::VecOps::RVec<float> &vars, const float &weight)
+{
+  auto& histos = *fHistos[slot];
+  const auto n_histos = histos.size();
+  for (unsigned int i = 0; i < n_histos; ++i)
+    histos[i].Fill(vars[i], weight);
+}
+
+void TH1varsHelper::Exec(unsigned int slot, const float& var, const float &weight)
+{
+  auto& histos = *fHistos[slot];
+  const auto n_histos = histos.size();
+  for (unsigned int i = 0; i < n_histos; ++i)
+    histos[i].Fill(var, weight);
+}
+
+/// This method is called at the end of the event loop. It is used to merge all the internal THnTs which
+/// were used in each of the data processing slots.
+void TH1varsHelper::Finalize()
+{
+  auto &res_vec = *fHistos[0];
+  for (auto slot : ROOT::TSeqU(1, fHistos.size())) {
+    auto& histo_vec = *fHistos[slot];
+    for (auto i : ROOT::TSeqU(0, res_vec.size()))
+      res_vec[i].Add(&histo_vec[i]);
+  }
+}
+std::string TH1varsHelper::GetActionName(){
+  return "TH1varsHelper";
+}

@@ -8,15 +8,11 @@ RNode muonHistos::run(RNode d){
   unsigned int nbins_pt = 100;
   std::vector<float> pt_Arr(nbins_pt+1); 
   for(unsigned int i=0; i<nbins_pt+1; i++) pt_Arr[i] = 25. + i*(65.-25.)/nbins_pt;
-    
-  std::vector<std::string> total = _syst_name;
-  if(total.size()==0) total.emplace_back("");
-  
-  std::string hname = "";
-  hname = "Muon1_corrected_pt";
-  TH1weightsHelper w_helper_corrected_pt(hname, std::string(" ; muon p_{T} (Rochester corr.); "), nbins_pt, pt_Arr, total);         
-  _h1Group.emplace_back(d1.Book<float,float,ROOT::VecOps::RVec<float>>(std::move(w_helper_corrected_pt), {hname, _weight, _syst_name.size()>0 ? _syst_weight: "dummy"}) );  
+      
+  this->add_group( &d1, "Muon1_corrected_pt", "", pt_Arr, nbins_pt);
+  this->add_group( &d1, "Muon1_pt", "", pt_Arr, nbins_pt);
 
+  return d1;
   /*
   hname = "Muon1_pt";
   if(_var_modifier.find("corrected")!=std::string::npos){
@@ -25,12 +21,56 @@ RNode muonHistos::run(RNode d){
   }
   TH1weightsHelper w_helper_pt(hname, std::string(" ; muon p_{T}; "), nbins_pt, pt_Arr, total);
   if(save_all || applies){
-    _h1Group.emplace_back(d1.Book<float,float,ROOT::VecOps::RVec<float>>(std::move(w_helper_corrected_pt), {hname, _weight, _syst_name.size()>0 ? _syst_weight: "dummy"}) );
+    _h1Group.emplace_back(d1.Book<float,float,ROOT::VecOps::RVec<float>>(std::move(w_helper_corrected_pt), {hname, _weight, _syst_names.size()>0 ? _syst_column: "dummy"}) );
     applies = false;
   } 
   */ 
+}
 
-  return d1;
+std::string muonHistos::check_modifier(const std::string& var_name){
+  const std::string sub = _modifier+"All";
+  size_t pos = var_name.find(_modifier);  
+  if(pos==std::string::npos) return var_name;    
+  std::string in = var_name;
+  std::string ret = in.replace(pos, 9, sub);  
+  return ret;
+}
+
+void muonHistos::add_group(ROOT::RDF::RInterface<ROOT::Detail::RDF::RJittedFilter, void>* d1, const std::string& var_name, const std::string& var_title, const std::vector<float>& arr, const unsigned int& nbins){
+  std::vector<std::string> total = _syst_names;
+  if(total.size()==0) total.emplace_back("");
+  std::string var_name_mod;
+  if(_modifier==""){
+    std::cout << "muonHistos::run(): TH1weightsHelper<f,f,V> for variable " << var_name << " (" << _weight << "*" << _syst_column << "[])" << std::endl;
+    TH1weightsHelper w_helper(var_name, var_title, nbins, arr, total);         
+    _h1Group.emplace_back(d1->Book<float,float,ROOT::VecOps::RVec<float>>(std::move(w_helper), {var_name, _weight, _syst_names.size()>0 ? _syst_column: "dummy"}) ); 
+  }
+  else{
+    var_name_mod = this->check_modifier(var_name);
+    bool has_changed = (var_name_mod!=var_name);
+    TH1varsHelper v_helper(var_name, var_title, nbins, arr, total);
+    if(has_changed){
+      if(_multi_cuts){
+	std::cout << "muonHistos::run(): TH1varsHelper<V,V> for variable " << var_name_mod << "[] (" << _weight << "*" << _syst_column << "[])" << std::endl;
+	_h1Group.emplace_back(d1->Book<ROOT::VecOps::RVec<float>,ROOT::VecOps::RVec<float>>(std::move(v_helper), {var_name_mod, _syst_column }));
+      }
+      else{
+	std::cout << "muonHistos::run(): TH1varsHelper<V,f> for variable " << var_name_mod << "[] (" << _weight << "*)" << std::endl;
+	_h1Group.emplace_back(d1->Book<ROOT::VecOps::RVec<float>,float>(std::move(v_helper), {var_name_mod, _weight }));
+      }
+    }
+    else{
+      if(_multi_cuts){
+	std::cout << "muonHistos::run(): TH1varsHelper<f,V> for variable " << var_name << " (" << _weight << "*" << _syst_column << "[])" << std::endl;
+	_h1Group.emplace_back(d1->Book<float,ROOT::VecOps::RVec<float>>(std::move(v_helper), {var_name, _syst_column }));
+      }
+      else{
+	std::cout << "muonHistos::run(): TH1varsHelper<f,f> for variable " << var_name << "[] (" << _weight << "*): DO NOTHING -- These are alike the nominal!" << std::endl;
+	if(false) _h1Group.emplace_back(d1->Book<float,float>(std::move(v_helper), {var_name, _weight }));
+      }
+    }											 
+  }
+  return;
 }
 
 std::vector<ROOT::RDF::RResultPtr<TH1D>> muonHistos::getTH1(){ 

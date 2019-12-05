@@ -30,20 +30,29 @@ private:
   std::vector<ROOT::RDF::RResultPtr<std::vector<TH2D>>> _h2Group;
   std::vector<ROOT::RDF::RResultPtr<std::vector<TH3D>>> _h3Group;
   
-  std::string _cut;
-  std::string _weight;
-  std::string _var_modifier;
-  std::vector<std::string> _syst_name;
-  std::string _syst_weight;
+  std::string _cut; // cut string name
+  std::string _weight; // event weight name
+  std::vector<std::string> _syst_names; // names of syst variations for histo names
+  std::string _syst_column; // the column comntaining the syst variations
+  std::string _modifier; // var name modifier
+  bool _multi_cuts; // 
     
 public:
   
-  muonHistos(std::string cut, std::string weight) : _cut(cut), _weight(weight) {};
+  // to be called with THDweightsHelper (w/o systematics)
+  muonHistos(std::string cut, std::string weight) : _cut(cut), _weight(weight), _syst_names({}), _syst_column(""), _modifier(""), _multi_cuts(false) {};
 
-  muonHistos(std::string cut, std::string weight, std::string var_modifier) : _cut(cut), _weight(weight), _var_modifier(var_modifier) {};
+  // to be called with THDweightsHelper (w/ systematics)
+  muonHistos(std::string cut, std::string weight, std::vector<std::string> syst_names, std::string syst_column) :
+    _cut(cut), _weight(weight), _syst_names(syst_names), _syst_column(syst_column), _modifier(""), _multi_cuts(false)  {};
   
-  muonHistos(std::string cut, std::string weight, std::vector<std::string> syst_name, std::string syst_weight) :
-    _cut(cut), _weight(weight), _syst_name(syst_name), _syst_weight(syst_weight) {};    
+  // to be called with THDvarsHelper
+  muonHistos(std::string cut, std::string weight, std::vector<std::string> syst_names, std::string syst_column, std::string modifier, bool multi_cuts) :
+    _cut(cut), _weight(weight), _syst_names(syst_names), _syst_column(syst_column), _modifier(modifier), _multi_cuts(multi_cuts) {};
+
+  std::string check_modifier(const std::string& var_name);
+
+  void add_group(ROOT::RDF::RInterface<ROOT::Detail::RDF::RJittedFilter, void>*, const std::string&, const std::string&, const std::vector<float>&, const unsigned int&);
 
   ~muonHistos() {};
   

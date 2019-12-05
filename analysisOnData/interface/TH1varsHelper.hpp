@@ -33,9 +33,12 @@ public:
    void InitTask(TTreeReader *, unsigned int);
    /// This is a method executed at every entry
 
-   void Exec(unsigned int slot, const float &var1, const float &weight, const  ROOT::VecOps::RVec<float> &weights);
-   void Finalize();
-   std::string GetActionName();
+  void Exec(unsigned int, const ROOT::VecOps::RVec<float>&, const  ROOT::VecOps::RVec<float>&);
+  void Exec(unsigned int, const float&, const  ROOT::VecOps::RVec<float>&);
+  void Exec(unsigned int, const ROOT::VecOps::RVec<float> &, const float&);
+  void Exec(unsigned int, const float&, const float&);
+  void Finalize();
+  std::string GetActionName();
 };
 
 #endif

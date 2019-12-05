@@ -10,8 +10,21 @@ RNode getSystVar::run(RNode d){
         return v;
     };
 
-    auto d1 = d.Define(_syst_weight, getRVec,{_syst_name[0], _syst_name[1], _idx1});
-    return d1;
+    auto getF = [](float statUp, float statDown){
+      ROOT::VecOps::RVec<float> v;
+      v.emplace_back(statUp);
+      v.emplace_back(statDown);
+      return v;
+    };
+
+    if(_scalar){
+      auto d1 = d.Define(_syst_weight, getF,{_syst_name[0], _syst_name[1]});
+      return d1;
+    }
+    else{
+      auto d1 = d.Define(_syst_weight, getRVec,{_syst_name[0], _syst_name[1], _idx1});
+      return d1;
+    }
 }
 
 std::vector<ROOT::RDF::RResultPtr<TH1D>> getSystVar::getTH1(){ 
