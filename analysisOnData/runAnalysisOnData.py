@@ -23,9 +23,9 @@ inputFile = '/scratch/sroychow/NanoAOD2016-V1MCFinal/WJetsToLNu_TuneCUETP8M1_13T
 cut_base = 'Vtype==0 ' + \
       '&& HLT_SingleMu24 '+ \
       '&& MET_filters==1 ' + \
-      '&& nVetoElectrons==0 '# + \
-      #'&& Muon1_corrected_pt>25.0 ' + \
-      #'&& Muon1_corrected_MET_nom_mt>40.0'
+      '&& nVetoElectrons==0 ' + \
+      '&& Muon1_corrected_pt>25.0 ' + \
+      '&& Muon1_corrected_MET_nom_mt>40.0'
 
 
 weight_base = 'puWeight' + \
@@ -79,44 +79,64 @@ def branch_Muon_syst_SF(p, systs, start_weight):
         p.branch(nodeToStart='defs', nodeToEnd='muonHistos_'+syst, modules=modules)
     return start_weight, weights
 
-def branch_Muon_syst_corrected(p, systs, start_cut, start_weight):
+def branch_Muon_syst_variable(p, var, systs, start_cut, start_weight):
     cuts = []
     weights = []
     modules = []    
-    syst_columns = vec_s()
-    syst_columns.push_back('Muon_correctedUp_pt')
-    syst_columns.push_back('Muon_correctedDown_pt')
-    modules.append( ROOT.getSystVar( syst_columns, 'Muon1_correctedAll_pt', 'Idx_mu1', False ) )
-    if 'corrected' in start_cut:
+
+    # these columns have to be created before running muonHistos
+    if var=='corrected':
+        for col in ['Muon_corrected_pt', 'Muon_corrected_MET_nom_mt', 'Muon_corrected_MET_nom_hpt']:    
+            syst_columns = vec_s()
+            for syst in systs:
+                syst_columns.push_back( col.replace(var, syst) )
+            modules.append( ROOT.getSystVar( syst_columns, col.replace('Muon', 'Muon1').replace(var, var+'All'), 'Idx_mu1', False ) )
+    elif var=='nom':
+        for col in ['Muon_corrected_MET_nom_mt', 'Muon_corrected_MET_nom_hpt']:
+            syst_columns = vec_s()
+            for syst in systs:
+                syst_columns.push_back( col.replace(var, syst) )
+            modules.append( ROOT.getSystVar( syst_columns, col.replace('Muon', 'Muon1').replace(var, var+'All'), 'Idx_mu1', False ) )
+        for col in ['MET_nom_pt', 'MET_nom_phi']:
+            syst_columns = vec_s()
+            for syst in systs:
+                syst_columns.push_back( col.replace(var, syst) )
+            modules.append( ROOT.getSystVar( syst_columns, col.replace(var, var+'All'), '', True ) )
+            
+    # first case: the event cut is changed
+    if var in start_cut:
         cut_clean = copy.deepcopy(start_cut)
         cut_clean_split = cut_clean.split(' && ')
         garbage = []
         for i in cut_clean_split:
-            if 'corrected' in i: garbage.append(i)
+            if var in i: garbage.append(i)
         for i in garbage:
             cut_clean = cut_clean.replace(i, '1')
-        print('branch_Muon_syst_corrected(): cut: '+start_cut+' -> '+cut_clean)
+        print('branch_Muon_syst_variable(): cut: '+start_cut+' -> '+cut_clean)
         cuts.append(cut_clean)
         weight_columns = vec_s()
         cut = copy.deepcopy(start_cut)
         for syst in systs:
-            icut = cut.replace('corrected', 'corrected'+syst)
+            icut = cut.replace(var, syst)
             newcut = '('+icut+')*('+start_weight+')'
-            print('branch_Muon_syst_corrected(): '+'cut_corrected'+syst+' = '+newcut)
-            modules.append( ROOT.getWeight('cut_corrected'+syst, newcut) )
-            weight_columns.push_back('cut_corrected'+syst)
-            weights.append('cut_corrected'+syst)
-        modules.append( ROOT.getSystVar(weight_columns, 'cut_correctedAll', '', True) )
-        modules.append( ROOT.muonHistos( cut_clean, '', syst_columns, 'cut_correctedAll', 'corrected', True ) )
+            print('branch_Muon_syst_variable(): '+'cut_'+syst+' = '+newcut)
+            modules.append( ROOT.getWeight('cut_'+syst, newcut) )
+            weight_columns.push_back('cut_'+syst)
+            weights.append('cut_'+syst)
+        modules.append( ROOT.getSystVar(weight_columns, 'cut_'+var+'All', '', True) )
+        modules.append( ROOT.muonHistos( cut_clean, '', syst_columns, 'cut_'+var+'All', var, True ) )
+    # second case: the event cut is unchanged
     else:
-        modules.append( ROOT.muonHistos( start_cut, 'weight_nominal', syst_columns, '', 'corrected', False ) )
-    p.branch(nodeToStart='defs', nodeToEnd='muonHistos_corrected', modules=modules)
+        modules.append( ROOT.muonHistos( start_cut, 'weight_nominal', syst_columns, '', var, False ) )
+
+    p.branch(nodeToStart='defs', nodeToEnd='muonHistos_'+var, modules=modules)
     return start_cut, start_weight, cuts, weights
 
 _, weight_init    = branch_init(p,['ISO', 'ID', 'Trigger'], weight_base)
 _, weight_nominal = branch_Muon_nominal(p, weight_init)
 _, weights_syst   = branch_Muon_syst_SF(p, ['ISO', 'ID', 'Trigger'], weight_nominal)
-_, _, cuts_pt, weights_pt = branch_Muon_syst_corrected(p, ['Up','Down'], cut_base, weight_nominal)
+_, _, _, _        = branch_Muon_syst_variable(p, 'corrected', ['correctedUp','correctedDown'], cut_base, weight_nominal)
+_, _, _, _        = branch_Muon_syst_variable(p, 'nom', ['jerUp','jerDown'], cut_base, weight_nominal)
 
 #p.branch(nodeToStart = 'fakeRate', nodeToEnd = 'muonHistos_ISO', modules = [ROOT.getSystWeight(Muon_ISO_BCDEF_SF,'Muon_ISO_syst'), 
 #                                                                            ROOT.muonHistos(cut, weight+'*FakeRate', Muon_ISO_BCDEF_SF,'Muon_ISO_syst')])
