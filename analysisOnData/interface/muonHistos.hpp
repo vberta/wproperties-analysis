@@ -13,6 +13,7 @@
 #include "interface/TH1weightsHelper.hpp"
 #include "interface/TH2weightsHelper.hpp"
 #include "interface/functions.hpp"
+#include<map>
 
 using RNode = ROOT::RDF::RNode;
 
@@ -34,7 +35,7 @@ class muonHistos : public Module {
 
     std::string _filter;
     std::string _weight;
-    
+
     public:
     
     muonHistos(std::string filter, std::string weight){

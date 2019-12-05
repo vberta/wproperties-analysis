@@ -3,19 +3,19 @@
 
 RNode getSystWeight::run(RNode d){
     
-    auto getRVec = [](ROOT::VecOps::RVec<float> statUp, ROOT::VecOps::RVec<float> statDown, ROOT::VecOps::RVec<float> systUp, ROOT::VecOps::RVec<float> systDown, int idx){
-
+  //    auto getRVec = [](ROOT::VecOps::RVec<float> statUp, ROOT::VecOps::RVec<float> statDown, ROOT::VecOps::RVec<float> systUp, ROOT::VecOps::RVec<float> systDown, int idx){
+    auto getRVec = [](ROOT::VecOps::RVec<float> systUp, ROOT::VecOps::RVec<float> systDown, int idx){
         ROOT::VecOps::RVec<float> v;
 
-        v.emplace_back(statUp[idx]);
-        v.emplace_back(statDown[idx]);
+        //v.emplace_back(statUp[idx]);
+        //v.emplace_back(statDown[idx]);
         v.emplace_back(systUp[idx]);
         v.emplace_back(systDown[idx]);
 
         return v;
     };
 
-    auto d1 = d.Define(_syst_weight,getRVec,{_syst_name[0],_syst_name[1],_syst_name[2],_syst_name[3], "Idx_mu1"});
+    auto d1 = d.Define(_syst_weight,getRVec,{_syst_name[0],_syst_name[1], "Idx_mu1"});
     return d1;
 
 }

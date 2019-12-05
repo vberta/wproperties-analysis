@@ -12,55 +12,69 @@ from getLumiWeight import *
 print "Loading"
 ROOT.gSystem.Load('bin/libAnalysisOnData.so')
 
-c=64
-		
-ROOT.ROOT.EnableImplicitMT(c)
+def runRDFForaSample(nCores, sampleKey, inputFiles, xSec ="1.", dataType = "MC", cutMap = {}, systCategory = 0, weightVarDict = {}):
+    if nCores:
+        ROOT.ROOT.EnableImplicitMT(nCores)
+        print "Running with {} cores".format(nCores)
+    else:
+        print "Running in single thread"
 
-print "Running with {} cores".format(c)
-
-
-inputFile = '/scratch/sroychow/NanoAOD2016-V1MCFinal/WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/tree.root'
-
-muon = '_corrected'
-met = '_nom'
-
-cut = 'Vtype==0 && ' + \
-                'HLT_SingleMu24 && '+ \
-                ('Muon%s_pt[Idx_mu1]>25. && ' % muon) + \
-                ('Muon%s_MET%s_mt[Idx_mu1]>0. && ' % (muon, met) ) + \
-                'MET_filters==1 && ' + \
-                'nVetoElectrons==0'
-
-weight = 'puWeight*' + \
-         'lumiweight*' + \
-         'Muon_Trigger_BCDEF_SF[Idx_mu1]*' + \
-         'Muon_ID_BCDEF_SF[Idx_mu1]*' + \
-         'Muon_ISO_BCDEF_SF[Idx_mu1]'
-
-p = RDFtree(outputDir = 'TEST', inputFile = inputFile, outputFile="test.root")
-
-Muon_ISO_BCDEF_SF = ROOT.vector('string')()
-Muon_ISO_BCDEF_SF.push_back('Muon_ISO_BCDEF_SFstatUp')
-Muon_ISO_BCDEF_SF.push_back('Muon_ISO_BCDEF_SFstatDown')
-Muon_ISO_BCDEF_SF.push_back('Muon_ISO_BCDEF_SFsystUp')
-Muon_ISO_BCDEF_SF.push_back('Muon_ISO_BCDEF_SFsystDown')
-
-hmap = ROOT.TH2F('hmap','',10,-2.5,2.5,101,25,65)
-for i in range(10):
-    for j in range(101):
-        hmap.SetBinContent(i,j,0.9)
-
-
-p.branch(nodeToStart = 'input', nodeToEnd = 'fakeRate',    modules = [getLumiWeight(xsec=61526.7, inputFile=inputFile), 
-                                                                        ROOT.fakeRate( hmap )])
+    print cutMap
+     
+    nomweight = 'puWeight*' + \
+                'lumiweight*' + \
+                'Muon_Trigger_BCDEF_SF[Idx_mu1]*' + \
+                'Muon_ID_BCDEF_SF[Idx_mu1]*' + \
+                'Muon_ISO_BCDEF_SF[Idx_mu1]'  if dataType == "MC" else 'float(1.)'
     
-p.branch(nodeToStart = 'fakeRate', nodeToEnd = 'muonHistos',    modules = [ROOT.muonHistos(cut, weight+'*FakeRate')])
+    print "printing from runAnalysis:\n", inputFiles
+    p = RDFtree(outputDir = 'TEST', inputFile = inputFiles, outputFile= sampleKey + "_output.root")
+    
+    Muon_ISO_BCDEF_SF = ROOT.vector('string')()
+    Muon_ISO_BCDEF_SF.push_back('Muon_ISO_BCDEF_SFstatUp')
+    Muon_ISO_BCDEF_SF.push_back('Muon_ISO_BCDEF_SFstatDown')
+    Muon_ISO_BCDEF_SF.push_back('Muon_ISO_BCDEF_SFsystUp')
+    Muon_ISO_BCDEF_SF.push_back('Muon_ISO_BCDEF_SFsystDown')
+    
+    genweightvec = ROOT.vector('string')()
+    for i in range(0, 99):
+        genweightvec.push_back(ROOT.std.string("LHEPdfWeight" + str(i)))  
 
-p.branch(nodeToStart = 'fakeRate', nodeToEnd = 'muonHistos_ISO', modules = [ROOT.getSystWeight(Muon_ISO_BCDEF_SF,"Muon_ISO_syst"),
-                                                                            ROOT.muonHistos(cut, weight+'*FakeRate', Muon_ISO_BCDEF_SF,"Muon_ISO_syst")])
+    nodeweightDict = {}
+    for wt, systs in weightVarDict.items():
+        wvec = ROOT.std.vector(ROOT.std.string)()
+        for syst in systs:
+            wvec.push_back(ROOT.std.string(syst))
+        nodeweightDict['muonHistos_' + wt]  = wvec
 
-print "Get output..."
-p.getOutput()
-#p.saveGraph()
+    print nodeweightDict
 
+    hmap = ROOT.TH2F('hmap','',10,-2.5,2.5,101,25,65)
+    for i in range(10):
+        for j in range(101):
+            hmap.SetBinContent(i,j,0.9)
+            
+    if dataType == 'MC':        
+        p.branch(nodeToStart = 'input', nodeToEnd = 'inputwLumi',    modules =[getLumiWeight(xsec=xSec, inputFile=inputFiles)])
+        for region, cut in cutMap.items():
+            p.branch(nodeToStart = 'inputwLumi', nodeToEnd = region,    modules =[ ROOT.baseDefinitions( hmap, ROOT.std.string(cut) )])
+            #nominal histos
+            p.branch(nodeToStart = region, nodeToEnd = region + '/muonHistos',    modules = [ROOT.muonHistos(ROOT.std.string(cut), nomweight)])
+            #is 2 only for Signal and TTbar samples
+            if systCategory == 2:
+                p.branch(nodeToStart = region, nodeToEnd = region +  '/muonHisots_pdfweight',    modules = [ROOT.muonHistos(ROOT.std.string(cut), nomweight, genweightvec, 'LHEPdfWeight')])
+            #weight systematics  
+            for en, wtvec in nodeweightDict.items():
+                ecol = region + "_" + en
+                p.branch(nodeToStart = region, nodeToEnd =  region + "/" + en, modules = [ROOT.getSystWeight(wtvec, ROOT.std.string(ecol) ), ROOT.muonHistos(cut, nomweight, wtvec, ROOT.std.string(ecol) )])
+
+    else:
+        for region, cut in cutMap.items():
+            p.branch(nodeToStart = 'input', nodeToEnd = region,    modules =[ ROOT.baseDefinitions( hmap, ROOT.std.string(cut) )])
+            #nominal histos
+            p.branch(nodeToStart = region, nodeToEnd = region + '/muonHistos',    modules = [ROOT.muonHistos(ROOT.std.string(cut), nomweight)])
+
+    print "Get output..."
+    p.getOutput()
+    p.saveGraph()
 
