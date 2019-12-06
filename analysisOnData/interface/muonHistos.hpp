@@ -30,6 +30,7 @@ private:
   std::vector<ROOT::RDF::RResultPtr<std::vector<TH2D>>> _h2Group;
   std::vector<ROOT::RDF::RResultPtr<std::vector<TH3D>>> _h3Group;
   
+  std::string _category; // category name to be hardcoded in h name
   std::string _cut; // cut string name
   std::string _weight; // event weight name
   std::vector<std::string> _syst_names; // names of syst variations for histo names
@@ -40,15 +41,15 @@ private:
 public:
   
   // to be called with THDweightsHelper (w/o systematics)
-  muonHistos(std::string cut, std::string weight) : _cut(cut), _weight(weight), _syst_names({}), _syst_column(""), _modifier(""), _multi_cuts(false) {};
+  muonHistos(std::string category, std::string cut, std::string weight) : _category(category), _cut(cut), _weight(weight), _syst_names({}), _syst_column(""), _modifier(""), _multi_cuts(false) {};
 
   // to be called with THDweightsHelper (w/ systematics)
-  muonHistos(std::string cut, std::string weight, std::vector<std::string> syst_names, std::string syst_column) :
-    _cut(cut), _weight(weight), _syst_names(syst_names), _syst_column(syst_column), _modifier(""), _multi_cuts(false)  {};
+  muonHistos(std::string category, std::string cut, std::string weight, std::vector<std::string> syst_names, std::string syst_column) :
+    _category(category), _cut(cut), _weight(weight), _syst_names(syst_names), _syst_column(syst_column), _modifier(""), _multi_cuts(false)  {};
   
   // to be called with THDvarsHelper
-  muonHistos(std::string cut, std::string weight, std::vector<std::string> syst_names, std::string syst_column, std::string modifier, bool multi_cuts) :
-    _cut(cut), _weight(weight), _syst_names(syst_names), _syst_column(syst_column), _modifier(modifier), _multi_cuts(multi_cuts) {};
+  muonHistos(std::string category, std::string cut, std::string weight, std::vector<std::string> syst_names, std::string syst_column, std::string modifier, bool multi_cuts) :
+    _category(category), _cut(cut), _weight(weight), _syst_names(syst_names), _syst_column(syst_column), _modifier(modifier), _multi_cuts(multi_cuts) {};
 
   std::string check_modifier(const std::string& var_name);
 

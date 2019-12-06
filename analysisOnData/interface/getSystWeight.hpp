@@ -26,18 +26,17 @@ private:
   std::vector<ROOT::RDF::RResultPtr<std::vector<TH2D>>> _h2Group;
   std::vector<ROOT::RDF::RResultPtr<std::vector<TH3D>>> _h3Group;
   
-  std::vector<std::string> _syst_name;
-  std::string _syst_weight;
-  
-  std::string _filter;
-  std::string _weight;
+  std::vector<std::string> _syst_columns;
+  std::string _new_syst_column, _idx1;
+  std::pair<unsigned int,unsigned int> _range;
   
 public:
     
-  getSystWeight(std::vector<std::string> syst_name, std::string syst_weight){
-    _syst_name = syst_name;
-    _syst_weight = syst_weight;
-  };
+  getSystWeight(std::vector<std::string> syst_columns, std::string new_syst_column, std::string idx1): 
+    _syst_columns(syst_columns), _new_syst_column(new_syst_column), _idx1(idx1), _range({}) {};
+
+  getSystWeight(std::vector<std::string> syst_columns, std::string new_syst_column, std::pair<unsigned int,unsigned int> range): 
+    _syst_columns(syst_columns), _new_syst_column(new_syst_column), _idx1(""), _range(range) {};
   
   ~getSystWeight() {};
   

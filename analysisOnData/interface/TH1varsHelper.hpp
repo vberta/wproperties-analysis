@@ -8,24 +8,24 @@
 class TH1varsHelper : public ROOT::Detail::RDF::RActionImpl<TH1varsHelper> {
 
 public:
-   /// This type is a requirement for every helper.
-   using Result_t = std::vector<TH1D>;
+  /// This type is a requirement for every helper.
+  using Result_t = std::vector<TH1D>;
 private:
-   std::vector<std::shared_ptr<std::vector<TH1D>>> fHistos; // one per data processing slot
-   std::string _name;
-   int _nbinsX;
-   std::vector<float> _xbins;
-   std::vector<std::string> _weightNames;
+  std::vector<std::shared_ptr<std::vector<TH1D>>> fHistos; // one per data processing slot
+  std::string _category, _name;
+  int _nbinsX;
+  std::vector<float> _xbins;
+  std::vector<std::string> _weightNames;
   
 
 public:
    /// This constructor takes all the parameters necessary to build the THnTs. In addition, it requires the names of
    /// the columns which will be used.
-   TH1varsHelper(std::string name, std::string title, 
-                    int nbinsX, std::vector<float> xbins,
-                    std::vector<std::string> weightNames
-                    );
-
+  TH1varsHelper(std::string category, std::string name, std::string title, 
+		int nbinsX, std::vector<float> xbins,
+		std::vector<std::string> weightNames
+		);
+  
    TH1varsHelper(TH1varsHelper &&) = default;
    TH1varsHelper(const TH1varsHelper &) = delete;
    std::shared_ptr<std::vector<TH1D>> GetResultPtr() const;

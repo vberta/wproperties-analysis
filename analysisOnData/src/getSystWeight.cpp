@@ -12,8 +12,24 @@ RNode getSystWeight::run(RNode d){
         return v;
     };
 
-    auto d1 = d.Define(_syst_weight, getRVec,{_syst_name[0], _syst_name[1], _syst_name[2], _syst_name[3], "Idx_mu1"});
-    return d1;
+    auto getRVecRange = [this](ROOT::VecOps::RVec<float> statUp){
+      ROOT::VecOps::RVec<float> v;
+      for(unsigned int i=_range.first; i<=_range.second ; i++) v.emplace_back(statUp[i]);
+      return v;
+    };
+
+    // group element-i four columns into one new column
+    if(_idx1!=""){
+      std::cout << "getSystWeight::run(): getRVec" << std::endl;
+      auto d1 = d.Define(_new_syst_column, getRVec,{_syst_columns[0], _syst_columns[1], _syst_columns[2], _syst_columns[3], _idx1});
+      return d1;
+    }
+    // group N adjacent elements of one colum into one new column
+    else{
+      std::cout << "getSystWeight::run(): getRVecRange" << std::endl;
+      auto d1 = d.Define(_new_syst_column, getRVecRange, {_syst_columns[0]});
+      return d1;
+    }
 }
 
 std::vector<ROOT::RDF::RResultPtr<TH1D>> getSystWeight::getTH1(){ 
