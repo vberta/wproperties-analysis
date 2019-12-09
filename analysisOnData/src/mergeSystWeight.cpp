@@ -6,13 +6,13 @@ RNode mergeSystWeight::run(RNode d){
   auto getRVec = [this](ROOT::VecOps::RVec<float> systA, ROOT::VecOps::RVec<float> systB){
     ROOT::VecOps::RVec<float> v;
     for(unsigned int i=0; i<systA.size(); i++){
-      v.emplace_back( systA[i]*_syst_ratios.first + systB[i]*_syst_ratios.second );
+      v.emplace_back( _multiply ? systA[i]*systB[i] : systA[i]*_syst_ratios.first + systB[i]*_syst_ratios.second );
     }
     return v;
   };
 
   auto getF = [this](float systA, float systB){
-    float syst = systA*_syst_ratios.first + systB*_syst_ratios.second;
+    float syst = _multiply ? systA*systB : systA*_syst_ratios.first + systB*_syst_ratios.second;
     return syst;
   };
 

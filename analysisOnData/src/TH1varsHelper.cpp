@@ -59,7 +59,7 @@ void TH1varsHelper::Exec(unsigned int slot, const ROOT::VecOps::RVec<float> &var
   auto& histos = *fHistos[slot];
   const auto n_histos = histos.size();
   for (unsigned int i = 0; i < n_histos; ++i)
-v    histos[i].Fill(vars[i], weight);
+    histos[i].Fill(vars[i], weight);
 }
 
 void TH1varsHelper::Exec(unsigned int slot, const float& var, const float &weight)

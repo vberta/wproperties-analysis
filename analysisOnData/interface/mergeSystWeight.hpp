@@ -31,18 +31,12 @@ private:
   std::pair<float,float> _syst_ratios;  
   std::string _syst_weight;
   bool _scalar;
-
-  std::string _filter;
-  std::string _weight;
+  bool _multiply;
   
 public:
     
-  mergeSystWeight(std::pair<std::string,std::string> syst_name, std::pair<float,float> syst_ratios, std::string syst_weight, bool scalar){
-    _syst_name = syst_name;
-    _syst_ratios = syst_ratios;
-    _syst_weight = syst_weight;
-    _scalar = scalar;
-  };
+  mergeSystWeight(std::pair<std::string,std::string> syst_name, std::pair<float,float> syst_ratios, std::string syst_weight, bool scalar, bool multiply) :
+    _syst_name(syst_name), _syst_ratios(syst_ratios), _syst_weight(syst_weight), _scalar(scalar), _multiply(multiply) {};
   
   ~mergeSystWeight() {};
   

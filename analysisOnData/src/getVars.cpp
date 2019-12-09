@@ -12,9 +12,9 @@ RNode getVars::run(RNode d){
     .Define("Muon1_Trigger_BCDEF_SF", getFromIdx, {"Muon_Trigger_BCDEF_SF",_idx1})
     .Define("Muon1_Trigger_GH_SF",    getFromIdx, {"Muon_Trigger_GH_SF",   _idx1})
     .Define("Muon1_corrected_pt",     getFromIdx, {"Muon_corrected_pt",    _idx1})
-    .Define("Muon1_pt",  getFromIdx, {"Muon_pt",  _idx1})
-    .Define("Muon1_eta", getFromIdx, {"Muon_eta", _idx1})
-    .Define("Muon1_phi", getFromIdx, {"Muon_phi", _idx1})
+    //.Define("Muon1_pt",  getFromIdx, {"Muon_pt",  _idx1})
+    //.Define("Muon1_eta", getFromIdx, {"Muon_eta", _idx1})
+    //.Define("Muon1_phi", getFromIdx, {"Muon_phi", _idx1})
     .Define("Muon1_corrected_MET_nom_mt",     getFromIdx, {"Muon_corrected_MET_nom_mt",     _idx1})
     .Define("Muon1_corrected_MET_nom_hpt",    getFromIdx, {"Muon_corrected_MET_nom_hpt",     _idx1})
     // These are needed as may appear in category cuts
@@ -29,6 +29,32 @@ RNode getVars::run(RNode d){
     .Define("Muon1_corrected_MET_unclustEnUp_mt",   getFromIdx, {"Muon_corrected_MET_unclustEnUp_mt",     _idx1})
     .Define("Muon1_corrected_MET_unclustEnDown_mt", getFromIdx, {"Muon_corrected_MET_unclustEnDown_mt",     _idx1});
 
+  if(_idx2!=""){
+    auto d2 = d1.Define("Muon2_ISO_BCDEF_SF",   getFromIdx, {"Muon_ISO_BCDEF_SF",  _idx2})
+      .Define("Muon2_ISO_GH_SF",      getFromIdx, {"Muon_ISO_GH_SF",     _idx2})
+      .Define("Muon2_ID_BCDEF_SF",    getFromIdx, {"Muon_ID_BCDEF_SF",  _idx2})
+      .Define("Muon2_ID_GH_SF",       getFromIdx, {"Muon_ID_GH_SF",     _idx2})
+      .Define("Muon2_Trigger_BCDEF_SF", getFromIdx, {"Muon_Trigger_BCDEF_SF",_idx2})
+      .Define("Muon2_Trigger_GH_SF",    getFromIdx, {"Muon_Trigger_GH_SF",   _idx2})
+      .Define("Muon2_corrected_pt",     getFromIdx, {"Muon_corrected_pt",    _idx2})
+      //.Define("Muon2_pt",  getFromIdx, {"Muon_pt",  _idx2})
+      //.Define("Muon2_eta", getFromIdx, {"Muon_eta", _idx2})
+      //.Define("Muon2_phi", getFromIdx, {"Muon_phi", _idx2})
+      //.Define("Muon2_corrected_MET_nom_mt",     getFromIdx, {"Muon_corrected_MET_nom_mt",     _idx2})
+      //.Define("Muon2_corrected_MET_nom_hpt",    getFromIdx, {"Muon_corrected_MET_nom_hpt",     _idx2})
+      // These are needed as may appear in category cuts
+      .Define("Muon2_correctedUp_pt",   getFromIdx, {"Muon_correctedUp_pt",  _idx2})
+      .Define("Muon2_correctedDown_pt", getFromIdx, {"Muon_correctedDown_pt",_idx2});
+      //.Define("Muon2_correctedUp_MET_nom_mt",   getFromIdx, {"Muon_correctedUp_MET_nom_mt",   _idx2})
+      //.Define("Muon2_correctedDown_MET_nom_mt", getFromIdx, {"Muon_correctedDown_MET_nom_mt", _idx2})
+      //.Define("Muon2_corrected_MET_jesTotalUp_mt",   getFromIdx, {"Muon_corrected_MET_jesTotalUp_mt",     _idx2})
+      //.Define("Muon2_corrected_MET_jesTotalDown_mt", getFromIdx, {"Muon_corrected_MET_jesTotalDown_mt",   _idx2})
+      //.Define("Muon2_corrected_MET_jerUp_mt",   getFromIdx, {"Muon_corrected_MET_jerUp_mt",     _idx2})
+      //.Define("Muon2_corrected_MET_jerDown_mt", getFromIdx, {"Muon_corrected_MET_jerDown_mt",     _idx2})
+      //.Define("Muon2_corrected_MET_unclustEnUp_mt",   getFromIdx, {"Muon_corrected_MET_unclustEnUp_mt",     _idx2})
+      //.Define("Muon2_corrected_MET_unclustEnDown_mt", getFromIdx, {"Muon_corrected_MET_unclustEnDown_mt",     _idx2});
+    return d2;
+  }  
   return d1;
 }
 

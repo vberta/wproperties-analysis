@@ -37,19 +37,6 @@ RNode muonHistos::run(RNode d){
   //this->add_group( &d1, "MET_nom_phi", "PF MET", met_phi_Arr, nbins_met_phi);
 
   return d1;
-
-  /*
-  hname = "Muon1_pt";
-  if(_var_modifier.find("corrected")!=std::string::npos){
-    hname = ("Muon1_"+_var_modifier+"_pt");
-    applies = true;
-  }
-  TH1weightsHelper w_helper_pt(hname, std::string(" ; muon p_{T}; "), nbins_pt, pt_Arr, total);
-  if(save_all || applies){
-    _h1Group.emplace_back(d1.Book<float,float,ROOT::VecOps::RVec<float>>(std::move(w_helper_corrected_pt), {hname, _weight, _syst_names.size()>0 ? _syst_column: "dummy"}) );
-    applies = false;
-  } 
-  */ 
 }
 
 std::string muonHistos::check_modifier(const std::string& var_name){
