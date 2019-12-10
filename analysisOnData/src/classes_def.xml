@@ -2,7 +2,6 @@
   <class name="muonHistos"/>
   <class name="fakeRate"/>
   <class name="getSystWeight"/>
-  <class name="getSystVar"/>
   <class name="mergeSystWeight"/>
   <class name="getLumiWeight"/>
   <class name="getWeight"/>

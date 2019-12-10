@@ -27,17 +27,23 @@ private:
   std::vector<ROOT::RDF::RResultPtr<std::vector<TH3D>>> _h3Group;
   
   std::vector<std::string> _syst_columns;
-  std::string _new_syst_column, _idx1;
+  std::string _new_syst_column, _idx1, _nom_column;
   std::pair<unsigned int,unsigned int> _range;
+  std::string _type;
+  bool _verbose;
   
 public:
     
-  getSystWeight(std::vector<std::string> syst_columns, std::string new_syst_column, std::string idx1): 
-    _syst_columns(syst_columns), _new_syst_column(new_syst_column), _idx1(idx1), _range({}) {};
+  getSystWeight(std::vector<std::string> syst_columns, 
+		std::string new_syst_column, 
+		std::string idx1, 
+		std::string nom_column,
+		std::pair<unsigned int,unsigned int> range,
+		std::string type): 
+    _syst_columns(syst_columns), _new_syst_column(new_syst_column), _idx1(idx1), _nom_column(nom_column), _range(range), _type(type) {
+    _verbose = false;
+  };
 
-  getSystWeight(std::vector<std::string> syst_columns, std::string new_syst_column, std::pair<unsigned int,unsigned int> range): 
-    _syst_columns(syst_columns), _new_syst_column(new_syst_column), _idx1(""), _range(range) {};
-  
   ~getSystWeight() {};
   
   RNode run(RNode) override;

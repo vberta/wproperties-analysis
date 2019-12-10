@@ -37,19 +37,26 @@ private:
   std::string _syst_column; // the column comntaining the syst variations
   std::string _modifier; // var name modifier
   bool _multi_cuts; // 
+  bool _verbose;
     
 public:
   
   // to be called with THDweightsHelper (w/o systematics)
-  muonHistos(std::string category, std::string cut, std::string weight) : _category(category), _cut(cut), _weight(weight), _syst_names({}), _syst_column(""), _modifier(""), _multi_cuts(false) {};
+  muonHistos(std::string category, std::string cut, std::string weight) : _category(category), _cut(cut), _weight(weight), _syst_names({}), _syst_column(""), _modifier(""), _multi_cuts(false) {
+    _verbose = false;
+  };
 
   // to be called with THDweightsHelper (w/ systematics)
   muonHistos(std::string category, std::string cut, std::string weight, std::vector<std::string> syst_names, std::string syst_column) :
-    _category(category), _cut(cut), _weight(weight), _syst_names(syst_names), _syst_column(syst_column), _modifier(""), _multi_cuts(false)  {};
+    _category(category), _cut(cut), _weight(weight), _syst_names(syst_names), _syst_column(syst_column), _modifier(""), _multi_cuts(false)  {
+    _verbose = false;
+  };
   
   // to be called with THDvarsHelper
   muonHistos(std::string category, std::string cut, std::string weight, std::vector<std::string> syst_names, std::string syst_column, std::string modifier, bool multi_cuts) :
-    _category(category), _cut(cut), _weight(weight), _syst_names(syst_names), _syst_column(syst_column), _modifier(modifier), _multi_cuts(multi_cuts) {};
+    _category(category), _cut(cut), _weight(weight), _syst_names(syst_names), _syst_column(syst_column), _modifier(modifier), _multi_cuts(multi_cuts) {
+    _verbose = false;
+  };
 
   std::string check_modifier(const std::string& var_name);
 

@@ -3,28 +3,55 @@
 
 RNode mergeSystWeight::run(RNode d){
   
-  auto getRVec = [this](ROOT::VecOps::RVec<float> systA, ROOT::VecOps::RVec<float> systB){
+  auto getRVec_weight = [this](ROOT::VecOps::RVec<float> systA, ROOT::VecOps::RVec<float> systB){
     ROOT::VecOps::RVec<float> v;
     for(unsigned int i=0; i<systA.size(); i++){
-      v.emplace_back( _multiply ? systA[i]*systB[i] : systA[i]*_syst_ratios.first + systB[i]*_syst_ratios.second );
+      v.emplace_back( systA[i]*_syst_ratios.first + systB[i]*_syst_ratios.second );
     }
     return v;
   };
 
-  auto getF = [this](float systA, float systB){
-    float syst = _multiply ? systA*systB : systA*_syst_ratios.first + systB*_syst_ratios.second;
+  auto getF_weight = [this](float systA, float systB){
+    float syst =  systA*_syst_ratios.first + systB*_syst_ratios.second;
     return syst;
   };
 
-  if(_scalar){
-    auto d1 = d.Define(_syst_weight, getF, {_syst_name.first, _syst_name.second});
+  auto getRVec_mult = [this](ROOT::VecOps::RVec<float> systA, ROOT::VecOps::RVec<float> systB){
+    ROOT::VecOps::RVec<float> v;
+    for(unsigned int i=0; i<systA.size(); i++){
+      v.emplace_back( systA[i]*systB[i] );
+    }
+    return v;
+  };
+
+  auto getF_mult = [this](float systA, float systB){
+    float syst = systA*systB;
+    return syst;
+  };
+
+  if(_type=="V,V->aV+bV"){
+    if(_verbose) std::cout << "mergeSystWeight::run(): getRVec_weight" << std::endl;
+    auto d1 = d.Define(_new_syst_column, getRVec_weight, {_syst_columns.first, _syst_columns.second});
     return d1;
   }
-  else{
-    auto d1 = d.Define(_syst_weight, getRVec, {_syst_name.first, _syst_name.second});
+  else if(_type=="f,f->af+bf"){
+    if(_verbose) std::cout << "mergeSystWeight::run(): getF_weight" << std::endl;
+    auto d1 = d.Define(_new_syst_column, getF_weight, {_syst_columns.first, _syst_columns.second});
     return d1;
   }
-  return d;
+  else if(_type=="V,V->V*V"){
+    if(_verbose) std::cout << "mergeSystWeight::run(): getRVec_mult" << std::endl;
+    auto d1 = d.Define(_new_syst_column, getRVec_mult, {_syst_columns.first, _syst_columns.second});
+    return d1;
+  }
+  else if(_type=="f,f->f*f"){
+    if(_verbose) std::cout << "mergeSystWeight::run(): getF_mult" << std::endl;
+    auto d1 = d.Define(_new_syst_column, getF_mult, {_syst_columns.first, _syst_columns.second});
+    return d1;
+  }
+  else{    
+    return d;
+  }
 }
 
 std::vector<ROOT::RDF::RResultPtr<TH1D>> mergeSystWeight::getTH1(){ 

@@ -27,16 +27,18 @@ private:
   std::vector<ROOT::RDF::RResultPtr<std::vector<TH2D>>> _h2Group;
   std::vector<ROOT::RDF::RResultPtr<std::vector<TH3D>>> _h3Group;
   
-  std::pair<std::string, std::string> _syst_name;
+  std::pair<std::string, std::string> _syst_columns;
   std::pair<float,float> _syst_ratios;  
-  std::string _syst_weight;
-  bool _scalar;
-  bool _multiply;
-  
+  std::string _new_syst_column;
+  std::string _type;
+  bool _verbose;
+
 public:
     
-  mergeSystWeight(std::pair<std::string,std::string> syst_name, std::pair<float,float> syst_ratios, std::string syst_weight, bool scalar, bool multiply) :
-    _syst_name(syst_name), _syst_ratios(syst_ratios), _syst_weight(syst_weight), _scalar(scalar), _multiply(multiply) {};
+  mergeSystWeight(std::pair<std::string,std::string> syst_columns, std::pair<float,float> syst_ratios, std::string new_syst_column, std::string type) :
+    _syst_columns(syst_columns), _syst_ratios(syst_ratios), _new_syst_column(new_syst_column), _type(type){
+    _verbose = false;
+  };
   
   ~mergeSystWeight() {};
   
