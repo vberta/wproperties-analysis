@@ -5,6 +5,7 @@ RNode getVars::run(RNode d){
     
   auto d1 = d
     .Define("dummy", dummy, {"event"})
+    .Define("Muon1_charge",         getIFromIdx, {"Muon_charge",  _idx1})
     .Define("Muon1_ISO_BCDEF_SF",   getFromIdx, {"Muon_ISO_BCDEF_SF",  _idx1})
     .Define("Muon1_ISO_GH_SF",      getFromIdx, {"Muon_ISO_GH_SF",     _idx1})
     .Define("Muon1_ID_BCDEF_SF",    getFromIdx, {"Muon_ID_BCDEF_SF",  _idx1})
@@ -30,7 +31,9 @@ RNode getVars::run(RNode d){
     .Define("Muon1_corrected_MET_unclustEnDown_mt", getFromIdx, {"Muon_corrected_MET_unclustEnDown_mt",     _idx1});
 
   if(_idx2!=""){
-    auto d2 = d1.Define("Muon2_ISO_BCDEF_SF",   getFromIdx, {"Muon_ISO_BCDEF_SF",  _idx2})
+    auto d2 = d1
+      .Define("Muon2_charge",         getIFromIdx, {"Muon_charge",  _idx2})
+      .Define("Muon2_ISO_BCDEF_SF",   getFromIdx, {"Muon_ISO_BCDEF_SF",  _idx2})
       .Define("Muon2_ISO_GH_SF",      getFromIdx, {"Muon_ISO_GH_SF",     _idx2})
       .Define("Muon2_ID_BCDEF_SF",    getFromIdx, {"Muon_ID_BCDEF_SF",  _idx2})
       .Define("Muon2_ID_GH_SF",       getFromIdx, {"Muon_ID_GH_SF",     _idx2})

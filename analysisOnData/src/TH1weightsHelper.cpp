@@ -24,8 +24,8 @@ TH1weightsHelper::TH1weightsHelper(std::string category, std::string name, std::
     
     for (unsigned int i = 0; i < n_histos; ++i){
       
-      histos.emplace_back(TH1D(std::string(_category+"_"+_name+"_"+_weightNames[i]+slotnum).c_str(), 
-			       std::string(_category+"_"+_name+"_"+_weightNames[i]+slotnum).c_str(), 
+      histos.emplace_back(TH1D(std::string(_category+"__"+_name+"__"+_weightNames[i]+slotnum).c_str(), 
+			       std::string(_category+"__"+_name+"__"+_weightNames[i]+slotnum).c_str(), 
 			       _nbinsX, _xbins.data()));
       
       histos.back().SetDirectory(nullptr);

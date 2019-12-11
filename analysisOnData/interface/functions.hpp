@@ -3,4 +3,7 @@
 #include "ROOT/RDF/RInterface.hxx"
 
 ROOT::VecOps::RVec<float> dummy(ULong64_t event);
+
 float getFromIdx(ROOT::VecOps::RVec<float> vec, int index);
+
+float getIFromIdx(ROOT::VecOps::RVec<int> vec, int index);

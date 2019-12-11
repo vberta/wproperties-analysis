@@ -8,22 +8,21 @@
 class TH2weightsHelper : public ROOT::Detail::RDF::RActionImpl<TH2weightsHelper> {
 
 public:
-   /// This type is a requirement for every helper.
-   using Result_t = std::vector<TH2D>;
+  /// This type is a requirement for every helper.
+  using Result_t = std::vector<TH2D>;
 private:
-   std::vector<std::shared_ptr<std::vector<TH2D>>> fHistos; // one per data processing slot
-   std::string _name;
-   int _nbinsX;
-   std::vector<float> _xbins;
-   int _nbinsY;
-   std::vector<float> _ybins;
-   std::vector<std::string> _weightNames;
+  std::vector<std::shared_ptr<std::vector<TH2D>>> fHistos; // one per data processing slot
+  std::string _category,_name;
+  int _nbinsX;
+  std::vector<float> _xbins;
+  int _nbinsY;
+  std::vector<float> _ybins;
+  std::vector<std::string> _weightNames;
   
-
 public:
    /// This constructor takes all the parameters necessary to build the THnTs. In addition, it requires the names of
    /// the columns which will be used.
-   TH2weightsHelper(std::string name, std::string title, 
+  TH2weightsHelper(std::string category, std::string name, std::string title, 
                     int nbinsX, std::vector<float> xbins,
                     int nbinsY, std::vector<float> ybins,
                     std::vector<std::string> weightNames

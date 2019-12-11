@@ -11,8 +11,9 @@
 #include "TMath.h"
 #include "interface/module.hpp"
 #include "interface/TH1weightsHelper.hpp"
-#include "interface/TH1varsHelper.hpp"
 #include "interface/TH2weightsHelper.hpp"
+#include "interface/TH1varsHelper.hpp"
+#include "interface/TH2varsHelper.hpp"
 #include "interface/functions.hpp"
 
 using RNode = ROOT::RDF::RNode;
@@ -43,24 +44,28 @@ public:
   
   // to be called with THDweightsHelper (w/o systematics)
   muonHistos(std::string category, std::string cut, std::string weight) : _category(category), _cut(cut), _weight(weight), _syst_names({}), _syst_column(""), _modifier(""), _multi_cuts(false) {
-    _verbose = false;
+    _verbose = true;
   };
 
   // to be called with THDweightsHelper (w/ systematics)
   muonHistos(std::string category, std::string cut, std::string weight, std::vector<std::string> syst_names, std::string syst_column) :
     _category(category), _cut(cut), _weight(weight), _syst_names(syst_names), _syst_column(syst_column), _modifier(""), _multi_cuts(false)  {
-    _verbose = false;
+    _verbose = true;
   };
   
   // to be called with THDvarsHelper
   muonHistos(std::string category, std::string cut, std::string weight, std::vector<std::string> syst_names, std::string syst_column, std::string modifier, bool multi_cuts) :
     _category(category), _cut(cut), _weight(weight), _syst_names(syst_names), _syst_column(syst_column), _modifier(modifier), _multi_cuts(multi_cuts) {
-    _verbose = false;
+    _verbose = true;
   };
 
   std::string check_modifier(const std::string& var_name);
 
-  void add_group(ROOT::RDF::RInterface<ROOT::Detail::RDF::RJittedFilter, void>*, const std::string&, const std::string&, const std::vector<float>&, const unsigned int&);
+  void add_group_1D(ROOT::RDF::RInterface<ROOT::Detail::RDF::RJittedFilter, void>*, const std::string&, const std::string&, 
+		    const std::vector<float>&, const unsigned int&);
+  void add_group_2D(ROOT::RDF::RInterface<ROOT::Detail::RDF::RJittedFilter, void>*, const std::string&, const std::string&, const std::string&, 
+		    const std::vector<float>&, const unsigned int&, 
+		    const std::vector<float>&, const unsigned int&);
 
   ~muonHistos() {};
   

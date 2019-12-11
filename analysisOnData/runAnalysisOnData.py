@@ -123,7 +123,12 @@ def branch_muon_syst_scalefactor(p, systs, weight, cut, category, round):
             p.branch(nodeToStart='defs', nodeToEnd=category+'_'+syst, modules=modules)
     return def_modules
 
-
+''' 
+Create temporary RVec columns to store muon variables X that depend on <var>
+These new column names are of the form X_var_{systs}. They are needed for: 
+ 1) Variables that enter the cut string
+ 2) Variables that are plotted inside muonHistos
+'''
 def get_muon_syst_columns(var,systs):
     def_modules = []
 
@@ -137,17 +142,16 @@ def get_muon_syst_columns(var,systs):
     if var=='corrected':
         for col in ['Muon_corrected_pt', 'Muon_corrected_MET_nom_mt', 'Muon_corrected_MET_nom_hpt']:    
             syst_columns = vec_s()
-            for syst in systs:
-                syst_columns.push_back( col.replace(var, syst) )            
+            for syst in systs: syst_columns.push_back( col.replace(var, syst) )            
             def_modules.append( ROOT.getSystWeight( syst_columns, col.replace('Muon', 'Muon1').replace(var, var+'All'), 
                                                     "Idx_mu1", "", pair_ui(0,0), signatureV) )
             def_modules.append( ROOT.getSystWeight( syst_columns, col.replace('Muon', 'Muon2').replace(var, var+'All'), 
                                                     "Idx_mu2", "", pair_ui(0,0), signatureV) )
     elif var=='nom':
+        # This is a duplication of code. FIXME
         for col in ['Muon_corrected_MET_nom_mt', 'Muon_corrected_MET_nom_hpt']:
             syst_columns = vec_s()
-            for syst in systs:
-                syst_columns.push_back( col.replace(var, syst) )
+            for syst in systs: syst_columns.push_back( col.replace(var, syst) )
             def_modules.append( ROOT.getSystWeight( syst_columns, col.replace('Muon', 'Muon1').replace(var, var+'All'), 
                                                     "Idx_mu1", "", pair_ui(0,0), signatureV) )
             def_modules.append( ROOT.getSystWeight( syst_columns, col.replace('Muon', 'Muon2').replace(var, var+'All'), 
@@ -160,32 +164,53 @@ def get_muon_syst_columns(var,systs):
 
     return def_modules
 
-
+'''
+Branch RDF into final node of type muonHistos with name category_var. <var> is a column modifier that can affect:
+ 1) variables we want to plot
+ 2) cuts
+These cases are handled:
+ A) <var> changes the event cut: create cleaned cut, removed cut, and RVec of weights as {(cut_removed)*(weight)}
+    i)  If the plotted column X depends on var: Book an action via THDvarsHelper with signature <V,V>. 
+        [First V is a pre-computed RVec of plotted column {X_var_systs}, second V is {(cut_removed)*(weight)} ]
+    ii) Else: Book an action via THDvarsHelper with signature <f,V>
+ B) <var> does not change the event cut:         
+    i)  If the plotted column X depends on var: Book an action via THDvarsHelper with signature <V,f>.
+        [V is a pre-computed RVec of plotted column {X_var_systs}, f is the nominal event weight} ]
+    ii) Else: Book an action via THDvarsHelper with signature <f,f>
+'''
 def branch_muon_syst_column(p, var, systs, cut, weight, category, round):
     modules = []    
     def_modules = []
+
     syst_columns = vec_s()
     for syst in systs: syst_columns.push_back( syst )
 
+    # Get all the RVec needed
     if round==0:
         def_modules.extend( get_muon_syst_columns(var,systs) )
         return def_modules
 
-    # first case: the event cut is changed
+    # CASE A: the event cut depends on <var>
     if var in cut:
-        # remove var-dependent variables from 'cut' -> 'cut_clean'
-        cut_clean = copy.deepcopy(cut)
+
+        # 1) Remove var-dependent variables: 'cut_clean' <-- 'cut'
+        cut_clean = '('
+        cut_clean += copy.deepcopy(cut)
         cut_clean_split = cut_clean.split(' && ')
         garbage = []
         for i in cut_clean_split: 
             if var in i: garbage.append(i)
         for i in garbage: cut_clean = cut_clean.replace(i, '1')
-        cut_removed = '1'
+        cut_clean += ')'
+        # 2) Move all var-dependent variables: 'cut_removed' <-- 'cut' 
+        cut_removed = '(1'
         for i in garbage: cut_removed += (' && '+i)
+        cut_removed += ')'
         #print('branch_muon_syst_column(): cut: '+cut+' -> '+cut_clean)
-        # create new weights that contain the cut on var-dependent variables * weight
+
         if round==1:
             weight_columns = vec_s()
+            # 3) Create new float columns of weights of the form (cut_removed)*(weight)
             for syst in systs:
                 cut_syst = cut_removed.replace(var, syst)
                 weight_cut_syst = '('+cut_syst+')*('+weight+')'
@@ -196,15 +221,28 @@ def branch_muon_syst_column(p, var, systs, cut, weight, category, round):
             signature = ""
             for i in range(len(systs)) : signature += "f"
             signature += "->V"
+            # 4) Create an RVec of the form {(cut_removed)*(weight)}
             def_modules.append( ROOT.getSystWeight(weight_columns, 'weight_'+category+'_cut_'+var+'All', "", "", pair_ui(0,0), signature) )
             return def_modules
+
         elif round==2:
-            modules.append( ROOT.muonHistos(category, cut_clean, "", syst_columns, 'weight_'+category+'_cut_'+var+'All', var, True ) )
+            # 5) Make the logical OR of all removed cuts and AND it with cut_clean
+            cut_removed_OR = '(0 ' 
+            for syst in systs: cut_removed_OR += ' || ('+cut_removed.replace(var, syst)+')'
+            cut_removed_OR += ')' 
+            cut_clean_OR = cut_clean+' && '+cut_removed_OR
+            #print('branch_muon_syst_column(): cut_clean: '+cut_clean+' -> '+cut_clean_OR)
+            # Instruct muonHistos that TH1varsHelper with a multi-cut filling is needed
+            #   > ""   -> no need for "weight"
+            #   > 'weight_'+category+'_cut_'+var+'All' -> use the RVec of {(cut_removed)*(weight)}
+            #   > True -> multi_cuts
+            modules.append( ROOT.muonHistos(category, cut_clean_OR, "", syst_columns, 'weight_'+category+'_cut_'+var+'All', var, True ) )
             p.branch(nodeToStart='defs', nodeToEnd=category+'_'+var, modules=modules)
 
-    # second case: the event cut is unchanged
+    # CASE B: the event cut is does *not* depend on <var>
     else:
         if round==1:
+            # Nothing to be done
             return def_modules
         elif round==2:
             modules.append( ROOT.muonHistos(category, cut, "weight_"+category+"_nominal", syst_columns, "", var, False ) )
@@ -255,15 +293,15 @@ isMC = True
 if not isMC:
     for category,specifics in categories.items(): specifics['weight'] = 'Float_t(1.0)'
 
-# FIRST PASS:  collect all GLOBAL defs (run on first category only)
-# SECOND PASS: collect all CATEGORY defs        
-# THIRD PASS:  run the histograms
+# 1st PASS:  collect all GLOBAL defs (run on first category only)
+# 2nd PASS:  collect all CATEGORY defs        
+# 3rd PASS:  run the histograms
 def_modules = []
 for round in [0,1,2]:
     print "Running pass...", round
     n_cat = 0
     for category,specifics in categories.items():  
-        #if category!='SIGNAL': continue
+        if category!='SIGNAL': continue
         weight,cut = specifics['weight'], specifics['cut']
         #print "Doing category..."+category
         if round==0 and n_cat>0: continue
