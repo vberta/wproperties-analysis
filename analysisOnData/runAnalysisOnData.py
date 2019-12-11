@@ -65,7 +65,8 @@ def branch_event_syst_weight(p, var, systs, weight, cut, category, round):
         pass
     elif round==2:
         modules.append( ROOT.muonHistos(category, cut, 'weight_'+category+'_nominal', syst_columns, var+'All') )
-        p.branch(nodeToStart='defs', nodeToEnd=category+'_'+var, modules=modules)
+        #p.branch(nodeToStart='defs', nodeToEnd=category+'_'+var, modules=modules)
+        p.branch(nodeToStart=category+'_nominal', nodeToEnd=category+'_'+var, modules=modules)
     return def_modules
 
 def branch_LHE_weight(p, var, systs, weight, cut, category, round):
@@ -86,7 +87,8 @@ def branch_LHE_weight(p, var, systs, weight, cut, category, round):
             elif var=='LHEPdfWeight': 
                 syst_column_names.push_back(ROOT.string('LHEPdfWeight_'+str(get_LHEPdfWeight_meaning(i))))
         modules.append( ROOT.muonHistos(category, cut, 'weight_'+category+'_nominal', syst_column_names, new_weight_name) )
-        p.branch(nodeToStart='defs', nodeToEnd=category+'_'+var, modules=modules)
+        #p.branch(nodeToStart='defs', nodeToEnd=category+'_'+var, modules=modules)
+        p.branch(nodeToStart=category+'_nominal', nodeToEnd=category+'_'+var, modules=modules)
     return def_modules
 
 def branch_muon_syst_scalefactor(p, systs, weight, cut, category, round):
@@ -120,7 +122,8 @@ def branch_muon_syst_scalefactor(p, systs, weight, cut, category, round):
                     syst_columns[key].push_back(syst+'_'+type)                
             new_weight_name = "Muon12_"+syst+"_SFall" if category=='DIMUON' else "Muon1_"+syst+"_SFall"
             modules.append( ROOT.muonHistos(category, cut, 'weight_'+category+'_nominal', syst_columns['ALL'], new_weight_name) )
-            p.branch(nodeToStart='defs', nodeToEnd=category+'_'+syst, modules=modules)
+            #p.branch(nodeToStart='defs', nodeToEnd=category+'_'+syst, modules=modules)
+            p.branch(nodeToStart=category+'_nominal', nodeToEnd=category+'_'+syst, modules=modules)
     return def_modules
 
 ''' 
@@ -246,7 +249,8 @@ def branch_muon_syst_column(p, var, systs, cut, weight, category, round):
             return def_modules
         elif round==2:
             modules.append( ROOT.muonHistos(category, cut, "weight_"+category+"_nominal", syst_columns, "", var, False ) )
-            p.branch(nodeToStart='defs', nodeToEnd=category+'_'+var, modules=modules)
+            #p.branch(nodeToStart='defs', nodeToEnd=category+'_'+var, modules=modules)
+            p.branch(nodeToStart=category+'_nominal', nodeToEnd=category+'_'+var, modules=modules)
 
     return def_modules
 
@@ -301,9 +305,9 @@ for round in [0,1,2]:
     print "Running pass...", round
     n_cat = 0
     for category,specifics in categories.items():  
-        if category!='SIGNAL': continue
+        #if category!='SIGNAL': continue
         weight,cut = specifics['weight'], specifics['cut']
-        #print "Doing category..."+category
+
         if round==0 and n_cat>0: continue
         if round<2 or (round==2 and n_cat==0): def_modules.extend(branch_defs(p, weight, category, def_modules, round ))
         def_modules.extend(branch_muon_nominal(p, cut, category, round))
@@ -321,6 +325,6 @@ for round in [0,1,2]:
 
 print 'Get output...'
 p.getOutput()
-#p.saveGraph()
+p.saveGraph()
 
 

@@ -16,7 +16,12 @@ RNode muonHistos::run(RNode d){
   for(unsigned int i=0; i<nbins_eta+1; i++) eta_Arr[i] = -2.5 + i*(2.5 + 2.5)/nbins_eta;      
   //this->add_group_1D( &d1, "Muon1_eta", "; muon #eta", eta_Arr, nbins_eta);
 
-  this->add_group_2D( &d1, "Muon1_eta", "Muon1_corrected_pt", "", eta_Arr, nbins_eta, pt_Arr, nbins_pt);
+  unsigned int nbins_charge = 2;
+  std::vector<float> charge_Arr(nbins_charge+1); 
+  for(unsigned int i=0; i<nbins_charge+1; i++) charge_Arr[i] = -2.0 + i*(4.0)/nbins_charge;      
+  //this->add_group_1D( &d1, "Muon1_charge", "; muon #charge", charge_Arr, nbins_charge);
+
+  this->add_group_3D( &d1, "Muon1_eta", "Muon1_corrected_pt", "Muon1_charge", "", eta_Arr, nbins_eta, pt_Arr, nbins_pt, charge_Arr, nbins_charge );
 
   unsigned int nbins_mt = 50;
   std::vector<float> mt_Arr(nbins_mt+1); 
@@ -158,8 +163,123 @@ void muonHistos::add_group_2D(ROOT::RDF::RInterface<ROOT::Detail::RDF::RJittedFi
 }
 
 
+void muonHistos::add_group_3D(ROOT::RDF::RInterface<ROOT::Detail::RDF::RJittedFilter, void>* d1, 
+			      const std::string& var_name1, const std::string& var_name2, const std::string& var_name3,
+			      const std::string& var_title, 
+			      const std::vector<float>& arrX, const unsigned int& nbinsX, 
+			      const std::vector<float>& arrY, const unsigned int& nbinsY,
+			      const std::vector<float>& arrZ, const unsigned int& nbinsZ
+			      ){
+
+  std::vector<std::string> total = _syst_names;
+  if(total.size()==0) total.emplace_back("");
+  std::string var_name1_mod, var_name2_mod, var_name3_mod;
+
+  if(_modifier==""){
+    if(_verbose) std::cout << "muonHistos::run(): TH3weightsHelper<f,f,f,V> for variables " << var_name1 << "," << var_name2 << "," << var_name3 << " (" << _weight << "*" << _syst_column << "[])" << std::endl;
+    TH3weightsHelper w_helper(_category, std::string(var_name1+"_"+var_name2+"_"+var_name3), var_title, nbinsX, arrX, nbinsY, arrY, nbinsZ, arrZ, total);         
+    _h3Group.emplace_back(d1->Book<float,float,float,float,ROOT::VecOps::RVec<float>>(std::move(w_helper), {var_name1, var_name2, var_name3, _weight, _syst_names.size()>0 ? _syst_column: "dummy"}) ); 
+  }
+
+  else {
+    var_name1_mod = this->check_modifier(var_name1);
+    var_name2_mod = this->check_modifier(var_name2);
+    var_name3_mod = this->check_modifier(var_name3);
+
+    bool has_changed1 = (var_name1_mod!=var_name1);
+    bool has_changed2 = (var_name2_mod!=var_name2);
+    bool has_changed3 = (var_name3_mod!=var_name3);
+
+    TH3varsHelper v_helper(_category, std::string(var_name1+"_"+var_name2+"_"+var_name3), var_title, nbinsX, arrX,  nbinsY, arrY, nbinsZ, arrZ, total);
+
+    if(has_changed1 && !has_changed2 && !has_changed3){
+      if(_multi_cuts){
+	if(_verbose) std::cout << "muonHistos::run(): TH3varsHelper<V,f,f,V> for variable " << var_name1_mod << "[]," << var_name2 << "," << var_name3 << " (" << _weight << "*" << _syst_column << "[])" << std::endl;
+	_h3Group.emplace_back(d1->Book<ROOT::VecOps::RVec<float>,float, float, ROOT::VecOps::RVec<float>>(std::move(v_helper), {var_name1_mod, var_name2, var_name3, _syst_column }));
+      }
+      else{
+	if(_verbose) std::cout << "muonHistos::run(): TH3varsHelper<V,f,f,f> for variable " << var_name1_mod << "[]," <<  var_name2 << "," << var_name3 << " (" << _weight << "*)" << std::endl;
+	_h3Group.emplace_back(d1->Book<ROOT::VecOps::RVec<float>,float, float, float>(std::move(v_helper), {var_name1_mod, var_name2, var_name3, _weight }));
+      }
+    }
+    else if(has_changed1 && has_changed2 && !has_changed3){
+      if(_multi_cuts){
+	if(_verbose) std::cout << "muonHistos::run(): TH3varsHelper<V,V,f,V> for variable " << var_name1_mod << "[]," << var_name2_mod << "[]," << var_name3 << " (" << _weight << "*" << _syst_column << "[])" << std::endl;
+	_h3Group.emplace_back(d1->Book<ROOT::VecOps::RVec<float>, ROOT::VecOps::RVec<float>, float, ROOT::VecOps::RVec<float>>(std::move(v_helper), {var_name1_mod, var_name2_mod, var_name3, _syst_column }));
+      }
+      else{
+	if(_verbose) std::cout << "muonHistos::run(): TH3varsHelper<V,V,f,f> for variable " << var_name1_mod << "[]," <<  var_name2_mod << "[]," << var_name3 << " (" << _weight << "*)" << std::endl;
+	_h3Group.emplace_back(d1->Book<ROOT::VecOps::RVec<float>,ROOT::VecOps::RVec<float>, float, float>(std::move(v_helper), {var_name1_mod, var_name2_mod, var_name3, _weight }));
+      }
+    }
+    else if(!has_changed1 && has_changed2 && !has_changed3){
+      if(_multi_cuts){
+	if(_verbose) std::cout << "muonHistos::run(): TH3varsHelper<f,V,f,V> for variable " << var_name1 << "," << var_name2_mod << "[]," << var_name3 << " (" << _weight << "*" << _syst_column << "[])" << std::endl;
+	_h3Group.emplace_back(d1->Book<float,ROOT::VecOps::RVec<float>, float, ROOT::VecOps::RVec<float>>(std::move(v_helper), {var_name1, var_name2_mod, var_name3, _syst_column }));
+      }
+      else{
+	if(_verbose) std::cout << "muonHistos::run(): TH3varsHelper<f,V,f,f> for variable " << var_name1 << "," <<  var_name2_mod <<"[]," << var_name3 << " (" << _weight << "*)" << std::endl;
+	_h3Group.emplace_back(d1->Book<float,ROOT::VecOps::RVec<float>, float, float>(std::move(v_helper), {var_name1, var_name2_mod, var_name3, _weight }));
+      }
+    }
+    else if(!has_changed1 && !has_changed2 && !has_changed3){
+      if(_multi_cuts){
+	if(_verbose) std::cout << "muonHistos::run(): TH3varsHelper<f,f,f,V> for variable " << var_name1 << "," << var_name2 << "," << var_name3 << " (" << _weight << "*" << _syst_column << "[])" << std::endl;
+	_h3Group.emplace_back(d1->Book<float,float,float, ROOT::VecOps::RVec<float>>(std::move(v_helper), {var_name1, var_name2, var_name3, _syst_column }));
+      }
+      else{
+	if(_verbose) std::cout << "muonHistos::run(): TH3varsHelper<f,f,f,f> for variable " << var_name1 << "," << var_name2 << "," << var_name3 << " (" << _weight << "*): DO NOTHING -- These are alike the nominal!" << std::endl;
+	if(false) _h3Group.emplace_back(d1->Book<float,float,float,float>(std::move(v_helper), {var_name1, var_name2, var_name3, _weight }));
+      }
+    }
+    else if(has_changed1 && !has_changed2 && has_changed3){
+      if(_multi_cuts){
+	if(_verbose) std::cout << "muonHistos::run(): TH3varsHelper<V,f,V,V> for variable " << var_name1_mod << "[]," << var_name2 << "," << var_name3_mod << " (" << _weight << "*" << _syst_column << "[])" << std::endl;
+	_h3Group.emplace_back(d1->Book<ROOT::VecOps::RVec<float>,float, ROOT::VecOps::RVec<float>, ROOT::VecOps::RVec<float>>(std::move(v_helper), {var_name1_mod, var_name2, var_name3_mod, _syst_column }));
+      }
+      else{
+	if(_verbose) std::cout << "muonHistos::run(): TH3varsHelper<V,f,V,f> for variable " << var_name1_mod << "[]," <<  var_name2 << "," << var_name3_mod << " (" << _weight << "*)" << std::endl;
+	_h3Group.emplace_back(d1->Book<ROOT::VecOps::RVec<float>,ROOT::VecOps::RVec<float>, ROOT::VecOps::RVec<float>, float>(std::move(v_helper), {var_name1_mod, var_name2, var_name3_mod, _weight }));
+      }
+    }
+    else if(has_changed1 && has_changed2 && has_changed3){
+      if(_multi_cuts){
+	if(_verbose) std::cout << "muonHistos::run(): TH3varsHelper<V,V,V,V> for variable " << var_name1_mod << "[]," << var_name2_mod << "[]," << var_name3_mod << " (" << _weight << "*" << _syst_column << "[])" << std::endl;
+	_h3Group.emplace_back(d1->Book<ROOT::VecOps::RVec<float>,ROOT::VecOps::RVec<float>, ROOT::VecOps::RVec<float>, ROOT::VecOps::RVec<float>>(std::move(v_helper), {var_name1_mod, var_name2_mod, var_name3_mod, _syst_column }));
+      }
+      else{
+	if(_verbose) std::cout << "muonHistos::run(): TH3varsHelper<V,V,V,f> for variable " << var_name1_mod << "[]," <<  var_name2_mod << "[]," << var_name3_mod << " (" << _weight << "*)" << std::endl;
+	_h3Group.emplace_back(d1->Book<ROOT::VecOps::RVec<float>,ROOT::VecOps::RVec<float>, ROOT::VecOps::RVec<float>, float>(std::move(v_helper), {var_name1_mod, var_name2_mod, var_name3_mod, _weight }));
+      }
+    }
+    else if(!has_changed1 && has_changed2 && has_changed3){
+      if(_multi_cuts){
+	if(_verbose) std::cout << "muonHistos::run(): TH3varsHelper<f,V,V,V> for variable " << var_name1 << "," << var_name2_mod << "[]," << var_name3_mod << " (" << _weight << "*" << _syst_column << "[])" << std::endl;
+	_h3Group.emplace_back(d1->Book<float,ROOT::VecOps::RVec<float>, ROOT::VecOps::RVec<float>, ROOT::VecOps::RVec<float>>(std::move(v_helper), {var_name1, var_name2_mod, var_name3_mod, _syst_column }));
+      }
+      else{
+	if(_verbose) std::cout << "muonHistos::run(): TH3varsHelper<f,V,V,f> for variable " << var_name1 << "," <<  var_name2_mod <<"[]," << var_name3_mod << " (" << _weight << "*)" << std::endl;
+	_h3Group.emplace_back(d1->Book<float,ROOT::VecOps::RVec<float>, ROOT::VecOps::RVec<float>, float>(std::move(v_helper), {var_name1, var_name2_mod, var_name3_mod, _weight }));
+      }
+    }
+    else if(!has_changed1 && !has_changed2 && has_changed3){
+      if(_multi_cuts){
+	if(_verbose) std::cout << "muonHistos::run(): TH3varsHelper<f,f,V,V> for variable " << var_name1 << "," << var_name2 << "," << var_name3_mod << " (" << _weight << "*" << _syst_column << "[])" << std::endl;
+	_h3Group.emplace_back(d1->Book<float,float,ROOT::VecOps::RVec<float>, ROOT::VecOps::RVec<float>>(std::move(v_helper), {var_name1, var_name2, var_name3_mod, _syst_column }));
+      }
+      else{
+	if(_verbose) std::cout << "muonHistos::run(): TH3varsHelper<f,f,V,f> for variable " << var_name1 << "," << var_name2 << "," << var_name3_mod << "[] (" << _weight << "*):" << std::endl;
+	if(false) _h3Group.emplace_back(d1->Book<float,float,ROOT::VecOps::RVec<float>,float>(std::move(v_helper), {var_name1, var_name2, var_name3_mod, _weight }));
+      }
+    } 
+  }
+
+  return;
+}
+
+
 std::vector<ROOT::RDF::RResultPtr<TH1D>> muonHistos::getTH1(){ 
-    return _h1List;
+    return _h1List; 
 }
 std::vector<ROOT::RDF::RResultPtr<TH2D>> muonHistos::getTH2(){ 
     return _h2List;

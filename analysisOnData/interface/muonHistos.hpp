@@ -12,8 +12,10 @@
 #include "interface/module.hpp"
 #include "interface/TH1weightsHelper.hpp"
 #include "interface/TH2weightsHelper.hpp"
+#include "interface/TH3weightsHelper.hpp"
 #include "interface/TH1varsHelper.hpp"
 #include "interface/TH2varsHelper.hpp"
+#include "interface/TH3varsHelper.hpp"
 #include "interface/functions.hpp"
 
 using RNode = ROOT::RDF::RNode;
@@ -65,6 +67,10 @@ public:
 		    const std::vector<float>&, const unsigned int&);
   void add_group_2D(ROOT::RDF::RInterface<ROOT::Detail::RDF::RJittedFilter, void>*, const std::string&, const std::string&, const std::string&, 
 		    const std::vector<float>&, const unsigned int&, 
+		    const std::vector<float>&, const unsigned int&);
+  void add_group_3D(ROOT::RDF::RInterface<ROOT::Detail::RDF::RJittedFilter, void>*, const std::string&, const std::string&, const std::string&, const std::string&,
+		    const std::vector<float>&, const unsigned int&, 
+		    const std::vector<float>&, const unsigned int&,
 		    const std::vector<float>&, const unsigned int&);
 
   ~muonHistos() {};
