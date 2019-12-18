@@ -50,7 +50,8 @@ def branch_muon_nominal(p, cut, category, round):
     elif round==1:
         pass
     elif round==2:
-        modules.append( ROOT.muonHistos(category, cut, 'weight_'+category+'_nominal') )
+        modules.append( ROOT.getFilter(cut) )
+        modules.append( ROOT.muonHistos(category, 'weight_'+category+'_nominal', vec_s(), "", "", False) )
         p.branch(nodeToStart='defs', nodeToEnd=category+'_nominal', modules=modules)
     return def_modules
 
@@ -63,8 +64,8 @@ def branch_event_syst_weight(p, var, systs, weight, cut, category, round):
         def_modules.append( ROOT.getSystWeight(syst_columns, var+"All", "", var, pair_ui(0,0), "ff->Vnorm" ) )
     elif round==1:
         pass
-    elif round==2:
-        modules.append( ROOT.muonHistos(category, cut, 'weight_'+category+'_nominal', syst_columns, var+'All') )
+    elif round==2:        
+        modules.append( ROOT.muonHistos(category, 'weight_'+category+'_nominal', syst_columns, var+'All', "", False) )
         #p.branch(nodeToStart='defs', nodeToEnd=category+'_'+var, modules=modules)
         p.branch(nodeToStart=category+'_nominal', nodeToEnd=category+'_'+var, modules=modules)
     return def_modules
@@ -86,7 +87,7 @@ def branch_LHE_weight(p, var, systs, weight, cut, category, round):
                 syst_column_names.push_back(ROOT.string('LHEScaleWeight_'+str(get_LHEScaleWeight_meaning(i))))
             elif var=='LHEPdfWeight': 
                 syst_column_names.push_back(ROOT.string('LHEPdfWeight_'+str(get_LHEPdfWeight_meaning(i))))
-        modules.append( ROOT.muonHistos(category, cut, 'weight_'+category+'_nominal', syst_column_names, new_weight_name) )
+        modules.append( ROOT.muonHistos(category, 'weight_'+category+'_nominal', syst_column_names, new_weight_name, "", False) )
         #p.branch(nodeToStart='defs', nodeToEnd=category+'_'+var, modules=modules)
         p.branch(nodeToStart=category+'_nominal', nodeToEnd=category+'_'+var, modules=modules)
     return def_modules
@@ -121,7 +122,7 @@ def branch_muon_syst_scalefactor(p, systs, weight, cut, category, round):
                 for type in ['statUp', 'statDown', 'systUp', 'systDown']:
                     syst_columns[key].push_back(syst+'_'+type)                
             new_weight_name = "Muon12_"+syst+"_SFall" if category=='DIMUON' else "Muon1_"+syst+"_SFall"
-            modules.append( ROOT.muonHistos(category, cut, 'weight_'+category+'_nominal', syst_columns['ALL'], new_weight_name) )
+            modules.append( ROOT.muonHistos(category, 'weight_'+category+'_nominal', syst_columns['ALL'], new_weight_name, "", False) )
             #p.branch(nodeToStart='defs', nodeToEnd=category+'_'+syst, modules=modules)
             p.branch(nodeToStart=category+'_nominal', nodeToEnd=category+'_'+syst, modules=modules)
     return def_modules
@@ -239,7 +240,8 @@ def branch_muon_syst_column(p, var, systs, cut, weight, category, round):
             #   > ""   -> no need for "weight"
             #   > 'weight_'+category+'_cut_'+var+'All' -> use the RVec of {(cut_removed)*(weight)}
             #   > True -> multi_cuts
-            modules.append( ROOT.muonHistos(category, cut_clean_OR, "", syst_columns, 'weight_'+category+'_cut_'+var+'All', var, True ) )
+            modules.append( ROOT.getFilter(cut_clean_OR) )
+            modules.append( ROOT.muonHistos(category, "", syst_columns, 'weight_'+category+'_cut_'+var+'All', var, True ) )
             p.branch(nodeToStart='defs', nodeToEnd=category+'_'+var, modules=modules)
 
     # CASE B: the event cut is does *not* depend on <var>
@@ -248,7 +250,7 @@ def branch_muon_syst_column(p, var, systs, cut, weight, category, round):
             # Nothing to be done
             return def_modules
         elif round==2:
-            modules.append( ROOT.muonHistos(category, cut, "weight_"+category+"_nominal", syst_columns, "", var, False ) )
+            modules.append( ROOT.muonHistos(category, "weight_"+category+"_nominal", syst_columns, "", var, False ) )
             #p.branch(nodeToStart='defs', nodeToEnd=category+'_'+var, modules=modules)
             p.branch(nodeToStart=category+'_nominal', nodeToEnd=category+'_'+var, modules=modules)
 

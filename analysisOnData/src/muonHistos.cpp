@@ -3,47 +3,47 @@
 
 RNode muonHistos::run(RNode d){
     
-  auto d1 = d.Filter(_cut);
+  //auto d1 = d.Filter(_cut);
 
   unsigned int nbins_pt = 50;
   std::vector<float> pt_Arr(nbins_pt+1); 
   for(unsigned int i=0; i<nbins_pt+1; i++) pt_Arr[i] = 25. + i*(65.-25.)/nbins_pt;      
-  //this->add_group_1D( &d1, "Muon1_corrected_pt", "; muon p_{T} (Roch.)", pt_Arr, nbins_pt);
-  //this->add_group_1D( &d1, "Muon1_pt", "; muon p_{T}", pt_Arr, nbins_pt);
+  //this->add_group_1D( &d, "Muon1_corrected_pt", "; muon p_{T} (Roch.)", pt_Arr, nbins_pt);
+  //this->add_group_1D( &d, "Muon1_pt", "; muon p_{T}", pt_Arr, nbins_pt);
 
   unsigned int nbins_eta = 50;
   std::vector<float> eta_Arr(nbins_eta+1); 
   for(unsigned int i=0; i<nbins_eta+1; i++) eta_Arr[i] = -2.5 + i*(2.5 + 2.5)/nbins_eta;      
-  //this->add_group_1D( &d1, "Muon1_eta", "; muon #eta", eta_Arr, nbins_eta);
+  //this->add_group_1D( &d, "Muon1_eta", "; muon #eta", eta_Arr, nbins_eta);
 
   unsigned int nbins_charge = 2;
   std::vector<float> charge_Arr(nbins_charge+1); 
   for(unsigned int i=0; i<nbins_charge+1; i++) charge_Arr[i] = -2.0 + i*(4.0)/nbins_charge;      
-  //this->add_group_1D( &d1, "Muon1_charge", "; muon #charge", charge_Arr, nbins_charge);
+  //this->add_group_1D( &d, "Muon1_charge", "; muon #charge", charge_Arr, nbins_charge);
 
-  this->add_group_3D( &d1, "Muon1_eta", "Muon1_corrected_pt", "Muon1_charge", "", eta_Arr, nbins_eta, pt_Arr, nbins_pt, charge_Arr, nbins_charge );
+  this->add_group_3D( &d, "Muon1_eta", "Muon1_corrected_pt", "Muon1_charge", "", eta_Arr, nbins_eta, pt_Arr, nbins_pt, charge_Arr, nbins_charge );
 
   unsigned int nbins_mt = 50;
   std::vector<float> mt_Arr(nbins_mt+1); 
   for(unsigned int i=0; i<nbins_mt+1; i++) mt_Arr[i] = 0. + i*(150.-0.)/nbins_mt;
-  //this->add_group_1D( &d1, "Muon1_corrected_MET_nom_mt", "M_{T} (Roch.+PF MET)", mt_Arr, nbins_mt);
+  //this->add_group_1D( &d, "Muon1_corrected_MET_nom_mt", "M_{T} (Roch.+PF MET)", mt_Arr, nbins_mt);
 
   unsigned int nbins_hpt = 50;
   std::vector<float> hpt_Arr(nbins_hpt+1); 
   for(unsigned int i=0; i<nbins_hpt+1; i++) hpt_Arr[i] = 0. + i*(100.-0.)/nbins_hpt;
-  //this->add_group_1D( &d1, "Muon1_corrected_MET_nom_hpt", "h_{T} (Roch.+PF MET)", hpt_Arr, nbins_hpt);
+  //this->add_group_1D( &d, "Muon1_corrected_MET_nom_hpt", "h_{T} (Roch.+PF MET)", hpt_Arr, nbins_hpt);
 
   unsigned int nbins_met_pt = 50;
   std::vector<float> met_pt_Arr(nbins_met_pt+1); 
   for(unsigned int i=0; i<nbins_met_pt+1; i++) met_pt_Arr[i] = 0. + i*(100.-0.)/nbins_met_pt;
-  //this->add_group_1D( &d1, "MET_nom_pt", "PF MET", met_pt_Arr, nbins_met_pt);
+  //this->add_group_1D( &d, "MET_nom_pt", "PF MET", met_pt_Arr, nbins_met_pt);
 
   unsigned int nbins_met_phi = 50;
   std::vector<float> met_phi_Arr(nbins_met_phi+1); 
   for(unsigned int i=0; i<nbins_met_phi+1; i++) met_phi_Arr[i] = -TMath::Pi() + i*(2*TMath::Pi())/nbins_met_phi;
-  //this->add_group_1D( &d1, "MET_nom_phi", "PF MET", met_phi_Arr, nbins_met_phi);
+  //this->add_group_1D( &d, "MET_nom_phi", "PF MET", met_phi_Arr, nbins_met_phi);
 
-  return d1;
+  return d;
 }
 
 std::string muonHistos::check_modifier(const std::string& var_name){
@@ -55,7 +55,8 @@ std::string muonHistos::check_modifier(const std::string& var_name){
   return ret;
 }
 
-void muonHistos::add_group_1D(ROOT::RDF::RInterface<ROOT::Detail::RDF::RJittedFilter, void>* d1, const std::string& var_name, const std::string& var_title, const std::vector<float>& arr, const unsigned int& nbins){
+void muonHistos::add_group_1D(RNode* d1,//ROOT::RDF::RInterface<ROOT::Detail::RDF::RJittedFilter, void>* d1, 
+			      const std::string& var_name, const std::string& var_title, const std::vector<float>& arr, const unsigned int& nbins){
   std::vector<std::string> total = _syst_names;
   if(total.size()==0) total.emplace_back("");
   std::string var_name_mod;
@@ -92,7 +93,8 @@ void muonHistos::add_group_1D(ROOT::RDF::RInterface<ROOT::Detail::RDF::RJittedFi
   return;
 }
 
-void muonHistos::add_group_2D(ROOT::RDF::RInterface<ROOT::Detail::RDF::RJittedFilter, void>* d1, 
+void muonHistos::add_group_2D(//ROOT::RDF::RInterface<ROOT::Detail::RDF::RJittedFilter, void>* d1, 
+			      RNode* d1,
 			      const std::string& var_name1, const std::string& var_name2, 
 			      const std::string& var_title, 
 			      const std::vector<float>& arrX, const unsigned int& nbinsX, 
@@ -163,7 +165,8 @@ void muonHistos::add_group_2D(ROOT::RDF::RInterface<ROOT::Detail::RDF::RJittedFi
 }
 
 
-void muonHistos::add_group_3D(ROOT::RDF::RInterface<ROOT::Detail::RDF::RJittedFilter, void>* d1, 
+void muonHistos::add_group_3D( //ROOT::RDF::RInterface<ROOT::Detail::RDF::RJittedFilter, void>* d1, 
+			      RNode* d1,
 			      const std::string& var_name1, const std::string& var_name2, const std::string& var_name3,
 			      const std::string& var_title, 
 			      const std::vector<float>& arrX, const unsigned int& nbinsX, 
