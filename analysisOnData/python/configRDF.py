@@ -36,6 +36,7 @@ class ConfigRDF():
         self.dataYear = dataYear
         self.era_ratios = pair_f(era_ratios[0],era_ratios[1])
         return
+
     
     """
     Branch defs
@@ -170,8 +171,8 @@ class ConfigRDF():
             for mu in ['1','2']:
                 col1 = 'Muon'+mu+'_'+syst+'_BCDEF_SFall'
                 col2 = 'Muon'+mu+'_'+syst+'_GH_SFall'
-                col  = 'Muon'+mu+'_'+syst+'_SFall'
-                self.def_modules.append( ROOT.mergeSystWeight(pair_s(col1,col2), self.era_ratios, col, "V,V->aV+bV") )        
+                col_new = 'Muon'+mu+'_'+syst+'_SFall'
+                self.def_modules.append( ROOT.mergeSystWeight(pair_s(col1,col2), self.era_ratios, col_new, "V,V->aV+bV") )        
             col1 = 'Muon1_'+syst+'_SFall'
             col2 = 'Muon2_'+syst+'_SFall'
             col  = 'Muon12_'+syst+'_SFall'
@@ -320,18 +321,19 @@ class ConfigRDF():
                 if not self.isMC: self.weight = 'Float_t(1.0)'
                 self.cut = specifics['cut']
                 self.category = category                
-
                 self._branch_defs()
-                self._branch_muon_nominal()
-                if not self.isMC: continue
-                self._branch_event_syst_weight( 'puWeight', ['Up', 'Down'])
-                self._branch_muon_syst_scalefactor( 'ISO' )
-                self._branch_muon_syst_scalefactor( 'ID' )
-                self._branch_muon_syst_scalefactor( 'Trigger' )
-                self._branch_muon_syst_column( 'corrected', ['correctedUp','correctedDown'])
-                self._branch_muon_syst_column( 'nom', ['jerUp','jerDown','jesTotalUp','jesTotalDown','unclustEnUp','unclustEnDown'] )
-                self._branch_LHE_weight( 'LHEScaleWeight', [0,8] )
-                self._branch_LHE_weight( 'LHEPdfWeight',   [98,101] )
+                modules = specifics['modules']
+                if modules.has_key('muon_nominal'): self._branch_muon_nominal()
+                for key,value in modules.items():
+                    if 'event_syst' in key:
+                        if 'LHE' not in key: 
+                            self._branch_event_syst_weight( key.replace('event_syst_',''), value)
+                        else: 
+                            self._branch_LHE_weight( key.replace('event_syst_',''), value )
+                    elif 'muon_syst_scalefactor' in key:
+                        self._branch_muon_syst_scalefactor( key.replace('muon_syst_scalefactor_','') )
+                    elif 'muon_syst_column' in key:                        
+                        self._branch_muon_syst_column( key.replace('muon_syst_column_',''), value)
                 pass
 
         print " ==>", len(self.def_modules), " defs modules have been loaded..."
