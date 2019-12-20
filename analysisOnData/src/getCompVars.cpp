@@ -1,0 +1,115 @@
+#include "interface/getCompVars.hpp"
+
+
+RNode getCompVars::run(RNode d){   
+
+  
+  RNode d_start = d;
+
+  if( _muon_systs.size()>0 ){
+    std::vector<std::string> mus = {"1"};
+    if(_idx2!="") mus.push_back("2");
+    for(unsigned int imu = 0 ; imu<mus.size(); imu++){
+      std::string mu = mus[imu];
+      ROOT::Detail::RDF::ColumnNames_t new_cols;
+      for(unsigned int i=0 ; i < _muon_systs.size(); i++){   
+	std::string new_col = "SelMuon"+mu+"_"+_muon_systs[i]+"_pt";
+	auto d_post = d_start.Define(new_col, getFromIdx, {"Muon_"+_muon_systs[i]+"_pt", mu=="1"?_idx1:_idx2});
+	d_start = d_post;
+	new_cols.push_back("SelMuon"+mu+"_"+_muon_systs[i]+"_pt");
+      }
+      auto d_post = d_start.Define("SelMuon"+mu+"_correctedAll_pt", getRVec_FFtoV, new_cols);
+      d_start = d_post;
+    }
+  }
+
+  std::vector<std::string> compVars = {"mt", "hpt"};
+
+  for(unsigned int i = 0; i < compVars.size() ; i++){
+
+    std::string compVar = compVars[i];
+    float (*func)(float,float,float,float) = nullptr;
+    if( compVar=="mt" ) func = W_mt;
+    if( compVar=="hpt") func = W_hpt;
+    
+    std::vector<std::string> mus = {"1"};
+    if(_idx2!="") mus.push_back("2");
+    for(unsigned int imu = 0 ; imu<mus.size(); imu++){
+      std::string mu = mus[imu];
+
+      if(_muon_systs.size()==0 && _MET_systs.size()==0){      
+	std::string new_col     = "SelMuon"+mu+"_corrected_MET_nom_"+compVar;
+	std::string mu_pt_col   = "SelMuon"+mu+"_corrected_pt";
+	std::string mu_phi_col  = "SelMuon"+mu+"_phi";      
+	std::string met_pt_col  = "MET_nom_pt";
+	std::string met_phi_col = "MET_nom_phi";
+	auto d_post = d_start.Define(new_col, func, {mu_pt_col, mu_phi_col, met_pt_col, met_phi_col});
+	d_start = d_post;
+      }
+      else{ 
+	bool im =  _muon_systs.size()>0;     
+	unsigned int syst_size = im ? _muon_systs.size() : _MET_systs.size();
+	std::string new_colAll = im ? "SelMuon"+mu+"_correctedAll_MET_nom_"+compVar : "SelMuon"+mu+"_corrected_MET_nomAll_"+compVar;
+	
+	ROOT::Detail::RDF::ColumnNames_t new_cols;
+	for(unsigned int i=0 ; i < syst_size; i++){
+	  std::string new_col     = "SelMuon"+mu+"_"+(im?_muon_systs[i]:"corrected")+"_MET_"+(im?"nom":_MET_systs[i])+"_"+compVar;
+	  std::string mu_pt_col   = "SelMuon"+mu+"_"+(im?_muon_systs[i]:"corrected")+"_pt";
+	  std::string mu_phi_col  = "SelMuon"+mu+"_phi";
+	  std::string met_pt_col  = "MET_"+(im?"nom":_MET_systs[i])+"_pt";
+	  std::string met_phi_col = "MET_"+(im?"nom":_MET_systs[i])+"_phi";
+	  new_cols.push_back(new_col);
+	  auto d_post = d_start.Define(new_col, func, {mu_pt_col, mu_phi_col, met_pt_col, met_phi_col});
+	  d_start = d_post;
+	}
+	
+	RNode d_post = d_start;
+	switch(syst_size){
+	case 2:
+	  d_post = d_start.Define(new_colAll, getRVec_FFtoV, new_cols);
+	  break;
+	case 4:
+	  d_post = d_start.Define(new_colAll, getRVec_FFFFtoV, new_cols);
+	  break;      
+	case 6:
+	  d_post = d_start.Define(new_colAll, getRVec_FFFFFFtoV, new_cols);
+	  break;            
+	default:
+	  break;
+	}
+	d_start = d_post;
+      }
+    }
+  }
+
+  return d_start;
+}
+
+std::vector<ROOT::RDF::RResultPtr<TH1D>> getCompVars::getTH1(){ 
+    return _h1List;
+}
+std::vector<ROOT::RDF::RResultPtr<TH2D>> getCompVars::getTH2(){ 
+    return _h2List;
+}
+std::vector<ROOT::RDF::RResultPtr<TH3D>> getCompVars::getTH3(){ 
+    return _h3List;
+}
+std::vector<ROOT::RDF::RResultPtr<std::vector<TH1D>>> getCompVars::getGroupTH1(){ 
+  return _h1Group;
+}
+std::vector<ROOT::RDF::RResultPtr<std::vector<TH2D>>> getCompVars::getGroupTH2(){ 
+  return _h2Group;
+}
+std::vector<ROOT::RDF::RResultPtr<std::vector<TH3D>>> getCompVars::getGroupTH3(){ 
+  return _h3Group;
+}
+
+void getCompVars::reset(){
+    _h1List.clear();
+    _h2List.clear();
+    _h3List.clear();
+
+    _h1Group.clear();
+    _h2Group.clear();
+    _h3Group.clear();
+}

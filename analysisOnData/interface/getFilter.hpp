@@ -1,5 +1,5 @@
-#ifndef GETVARS_H
-#define GETVARS_H
+#ifndef GETFILTER_H
+#define GETFILTER_H
 
 #include "ROOT/RDataFrame.hxx"
 #include "ROOT/RVec.hxx"
@@ -13,7 +13,7 @@
 
 using RNode = ROOT::RDF::RNode;
 
-class getVars : public Module {
+class getFilter : public Module {
   
 private:
 
@@ -26,14 +26,13 @@ private:
   std::vector<ROOT::RDF::RResultPtr<std::vector<TH2D>>> _h2Group;
   std::vector<ROOT::RDF::RResultPtr<std::vector<TH3D>>> _h3Group;
 
-  std::string _idx1, _idx2;
+  std::string _filter;
  
 public:
     
-  getVars(std::string idx1, std::string idx2) : 
-    _idx1(idx1), _idx2(idx2) {};
+  getFilter(std::string filter) : _filter(filter) {};       
   
-  ~getVars() {};
+  ~getFilter() {};
   
   RNode run(RNode) override;
   std::vector<ROOT::RDF::RResultPtr<TH1D>> getTH1() override;

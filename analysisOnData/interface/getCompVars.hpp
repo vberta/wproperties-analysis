@@ -1,5 +1,5 @@
-#ifndef GETVARS_H
-#define GETVARS_H
+#ifndef GETCOMPVARS_H
+#define GETCOMPVARS_H
 
 #include "ROOT/RDataFrame.hxx"
 #include "ROOT/RVec.hxx"
@@ -13,7 +13,7 @@
 
 using RNode = ROOT::RDF::RNode;
 
-class getVars : public Module {
+class getCompVars : public Module {
   
 private:
 
@@ -27,13 +27,17 @@ private:
   std::vector<ROOT::RDF::RResultPtr<std::vector<TH3D>>> _h3Group;
 
   std::string _idx1, _idx2;
+  std::vector<std::string> _muon_systs, _MET_systs;
+  
  
 public:
     
-  getVars(std::string idx1, std::string idx2) : 
-    _idx1(idx1), _idx2(idx2) {};
+  getCompVars(std::string idx1, std::string idx2, std::vector<std::string> muon_systs, std::vector<std::string> MET_systs) : 
+    _idx1(idx1), _idx2(idx2), 
+    _muon_systs(muon_systs), _MET_systs(MET_systs)
+  {};
   
-  ~getVars() {};
+  ~getCompVars() {};
   
   RNode run(RNode) override;
   std::vector<ROOT::RDF::RResultPtr<TH1D>> getTH1() override;

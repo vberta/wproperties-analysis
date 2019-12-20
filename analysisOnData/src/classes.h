@@ -7,3 +7,4 @@
 #include "interface/getWeight.hpp"
 #include "interface/getFilter.hpp"
 #include "interface/getVars.hpp"
+#include "interface/getCompVars.hpp"

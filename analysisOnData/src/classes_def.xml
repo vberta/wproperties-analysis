@@ -7,4 +7,5 @@
   <class name="getWeight"/>
   <class name="getFilter"/>
   <class name="getVars"/>
+  <class name="getCompVars"/>
 </lcgdict>

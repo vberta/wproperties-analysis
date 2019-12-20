@@ -44,15 +44,16 @@ class ConfigRDF():
     def _branch_defs(self):
         if self.iteration==0 and not hasattr(self, 'branch_defs_iter0'):
             self.def_modules.append( ROOT.getVars("Idx_mu1", "Idx_mu2") )
+            self.def_modules.append( ROOT.getCompVars("Idx_mu1", "Idx_mu2", vec_s(), vec_s()) )
             if self.isMC: 
                 self.def_modules.append( ROOT.getLumiWeight(self.inputFile, self.lumi, self.xsec) )
                 # Merge BCDEF and GH into one overall SF
                 if self.dataYear=='2016':
                     for mu in ['1','2']:
                         for syst in ['ISO', 'ID', 'Trigger']:
-                            col1 = 'Muon'+mu+'_'+syst+'_BCDEF_SF'
-                            col2 = 'Muon'+mu+'_'+syst+'_GH_SF'
-                            col  = 'Muon'+mu+'_'+syst+'_SF'
+                            col1 = 'SelMuon'+mu+'_'+syst+'_BCDEF_SF'
+                            col2 = 'SelMuon'+mu+'_'+syst+'_GH_SF'
+                            col  = 'SelMuon'+mu+'_'+syst+'_SF'
                             self.def_modules.append( ROOT.mergeSystWeight(pair_s(col1, col2), self.era_ratios, col, "f,f->af+bf") )
             setattr(self, 'branch_defs_iter0', True )
         elif self.iteration==1:
@@ -165,17 +166,17 @@ class ConfigRDF():
             for key,item in syst_columns.items(): 
                 for mu in ['1','2']:
                     cols = syst_columns[key]
-                    col_new = "Muon"+mu+"_"+syst+"_"+key+"_SFall"
-                    col_nom = "Muon"+mu+"_"+syst+"_"+key+"_SF"
-                    self.def_modules.append( ROOT.getSystWeight(cols,col_new, "Idx_mu"+mu, col_nom, pair_ui(0,0), "VVVV->Vnorm") )
+                    col_new = "SelMuon"+mu+"_"+syst+"_"+key+"_SFall"
+                    col_nom = "SelMuon"+mu+"_"+syst+"_"+key+"_SF"
+                    self.def_modules.append( ROOT.getSystWeight(cols, col_new, "Idx_mu"+mu, col_nom, pair_ui(0,0), "VVVV->Vnorm") )
             for mu in ['1','2']:
-                col1 = 'Muon'+mu+'_'+syst+'_BCDEF_SFall'
-                col2 = 'Muon'+mu+'_'+syst+'_GH_SFall'
-                col_new = 'Muon'+mu+'_'+syst+'_SFall'
+                col1 = 'SelMuon'+mu+'_'+syst+'_BCDEF_SFall'
+                col2 = 'SelMuon'+mu+'_'+syst+'_GH_SFall'
+                col_new = 'SelMuon'+mu+'_'+syst+'_SFall'
                 self.def_modules.append( ROOT.mergeSystWeight(pair_s(col1,col2), self.era_ratios, col_new, "V,V->aV+bV") )        
-            col1 = 'Muon1_'+syst+'_SFall'
-            col2 = 'Muon2_'+syst+'_SFall'
-            col  = 'Muon12_'+syst+'_SFall'
+            col1 = 'SelMuon1_'+syst+'_SFall'
+            col2 = 'SelMuon2_'+syst+'_SFall'
+            col  = 'SelMuon12_'+syst+'_SFall'
             self.def_modules.append( ROOT.mergeSystWeight(pair_s(col1,col2), pair_f(1.0,1.0), col, "V,V->V*V") ) 
             setattr(self, 'branch_muon_'+syst+'_scalefactor_iter0', True )
         elif self.iteration==1:
@@ -186,7 +187,7 @@ class ConfigRDF():
             for key,item in syst_columns.items():
                 for type in ['statUp', 'statDown', 'systUp', 'systDown']:
                     syst_columns[key].push_back(syst+'_'+type)                
-            new_weight_name = "Muon12_"+syst+"_SFall" if self.category=='DIMUON' else "Muon1_"+syst+"_SFall"
+            new_weight_name = "SelMuon12_"+syst+"_SFall" if self.category=='DIMUON' else "SelMuon1_"+syst+"_SFall"
             modules.append( ROOT.muonHistos(self.category, 'weight_'+self.category+'_nominal', syst_columns['ALL'], new_weight_name, "", False) )
             self.p.branch(nodeToStart=self.category+'_nominal', nodeToEnd=self.category+'_'+syst, modules=modules)
         return
@@ -199,6 +200,14 @@ class ConfigRDF():
     """
     def _get_muon_syst_columns(self,var,systs):
 
+        syst_columns = vec_s()
+        for syst in systs: syst_columns.push_back(syst)
+        if var=='corrected': 
+            self.def_modules.append( ROOT.getCompVars("Idx_mu1", "Idx_mu2", syst_columns, vec_s()) )
+        elif var=='nom':
+            self.def_modules.append( ROOT.getCompVars("Idx_mu1", "Idx_mu2", vec_s(), syst_columns) )
+        return
+
         signatureF = ""
         for i in range(len(systs)) : signatureF += "f"
         signatureF += "->V"
@@ -210,8 +219,8 @@ class ConfigRDF():
             for col in ['Muon_corrected_pt', 'Muon_corrected_MET_nom_mt', 'Muon_corrected_MET_nom_hpt']:    
                 syst_columns = vec_s()
                 for syst in systs: syst_columns.push_back( col.replace(var, syst) )            
-                for mu in ['1','2']:
-                    col_new = col.replace('Muon', 'Muon'+mu).replace(var, var+'All') 
+                for mu in ['1']:
+                    col_new = col.replace('Muon', 'SelMuon'+mu).replace(var, var+'All') 
                     self.def_modules.append( ROOT.getSystWeight( syst_columns, col_new, "Idx_mu"+mu, "", pair_ui(0,0), signatureV) )
                     
         elif var=='nom':
@@ -219,8 +228,8 @@ class ConfigRDF():
             for col in ['Muon_corrected_MET_nom_mt', 'Muon_corrected_MET_nom_hpt']:
                 syst_columns = vec_s()
                 for syst in systs: syst_columns.push_back( col.replace(var, syst) )
-                for mu in ['1','2']:
-                    col_new = col.replace('Muon', 'Muon'+mu).replace(var, var+'All') 
+                for mu in ['1']:
+                    col_new = col.replace('Muon', 'SelMuon'+mu).replace(var, var+'All') 
                     self.def_modules.append( ROOT.getSystWeight( syst_columns, col_new, "Idx_mu"+mu, "", pair_ui(0,0), signatureV) )
             for col in ['MET_nom_pt', 'MET_nom_phi']:
                 syst_columns = vec_s()
