@@ -1,16 +1,22 @@
 #include "ROOT/RDataFrame.hxx"
 #include "ROOT/RVec.hxx"
 #include "ROOT/RDF/RInterface.hxx"
+#include "TMath.h"
 
-ROOT::VecOps::RVec<float> dummy(ULong64_t event);
+ROOT::VecOps::RVec<float> dummy(ULong64_t);
 
-float getFromIdx(ROOT::VecOps::RVec<float> vec, int index);
+float castToFloat(int);
 
-float getIFromIdx(ROOT::VecOps::RVec<int> vec, int index);
+float getFromIdx(ROOT::VecOps::RVec<float>, int);
+
+float getIFromIdx(ROOT::VecOps::RVec<int>,int);
 
 ROOT::VecOps::RVec<float> getRVec_FFtoV(float,float);
 ROOT::VecOps::RVec<float> getRVec_FFFFtoV(float,float,float,float);
 ROOT::VecOps::RVec<float> getRVec_FFFFFFtoV(float,float,float,float,float,float);
 
-float W_mt(float mu_pt, float mu_phi, float met_pt, float met_phi);
-float W_hpt(float mu_pt, float mu_phi, float met_pt, float met_phi);
+float W_mt(float,float,float,float);
+float W_hpt(float,float,float,float);
+float Z_qt(float,float,float,float);
+float Z_mass(float,float,float,float,float,float);
+float Z_y(float,float,float,float);

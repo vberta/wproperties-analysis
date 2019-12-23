@@ -7,17 +7,24 @@ from RDFtree import *
 
 from utils import *
 
+# typedefs
 pair_f  = ROOT.pair('float','float')
 pair_s  = ROOT.pair('string','string')
 pair_ui = ROOT.std.pair('unsigned int','unsigned int')
-era_ratios = pair_f(0.5, 0.5)
-vec_s = ROOT.vector('string')
+vec_s   = ROOT.vector('string')
 
+"""
+Class that configures RDFtree. Add new modules as class functions.
+"""
 class ConfigRDF():    
 
     def __init__(self, inputFile, outputDir, outputFile):
         self.inputFile = inputFile
         self.p = RDFtree(outputDir=outputDir, inputFile=inputFile, outputFile=outputFile)
+        self.recompute_vars = True
+        self.use_externalSF_Iso = False
+        self.use_externalSF_ID = False
+        self.use_externalSF_Trigger = False
         self.def_modules = []        
         self.categories = {}
         self.iteration = -1
@@ -36,20 +43,23 @@ class ConfigRDF():
         self.dataYear = dataYear
         self.era_ratios = pair_f(era_ratios[0],era_ratios[1])
         return
-
     
     """
     Branch defs
     """
     def _branch_defs(self):
         if self.iteration==0 and not hasattr(self, 'branch_defs_iter0'):
-            self.def_modules.append( ROOT.getVars("Idx_mu1", "Idx_mu2") )
-            self.def_modules.append( ROOT.getCompVars("Idx_mu1", "Idx_mu2", vec_s(), vec_s()) )
+            Idx_mu2 = "Idx_mu2" if hasattr(self,'run_DIMUON') else ""
+            self.def_modules.append( ROOT.getVars("Idx_mu1", Idx_mu2) )
+            if self.recompute_vars:
+                self.def_modules.append( ROOT.getCompVars("Idx_mu1", Idx_mu2, vec_s(), vec_s()) )          
             if self.isMC: 
                 self.def_modules.append( ROOT.getLumiWeight(self.inputFile, self.lumi, self.xsec) )
                 # Merge BCDEF and GH into one overall SF
                 if self.dataYear=='2016':
-                    for mu in ['1','2']:
+                    mus = ['1']
+                    if hasattr(self,'run_DIMUON'): mus.append('2')
+                    for mu in mus:
                         for syst in ['ISO', 'ID', 'Trigger']:
                             col1 = 'SelMuon'+mu+'_'+syst+'_BCDEF_SF'
                             col2 = 'SelMuon'+mu+'_'+syst+'_GH_SF'
@@ -164,20 +174,25 @@ class ConfigRDF():
                 for itype in ['statUp', 'statDown', 'systUp', 'systDown']:
                     syst_columns[key].push_back('Muon_'+syst+'_'+key+'_SF'+itype)                
             for key,item in syst_columns.items(): 
-                for mu in ['1','2']:
+                mus = ['1']
+                if hasattr(self,'run_DIMUON'): mus.append('2')
+                for mu in mus:
                     cols = syst_columns[key]
-                    col_new = "SelMuon"+mu+"_"+syst+"_"+key+"_SFall"
+                    col_new = "SelMuon"+mu+"_"+syst+"_"+key+"_SFAll"
                     col_nom = "SelMuon"+mu+"_"+syst+"_"+key+"_SF"
                     self.def_modules.append( ROOT.getSystWeight(cols, col_new, "Idx_mu"+mu, col_nom, pair_ui(0,0), "VVVV->Vnorm") )
-            for mu in ['1','2']:
-                col1 = 'SelMuon'+mu+'_'+syst+'_BCDEF_SFall'
-                col2 = 'SelMuon'+mu+'_'+syst+'_GH_SFall'
-                col_new = 'SelMuon'+mu+'_'+syst+'_SFall'
-                self.def_modules.append( ROOT.mergeSystWeight(pair_s(col1,col2), self.era_ratios, col_new, "V,V->aV+bV") )        
-            col1 = 'SelMuon1_'+syst+'_SFall'
-            col2 = 'SelMuon2_'+syst+'_SFall'
-            col  = 'SelMuon12_'+syst+'_SFall'
-            self.def_modules.append( ROOT.mergeSystWeight(pair_s(col1,col2), pair_f(1.0,1.0), col, "V,V->V*V") ) 
+            mus = ['1']
+            if hasattr(self,'run_DIMUON'): mus.append('2')
+            for mu in mus:
+                col1 = 'SelMuon'+mu+'_'+syst+'_BCDEF_SFAll'
+                col2 = 'SelMuon'+mu+'_'+syst+'_GH_SFAll'
+                col_new = 'SelMuon'+mu+'_'+syst+'_SFAll'
+                self.def_modules.append( ROOT.mergeSystWeight(pair_s(col1,col2), self.era_ratios, col_new, "V,V->aV+bV") ) 
+            if hasattr(self,'run_DIMUON'):
+                col1 = 'SelMuon1_'+syst+'_SFAll'
+                col2 = 'SelMuon2_'+syst+'_SFAll'
+                col  = 'SelMuon12_'+syst+'_SFAll'
+                self.def_modules.append( ROOT.mergeSystWeight(pair_s(col1,col2), pair_f(1.0,1.0), col, "V,V->V*V") ) 
             setattr(self, 'branch_muon_'+syst+'_scalefactor_iter0', True )
         elif self.iteration==1:
             pass
@@ -187,7 +202,7 @@ class ConfigRDF():
             for key,item in syst_columns.items():
                 for type in ['statUp', 'statDown', 'systUp', 'systDown']:
                     syst_columns[key].push_back(syst+'_'+type)                
-            new_weight_name = "SelMuon12_"+syst+"_SFall" if self.category=='DIMUON' else "SelMuon1_"+syst+"_SFall"
+            new_weight_name = "SelMuon12_"+syst+"_SFAll" if self.category=='DIMUON' else "SelMuon1_"+syst+"_SFAll"
             modules.append( ROOT.muonHistos(self.category, 'weight_'+self.category+'_nominal', syst_columns['ALL'], new_weight_name, "", False) )
             self.p.branch(nodeToStart=self.category+'_nominal', nodeToEnd=self.category+'_'+syst, modules=modules)
         return
@@ -200,13 +215,15 @@ class ConfigRDF():
     """
     def _get_muon_syst_columns(self,var,systs):
 
-        syst_columns = vec_s()
-        for syst in systs: syst_columns.push_back(syst)
-        if var=='corrected': 
-            self.def_modules.append( ROOT.getCompVars("Idx_mu1", "Idx_mu2", syst_columns, vec_s()) )
-        elif var=='nom':
-            self.def_modules.append( ROOT.getCompVars("Idx_mu1", "Idx_mu2", vec_s(), syst_columns) )
-        return
+        if self.recompute_vars:
+            syst_columns = vec_s()
+            for syst in systs: syst_columns.push_back(syst)
+            Idx_mu2 = "Idx_mu2" if hasattr(self,'run_DIMUON') else ""
+            if var=='corrected': 
+                self.def_modules.append( ROOT.getCompVars("Idx_mu1", Idx_mu2, syst_columns, vec_s()) )
+            elif var=='nom':
+                self.def_modules.append( ROOT.getCompVars("Idx_mu1", Idx_mu2, vec_s(), syst_columns) )
+            return
 
         signatureF = ""
         for i in range(len(systs)) : signatureF += "f"
@@ -219,7 +236,9 @@ class ConfigRDF():
             for col in ['Muon_corrected_pt', 'Muon_corrected_MET_nom_mt', 'Muon_corrected_MET_nom_hpt']:    
                 syst_columns = vec_s()
                 for syst in systs: syst_columns.push_back( col.replace(var, syst) )            
-                for mu in ['1']:
+                mus = ['1']
+                if hasattr(self,'run_DIMUON'): mus.append('2')
+                for mu in mus:
                     col_new = col.replace('Muon', 'SelMuon'+mu).replace(var, var+'All') 
                     self.def_modules.append( ROOT.getSystWeight( syst_columns, col_new, "Idx_mu"+mu, "", pair_ui(0,0), signatureV) )
                     
@@ -228,7 +247,9 @@ class ConfigRDF():
             for col in ['Muon_corrected_MET_nom_mt', 'Muon_corrected_MET_nom_hpt']:
                 syst_columns = vec_s()
                 for syst in systs: syst_columns.push_back( col.replace(var, syst) )
-                for mu in ['1']:
+                mus = ['1']
+                if hasattr(self,'run_DIMUON'): mus.append('2')
+                for mu in mus:
                     col_new = col.replace('Muon', 'SelMuon'+mu).replace(var, var+'All') 
                     self.def_modules.append( ROOT.getSystWeight( syst_columns, col_new, "Idx_mu"+mu, "", pair_ui(0,0), signatureV) )
             for col in ['MET_nom_pt', 'MET_nom_phi']:
@@ -322,6 +343,12 @@ class ConfigRDF():
     Run all modules
     """
     def run( self, categories ):
+
+        for key,val in categories.items():
+            if key=='DIMUON':
+                print ">> ConfigRDF: run DIMUON module: precompute new columns with 'Idx2'"
+                self.run_DIMUON = True
+
         for iteration in [0,1,2]:
             self.iteration = iteration
             print "Running iteration", iteration
@@ -348,7 +375,7 @@ class ConfigRDF():
         print " ==>", len(self.def_modules), " defs modules have been loaded..."
         print 'Get output...'
         self.p.getOutput()
-        self.p.saveGraph()
+        #self.p.saveGraph()
         return
 
 

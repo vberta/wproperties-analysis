@@ -17,6 +17,10 @@ print "Running with {} cores".format(c)
 
 inputFile   = '/scratch/sroychow/NanoAOD2016-V1MCFinal/WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/tree.root'
 inputSample = 'WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8'
+
+#inputFile   = '/scratch/sroychow/NanoAOD2016-V1MCFinal/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_ext2/tree.root'
+#inputSample = 'DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_ext2'
+
 config = ConfigRDF(inputFile, 'test', inputSample+'.root')
 config.set_sample_specifics(isMC=True, lumi=35.9, xsec=61526.7, dataYear='2016', era_ratios=[0.5,0.5])
 
@@ -78,5 +82,10 @@ categories = {
             },
         },
     }
+
+categories['SIGNAL']['modules'] = {'muon_nominal':[]}
+del categories['DIMUON']
+del categories['QCD']
+print categories
 
 config.run( categories )

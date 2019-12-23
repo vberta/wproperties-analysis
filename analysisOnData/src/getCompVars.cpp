@@ -2,10 +2,10 @@
 
 
 RNode getCompVars::run(RNode d){   
-
   
   RNode d_start = d;
 
+  // muon1,2 corrected pt systs
   if( _muon_systs.size()>0 ){
     std::vector<std::string> mus = {"1"};
     if(_idx2!="") mus.push_back("2");
@@ -23,9 +23,25 @@ RNode getCompVars::run(RNode d){
     }
   }
 
-  std::vector<std::string> compVars = {"mt", "hpt"};
+  // MET systsAll
+  else if( _MET_systs.size()>0 ){
+    ROOT::Detail::RDF::ColumnNames_t new_cols_pt, new_cols_phi;
+    for(unsigned int i=0 ; i < _MET_systs.size(); i++){
+      new_cols_pt.push_back( "MET_"+_MET_systs[i]+"_pt");
+      new_cols_phi.push_back("MET_"+_MET_systs[i]+"_phi");
+    }
+    auto d_post = d_start
+      .Define("MET_nomAll_pt",  getRVec_FFFFFFtoV, new_cols_pt)
+      .Define("MET_nomAll_phi", getRVec_FFFFFFtoV, new_cols_phi)
+      ;
+    d_start = d_post;
+  }
 
-  for(unsigned int i = 0; i < compVars.size() ; i++){
+  std::vector<std::string> compVars = {};
+
+  // Composite muon-MET variables
+  compVars = {"mt", "hpt"};
+  for(unsigned int i=0; i<compVars.size(); i++){
 
     std::string compVar = compVars[i];
     float (*func)(float,float,float,float) = nullptr;
@@ -80,7 +96,106 @@ RNode getCompVars::run(RNode d){
 	d_start = d_post;
       }
     }
-  }
+  } // END Composite muon-MET variables
+
+  if(_idx2=="") return d_start;
+
+  // Composite muon-muon variables
+  compVars = {"qt","mass","y"};
+  for(unsigned int i=0; i<compVars.size(); i++){
+
+    std::string compVar = compVars[i];
+    float (*func4)(float,float,float,float) = nullptr;
+    float (*func6)(float,float,float,float,float,float) = nullptr;
+    if( compVar=="qt" )   func4 = Z_qt;
+    if( compVar=="y" )    func4 = Z_y;
+    if( compVar=="mass" ) func6 = Z_mass;    
+
+    if(_muon_systs.size()==0 && _MET_systs.size()==0){      
+      std::string new_col = "SelRecoZ_corrected_"+compVar;
+      ROOT::Detail::RDF::ColumnNames_t in_cols;
+      if(compVar=="qt"){
+	in_cols.push_back("SelMuon1_corrected_pt");
+	in_cols.push_back("SelMuon1_phi");            
+	in_cols.push_back("SelMuon2_corrected_pt");
+	in_cols.push_back("SelMuon2_phi");
+	auto d_post = d_start.Define(new_col,func4, in_cols);
+	d_start = d_post;
+      }
+      else if(compVar=="y"){
+	in_cols.push_back("SelMuon1_corrected_pt");
+	in_cols.push_back("SelMuon1_eta");      
+	in_cols.push_back("SelMuon2_corrected_pt");     
+	in_cols.push_back("SelMuon2_eta");
+	auto d_post = d_start.Define(new_col,func4, in_cols);
+	d_start = d_post;
+      }
+      else if(compVar=="mass"){
+	in_cols.push_back("SelMuon1_corrected_pt");
+	in_cols.push_back("SelMuon1_eta");      
+	in_cols.push_back("SelMuon1_phi");            
+	in_cols.push_back("SelMuon2_corrected_pt");     
+	in_cols.push_back("SelMuon2_eta");
+	in_cols.push_back("SelMuon2_phi");            
+	auto d_post = d_start.Define(new_col,func6, in_cols);
+	d_start = d_post;
+      }
+    }
+    else if(_muon_systs.size()>0 && _MET_systs.size()==0){ 
+      unsigned int syst_size = _muon_systs.size();
+      std::string new_colAll = "SelRecoZ_correctedAll_"+compVar;
+      ROOT::Detail::RDF::ColumnNames_t new_cols;
+      for(unsigned int i=0 ; i < syst_size; i++){
+	std::string new_col    = "SelRecoZ_"+_muon_systs[i]+"_"+compVar;
+	std::string mu1_pt_col = "SelMuon1_"+_muon_systs[i]+"_pt";
+	std::string mu2_pt_col = "SelMuon2_"+_muon_systs[i]+"_pt";
+	ROOT::Detail::RDF::ColumnNames_t in_cols;
+	if(compVar=="qt"){
+	  in_cols.push_back(mu1_pt_col);
+	  in_cols.push_back("SelMuon1_phi");            
+	  in_cols.push_back(mu2_pt_col);
+	  in_cols.push_back("SelMuon2_phi");
+	  auto d_post = d_start.Define(new_col,func4, in_cols);
+	  d_start = d_post;
+	}
+	else if(compVar=="y"){
+	  in_cols.push_back(mu1_pt_col);
+	  in_cols.push_back("SelMuon1_eta");      
+	  in_cols.push_back(mu2_pt_col);     
+	  in_cols.push_back("SelMuon2_eta");
+	  auto d_post = d_start.Define(new_col,func4, in_cols);
+	  d_start = d_post;
+	}
+	else if(compVar=="mass"){
+	  in_cols.push_back(mu1_pt_col);
+	  in_cols.push_back("SelMuon1_eta");      
+	  in_cols.push_back("SelMuon1_phi");            
+	  in_cols.push_back(mu2_pt_col);     
+	  in_cols.push_back("SelMuon2_eta");
+	  in_cols.push_back("SelMuon2_phi");            
+	  auto d_post = d_start.Define(new_col,func6, in_cols);
+	  d_start = d_post;
+	}
+	new_cols.push_back(new_col);
+      }	
+      RNode d_post = d_start;
+      switch(syst_size){
+      case 2:
+	d_post = d_start.Define(new_colAll, getRVec_FFtoV, new_cols);
+	break;
+      case 4:
+	d_post = d_start.Define(new_colAll, getRVec_FFFFtoV, new_cols);
+	break;      
+      case 6:
+	d_post = d_start.Define(new_colAll, getRVec_FFFFFFtoV, new_cols);
+	break;            
+      default:
+	break;
+      }
+      d_start = d_post;       
+    }  
+  } //END Composite muon-muon variable
+  
 
   return d_start;
 }

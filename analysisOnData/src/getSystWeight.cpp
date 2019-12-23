@@ -2,7 +2,8 @@
 
 
 RNode getSystWeight::run(RNode d){
-    
+
+      
   auto getRVec_VVVVtoV = [](ROOT::VecOps::RVec<float> statUp, ROOT::VecOps::RVec<float> statDown, ROOT::VecOps::RVec<float> systUp, ROOT::VecOps::RVec<float> systDown, int idx){
     ROOT::VecOps::RVec<float> v;
     v.emplace_back(statUp[idx]);
