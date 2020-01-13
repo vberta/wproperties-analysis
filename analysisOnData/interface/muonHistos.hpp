@@ -38,7 +38,7 @@ private:
   std::vector<std::string> _syst_names; // names of syst variations for histo names
   std::string _syst_column; // the column comntaining the syst variations
   std::string _modifier; // var name modifier
-  bool _multi_cuts; // 
+  bool _multi_cuts; // the syst variation changes the acceptance
   bool _verbose;
     
 public:
@@ -54,18 +54,15 @@ public:
   void add_group_1D(//ROOT::RDF::RInterface<ROOT::Detail::RDF::RJittedFilter, void>*, 
 		    RNode*,
 		    const std::string&, const std::string&, 
-		    const std::vector<float>&, const unsigned int&);
+		    const std::vector<float>&);
   void add_group_2D(//ROOT::RDF::RInterface<ROOT::Detail::RDF::RJittedFilter, void>*, 
 		    RNode*,
 		    const std::string&, const std::string&, const std::string&, 
-		    const std::vector<float>&, const unsigned int&, 
-		    const std::vector<float>&, const unsigned int&);
+		    const std::vector<float>&, const std::vector<float>&);
   void add_group_3D(//ROOT::RDF::RInterface<ROOT::Detail::RDF::RJittedFilter, void>*, 
 		    RNode*,
 		    const std::string&, const std::string&, const std::string&, const std::string&,
-		    const std::vector<float>&, const unsigned int&, 
-		    const std::vector<float>&, const unsigned int&,
-		    const std::vector<float>&, const unsigned int&);
+		    const std::vector<float>&, const std::vector<float>&, const std::vector<float>&);
 
   ~muonHistos() {};
   

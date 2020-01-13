@@ -38,6 +38,13 @@ public:
      _xsec = xsec*1e+03; // pb -> fb
      _genEventSumw = runs.Sum("genEventSumw").GetValue();
    };
+
+  getLumiWeight(std::vector<std::string> fnames, double targetLumi, double xsec ){       
+     ROOT::RDataFrame runs("Runs", fnames);
+     _targetLumi = targetLumi;
+     _xsec = xsec*1e+03; // pb -> fb
+     _genEventSumw = runs.Sum("genEventSumw").GetValue();
+   };
   
   ~getLumiWeight() {};
   

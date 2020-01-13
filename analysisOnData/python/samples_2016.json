@@ -1,0 +1,12 @@
+{    
+    "WJetsToLNu_amcatnlo" : {  
+        "dirs" : {
+            "WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8" : ["tree"]
+        },							  
+        "dataType" : "MC",
+        "era_ratios" : [0.5,0.5],
+        "xsec" : 61526.7,
+        "ncores" : 64,
+	"categories" : "SIGNAL:wLHE,QCD,DIMUON"
+    }
+}

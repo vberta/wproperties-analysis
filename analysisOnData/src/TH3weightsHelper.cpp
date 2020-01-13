@@ -50,6 +50,7 @@ void TH3weightsHelper::Exec(unsigned int slot, const float &var1, const float &v
   auto& histos = *fHistos[slot];
   const auto n_histos = histos.size();
   for (unsigned int i = 0; i < n_histos; ++i){
+    //std::cout << var1 << "," << var2 << "," << var3 << std::endl;
     histos[i].Fill(var1, var2, var3, weight*weights[i]);
   }
 }

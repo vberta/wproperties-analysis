@@ -2,6 +2,8 @@
 
 
 RNode muonHistos::run(RNode d){
+
+  bool veto_LHE = _syst_column.find("LHE")!=std::string::npos;
     
   // PT1,2 vs ETA1,2 vs CHARGE1,2
   unsigned int nbins_pt  = 80;
@@ -13,14 +15,14 @@ RNode muonHistos::run(RNode d){
   for(unsigned int i=0; i<nbins_pt+1; i++)         pt_Arr[i] =  25. + i*(65.-25.)/nbins_pt;      
   for(unsigned int i=0; i<nbins_eta+1; i++)       eta_Arr[i] = -2.5 + i*(2.5 + 2.5)/nbins_eta;      
   for(unsigned int i=0; i<nbins_charge+1; i++) charge_Arr[i] = -2.0 + i*(4.0)/nbins_charge;      
-  if(_category=="SIGNAL" || _category=="QCD" || _category=="DIMUON") 
-    this->add_group_3D( &d, "SelMuon1_eta", "SelMuon1_corrected_pt", "SelMuon1_charge", "", 
-			eta_Arr, nbins_eta, pt_Arr, nbins_pt, charge_Arr, nbins_charge );
+  if(_category=="SIGNAL" || _category=="QCD" || _category=="DIMUON")
+    this->add_group_3D( &d, "SelMuon1_eta", "SelMuon1_corrected_pt", "SelMuon1_charge", "", eta_Arr, pt_Arr, charge_Arr);
+  
+  // FAST DEBUG
   return d;
 
   if(_category=="DIMUON")
-    this->add_group_3D( &d, "SelMuon2_eta", "SelMuon2_corrected_pt", "SelMuon2_charge", "", 
-			eta_Arr, nbins_eta, pt_Arr, nbins_pt, charge_Arr, nbins_charge );
+    this->add_group_3D( &d, "SelMuon2_eta", "SelMuon2_corrected_pt", "SelMuon2_charge", "", eta_Arr, pt_Arr, charge_Arr);
 
   // DXY1,2 vs ISO1,2 vs CHARGE1,2
   unsigned int nbins_dxy = 25;
@@ -29,12 +31,10 @@ RNode muonHistos::run(RNode d){
   std::vector<float> iso_Arr(nbins_eta+1); 
   for(unsigned int i=0; i<nbins_dxy+1; i++) dxy_Arr[i] = -0.02 + i*(+0.02+0.02)/nbins_dxy;      
   for(unsigned int i=0; i<nbins_iso+1; i++) iso_Arr[i] =  0.0  + i*(1.0)/nbins_iso;      
-  if(_category=="SIGNAL" || _category=="QCD" || _category=="DIMUON") 
-    this->add_group_3D( &d, "SelMuon1_pfRelIso04_all", "SelMuon1_dxy", "SelMuon1_charge", "", 
-			iso_Arr, nbins_iso, dxy_Arr, nbins_dxy, charge_Arr, nbins_charge );
-  if(_category=="DIMUON")
-    this->add_group_3D( &d, "SelMuon2_pfRelIso04_all", "SelMuon2_dxy", "SelMuon2_charge", "", 
-			iso_Arr, nbins_iso, dxy_Arr, nbins_dxy, charge_Arr, nbins_charge );  
+  if((_category=="SIGNAL" || _category=="QCD" || _category=="DIMUON") && veto_LHE) 
+    this->add_group_3D( &d, "SelMuon1_pfRelIso04_all", "SelMuon1_dxy", "SelMuon1_charge", "", iso_Arr, dxy_Arr, charge_Arr);
+  if((_category=="DIMUON") && veto_LHE)
+    this->add_group_3D( &d, "SelMuon2_pfRelIso04_all", "SelMuon2_dxy", "SelMuon2_charge", "", iso_Arr, dxy_Arr, charge_Arr);  
 
   // MT1 vs HT1 vs CHARGE1
   unsigned int nbins_mt  = 75;
@@ -43,9 +43,8 @@ RNode muonHistos::run(RNode d){
   std::vector<float> hpt_Arr(nbins_hpt+1); 
   for(unsigned int i=0; i<nbins_mt+1; i++)   mt_Arr[i] = 0. + i*(150.-0.)/nbins_mt;
   for(unsigned int i=0; i<nbins_hpt+1; i++) hpt_Arr[i] = 0. + i*(100.-0.)/nbins_hpt;
-  if(_category=="SIGNAL" || _category=="QCD")
-    this->add_group_3D( &d, "SelMuon1_corrected_MET_nom_mt", "SelMuon1_corrected_MET_nom_hpt", "SelMuon1_charge", "", 
-			mt_Arr, nbins_mt, hpt_Arr, nbins_hpt, charge_Arr, nbins_charge);
+  if((_category=="SIGNAL" || _category=="QCD") && veto_LHE)
+    this->add_group_3D( &d, "SelMuon1_corrected_MET_nom_mt", "SelMuon1_corrected_MET_nom_hpt", "SelMuon1_charge", "", mt_Arr, hpt_Arr, charge_Arr);
 
   // MET_PT vs MET_phi vs N_PVs
   unsigned int nbins_MET_pt  = 25;
@@ -57,9 +56,8 @@ RNode muonHistos::run(RNode d){
   for(unsigned int i=0; i<nbins_MET_pt+1; i++)  MET_pt_Arr[i]  = 0. + i*(100.-0.)/nbins_MET_pt;
   for(unsigned int i=0; i<nbins_MET_phi+1; i++) MET_phi_Arr[i] = -TMath::Pi() + i*(2.0*TMath::Pi())/nbins_MET_phi;
   for(unsigned int i=0; i<nbins_nPVs+1; i++)    nPVs_Arr[i]    = 0.0 + i*(70.0)/nbins_nPVs;
-  if(_category=="SIGNAL" || _category=="QCD" || _category=="DIMUON")
-    this->add_group_3D( &d, "MET_nom_pt", "MET_nom_phi", "nPVs", "",
-			MET_pt_Arr, nbins_MET_pt, MET_phi_Arr, nbins_MET_phi, nPVs_Arr, nbins_nPVs);
+  if((_category=="SIGNAL" || _category=="QCD" || _category=="DIMUON") && veto_LHE)
+    this->add_group_3D( &d, "MET_nom_pt", "MET_nom_phi", "nPVs", "", MET_pt_Arr, MET_phi_Arr, nPVs_Arr);
 
   // ZQT vs ZY vs ZMASS
   unsigned int nbins_RecoZ_qt   = 50;
@@ -71,9 +69,8 @@ RNode muonHistos::run(RNode d){
   for(unsigned int i=0; i<nbins_RecoZ_qt+1; i++)   RecoZ_qt_Arr[i]   =   0. + i*(100.)/nbins_RecoZ_qt;      
   for(unsigned int i=0; i<nbins_RecoZ_y+1; i++)    RecoZ_y_Arr[i]    = -3.0 + i*(3.0 + 3.0)/nbins_RecoZ_y;      
   for(unsigned int i=0; i<nbins_RecoZ_mass+1; i++) RecoZ_mass_Arr[i] =  60. + i*(120.)/nbins_RecoZ_mass;      
-  if(_category=="DIMUON") 
-    this->add_group_3D( &d, "SelRecoZ_corrected_qt", "SelRecoZ_corrected_y", "SelRecoZ_corrected_mass", "", 
-			RecoZ_qt_Arr,nbins_RecoZ_qt,RecoZ_y_Arr,nbins_RecoZ_y,RecoZ_mass_Arr,nbins_RecoZ_mass);    
+  if(_category=="DIMUON" && veto_LHE) 
+    this->add_group_3D( &d, "SelRecoZ_corrected_qt", "SelRecoZ_corrected_y", "SelRecoZ_corrected_mass", "", RecoZ_qt_Arr,RecoZ_y_Arr,RecoZ_mass_Arr);    
 
   return d;
 }
@@ -87,7 +84,8 @@ std::string muonHistos::check_modifier(const std::string& var_name){
   return ret;
 }
 
-void muonHistos::add_group_1D(RNode* d1,const std::string& var_name, const std::string& var_title, const std::vector<float>& arr, const unsigned int& nbins){
+void muonHistos::add_group_1D(RNode* d1,const std::string& var_name, const std::string& var_title, const std::vector<float>& arr){
+  unsigned int nbins = arr.size()-1;
   std::vector<std::string> total = _syst_names;
   if(total.size()==0) total.emplace_back("");
   std::string var_name_mod;
@@ -127,8 +125,9 @@ void muonHistos::add_group_1D(RNode* d1,const std::string& var_name, const std::
 void muonHistos::add_group_2D(RNode* d1,
 			      const std::string& var_name1, const std::string& var_name2, 
 			      const std::string& var_title, 
-			      const std::vector<float>& arrX, const unsigned int& nbinsX, 
-			      const std::vector<float>& arrY, const unsigned int& nbinsY){
+			      const std::vector<float>& arrX,const std::vector<float>& arrY){
+  unsigned int nbinsX = arrX.size()-1;
+  unsigned int nbinsY = arrY.size()-1;
   std::vector<std::string> total = _syst_names;
   if(total.size()==0) total.emplace_back("");
   std::string var_name1_mod, var_name2_mod;
@@ -198,11 +197,11 @@ void muonHistos::add_group_2D(RNode* d1,
 void muonHistos::add_group_3D(RNode* d1,
 			      const std::string& var_name1, const std::string& var_name2, const std::string& var_name3,
 			      const std::string& var_title, 
-			      const std::vector<float>& arrX, const unsigned int& nbinsX, 
-			      const std::vector<float>& arrY, const unsigned int& nbinsY,
-			      const std::vector<float>& arrZ, const unsigned int& nbinsZ
+			      const std::vector<float>& arrX, const std::vector<float>& arrY, const std::vector<float>& arrZ
 			      ){
-
+  unsigned int nbinsX = arrX.size()-1;
+  unsigned int nbinsY = arrY.size()-1;
+  unsigned int nbinsZ = arrZ.size()-1;
   std::vector<std::string> total = _syst_names;
   if(total.size()==0) total.emplace_back("");
   std::string var_name1_mod, var_name2_mod, var_name3_mod;
