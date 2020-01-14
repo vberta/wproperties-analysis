@@ -1,12 +1,34 @@
 {    
-    "WJetsToLNu_amcatnlo" : {  
+    "general" : {
+	"luminosity" : 35.92,
+	"era_ratios" : [0.5,0.5],
+	"genLepton" : "preFSR",
+	"phase_space_preFSR" : {
+	    "y[0.0,0.2]" : {  
+		"qT" : [0.0, 4.0, -1]
+	    },
+	    "y[0.2,Inf]" : {  
+		"qT" : [0.0, 4.0, -1]
+	    }
+	},
+	"harmonics" : ["A0", "A1", "A2", "A3", "A4"],	  
+	"Wto" : {
+	    "MuP" : "GenV_preFSR_charge==-13",  
+	    "MuN" : "GenV_preFSR_charge==+13",  
+	    "Tau" : "genVtype==16 || genVtype==-1"
+	},
+	"default" : {
+	    "categories" : "SIGNAL_WtoMuP*:all,SIGNAL_WtoMuN*:all,SIGNAL_WtoTau:all,SIGNAL_WtoEle:all,QCD:all,DIMUON:all"   
+	}
+    },  	 
+
+    "WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8" : {  
         "dirs" : {
             "WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8" : ["tree"]
         },							  
         "dataType" : "MC",
-        "era_ratios" : [0.5,0.5],
         "xsec" : 61526.7,
         "ncores" : 64,
-	"categories" : "SIGNAL:wLHE,QCD,DIMUON"
+	"categories" : "SIGNAL_WtoMuP*^:all,SIGNAL_WtoMuP*^:all,SIGNAL_WtoTau:all,QCD:all,DIMUON:nominal"
     }
 }

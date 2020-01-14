@@ -30,6 +30,7 @@ class ConfigRDF():
         self.iteration = -1
         self.cut       = ''
         self.category  = ''
+        self.category_base  = ''
         self.weight    = ''
         self.isMC  = True 
         self.lumi = 35.9
@@ -66,8 +67,9 @@ class ConfigRDF():
                             col  = 'SelMuon'+mu+'_'+syst+'_SF'
                             self.def_modules.append( ROOT.mergeSystWeight(pair_s(col1, col2), self.era_ratios, col, "f,f->af+bf") )
             setattr(self, 'branch_defs_iter0', True )
-        elif self.iteration==1:
-            self.def_modules.append( ROOT.getWeight('weight_'+self.category+'_nominal', self.weight) )    
+        elif self.iteration==1 and not hasattr(self, 'branch_defs_'+self.category_base+'_iter1'):
+            self.def_modules.append( ROOT.getWeight('weight_'+self.category_base+'_nominal', self.weight) )
+            setattr(self, 'branch_defs_'+self.category_base+'_iter1', True)
         elif self.iteration==2 and not hasattr(self, 'branch_defs_iter2'):
             self.p.branch(nodeToStart='input', nodeToEnd='defs', modules=self.def_modules)
             setattr(self, 'branch_defs_iter2', True )
@@ -83,8 +85,8 @@ class ConfigRDF():
             pass
         elif self.iteration==2:
             modules = []
-            modules.append( ROOT.getFilter(self.cut) )
-            modules.append( ROOT.muonHistos(self.category, 'weight_'+self.category+'_nominal', vec_s(), "", "", False) )
+            modules.append( ROOT.getFilter( ROOT.std.string(self.cut)) )
+            modules.append( ROOT.muonHistos(self.category, 'weight_'+self.category_base+'_nominal', vec_s(), "", "", False) )
             self.p.branch(nodeToStart='defs', nodeToEnd=self.category+'_nominal', modules=modules)
         return
 
@@ -102,7 +104,7 @@ class ConfigRDF():
             pass
         elif self.iteration==2:        
             modules = []
-            modules.append( ROOT.muonHistos(self.category, 'weight_'+self.category+'_nominal', syst_columns, var+'All', "", False) )
+            modules.append( ROOT.muonHistos(self.category, 'weight_'+self.category_base+'_nominal', syst_columns, var+'All', "", False) )
             self.p.branch(nodeToStart=self.category+'_nominal', nodeToEnd=self.category+'_'+var, modules=modules)
         return
 
@@ -157,7 +159,7 @@ class ConfigRDF():
             syst_column_names = vec_s()
             for i in range(systs[0], systs[1]+1):
                 syst_column_names.push_back( ROOT.string(var+'_'+getattr(self, '_get_'+var+'_meaning')(i)) )
-            modules.append( ROOT.muonHistos(self.category, 'weight_'+self.category+'_nominal', syst_column_names, new_weight_name, "", False) )
+            modules.append( ROOT.muonHistos(self.category, 'weight_'+self.category_base+'_nominal', syst_column_names, new_weight_name, "", False) )
             self.p.branch(nodeToStart=self.category+'_nominal', nodeToEnd=self.category+'_'+var, modules=modules)
         return
 
@@ -202,8 +204,8 @@ class ConfigRDF():
             for key,item in syst_columns.items():
                 for type in ['statUp', 'statDown', 'systUp', 'systDown']:
                     syst_columns[key].push_back(syst+'_'+type)                
-            new_weight_name = "SelMuon12_"+syst+"_SFAll" if self.category=='DIMUON' else "SelMuon1_"+syst+"_SFAll"
-            modules.append( ROOT.muonHistos(self.category, 'weight_'+self.category+'_nominal', syst_columns['ALL'], new_weight_name, "", False) )
+            new_weight_name = "SelMuon12_"+syst+"_SFAll" if 'DIMUON' in self.category else "SelMuon1_"+syst+"_SFAll"
+            modules.append( ROOT.muonHistos(self.category, 'weight_'+self.category_base+'_nominal', syst_columns['ALL'], new_weight_name, "", False) )
             self.p.branch(nodeToStart=self.category+'_nominal', nodeToEnd=self.category+'_'+syst, modules=modules)
         return
 
@@ -314,14 +316,17 @@ class ConfigRDF():
                 for syst in systs:
                     cut_syst = cut_removed.replace(var, syst)
                     weight_cut_syst = '('+cut_syst+')*('+self.weight+')'
-                    weight_cut_syst_name = 'weight_'+self.category+'_cut_'+var+'_'+syst
-                    #print('branch_muon_syst_column(): '+weight_cut_syst_name+' = '+weight_cut_syst)
-                    self.def_modules.append( ROOT.getWeight(weight_cut_syst_name, weight_cut_syst) )
+                    weight_cut_syst_name = 'weight_'+self.category_base+'_cut_'+var+'_'+syst
+                    if not hasattr(self, 'branch_muon_'+syst+'_'+var+'_'+self.category_base+'_iter1'):
+                        self.def_modules.append( ROOT.getWeight( ROOT.std.string(weight_cut_syst_name), ROOT.std.string(weight_cut_syst) ) )
+                        setattr(self, 'branch_muon_'+syst+'_'+var+'_'+self.category_base+'_iter1', True)
                     weight_columns.push_back(weight_cut_syst_name)
                 signature = ""
                 for i in range(len(systs)) : signature += "f"
                 signature += "->V"
-                self.def_modules.append( ROOT.getSystWeight(weight_columns, 'weight_'+self.category+'_cut_'+var+'All', "", "", pair_ui(0,0), signature) )
+                if not hasattr(self, 'branch_muon_'+var+'All_'+self.category_base+'_iter1'):
+                    self.def_modules.append( ROOT.getSystWeight(weight_columns, 'weight_'+self.category_base+'_cut_'+var+'All', "", "", pair_ui(0,0), signature) )
+                    setattr(self, 'branch_muon_'+var+'All_'+self.category_base+'_iter1', True)
                 return
             else:
                 # Nothing to be done
@@ -331,11 +336,11 @@ class ConfigRDF():
             modules = []
             if var in self.cut:
                 _,cut_clean_OR = self._get_subcuts(var,systs)
-                modules.append( ROOT.getFilter(cut_clean_OR) )
-                modules.append( ROOT.muonHistos(self.category, "", syst_columns, 'weight_'+self.category+'_cut_'+var+'All', var, True ) )
+                modules.append( ROOT.getFilter( ROOT.std.string(cut_clean_OR)) )
+                modules.append( ROOT.muonHistos(self.category, "", syst_columns, 'weight_'+self.category_base+'_cut_'+var+'All', var, True ) )
                 self.p.branch(nodeToStart='defs', nodeToEnd=self.category+'_'+var, modules=modules)
             else:                
-                modules.append( ROOT.muonHistos(self.category, "weight_"+self.category+"_nominal", syst_columns, "", var, False ) )
+                modules.append( ROOT.muonHistos(self.category, "weight_"+self.category_base+"_nominal", syst_columns, "", var, False ) )
                 self.p.branch(nodeToStart=self.category+'_nominal', nodeToEnd=self.category+'_'+var, modules=modules)
         return
 
@@ -345,7 +350,7 @@ class ConfigRDF():
     def run( self, categories ):
 
         for key,val in categories.items():
-            if key=='DIMUON':
+            if 'DIMUON' in key:
                 print ">> ConfigRDF: run DIMUON module: precompute new columns with 'Idx2'"
                 self.run_DIMUON = True
 
@@ -357,6 +362,7 @@ class ConfigRDF():
                 if not self.isMC: self.weight = 'Float_t(1.0)'
                 self.cut = specifics['cut']
                 self.category = category                
+                self.category_base = specifics['category_base']
                 self._branch_defs()
                 modules = specifics['modules']
                 if modules.has_key('muon_nominal'): self._branch_muon_nominal()
