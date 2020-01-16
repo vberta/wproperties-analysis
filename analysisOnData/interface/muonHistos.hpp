@@ -46,7 +46,7 @@ public:
   // to be called with THDvarsHelper
   muonHistos(std::string category, std::string weight, std::vector<std::string> syst_names, std::string syst_column, std::string modifier, bool multi_cuts) :
     _category(category), _weight(weight), _syst_names(syst_names), _syst_column(syst_column), _modifier(modifier), _multi_cuts(multi_cuts) {
-    _verbose = true;
+    _verbose = false;
   };
 
   std::string check_modifier(const std::string& var_name);

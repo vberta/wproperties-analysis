@@ -1,5 +1,5 @@
 {    
-    "general" : {
+    "common" : {
 	"luminosity" : 35.92,
 	"era_ratios" : [0.5,0.5],
 	"genLepton" : "preFSR",
@@ -11,14 +11,14 @@
 		"qT" : [0.0, 4.0, -1]
 	    }
 	},
-	"harmonics" : ["A0", "A1", "A2", "A3", "A4"],	  
+	"harmonics" : ["A0", "A1"],	  
 	"Wto" : {
 	    "MuP" : "GenV_preFSR_charge==-13",  
 	    "MuN" : "GenV_preFSR_charge==+13",  
-	    "Tau" : "genVtype==16 || genVtype==-1"
+	    "Tau" : "TMath::Abs(GenV_preFSR_charge)!=13"
 	},
 	"default" : {
-	    "categories" : "SIGNAL_WtoMuP*:all,SIGNAL_WtoMuN*:all,SIGNAL_WtoTau:all,SIGNAL_WtoEle:all,QCD:all,DIMUON:all"   
+	    "categories" : "SIGNAL_WtoMuP*^:all,SIGNAL_WtoMuP*^:all,SIGNAL_WtoTau:all,QCD:all,DIMUON:nominal"
 	}
     },  	 
 
@@ -29,6 +29,6 @@
         "dataType" : "MC",
         "xsec" : 61526.7,
         "ncores" : 64,
-	"categories" : "SIGNAL_WtoMuP*^:all,SIGNAL_WtoMuP*^:all,SIGNAL_WtoTau:all,QCD:all,DIMUON:nominal"
+	"categories" : "SIGNAL_WtoMuP^*:all,SIGNAL_WtoMuN*^:all,SIGNAL_WtoTau:nominal,QCD:all,DIMUON:nominal"
     }
 }

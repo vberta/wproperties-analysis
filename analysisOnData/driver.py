@@ -3,6 +3,8 @@ import sys
 import json
 import argparse
 import ROOT
+import pprint 
+pp = pprint.PrettyPrinter(indent=2)
 
 sys.path.append('python/')
 
@@ -26,7 +28,7 @@ sampledata = json.load(samplef)
 samplef.close()
 
 for k,v in sampledata.items():
-   if k=='general': continue
+   if k=='common': continue
    if len(restrictDataset)>0 and k not in restrictDataset: 
        continue
    dataType = v['dataType']
@@ -34,8 +36,8 @@ for k,v in sampledata.items():
    xsec   = v['xsec']
    ncores = v['ncores']
    categories = v['categories']
-   lumi = sampledata["general"]["luminosity"]
-   era_ratios = sampledata["general"]["era_ratios"]
+   lumi = sampledata["common"]["luminosity"]
+   era_ratios = sampledata["common"]["era_ratios"]
 
    print "key:       ", k
    print "dataType:  ", dataType
@@ -57,6 +59,10 @@ for k,v in sampledata.items():
    config = ConfigRDF(inputFiles, output, k+'.root')
    config.set_sample_specifics(isMC, lumi, xsec, dataYear, era_ratios)
    
-   ret = get_categories(dataType, categories, sampledata["general"])
-   #print ret
-   config.run( ret )
+   ret,ret_base = get_categories(dataType, categories, sampledata["common"])
+   print "Categories:"
+   pp.pprint(ret)
+   print "Base categories:"
+   pp.pprint(ret_base)   
+   print "Running..."
+   config.run( ret, ret_base )

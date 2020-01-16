@@ -18,7 +18,6 @@ submodules_LHE = {
     'event_syst_LHEScaleWeight' : [0,8],
     'event_syst_LHEPdfWeight'   : [98,101]    
     }
-
 modules_LHE = {
     'muon_nominal' : [],    
     }
@@ -27,63 +26,71 @@ modules_LHE.update(submodules_LHE)
 modules_wLHE = copy.deepcopy(modules_all)
 modules_wLHE.update( submodules_LHE )
 
-
 categories_all = { 
     'SIGNAL': {
         'weight' : 'puWeight*lumiweight*SelMuon1_ID_SF*SelMuon1_ISO_SF*SelMuon1_Trigger_SF',
+        'category_weight_base' : 'SIGNAL',
         'cut' : 'Vtype==0 ' + \
-        '&& HLT_SingleMu24 '+ \
-        '&& MET_filters==1 ' + \
-        '&& nVetoElectrons==0 ' + \
-        '&& SelMuon1_corrected_pt>25.0 ' + \
-        '&& SelMuon1_corrected_MET_nom_mt>40.0 ',
-        'modules' : modules_all,
-        'category_base' : 'SIGNAL'
+            '&& HLT_SingleMu24 '+ \
+            '&& MET_filters==1 ' + \
+            '&& nVetoElectrons==0 ' + \
+            '&& SelMuon1_corrected_pt>25.0 ' + \
+            '&& SelMuon1_corrected_MET_nom_mt>40.0 ',
+        'cut_base' : '',
+        'category_cut_base' : 'defs',
+        'modules' : modules_nominal
     },    
     'QCD': {
         'weight' : 'puWeight*lumiweight*SelMuon1_ID_SF*SelMuon1_ISO_SF*SelMuon1_Trigger_SF',
+        'category_weight_base' : 'QCD',
         'cut' : 'Vtype==1 ' + \
         '&& HLT_SingleMu24 '+ \
         '&& MET_filters==1 ' + \
         '&& nVetoElectrons==0 ' + \
         '&& SelMuon1_corrected_pt>25.0 ' + \
         '&& SelMuon1_corrected_MET_nom_mt<40.0 ',
-        'modules' : modules_all,
-        'category_base' : 'QCD'
+        'cut_base' : '',
+        'category_cut_base' : 'defs',
+        'modules' : modules_nominal,
     },
     'DIMUON': {
         'weight' : 'puWeight*lumiweight*SelMuon1_ID_SF*SelMuon1_ISO_SF*SelMuon1_Trigger_SF*SelMuon2_ID_SF*SelMuon2_ISO_SF*SelMuon2_Trigger_SF',
+        'category_weight_base' : 'DIMUON',
         'cut' : 'Vtype==2 ' + \
         '&& HLT_SingleMu24 '+ \
         '&& MET_filters==1 ' + \
         '&& nVetoElectrons==0 ' + \
         '&& SelMuon1_corrected_pt>25.0 ' + \
         '&& SelMuon2_corrected_pt>25.0 ',
+        'cut_base' : '',
+        'category_cut_base' : 'defs',
         'modules' : modules_all,
-        'category_base' : 'DIMUON'
         },
     }
 
-def get_categories(dataType,categories_str, general):
+def get_categories(dataType,categories_str, common):
     categories_split = categories_str.split(',')
     categories_split_name  = []
     categories_split_syst  = []
     categories_split_slice = []
     categories_split_reweight = []
     for c in categories_split:
-        # phase-space splitting
+
+        # phase-space splitting ?
         if "*" in c: 
             c = c.replace("*", "")
             categories_split_slice.append(True)
         else:
             categories_split_slice.append(False)
-        # harmonics reweighting
+
+        # harmonics reweighting ?
         if "^" in c: 
             c = c.replace("^", "")
             categories_split_reweight.append(True)
         else:
             categories_split_reweight.append(False)
-        # modules to be run
+
+        # modules to be run. Default: all
         if ':' in c:
             pos = c.find(':')
             c_name,c_syst = c[:pos], c[pos+1:]
@@ -93,21 +100,28 @@ def get_categories(dataType,categories_str, general):
             categories_split_name.append(c)
             categories_split_syst.append('')
 
-    # start from a sreash copy
+    # start from a fresh copy
     ret = copy.deepcopy(categories_all)
+    ret_base = {}
 
+    # these are all the base categories
     for c in ['SIGNAL_WtoMuP','SIGNAL_WtoMuN','SIGNAL_WtoTau','SIGNAL','QCD','DIMUON']:
 
-        if "Wto" in c:
-            ret[c] = copy.deepcopy(ret[c.split('_')[0]])
-            ret[c]["cut"] += "&& "+ general["Wto"][c.split('_')[1].lstrip('Wto')]
-
+        # check whether c is in the json file
         run_c,pos_c = False, -1
         for icc,cc in enumerate(categories_split_name):
             if cc==c: (run_c,pos_c) = (True,icc)
         if not run_c:
             if ret.has_key(c): del ret[c]
-            continue
+            continue        
+
+        if "Wto" in c:
+            ret[c] = copy.deepcopy(ret[c.split('_')[0]])
+            ret[c]["category_cut_base"] = c.split('_')[0] 
+            ret[c]["cut"] = str(common["Wto"][c.split('_')[1].lstrip('Wto')])
+            ret[c]["cut_base"] = str(ret[c.split('_')[0]]['cut'])
+            if not ret_base.has_key(c.split('_')[0]):
+                ret_base[c.split('_')[0]] = copy.deepcopy(ret[c.split('_')[0]])
 
         if dataType=='DATA':
             ret[c]['weight'] = 'Float_t(1.0)'
@@ -122,9 +136,12 @@ def get_categories(dataType,categories_str, general):
             elif categories_split_syst[pos_c] == 'wLHE':
                 ret[c]['modules'] = modules_wLHE                
 
-        lep = general["genLepton"]
-        ps = general["phase_space_"+lep]
+        # phase-space slicing is enabled
         if categories_split_slice[pos_c]:
+            if not ret_base.has_key(c):
+                ret_base[c] = copy.deepcopy(ret[c])
+            lepton_def = common["genLepton"]
+            ps = common["phase_space_"+lepton_def]
             for ps_key,ps_val in ps.items():
                 y_bin = ps_key.lstrip("y[").rstrip("]").split(',')
                 (y_low,y_high) = (y_bin[0],y_bin[1])
@@ -133,29 +150,36 @@ def get_categories(dataType,categories_str, general):
                     qT_low  = "{:0.1f}".format(qT_bins[iqT])
                     qT_high = "{:0.1f}".format(qT_bins[iqT+1]) if qT_bins[iqT+1]>=0. else "Inf"
                     ps_cut = str("("+ \
-                        "TMath::Abs(GenV_"+lep+"_y)>="+y_low + \
-                        (" && TMath::Abs(GenV_"+lep+"_y)<"+y_high if y_high!="Inf" else "") + \
-                        " && GenV_"+lep+"_qt>="+qT_low + \
-                        (" && GenV_"+lep+"_qt<"+qT_high if qT_high!="Inf" else "") + \
+                        "TMath::Abs(GenV_"+lepton_def+"_y)>="+y_low + \
+                        (" && TMath::Abs(GenV_"+lepton_def+"_y)<"+y_high if y_high!="Inf" else "") + \
+                        " && GenV_"+lepton_def+"_qt>="+qT_low + \
+                        (" && GenV_"+lepton_def+"_qt<"+qT_high if qT_high!="Inf" else "") + \
                         ")")
                     cat_name = str("y"+y_low.replace('.','p')+"_"+y_high.replace('.','p') + \
-                        "_qT"+qT_low.replace('.','p')+"_"+qT_high.replace('.','p'))
+                        "_qt"+qT_low.replace('.','p')+"_"+qT_high.replace('.','p'))
                     new_cat = copy.deepcopy(ret[c])
-                    new_cat['cut'] = str(new_cat['cut'])+str(" && "+ps_cut)
+                    new_cat['category_cut_base'] = str(c)
+                    new_cat['cut'] = str(ps_cut)
+                    new_cat['cut_base'] = ret[c]['cut_base']+' && '+ret[c]['cut']
                     ret[str(c+'_'+cat_name)] = new_cat                       
                     if categories_split_reweight[pos_c]:
-                        for a in general["harmonics"]:
+                        if not ret_base.has_key(c+'_'+cat_name):
+                            ret_base[c+'_'+cat_name] = copy.deepcopy(new_cat)
+                        for a in common["harmonics"]:
                             new_cat = copy.deepcopy(ret[str(c+'_'+cat_name)])
                             # dummy for the moment...
-                            new_cat["weight"] = str(new_cat["weight"]+"*Float_t(1.0)")
-                            c_base = c
-                            if "Wto" in c: 
-                                c_base = c.split('_')[0]
-                            new_cat["category_base"] = str(c_base+"_"+a)
+                            new_cat["weight"] = str(new_cat["weight"]+"*Float_t(1.0+"+str(a[-1])+")")
+                            # NOT the nominal weight for top category
+                            c_weight_base = c.split('_')[0]
+                            new_cat["category_weight_base"] = str(c_weight_base+"_"+a)
+                            # inherits cut from top category
+                            new_cat['cut'] = ""
+                            new_cat['cut_base'] = str(ret[str(c+'_'+cat_name)]['cut_base']+' && '+ret[str(c+'_'+cat_name)]['cut'])
+                            new_cat["category_cut_base"] = str(c+'_'+cat_name)
                             ret[str(c+'_'+cat_name+'_'+a)] = new_cat
                         # remove the MC?
-                        #del ret[str(c+'_'+cat_name)]
+                        del ret[str(c+'_'+cat_name)]
             del ret[c]
 
-    return ret
+    return ret, ret_base
                 
