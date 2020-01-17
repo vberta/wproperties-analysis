@@ -2,61 +2,58 @@
 
 
 RNode getVars::run(RNode d){
+
+  RNode d_start = d;
     
-  auto d1 = d
+  auto d_post = d_start
     .Define("dummy", dummy, {"event"})
     .Define("SelMuon1_charge",           getIFromIdx, {"Muon_charge",          _idx1})
     .Define("SelMuon1_pfRelIso04_all",   getFromIdx , {"Muon_pfRelIso04_all",  _idx1})
     .Define("SelMuon1_dxy",              getFromIdx,  {"Muon_dxy",             _idx1})
-    .Define("SelMuon1_ISO_BCDEF_SF",     getFromIdx,  {"Muon_ISO_BCDEF_SF",    _idx1})
-    .Define("SelMuon1_ISO_GH_SF",        getFromIdx,  {"Muon_ISO_GH_SF",       _idx1})
-    .Define("SelMuon1_ID_BCDEF_SF",      getFromIdx,  {"Muon_ID_BCDEF_SF",     _idx1})
-    .Define("SelMuon1_ID_GH_SF",         getFromIdx,  {"Muon_ID_GH_SF",        _idx1})
-    .Define("SelMuon1_Trigger_BCDEF_SF", getFromIdx,  {"Muon_Trigger_BCDEF_SF",_idx1})
-    .Define("SelMuon1_Trigger_GH_SF",    getFromIdx,  {"Muon_Trigger_GH_SF",   _idx1})
     .Define("SelMuon1_corrected_pt",     getFromIdx,  {"Muon_corrected_pt",    _idx1})
     .Define("SelMuon1_pt",               getFromIdx,  {"Muon_pt",              _idx1})
     .Define("SelMuon1_eta",              getFromIdx,  {"Muon_eta",             _idx1})
     .Define("SelMuon1_phi",              getFromIdx,  {"Muon_phi",             _idx1})
     .Define("nPVs",                      castToFloat, {"PV_npvsGood"})
     ;
-    //.Define("SelMuon1_corrected_MET_nom_mt",     getFromIdx, {"Muon_corrected_MET_nom_mt",     _idx1})
-    //.Define("SelMuon1_corrected_MET_nom_hpt",    getFromIdx, {"Muon_corrected_MET_nom_hpt",     _idx1})
-    //.Define("SelMuon1_correctedUp_pt",   getFromIdx, {"Muon_correctedUp_pt",  _idx1})
-    //.Define("SelMuon1_correctedDown_pt", getFromIdx, {"Muon_correctedDown_pt",_idx1})
-    //.Define("SelMuon1_correctedUp_MET_nom_mt",   getFromIdx, {"Muon_correctedUp_MET_nom_mt",   _idx1})
-    //.Define("SelMuon1_correctedDown_MET_nom_mt", getFromIdx, {"Muon_correctedDown_MET_nom_mt", _idx1})
-    //.Define("SelMuon1_corrected_MET_jesTotalUp_mt",   getFromIdx, {"Muon_corrected_MET_jesTotalUp_mt",     _idx1})
-    //.Define("SelMuon1_corrected_MET_jesTotalDown_mt", getFromIdx, {"Muon_corrected_MET_jesTotalDown_mt",   _idx1})
-    //.Define("SelMuon1_corrected_MET_jerUp_mt",   getFromIdx, {"Muon_corrected_MET_jerUp_mt",     _idx1})
-    //.Define("SelMuon1_corrected_MET_jerDown_mt", getFromIdx, {"Muon_corrected_MET_jerDown_mt",     _idx1})
-    //.Define("SelMuon1_corrected_MET_unclustEnUp_mt",   getFromIdx, {"Muon_corrected_MET_unclustEnUp_mt",     _idx1})
-    //.Define("SelMuon1_corrected_MET_unclustEnDown_mt", getFromIdx, {"Muon_corrected_MET_unclustEnDown_mt",     _idx1})
-    //.Define("SelMuon1_corrected_MET_nom_mt", Mt, {"SelMuon1_corrected_pt", "SelMuon1_phi", "MET_nom_pt", "MET_nom_phi"} )
-    ;
+  d_start = d_post;
+
+  if(_isMC){
+    auto d_post = d_start.Define("SelMuon1_ISO_BCDEF_SF",     getFromIdx,  {"Muon_ISO_BCDEF_SF",    _idx1})
+      .Define("SelMuon1_ISO_GH_SF",        getFromIdx,  {"Muon_ISO_GH_SF",       _idx1})
+      .Define("SelMuon1_ID_BCDEF_SF",      getFromIdx,  {"Muon_ID_BCDEF_SF",     _idx1})
+      .Define("SelMuon1_ID_GH_SF",         getFromIdx,  {"Muon_ID_GH_SF",        _idx1})
+      .Define("SelMuon1_Trigger_BCDEF_SF", getFromIdx,  {"Muon_Trigger_BCDEF_SF",_idx1})
+      .Define("SelMuon1_Trigger_GH_SF",    getFromIdx,  {"Muon_Trigger_GH_SF",   _idx1})
+      ;
+    d_start = d_post;
+  }
   
   if(_idx2!=""){
-    auto d2 = d1
+    auto d_post = d_start
       .Define("SelMuon2_charge",           getIFromIdx, {"Muon_charge",          _idx2})
       .Define("SelMuon2_pfRelIso04_all",   getFromIdx , {"Muon_pfRelIso04_all",  _idx2})
       .Define("SelMuon2_dxy",              getFromIdx,  {"Muon_dxy",             _idx2})
-      .Define("SelMuon2_ISO_BCDEF_SF",     getFromIdx,  {"Muon_ISO_BCDEF_SF",    _idx2})
-      .Define("SelMuon2_ISO_GH_SF",        getFromIdx,  {"Muon_ISO_GH_SF",       _idx2})
-      .Define("SelMuon2_ID_BCDEF_SF",      getFromIdx,  {"Muon_ID_BCDEF_SF",     _idx2})
-      .Define("SelMuon2_ID_GH_SF",         getFromIdx,  {"Muon_ID_GH_SF",        _idx2})
-      .Define("SelMuon2_Trigger_BCDEF_SF", getFromIdx,  {"Muon_Trigger_BCDEF_SF",_idx2})
-      .Define("SelMuon2_Trigger_GH_SF",    getFromIdx,  {"Muon_Trigger_GH_SF",   _idx2})
       .Define("SelMuon2_corrected_pt",     getFromIdx,  {"Muon_corrected_pt",    _idx2})
       .Define("SelMuon2_pt",               getFromIdx,  {"Muon_pt",              _idx2})
       .Define("SelMuon2_eta",              getFromIdx,  {"Muon_eta",             _idx2})
       .Define("SelMuon2_phi",              getFromIdx,  {"Muon_phi",             _idx2})
       ;
-      //.Define("SelMuon2_correctedUp_pt",   getFromIdx, {"Muon_correctedUp_pt",  _idx2})
-      //.Define("SelMuon2_correctedDown_pt", getFromIdx, {"Muon_correctedDown_pt",_idx2});
-    return d2;
+    d_start = d_post;
+
+    if(_isMC){
+      auto d_post = d_start.Define("SelMuon2_ISO_BCDEF_SF",     getFromIdx,  {"Muon_ISO_BCDEF_SF",    _idx2})
+	.Define("SelMuon2_ISO_GH_SF",        getFromIdx,  {"Muon_ISO_GH_SF",       _idx2})
+	.Define("SelMuon2_ID_BCDEF_SF",      getFromIdx,  {"Muon_ID_BCDEF_SF",     _idx2})
+	.Define("SelMuon2_ID_GH_SF",         getFromIdx,  {"Muon_ID_GH_SF",        _idx2})
+	.Define("SelMuon2_Trigger_BCDEF_SF", getFromIdx,  {"Muon_Trigger_BCDEF_SF",_idx2})
+	.Define("SelMuon2_Trigger_GH_SF",    getFromIdx,  {"Muon_Trigger_GH_SF",   _idx2})
+	;
+      d_start = d_post;
+    }    
   }  
 
-  return d1;
+  return d_start;
 }
 
 std::vector<ROOT::RDF::RResultPtr<TH1D>> getVars::getTH1(){ 

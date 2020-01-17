@@ -27,11 +27,12 @@ private:
   std::vector<ROOT::RDF::RResultPtr<std::vector<TH3D>>> _h3Group;
 
   std::string _idx1, _idx2;
+  bool _isMC;
  
 public:
     
-  getVars(std::string idx1, std::string idx2) : 
-    _idx1(idx1), _idx2(idx2) {};
+  getVars(std::string idx1, std::string idx2, bool isMC) : 
+    _idx1(idx1), _idx2(idx2), _isMC(isMC) {};
   
   ~getVars() {};
   

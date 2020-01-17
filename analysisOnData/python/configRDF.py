@@ -18,9 +18,9 @@ Class that configures RDFtree. Add new modules as class functions.
 """
 class ConfigRDF():    
 
-    def __init__(self, inputFile, outputDir, outputFile):
-        self.inputFile = inputFile
-        self.p = RDFtree(outputDir=outputDir, inputFile=inputFile, outputFile=outputFile)
+    def __init__(self, inputFiles, outputDir, outputFile):
+        self.inputFiles = inputFiles
+        self.p = RDFtree(outputDir=outputDir, inputFile=inputFiles[0], outputFile=outputFile)
         self.recompute_vars = True
         self.use_externalSF_Iso = False
         self.use_externalSF_ID = False
@@ -59,11 +59,11 @@ class ConfigRDF():
     def _branch_defs(self):
         if self.iteration==0 and not hasattr(self, 'branch_defs_iter0'):
             Idx_mu2 = "Idx_mu2" if hasattr(self,'run_DIMUON') else ""
-            self.def_modules.append( ROOT.getVars("Idx_mu1", Idx_mu2) )
+            self.def_modules.append( ROOT.getVars("Idx_mu1", Idx_mu2, self.isMC) )
             if self.recompute_vars:
                 self.def_modules.append( ROOT.getCompVars("Idx_mu1", Idx_mu2, vec_s(), vec_s()) )          
             if self.isMC: 
-                self.def_modules.append( ROOT.getLumiWeight(self.inputFile, self.lumi, self.xsec) )
+                self.def_modules.append( ROOT.getLumiWeight(self.inputFiles, self.lumi, self.xsec) )
                 # Merge BCDEF and GH into one overall SF
                 if self.dataYear=='2016':
                     mus = ['1']

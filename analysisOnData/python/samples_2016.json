@@ -17,18 +17,243 @@
 	    "MuN" : "GenV_preFSR_charge==+13",  
 	    "Tau" : "TMath::Abs(GenV_preFSR_charge)!=13"
 	},
+	"Zto" : {
+	    "MuMu"   : "genVtype==13",  
+	    "TauTau" : "genVtype!=13"
+	},
 	"default" : {
 	    "categories" : "SIGNAL_WtoMuP*^:all,SIGNAL_WtoMuP*^:all,SIGNAL_WtoTau:all,QCD:all,DIMUON:nominal"
 	}
     },  	 
 
-    "WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8" : {  
+    "WJetsToLNu_amcatnloFXFX" : {  
         "dirs" : {
-            "WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8" : ["tree"]
-        },							  
+            "WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8"      : ["tree"],
+            "WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_ext2" : ["tree"]
+        },											  
         "dataType" : "MC",
         "xsec" : 61526.7,
         "ncores" : 64,
-	"categories" : "SIGNAL_WtoMuP^*:all,SIGNAL_WtoMuN*^:all,SIGNAL_WtoTau:nominal,QCD:all,DIMUON:nominal"
+	"categories" : "SIGNAL_WtoMuP:all,SIGNAL_WtoMuN:all,SIGNAL_WtoTau:nominal,QCD:all,DIMUON:nominal"
+    },
+
+    "DYJetsToLL_M-10to50_amcatnloFXFX" : {  
+        "dirs" : {
+            "DYJetsToLL_M-10to50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8"      : ["tree"],
+            "DYJetsToLL_M-10to50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_ext1" : ["tree"]
+        },											  
+        "dataType" : "MC",
+        "xsec" : 1903.0,
+        "ncores" : 64,
+	"categories" : "SIGNAL:nominal,QCD:nominal,DIMUON:all"
+    },
+
+    "DYJetsToLL_M-50_amcatnloFXFX" : {  
+        "dirs" : {
+            "DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_ext2" : ["tree"]
+        },											  
+        "dataType" : "MC",
+        "xsec" : 6025.2,
+        "ncores" : 64,
+	"categories" : "SIGNAL:all,QCD:nominal,DIMUON_ZtoMuMu:all,DIMUON_ZtoTauTau:nominal"
+    },
+
+    "WW_pythia8" : {  
+        "dirs" : {
+            "WW_TuneCUETP8M1_13TeV-pythia8"      : ["tree"],
+            "WW_TuneCUETP8M1_13TeV-pythia8_ext1" : ["tree"]
+        },											  
+        "dataType" : "MC",
+        "xsec" : 115,
+        "ncores" : -1,
+	"categories" : "SIGNAL:nominal,QCD:nominal,DIMUON:nominal"
+    },
+
+    "WZ_pythia8" : {  
+        "dirs" : {
+            "WZ_TuneCUETP8M1_13TeV-pythia8"      : ["tree"],
+            "WZ_TuneCUETP8M1_13TeV-pythia8_ext1" : ["tree"]
+        },											  
+        "dataType" : "MC",
+        "xsec" : 47.13,
+        "ncores" : -1,
+	"categories" : "SIGNAL:nominal,QCD:nominal,DIMUON:nominal"
+    },
+
+    "ZZ_pythia8" : {  
+        "dirs" : {
+            "ZZ_TuneCUETP8M1_13TeV-pythia8" : ["tree"]
+        },											  
+        "dataType" : "MC",
+        "xsec" : 16.523,
+        "ncores" : -1,
+	"categories" : "SIGNAL:nominal,QCD:nominal,DIMUON:nominal"
+    },
+
+    "ST_s-channel_amcatnlo" : {  
+        "dirs" : {
+            "ST_s-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1" : ["tree"]
+        },											  
+        "dataType" : "MC",
+        "xsec" : 3.68,
+        "ncores" : -1,
+	"categories" : "SIGNAL:nominal,QCD:nominal,DIMUON:nominal"
+    },
+
+    "ST_t-channel_top_powhegV2" : {  
+        "dirs" : {
+            "ST_t-channel_top_4f_inclusiveDecays_13TeV-powhegV2-madspin-pythia8_TuneCUETP8M1" : ["tree"]
+        },											  
+        "dataType" : "MC",
+        "xsec" : 136.02,
+        "ncores" : -1,
+	"categories" : "SIGNAL:nominal,QCD:nominal,DIMUON:nominal"
+    },
+
+    "ST_t-channel_antitop_powhegV2" : {  
+        "dirs" : {
+            "ST_t-channel_antitop_4f_inclusiveDecays_13TeV-powhegV2-madspin-pythia8_TuneCUETP8M1" : ["tree"]
+        },											  
+        "dataType" : "MC",
+        "xsec" : 80.95,
+        "ncores" : -1,
+	"categories" : "SIGNAL:nominal,QCD:nominal,DIMUON:nominal"
+    },
+
+    "ST_tW_top_powheg" : {  
+        "dirs" : {
+            "ST_tW_top_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1_ext1" : ["tree"]
+        },											  
+        "dataType" : "MC",
+        "xsec" : 35.6,
+        "ncores" : -1,
+	"categories" : "SIGNAL:nominal,QCD:nominal,DIMUON:nominal"
+    },
+
+    "ST_tW_antitop_powheg" : {  
+        "dirs" : {
+            "ST_tW_antitop_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1_ext1" : ["tree"]
+        },											  
+        "dataType" : "MC",
+        "xsec" : 35.6,
+        "ncores" : -1,
+	"categories" : "SIGNAL:nominal,QCD:nominal,DIMUON:nominal"
+    },
+
+    "TTJets_SingleLeptFromT_TuneCUETP8M1_13TeV-madgraphMLM-pythia8" : {  
+        "dirs" : {
+            "TTJets_SingleLeptFromT_TuneCUETP8M1_13TeV-madgraphMLM-pythia8"      : ["tree"],
+	    "TTJets_SingleLeptFromT_TuneCUETP8M1_13TeV-madgraphMLM-pythia8_ext1" : ["tree"]
+        },											  
+        "dataType" : "MC",
+        "xsec" : 182.0,
+        "ncores" : -1,
+	"categories" : "SIGNAL:nominal,QCD:nominal,DIMUON:nominal"
+    },
+
+    "TTJets_SingleLeptFromT_TuneCUETP8M1_13TeV-madgraphMLM-pythia8_ext1" : {  
+        "dirs" : {
+            "TTJets_SingleLeptFromT_TuneCUETP8M1_13TeV-madgraphMLM-pythia8_ext1" : ["tree"],
+	    "TTJets_SingleLeptFromT_TuneCUETP8M1_13TeV-madgraphMLM-pythia8"      : ["tree"]
+        },											  
+        "dataType" : "MC",
+        "xsec" : 182.0,
+        "ncores" : 64,
+	"categories" : "SIGNAL:nominal,QCD:nominal,DIMUON:nominal"
+    },
+
+    "TTJets_SingleLeptFromTbar_TuneCUETP8M1_13TeV-madgraphMLM-pythia8" : {  
+        "dirs" : {
+            "TTJets_SingleLeptFromTbar_TuneCUETP8M1_13TeV-madgraphMLM-pythia8"      : ["tree"],
+            "TTJets_SingleLeptFromTbar_TuneCUETP8M1_13TeV-madgraphMLM-pythia8_ext1" : ["tree"]
+        },											  
+        "dataType" : "MC",
+        "xsec" : 182.0,
+        "ncores" : -1,
+	"categories" : "SIGNAL:nominal,QCD:nominal,DIMUON:nominal"
+    },
+
+    "TTJets_SingleLeptFromTbar_TuneCUETP8M1_13TeV-madgraphMLM-pythia8_ext1" : {  
+        "dirs" : {
+            "TTJets_SingleLeptFromTbar_TuneCUETP8M1_13TeV-madgraphMLM-pythia8_ext1" : ["tree"],
+            "TTJets_SingleLeptFromTbar_TuneCUETP8M1_13TeV-madgraphMLM-pythia8"      : ["tree"]
+        },											  
+        "dataType" : "MC",
+        "xsec" : 182.0,
+        "ncores" : 64,
+	"categories" : "SIGNAL:nominal,QCD:nominal,DIMUON:nominal"
+    },
+
+    "TTJets_DiLept_madgraphMLM" : {  
+        "dirs" : {
+            "TTJets_DiLept_TuneCUETP8M1_13TeV-madgraphMLM-pythia8"      : ["tree"],
+            "TTJets_DiLept_TuneCUETP8M1_13TeV-madgraphMLM-pythia8_ext1" : ["tree"]
+        },											  
+        "dataType" : "MC",
+        "xsec" : 95.02,
+        "ncores" : -1,
+	"categories" : "SIGNAL:nominal,QCD:nominal,DIMUON:nominal"
+    },
+
+    "SingleMuon_Run2016B_ver2" : {  
+        "dirs" : {
+            "SingleMuon_Run2016B_ver2" : ["tree"]
+        },											  
+        "dataType" : "DATA",
+        "xsec" : -1,
+        "ncores" : 64,
+	"categories" : "SIGNAL:nominal,QCD:nominal,DIMUON:nominal"
+    },
+
+    "SingleMuon_Run2016C" : {  
+        "dirs" : {
+            "SingleMuon_Run2016C" : ["tree"]
+        },							  
+        "dataType" : "DATA",
+        "xsec" : -1,
+        "ncores" : 64,
+	"categories" : "SIGNAL:nominal,QCD:nominal,DIMUON:nominal"
+    },
+
+    "SingleMuon_Run2016D" : {  
+        "dirs" : {
+            "SingleMuon_Run2016D" : ["tree"]
+        },							  
+        "dataType" : "DATA",
+        "xsec" : -1,
+        "ncores" : 64,
+	"categories" : "SIGNAL:nominal,QCD:nominal,DIMUON:nominal"
+    },
+
+
+    "SingleMuon_Run2016E" : {  
+        "dirs" : {
+            "SingleMuon_Run2016E" : ["tree"]
+        },							  
+        "dataType" : "DATA",
+        "xsec" : -1,
+        "ncores" : 64,
+	"categories" : "SIGNAL:nominal,QCD:nominal,DIMUON:nominal"
+    },
+
+    "SingleMuon_Run2016F" : {  
+        "dirs" : {
+            "SingleMuon_Run2016F" : ["tree"]
+        },							  
+        "dataType" : "DATA",
+        "xsec" : -1,
+        "ncores" : 64,
+	"categories" : "SIGNAL:nominal,QCD:nominal,DIMUON:nominal"
+    },
+
+    "SingleMuon_Run2016G" : {  
+        "dirs" : {
+            "SingleMuon_Run2016G" : ["tree"]
+        },							  
+        "dataType" : "DATA",
+        "xsec" : -1,
+        "ncores" : 64,
+	"categories" : "SIGNAL:nominal,QCD:nominal,DIMUON:nominal"
     }
+
 }

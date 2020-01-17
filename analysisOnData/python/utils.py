@@ -105,7 +105,13 @@ def get_categories(dataType,categories_str, common):
     ret_base = {}
 
     # these are all the base categories
-    for c in ['SIGNAL_WtoMuP','SIGNAL_WtoMuN','SIGNAL_WtoTau','SIGNAL','QCD','DIMUON']:
+    for c in ['SIGNAL_WtoMuP', 'SIGNAL_WtoMuN','SIGNAL_WtoTau',
+              'SIGNAL_ZtoMuMu','SIGNAL_ZtoTauTau',
+              'SIGNAL',
+              'DIMUON_ZtoMuMu','DIMUON_ZtoTauTau',
+              'DIMUON',
+              'QCD'
+              ]:
 
         # check whether c is in the json file
         run_c,pos_c = False, -1
@@ -115,10 +121,11 @@ def get_categories(dataType,categories_str, common):
             if ret.has_key(c): del ret[c]
             continue        
 
-        if "Wto" in c:
+        if ("Wto" in c) or ("Zto" in c):
+            dec = "Wto" if "Wto" in c else "Zto"
             ret[c] = copy.deepcopy(ret[c.split('_')[0]])
             ret[c]["category_cut_base"] = c.split('_')[0] 
-            ret[c]["cut"] = str(common["Wto"][c.split('_')[1].lstrip('Wto')])
+            ret[c]["cut"] = str(common[dec][c.split('_')[1].lstrip(dec)])
             ret[c]["cut_base"] = str(ret[c.split('_')[0]]['cut'])
             if not ret_base.has_key(c.split('_')[0]):
                 ret_base[c.split('_')[0]] = copy.deepcopy(ret[c.split('_')[0]])

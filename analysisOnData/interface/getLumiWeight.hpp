@@ -25,25 +25,26 @@ private:
   std::vector<ROOT::RDF::RResultPtr<std::vector<TH1D>>> _h1Group;
   std::vector<ROOT::RDF::RResultPtr<std::vector<TH2D>>> _h2Group;
   std::vector<ROOT::RDF::RResultPtr<std::vector<TH3D>>> _h3Group;
-
+  
   double _genEventSumw;
+  double _totalGenEventSumw;
   double _targetLumi;
   double _xsec;
  
 public:
     
-   getLumiWeight(std::string fname, double targetLumi, double xsec ){       
-     ROOT::RDataFrame runs("Runs", fname);
-     _targetLumi = targetLumi;
-     _xsec = xsec*1e+03; // pb -> fb
-     _genEventSumw = runs.Sum("genEventSumw").GetValue();
-   };
-
   getLumiWeight(std::vector<std::string> fnames, double targetLumi, double xsec ){       
-     ROOT::RDataFrame runs("Runs", fnames);
-     _targetLumi = targetLumi;
-     _xsec = xsec*1e+03; // pb -> fb
-     _genEventSumw = runs.Sum("genEventSumw").GetValue();
+    ROOT::RDataFrame runs("Runs", fnames[0]);
+    _genEventSumw = runs.Sum("genEventSumw").GetValue();
+    if( fnames.size()>1 ){
+      ROOT::RDataFrame runs_all("Runs", fnames);
+      _totalGenEventSumw = runs_all.Sum("genEventSumw").GetValue();
+      std::cout << "getLumiWeight(): Fraction of total sample: " << _genEventSumw << "/" << _totalGenEventSumw << " = " << _genEventSumw/_totalGenEventSumw << std::endl;
+    }
+    else
+      _totalGenEventSumw = _genEventSumw;
+    _targetLumi = targetLumi;
+    _xsec = xsec*1e+03; // pb -> fb
    };
   
   ~getLumiWeight() {};

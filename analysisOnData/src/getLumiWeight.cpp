@@ -4,11 +4,10 @@
 RNode getLumiWeight::run(RNode d){
     
   auto getWeight = [this](float genWeight)->float {
-    return _targetLumi*_xsec*genWeight/_genEventSumw;
+    return _targetLumi*_xsec*genWeight/_genEventSumw*(_totalGenEventSumw/_genEventSumw);
   };
 
   auto d1 = d.Define("lumiweight", getWeight, {"Generator_weight"});
-
   return d1;
 }
 
