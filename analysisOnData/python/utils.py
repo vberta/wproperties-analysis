@@ -23,8 +23,24 @@ modules_LHE = {
     }
 modules_LHE.update(submodules_LHE)
 
+submodules_mass = {
+    'event_syst_mass_reweight' : {
+        'masses'     : [80.319,80.519],
+        'M'          : 80.419,
+        'G'          : 2.047,
+        'leptonType' : 'preFSR',
+        'scheme'     : 'Fixed',
+        },
+    }
+
 modules_wLHE = copy.deepcopy(modules_all)
 modules_wLHE.update( submodules_LHE )
+
+modules_wMass = copy.deepcopy(modules_all)
+modules_wMass.update( submodules_mass )
+
+modules_wLHEMass = copy.deepcopy(modules_wLHE)
+modules_wLHEMass.update( submodules_mass )
 
 categories_all = { 
     'SIGNAL': {
@@ -142,6 +158,11 @@ def get_categories(dataType,categories_str, common):
                 ret[c]['modules'] = modules_LHE
             elif categories_split_syst[pos_c] == 'wLHE':
                 ret[c]['modules'] = modules_wLHE                
+            elif categories_split_syst[pos_c] == 'wLHEMass':
+                ret[c]['modules'] = modules_wLHEMass
+            elif categories_split_syst[pos_c] == 'wMass':
+                ret[c]['modules'] = modules_wMass                
+                
 
         # phase-space slicing is enabled
         if categories_split_slice[pos_c]:
