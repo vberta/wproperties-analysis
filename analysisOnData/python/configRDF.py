@@ -88,7 +88,7 @@ class ConfigRDF():
     Branch all base categories as intermediate nodes
     """
     def _branch_base_categories(self, var, systs):
-        for it in [0,1,5]:
+        for it in [0,1,3]:
             for c_key,c_val in self.base_categories.items():            
                 if c_key.count('_')==it and not hasattr(self, 'branch_base_categories_'+c_key+'_'+var):
                     cut = c_val['cut']

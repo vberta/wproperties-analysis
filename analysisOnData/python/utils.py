@@ -162,8 +162,8 @@ def get_categories(dataType,categories_str, common):
                         " && GenV_"+lepton_def+"_qt>="+qT_low + \
                         (" && GenV_"+lepton_def+"_qt<"+qT_high if qT_high!="Inf" else "") + \
                         ")")
-                    cat_name = str("y"+y_low.replace('.','p')+"_"+y_high.replace('.','p') + \
-                        "_qt"+qT_low.replace('.','p')+"_"+qT_high.replace('.','p'))
+                    cat_name = str("y"+y_low.replace('.','p')+"to"+y_high.replace('.','p') + \
+                        "_qt"+qT_low.replace('.','p')+"to"+qT_high.replace('.','p'))
                     new_cat = copy.deepcopy(ret[c])
                     new_cat['category_cut_base'] = str(c)
                     new_cat['cut'] = str(ps_cut)

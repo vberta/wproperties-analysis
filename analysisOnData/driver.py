@@ -27,22 +27,23 @@ samplef = open('./python/samples_'+dataYear+'.json')
 sampledata = json.load(samplef)
 samplef.close()
 
-def run_one_sample(inputFiles,output_dir, sampledata, k, verbose=False):
-   v          = sampledata[k]
+def run_one_sample(inputFiles,output_dir, sampledata, sample, verbose=False):
+   v          = sampledata[sample]
    dataType   = v['dataType']
+   dirs       = v['dirs']
    xsec       = v['xsec']
    ncores     = v['ncores']
    categories = v['categories']
    lumi       = sampledata["common"]["luminosity"]
    era_ratios = sampledata["common"]["era_ratios"]
    isMC       = (dataType=='MC')
-   print "key:       ", k
-   print "dataType:  ", dataType
-   print "xsec:      ", xsec
-   print "ncores:    ", ncores
-   print "categories:", categories
-
-   config = ConfigRDF(inputFiles, output_dir, k+'.root')
+   print "sample:      ", sample
+   print "num of dirs: ", len(dirs)
+   print "dataType:    ", dataType
+   print "xsec:        ", xsec
+   print "ncores:      ", ncores
+   print "categories:  ", categories
+   config = ConfigRDF(inputFiles, output_dir, sample+'.root')
    config.set_sample_specifics(isMC, lumi, xsec, dataYear, era_ratios)   
    ret,ret_base = get_categories(dataType, categories, sampledata["common"])
    if verbose:
@@ -54,6 +55,7 @@ def run_one_sample(inputFiles,output_dir, sampledata, k, verbose=False):
    config.run( ret, ret_base )
    return
 
+# First pass: run all multithreaded samples
 from multiprocessing import Process
 
 print "Running multithread..."
@@ -65,6 +67,7 @@ for k,v in sampledata.items():
 
    if v['ncores']>0: continue
 
+   # inputFiles[0] must be the same as in the key: processing one file at the time
    inputFiles = ROOT.std.vector(ROOT.std.string)()
    for subdirs,files in v['dirs'].items():
       for f in files:
@@ -83,6 +86,7 @@ for k,v in sampledata.items():
 
 for p in procs: p.join()
 
+# Second pass: run all multicore samples
 print "Running multicore..."
 for k,v in sampledata.items():
 
@@ -91,6 +95,7 @@ for k,v in sampledata.items():
 
    if v['ncores']<=0: continue
 
+   # inputFiles[0] must be the same as in the key: processing one file at the time
    inputFiles = ROOT.std.vector(ROOT.std.string)()
    for subdirs,files in v['dirs'].items():
       for f in files:
