@@ -11,10 +11,9 @@ sys.path.append('python/')
 from configRDF import *
 from utils import *
 
-print "Loading shared library..."
-ROOT.gSystem.Load('bin/libAnalysisOnData.so')
-
 parser = argparse.ArgumentParser("")
+parser.add_argument('-p', '--plot',  help="", action='store_true')
+parser.add_argument('-m', '--merge',  help="", action='store_true')
 parser.add_argument('-o', '--output_dir',  type=str, default='test', help="")
 parser.add_argument('-y', '--dataYear',type=str, default='2016', help="")
 parser.add_argument('-r', '--restrict',type=str, default="",   help="")
@@ -26,6 +25,10 @@ restrictDataset = [ x for x in args.restrict.split(',') if args.restrict != ""]
 samplef = open('./python/samples_'+dataYear+'.json')
 sampledata = json.load(samplef)
 samplef.close()
+
+if args.plot:
+   print "Loading shared library..."
+   ROOT.gSystem.Load('bin/libAnalysisOnData.so')
 
 def run_one_sample(inputFiles,output_dir, sampledata, sample, verbose=False):
    v          = sampledata[sample]
@@ -119,6 +122,32 @@ def run_multicore_all(sampledata, restrictDataset, output_dir):
    
       run_one_sample(inputFiles, output_dir, sampledata, k)
 
+def merge(sampledata):   
+   os.system('mkdir -p '+output_dir+'/hadded')
+   merged = sampledata["common"]["merged"]
+   for k,v in merged.items():
+      cmd = 'hadd -j -f '+output_dir+'/hadded/'+k+'.root'
+      for s in v:
+         cmd += (' '+output_dir+'/'+s+'.root ')
+      print cmd
+      os.system(cmd)   
+
+def validate(sampledata, hname=):
+   output = sampledata["common"]["output"]
+   for kr,r in output.items():
+      for kp,p in r.items():
+         fname = p.split('/')[0]
+         f = ROOT.TFile(output_dir+'/hadded/'+fname)
+         dname = p.split('/')[1].split(':')[0].replace('*',kp)
+         cats = p.split('/')[1].split(':')[1].split(',')
+         for c in cats:
+            h = f.Get(dname+'_'+cat+'/')
+         print 
+
 if __name__ == '__main__':
-   run_multithread_all(sampledata, restrictDataset, output_dir)
-   run_multicore_all(sampledata, restrictDataset, output_dir)
+   if args.plot:
+      run_multithread_all(sampledata, restrictDataset, output_dir)
+      run_multicore_all(sampledata, restrictDataset, output_dir)
+   elif args.merge:
+      merge(sampledata)
+      
