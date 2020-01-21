@@ -14,6 +14,7 @@ from utils import *
 parser = argparse.ArgumentParser("")
 parser.add_argument('-p', '--plot',  help="", action='store_true')
 parser.add_argument('-m', '--merge',  help="", action='store_true')
+parser.add_argument('-v', '--validate',  help="", action='store_true')
 parser.add_argument('-o', '--output_dir',  type=str, default='test', help="")
 parser.add_argument('-y', '--dataYear',type=str, default='2016', help="")
 parser.add_argument('-r', '--restrict',type=str, default="",   help="")
@@ -132,17 +133,44 @@ def merge(sampledata):
       print cmd
       os.system(cmd)   
 
-def validate(sampledata, hname=):
+def validate(sampledata, vname):
    output = sampledata["common"]["output"]
-   for kr,r in output.items():
+   for krc,r in output.items():
+      print krc
+      charge = krc.split('_')[1]
+      kr = krc.split('_')[0]
       for kp,p in r.items():
+         print '\t'+kp
          fname = p.split('/')[0]
-         f = ROOT.TFile(output_dir+'/hadded/'+fname)
-         dname = p.split('/')[1].split(':')[0].replace('*',kp)
-         cats = p.split('/')[1].split(':')[1].split(',')
-         for c in cats:
-            h = f.Get(dname+'_'+cat+'/')
-         print 
+         f     = ROOT.TFile(output_dir+'/hadded/'+fname)
+         dname = ((p.split('/')[1].split(':')[0]).replace('*',kr))
+         cats  = p.split('/')[1].split(':')[1].split(',')
+         for cat in cats:
+            systs = []
+            for sk,sv in modules_any.items():
+               if cat==(sk.split('_')[-1]):
+                  systs = sv
+            if len(systs)==0: systs.append('')
+            print '\t\t'+cat, len(systs)
+            for syst in systs:
+               tag = syst
+               if cat in ['ISO','ID','Trigger']:
+                  tag = cat+'_'+tag
+               elif cat=='puWeight':
+                  tag = cat+syst
+               hname = dname+'_'+cat+'/'+dname+'__'+vname+'__'+tag
+               f.cd()
+               h3 = ROOT.gDirectory.Get(hname)
+               if h3==None:
+                  continue
+               if charge=='Plus': 
+                  h3.GetZaxis().SetRange(2,2)
+               else:
+                  h3.GetZaxis().SetRange(1,1)            
+               tot = h3.Project3D("yxe").Integral()
+               print '\t\t\t'+syst+' --> '+'{:3.3f}'.format(tot)
+
+         f.Close()
 
 if __name__ == '__main__':
    if args.plot:
@@ -150,4 +178,6 @@ if __name__ == '__main__':
       run_multicore_all(sampledata, restrictDataset, output_dir)
    elif args.merge:
       merge(sampledata)
+   elif args.validate:
+      validate(sampledata, 'SelMuon1_eta_SelMuon1_corrected_pt_SelMuon1_charge')
       

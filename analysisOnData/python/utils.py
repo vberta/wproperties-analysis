@@ -5,13 +5,13 @@ modules_nominal = {
     }
 
 modules_all = {
-    'muon_nominal' : [],
-    'event_syst_puWeight' : ['Up', 'Down'],
-    'muon_syst_scalefactor_ID' : [],
-    'muon_syst_scalefactor_ISO' : [],
-    'muon_syst_scalefactor_Trigger' : [],
-    'muon_syst_column_corrected' : ['correctedUp','correctedDown'],
-    'muon_syst_column_nom' : ['jerUp','jerDown','jesTotalUp','jesTotalDown','unclustEnUp','unclustEnDown'],
+    'muon_nominal'                  : [],
+    'event_syst_puWeight'           : ['Up', 'Down'],
+    'muon_syst_scalefactor_ID'      : ['statUp', 'statDown', 'systUp', 'systDown'],
+    'muon_syst_scalefactor_ISO'     : ['statUp', 'statDown', 'systUp', 'systDown'],
+    'muon_syst_scalefactor_Trigger' : ['statUp', 'statDown', 'systUp', 'systDown'],
+    'muon_syst_column_corrected'    : ['correctedUp','correctedDown'],
+    'muon_syst_column_nom'          : ['jerUp','jerDown','jesTotalUp','jesTotalDown','unclustEnUp','unclustEnDown'],
     }
 
 submodules_LHE = {
@@ -42,6 +42,8 @@ modules_wMass.update( submodules_mass )
 modules_wLHEMass = copy.deepcopy(modules_wLHE)
 modules_wLHEMass.update( submodules_mass )
 
+modules_any = copy.deepcopy(modules_wLHEMass)
+
 categories_all = { 
     'SIGNAL': {
         'weight' : 'puWeight*lumiweight*SelMuon1_ID_SF*SelMuon1_ISO_SF*SelMuon1_Trigger_SF',
@@ -50,7 +52,8 @@ categories_all = {
             '&& HLT_SingleMu24 '+ \
             '&& MET_filters==1 ' + \
             '&& nVetoElectrons==0 ' + \
-            '&& SelMuon1_corrected_pt>25.0 ' + \
+            '&& SelMuon1_corrected_pt>26.0 ' + \
+            '&& SelMuon1_corrected_pt<55.0 ' + \
             '&& SelMuon1_corrected_MET_nom_mt>40.0 ',
         'cut_base' : '',
         'category_cut_base' : 'defs',
@@ -63,7 +66,8 @@ categories_all = {
         '&& HLT_SingleMu24 '+ \
         '&& MET_filters==1 ' + \
         '&& nVetoElectrons==0 ' + \
-        '&& SelMuon1_corrected_pt>25.0 ' + \
+        '&& SelMuon1_corrected_pt>26.0 ' + \
+        '&& SelMuon1_corrected_pt<55.0 ' + \
         '&& SelMuon1_corrected_MET_nom_mt<40.0 ',
         'cut_base' : '',
         'category_cut_base' : 'defs',
@@ -76,8 +80,8 @@ categories_all = {
         '&& HLT_SingleMu24 '+ \
         '&& MET_filters==1 ' + \
         '&& nVetoElectrons==0 ' + \
-        '&& SelMuon1_corrected_pt>25.0 ' + \
-        '&& SelMuon2_corrected_pt>25.0 ',
+        '&& SelMuon1_corrected_pt>26.0 ' + \
+        '&& SelMuon2_corrected_pt>26.0 ',
         'cut_base' : '',
         'category_cut_base' : 'defs',
         'modules' : modules_all,

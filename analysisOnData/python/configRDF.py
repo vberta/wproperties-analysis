@@ -224,48 +224,50 @@ class ConfigRDF():
     """
     Branch muon syst scale factor
     """
-    def _branch_muon_syst_scalefactor(self,syst):
+    def _branch_muon_syst_scalefactor(self,var,systs):
 
-        if syst not in self.weight: return
+        if var not in self.weight: return
 
-        if self.iteration==0 and not hasattr(self, 'branch_muon_'+syst+'_scalefactor_iter0'):
+        if self.iteration==0 and not hasattr(self, 'branch_muon_'+var+'_scalefactor_iter0'):
             syst_columns = { 'BCDEF' : vec_s(), 'GH' : vec_s() }
             for key,item in syst_columns.items():
-                for itype in ['statUp', 'statDown', 'systUp', 'systDown']:
-                    syst_columns[key].push_back('Muon_'+syst+'_'+key+'_SF'+itype)                
+                #for itype in ['statUp', 'statDown', 'systUp', 'systDown']:
+                for itype in systs:
+                    syst_columns[key].push_back('Muon_'+var+'_'+key+'_SF'+itype)                
             for key,item in syst_columns.items(): 
                 mus = ['1']
                 if hasattr(self,'run_DIMUON'): mus.append('2')
                 for mu in mus:
                     cols = syst_columns[key]
-                    col_new = "SelMuon"+mu+"_"+syst+"_"+key+"_SFAll"
-                    col_nom = "SelMuon"+mu+"_"+syst+"_"+key+"_SF"
+                    col_new = "SelMuon"+mu+"_"+var+"_"+key+"_SFAll"
+                    col_nom = "SelMuon"+mu+"_"+var+"_"+key+"_SF"
                     self.def_modules.append( ROOT.getSystWeight(cols, col_new, "Idx_mu"+mu, col_nom, pair_ui(0,0), "VVVV->Vnorm") )
             mus = ['1']
             if hasattr(self,'run_DIMUON'): mus.append('2')
             for mu in mus:
-                col1 = 'SelMuon'+mu+'_'+syst+'_BCDEF_SFAll'
-                col2 = 'SelMuon'+mu+'_'+syst+'_GH_SFAll'
-                col_new = 'SelMuon'+mu+'_'+syst+'_SFAll'
+                col1 = 'SelMuon'+mu+'_'+var+'_BCDEF_SFAll'
+                col2 = 'SelMuon'+mu+'_'+var+'_GH_SFAll'
+                col_new = 'SelMuon'+mu+'_'+var+'_SFAll'
                 self.def_modules.append( ROOT.mergeSystWeight(pair_s(col1,col2), self.era_ratios, col_new, "V,V->aV+bV") ) 
             if hasattr(self,'run_DIMUON'):
-                col1 = 'SelMuon1_'+syst+'_SFAll'
-                col2 = 'SelMuon2_'+syst+'_SFAll'
-                col  = 'SelMuon12_'+syst+'_SFAll'
+                col1 = 'SelMuon1_'+var+'_SFAll'
+                col2 = 'SelMuon2_'+var+'_SFAll'
+                col  = 'SelMuon12_'+var+'_SFAll'
                 self.def_modules.append( ROOT.mergeSystWeight(pair_s(col1,col2), pair_f(1.0,1.0), col, "V,V->V*V") ) 
-            setattr(self, 'branch_muon_'+syst+'_scalefactor_iter0', True )
+            setattr(self, 'branch_muon_'+var+'_scalefactor_iter0', True )
         elif self.iteration==1:
             pass
         elif self.iteration==2:
             modules = []
             syst_columns = { 'ALL' : vec_s()  }
             for key,item in syst_columns.items():
-                for type in ['statUp', 'statDown', 'systUp', 'systDown']:
-                    syst_columns[key].push_back(syst+'_'+type)                
-            new_weight_name = "SelMuon12_"+syst+"_SFAll" if 'DIMUON' in self.category else "SelMuon1_"+syst+"_SFAll"
+                #for type in ['statUp', 'statDown', 'systUp', 'systDown']:
+                for type in systs:
+                    syst_columns[key].push_back(var+'_'+type)                
+            new_weight_name = "SelMuon12_"+var+"_SFAll" if 'DIMUON' in self.category else "SelMuon1_"+var+"_SFAll"
             modules.append( ROOT.muonHistos(self.category, 'weight_'+self.category_weight_base+'_nominal', syst_columns['ALL'], new_weight_name, "", False, self.verbose) )
-            if self.verbose: print 'branch_muon_'+syst+'_scalefactor:', self.category+'_nominal', ' --> ', self.category+'_'+syst
-            self.p.branch(nodeToStart=self.category+'_nominal', nodeToEnd=self.category+'_'+syst, modules=modules)
+            if self.verbose: print 'branch_muon_'+var+'_scalefactor:', self.category+'_nominal', ' --> ', self.category+'_'+var
+            self.p.branch(nodeToStart=self.category+'_nominal', nodeToEnd=self.category+'_'+var, modules=modules)
         return
 
     """
@@ -448,7 +450,7 @@ class ConfigRDF():
                         elif 'mass' in key:
                             self._branch_mass_weight( value['masses'], value['M'], value['G'], value['leptonType'], value['scheme'] )
                     elif 'muon_syst_scalefactor' in key:
-                        self._branch_muon_syst_scalefactor( key.replace('muon_syst_scalefactor_','') )
+                        self._branch_muon_syst_scalefactor( key.replace('muon_syst_scalefactor_',''), value )
                     elif 'muon_syst_column' in key:                         
                         self._branch_muon_syst_column( key.replace('muon_syst_column_',''), value)
 

@@ -50,7 +50,7 @@
 			   "SingleMuon_Run2016G"]
 	},
 	"output" : {
-	    "SIGNAL" : {
+	    "SIGNAL_Plus" : {
 		"WtoMuP"    : "WJets.root/*_WtoMuP:nominal,corrected,nom,puWeight,Trigger,ISO,ID",
 		"WtoMuN"    : "WJets.root/*_WtoMuN:nominal,corrected,nom,puWeight,Trigger,ISO,ID",
 		"ZtoMuMu"   : "DYJets.root/*_ZtoMuMu:nominal,corrected,nom,puWeight,Trigger,ISO,ID",
@@ -69,7 +69,7 @@
         },											  
         "dataType" : "MC",
         "xsec" : 61526.7,
-        "ncores" : -1,
+        "ncores" : 64,
 	"categories" : "SIGNAL_WtoMuP:wLHEMass,SIGNAL_WtoMuN:wLHEMass,SIGNAL_WtoTau:nominal,QCD:all,DIMUON:nominal"
     },
 
