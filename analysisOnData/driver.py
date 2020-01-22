@@ -31,7 +31,7 @@ if args.plot:
    print "Loading shared library..."
    ROOT.gSystem.Load('bin/libAnalysisOnData.so')
 
-def run_one_sample(inputFiles,output_dir, sampledata, sample, verbose=False):
+def run_one_sample(inputFiles,output_dir, sampledata, sample, verbose=True):
    v          = sampledata[sample]
    dataType   = v['dataType']
    dirs       = v['dirs']
@@ -137,7 +137,7 @@ def validate(sampledata, vname):
    output = sampledata["common"]["output"]
    for krc,r in output.items():
       print krc
-      charge = krc.split('_')[1]
+      charge = krc.split('_')[1] if '_' in krc else ''
       kr = krc.split('_')[0]
       for kp,p in r.items():
          print '\t'+kp
@@ -145,13 +145,14 @@ def validate(sampledata, vname):
          f     = ROOT.TFile(output_dir+'/hadded/'+fname)
          dname = ((p.split('/')[1].split(':')[0]).replace('*',kr))
          cats  = p.split('/')[1].split(':')[1].split(',')
+         tot_nominal = -1.
          for cat in cats:
             systs = []
             for sk,sv in modules_any.items():
                if cat==(sk.split('_')[-1]):
                   systs = sv
             if len(systs)==0: systs.append('')
-            print '\t\t'+cat, len(systs)
+            print '\t\t'+cat
             for syst in systs:
                tag = syst
                if cat in ['ISO','ID','Trigger']:
@@ -165,10 +166,16 @@ def validate(sampledata, vname):
                   continue
                if charge=='Plus': 
                   h3.GetZaxis().SetRange(2,2)
+               elif charge=='Minus':
+                  h3.GetZaxis().SetRange(1,1)
                else:
-                  h3.GetZaxis().SetRange(1,1)            
-               tot = h3.Project3D("yxe").Integral()
-               print '\t\t\t'+syst+' --> '+'{:3.3f}'.format(tot)
+                  h3.GetZaxis().SetRange(2,2)
+               tot = h3.Project3D("yxe").Integral()               
+               if cat=='nominal': 
+                  tot_nominal = tot
+                  print '\t\t\t'+syst+' --> '+'{:.2E}'.format(tot_nominal)
+               else:
+                  print '\t\t\t'+syst+' --> '+'{:.3f}'.format((tot-tot_nominal)/tot_nominal*1e+02)+'%'
 
          f.Close()
 

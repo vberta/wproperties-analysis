@@ -7,6 +7,7 @@
 #include "ROOT/RDF/RInterface.hxx"
 #include "TH1D.h"
 #include "TH2D.h"
+#include "TFile.h"
 #include "TString.h"
 #include "TMath.h"
 #include "interface/module.hpp"
@@ -27,16 +28,29 @@ class fakeRate : public Module {
   std::vector<ROOT::RDF::RResultPtr<std::vector<TH2D>>> _h2Group;
   std::vector<ROOT::RDF::RResultPtr<std::vector<TH3D>>> _h3Group;
 
-  TH2F* _hmap;
+  TFile* _file;
+  std::string _category;
+  std::vector<std::string> _syst_columns;
+  std::map<std::string, TH2F*> _hmap;
 
  public:
     
-  fakeRate(TH2F* hmap){
-    _hmap = hmap;
+  fakeRate(std::string fname, std::string category, std::vector<std::string> syst_columns) : _category(category), _syst_columns(syst_columns) {
+    _file = TFile::Open(fname.c_str(), "READ");
+    for(unsigned int i=0; i <_syst_columns.size(); i++){
+      std::string var = _syst_columns[i];
+      if(var=="nominal"){
+	_hmap.insert( std::pair<std::string, TH2F*>("fake_offset_"+var,   (TH2F*)_file->Get("fake_offset") ) );
+	_hmap.insert( std::pair<std::string, TH2F*>("fake_slope_"+var,    (TH2F*)_file->Get("fake_slope") ) );
+	_hmap.insert( std::pair<std::string, TH2F*>("prompt_offset_"+var, (TH2F*)_file->Get("prompt_offset") ) );
+	_hmap.insert( std::pair<std::string, TH2F*>("prompt_slope_"+var,  (TH2F*)_file->Get("prompt_slope") ) );
+	_hmap.insert( std::pair<std::string, TH2F*>("prompt_2deg_"+var,   (TH2F*)_file->Get("prompt_2deg") ) );
+      }
+    }
   }
 
   ~fakeRate() {
-    delete _hmap;
+    _file->Close();
   };
   
   RNode run(RNode) override;

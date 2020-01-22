@@ -221,6 +221,32 @@ class ConfigRDF():
             self.p.branch(nodeToStart=self.category+'_nominal', nodeToEnd=self.category+'_mass', modules=modules)
         return
 
+
+    """
+    Branch Fake Rate weights
+    """
+    def _branch_fakerate_weight(self, input_file, systs):
+
+        new_weight_name = 'fakeRateAll'
+
+        if self.iteration==0 and not hasattr(self, 'branch_fakerate_weight_iter0'):
+            syst_columns = vec_s()
+            for s in systs: syst_columns.push_back(ROOT.string(s))
+            self.def_modules.append( ROOT.fakeRate(input_file, self.category, syst_columns) )
+            setattr(self, 'branch_fakerate_weight_iter0', True )
+        elif self.iteration==1:
+            pass
+        elif self.iteration==2:
+            modules = []
+            syst_column_names = vec_s()
+            for s in systs:
+                syst_column_names.push_back( ROOT.string("fakerate_"+s) )
+            modules.append( ROOT.muonHistos(self.category, 'weight_'+self.category_weight_base+'_nominal', syst_column_names, new_weight_name, "", False, self.verbose) )
+            if self.verbose: print 'branch_fakerate_weight: ', self.category+'_nominal', ' --> ', self.category+'_fakerate'
+            self.p.branch(nodeToStart=self.category+'_nominal', nodeToEnd=self.category+'_fakerate', modules=modules)
+        return
+
+
     """
     Branch muon syst scale factor
     """
@@ -422,7 +448,7 @@ class ConfigRDF():
         for key,val in categories.items():
             if 'DIMUON' in key:
                 if self.verbose: print ">> ConfigRDF: run DIMUON module: precompute new columns with 'Idx2'"
-                self.run_DIMUON = True
+                self.run_DIMUON = True            
 
         self.base_categories = copy.deepcopy(base_categories)
 
@@ -443,12 +469,14 @@ class ConfigRDF():
                 if modules.has_key('muon_nominal'): self._branch_muon_nominal()
                 for key,value in modules.items():
                     if 'event_syst' in key:
-                        if ('LHE' not in key) and ('mass' not in key): 
+                        if ('LHE' not in key) and ('mass' not in key) and ('fakerate' not in key): 
                             self._branch_event_syst_weight( key.replace('event_syst_',''), value)
                         elif 'LHE' in key: 
                             self._branch_LHE_weight( key.replace('event_syst_',''), value )
                         elif 'mass' in key:
                             self._branch_mass_weight( value['masses'], value['M'], value['G'], value['leptonType'], value['scheme'] )
+                        elif 'fakerate' in key:
+                            self._branch_fakerate_weight(value['input'], value['systs'])
                     elif 'muon_syst_scalefactor' in key:
                         self._branch_muon_syst_scalefactor( key.replace('muon_syst_scalefactor_',''), value )
                     elif 'muon_syst_column' in key:                         
@@ -459,7 +487,7 @@ class ConfigRDF():
         if self.verbose: print " ==>", len(self.def_modules), " defs modules have been loaded..."
         if self.verbose: print 'Get output...'
         self.p.getOutput()
-        #self.p.saveGraph()
+        self.p.saveGraph()
         return
 
 

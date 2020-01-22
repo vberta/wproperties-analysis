@@ -3,20 +3,28 @@
 
 RNode fakeRate::run(RNode d){
 
-  auto applyFakeRate = [this](float pt, float eta)->float { 
-    int binIdx = _hmap->FindBin(eta,pt);
-    return _hmap->GetBinContent(binIdx);
+  auto applyFakeRate = [this](float pt, float eta, float charge, int vtype){ 
+    ROOT::VecOps::RVec<float> v;
+    int binX = charge>0. ? 1 : 2;     
+    int binY = _hmap["fake_offset_nominal"]->GetYaxis()->FindBin(eta);    
+    for(unsigned int i = 0; i < _syst_columns.size(); i++){
+      std::string var = _syst_columns[i];
+      float f_offset = _hmap["fake_offset_"+var]->GetBinContent(binX,binY);
+      float f_slope  = _hmap["fake_slope_"+var]->GetBinContent(binX,binY);
+      float p_offset = _hmap["prompt_offset_"+var]->GetBinContent(binX,binY);
+      float p_slope  = _hmap["prompt_slope_"+var]->GetBinContent(binX,binY);
+      float p_2deg   = _hmap["prompt_2deg_"+var]->GetBinContent(binX,binY);
+      float f = f_offset + pt*f_slope;
+      float p = p_offset*TMath::Erf(p_slope*pt + p_2deg);
+      float res = vtype==1 ? p*f/(p-f) : -(1-p)*f/(p-f);
+      //std::cout << _category <<  "(" << pt << "," << eta << "," << charge << ") --> " << f << "," << p << ": " << res << std::endl;
+      v.emplace_back(res);
+    }
+    return v;
   };   
 
-  auto Mt = [](float muon_pt, float muon_phi, float met_phi, float met_pt)->float {
-    return 1.0;
-  };
-  
-  auto d1 = d.Define("SelMuon_corrected_pt", getFromIdx, {"Muon_corrected_pt", "Idx_mu1"})
-    .Define("SelMuon_eta", getFromIdx, {"Muon_eta", "Idx_mu1"})
-    .Define("FakeRate", applyFakeRate, {"SelMuon_corrected_pt", "SelMuon_eta"})
-    .Define("SelMuon_Mt", Mt, {""});
-   
+  auto d1 = d.Define("fakeRateAll", applyFakeRate, {"SelMuon1_corrected_pt", "SelMuon1_eta", "SelMuon1_charge", "Vtype"});
+
   return d1;
 
 }

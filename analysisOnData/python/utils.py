@@ -33,6 +33,16 @@ submodules_mass = {
         },
     }
 
+submodules_fakerate = {
+    'event_syst_fakerate' : {
+        'input' : '/scratch/bertacch/wmass/RDFprocessor/wmass/controlPlots/NanoAOD2016-V1MCFinal_fast_syst/bkg/bkg_nom/bkg_parameters_file.root',
+        'systs' : ['nominal']
+        }
+    }
+
+modules_fakerate = copy.deepcopy(modules_nominal)
+modules_fakerate.update(submodules_fakerate)
+
 modules_wLHE = copy.deepcopy(modules_all)
 modules_wLHE.update( submodules_LHE )
 
@@ -43,6 +53,7 @@ modules_wLHEMass = copy.deepcopy(modules_wLHE)
 modules_wLHEMass.update( submodules_mass )
 
 modules_any = copy.deepcopy(modules_wLHEMass)
+modules_any.update(modules_fakerate)
 
 categories_all = { 
     'SIGNAL': {
@@ -54,7 +65,7 @@ categories_all = {
             '&& nVetoElectrons==0 ' + \
             '&& SelMuon1_corrected_pt>26.0 ' + \
             '&& SelMuon1_corrected_pt<55.0 ' + \
-            '&& SelMuon1_corrected_MET_nom_mt>40.0 ',
+            '&& SelMuon1_corrected_MET_nom_mt>=40.0 ',
         'cut_base' : '',
         'category_cut_base' : 'defs',
         'modules' : modules_nominal
@@ -62,13 +73,27 @@ categories_all = {
     'QCD': {
         'weight' : 'puWeight*lumiweight*SelMuon1_ID_SF*SelMuon1_ISO_SF*SelMuon1_Trigger_SF',
         'category_weight_base' : 'QCD',
-        'cut' : 'Vtype==1 ' + \
+        'cut' : 'Vtype==0 ' + \
         '&& HLT_SingleMu24 '+ \
         '&& MET_filters==1 ' + \
         '&& nVetoElectrons==0 ' + \
         '&& SelMuon1_corrected_pt>26.0 ' + \
         '&& SelMuon1_corrected_pt<55.0 ' + \
         '&& SelMuon1_corrected_MET_nom_mt<40.0 ',
+        'cut_base' : '',
+        'category_cut_base' : 'defs',
+        'modules' : modules_nominal,
+    },
+    'AISO': {
+        'weight' : 'puWeight*lumiweight',
+        'category_weight_base' : 'AISO',
+        'cut' : 'Vtype==1 ' + \
+        '&& HLT_SingleMu24 '+ \
+        '&& MET_filters==1 ' + \
+        '&& nVetoElectrons==0 ' + \
+        '&& SelMuon1_corrected_pt>26.0 ' + \
+        '&& SelMuon1_corrected_pt<55.0 ' + \
+        '&& SelMuon1_corrected_MET_nom_mt>=40.0 ',
         'cut_base' : '',
         'category_cut_base' : 'defs',
         'modules' : modules_nominal,
@@ -130,6 +155,7 @@ def get_categories(dataType,categories_str, common):
               'SIGNAL',
               'DIMUON_ZtoMuMu','DIMUON_ZtoTauTau',
               'DIMUON',
+              'AISO',
               'QCD'
               ]:
 
@@ -152,7 +178,10 @@ def get_categories(dataType,categories_str, common):
 
         if dataType=='DATA':
             ret[c]['weight'] = 'Float_t(1.0)'
-            ret[c]['modules'] =  modules_nominal
+            if categories_split_syst[pos_c] == 'nominal':
+                ret[c]['modules'] =  modules_nominal
+            elif categories_split_syst[pos_c] == 'fakerate':
+                ret[c]['modules'] =  modules_fakerate
         else:
             if categories_split_syst[pos_c] == 'nominal':
                 ret[c]['modules'] = modules_nominal
