@@ -35,7 +35,7 @@ submodules_mass = {
 
 submodules_fakerate = {
     'event_syst_fakerate' : {
-        'input' : '/scratch/bertacch/wmass/RDFprocessor/wmass/controlPlots/NanoAOD2016-V1MCFinal_fast_syst/bkg/bkg_nom/bkg_parameters_file.root',
+        'input' : './data/bkg_parameters_file_CFstatAna.root',
         'systs' : ['nominal']
         }
     }
@@ -64,12 +64,12 @@ categories_all = {
             '&& MET_filters==1 ' + \
             '&& nVetoElectrons==0 ' + \
             '&& SelMuon1_corrected_pt>26.0 ' + \
-            '&& SelMuon1_corrected_pt<55.0 ' + \
+            '&& SelMuon1_corrected_pt<65.0 ' + \
             '&& SelMuon1_corrected_MET_nom_mt>=40.0 ',
         'cut_base' : '',
         'category_cut_base' : 'defs',
         'modules' : modules_nominal
-    },    
+    },
     'QCD': {
         'weight' : 'puWeight*lumiweight*SelMuon1_ID_SF*SelMuon1_ISO_SF*SelMuon1_Trigger_SF',
         'category_weight_base' : 'QCD',
@@ -78,7 +78,7 @@ categories_all = {
         '&& MET_filters==1 ' + \
         '&& nVetoElectrons==0 ' + \
         '&& SelMuon1_corrected_pt>26.0 ' + \
-        '&& SelMuon1_corrected_pt<55.0 ' + \
+        '&& SelMuon1_corrected_pt<65.0 ' + \
         '&& SelMuon1_corrected_MET_nom_mt<40.0 ',
         'cut_base' : '',
         'category_cut_base' : 'defs',
@@ -92,8 +92,22 @@ categories_all = {
         '&& MET_filters==1 ' + \
         '&& nVetoElectrons==0 ' + \
         '&& SelMuon1_corrected_pt>26.0 ' + \
-        '&& SelMuon1_corrected_pt<55.0 ' + \
+        '&& SelMuon1_corrected_pt<65.0 ' + \
         '&& SelMuon1_corrected_MET_nom_mt>=40.0 ',
+        'cut_base' : '',
+        'category_cut_base' : 'defs',
+        'modules' : modules_nominal,
+    },
+    'SIDEBAND': {
+        'weight' : 'puWeight*lumiweight',
+        'category_weight_base' : 'SIDEBAND',
+        'cut' : 'Vtype==1 ' + \
+        '&& HLT_SingleMu24 '+ \
+        '&& MET_filters==1 ' + \
+        '&& nVetoElectrons==0 ' + \
+        '&& SelMuon1_corrected_pt>26.0 ' + \
+        '&& SelMuon1_corrected_pt<65.0 ' + \
+        '&& SelMuon1_corrected_MET_nom_mt<40.0 ',
         'cut_base' : '',
         'category_cut_base' : 'defs',
         'modules' : modules_nominal,
@@ -106,7 +120,8 @@ categories_all = {
         '&& MET_filters==1 ' + \
         '&& nVetoElectrons==0 ' + \
         '&& SelMuon1_corrected_pt>26.0 ' + \
-        '&& SelMuon2_corrected_pt>26.0 ',
+        '&& SelMuon2_corrected_pt>26.0 ' + \
+        '&& TMath::Abs(SelRecoZ_corrected_mass-91.1876)<15.0', 
         'cut_base' : '',
         'category_cut_base' : 'defs',
         'modules' : modules_all,
@@ -156,7 +171,8 @@ def get_categories(dataType,categories_str, common):
               'DIMUON_ZtoMuMu','DIMUON_ZtoTauTau',
               'DIMUON',
               'AISO',
-              'QCD'
+              'QCD',
+              'SIDEBAND'
               ]:
 
         # check whether c is in the json file
@@ -244,3 +260,35 @@ def get_categories(dataType,categories_str, common):
 
     return ret, ret_base
                 
+
+def LHEScaleWeight_meaning(wid=0):
+    if wid==0:
+        return 'muR1_muF1'
+    elif wid==1:
+        return 'muR1_muF2'
+    elif wid==2:
+        return 'muR1_muF0p5'
+    elif wid==3:
+        return 'muR2_muF1'
+    elif wid==4:
+        return 'muR2_muF2'
+    elif wid==5:
+        return 'muR2_muF0p5'
+    elif wid==6:
+        return 'muR0p5_muF1'
+    elif wid==7:
+        return 'muR0p5_muF2'
+    elif wid==8:
+        return 'muR0p5_muF0p5'
+    else:
+        return 'muRX_muFX'
+
+def LHEPdfWeight_meaning(wid=0):
+    if wid<100:
+        return 'NNPDF_'+str(wid)+'replica'
+    elif wid==100:
+        return 'NNPDF_alphaSDown'
+    elif wid==101:
+        return 'NNPDF_alphaSUp'
+    else:
+        return 'NNPDF_XXXreplica'                

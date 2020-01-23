@@ -47,24 +47,29 @@
 			   "SingleMuon_Run2016D",
 			   "SingleMuon_Run2016E",
 			   "SingleMuon_Run2016F",
-			   "SingleMuon_Run2016G"]
+			   "SingleMuon_Run2016G",
+                           "SingleMuon_Run2016H"]
 	},
 	"output" : {
 	    "SIGNAL_Plus" : {
-		"WtoMuP"    : "WJets.root/*_WtoMuP:nominal,corrected,nom,puWeight,Trigger,ISO,ID",
-		"WtoMuN"    : "WJets.root/*_WtoMuN:nominal,corrected,nom,puWeight,Trigger,ISO,ID",
-		"Z"         : "DYJets.root/*:nominal,corrected,nom,puWeight,Trigger,ISO,ID",
-		"TTbar"     : "TTbar.root/*:nominal",
-		"ST"        : "ST.root/*:nominal",
-		"Data"      : "SingleMuon.root/*:nominal"
+		"WtoMuP"      : "WJets.root/*_WtoMuP:nominal,corrected,nom,puWeight,Trigger,ISO,ID,LHEScaleWeight,LHEPdfWeight",
+		"WtoMuN"      : "WJets.root/*_WtoMuN:nominal,corrected,nom,puWeight,Trigger,ISO,ID,LHEScaleWeight,LHEPdfWeight",
+		"AISO_Fake"   : "SingleMuon.root/AISO:fakerate",
+		"SIGNAL_Fake" : "SingleMuon.root/SIGNAL:fakerate",
+		"Z"           : "DYJets.root/*:nominal,corrected,nom,puWeight,Trigger,ISO,ID",
+		"TTbar"       : "TTbar.root/*:nominal",
+		"ST"          : "ST.root/*:nominal",		
+		"Data"        : "SingleMuon.root/*:nominal"
 	    },
-	    "SIGNAL_Plus" : {
-		"WtoMuP"    : "WJets.root/*_WtoMuP:nominal,corrected,nom,puWeight,Trigger,ISO,ID",
-		"WtoMuN"    : "WJets.root/*_WtoMuN:nominal,corrected,nom,puWeight,Trigger,ISO,ID",
-		"Z"         : "DYJets.root/*:nominal,corrected,nom,puWeight,Trigger,ISO,ID",
-		"TTbar"     : "TTbar.root/*:nominal",
-		"ST"        : "ST.root/*:nominal",
-		"Data"      : "SingleMuon.root/*:nominal"
+	    "SIGNAL_Minus"  : {
+		"WtoMuP"      : "WJets.root/*_WtoMuP:nominal,corrected,nom,puWeight,Trigger,ISO,ID,LHEScaleWeight,LHEPdfWeight",
+		"WtoMuN"      : "WJets.root/*_WtoMuN:nominal,corrected,nom,puWeight,Trigger,ISO,ID,LHEScaleWeight,LHEPdfWeight",
+		"AISO_Fake"   : "SingleMuon.root/AISO:fakerate",
+		"SIGNAL_Fake" : "SingleMuon.root/SIGNAL:fakerate",
+		"Z"           : "DYJets.root/*:nominal,corrected,nom,puWeight,Trigger,ISO,ID",
+		"TTbar"       : "TTbar.root/*:nominal",
+		"ST"          : "ST.root/*:nominal",		
+		"Data"        : "SingleMuon.root/*:nominal"
 	    },
 	    "DIMUON" : {
 		"W"         : "WJets.root/*:nominal",
@@ -85,7 +90,7 @@
         "dataType" : "MC",
         "xsec" : 61526.7,
         "ncores" : 64,
-	"categories" : "SIGNAL_WtoMuP:wLHEMass,SIGNAL_WtoMuN:wLHEMass,SIGNAL_WtoTau:nominal,QCD:all,DIMUON:nominal"
+	"categories" : "SIGNAL_WtoMuP:wLHE,SIGNAL_WtoMuN:wLHE,SIGNAL_WtoTau:nominal,QCD:all,DIMUON:nominal"
     },
 
     "WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_ext2" : {  
@@ -96,7 +101,7 @@
         "dataType" : "MC",
         "xsec" : 61526.7,
         "ncores" : 64,
-	"categories" : "SIGNAL_WtoMuP:wLHEMass,SIGNAL_WtoMuN:wLHEMass,SIGNAL_WtoTau:nominal,QCD:all,DIMUON:nominal"
+	"categories" : "SIGNAL_WtoMuP:wLHE,SIGNAL_WtoMuN:wLHE,SIGNAL_WtoTau:nominal,QCD:all,DIMUON:nominal"
     },
 
     "DYJetsToLL_M-10to50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8" : {  
@@ -308,7 +313,7 @@
         "dataType" : "DATA",
         "xsec" : -1,
         "ncores" : 64,
-	"categories" : "SIGNAL:fakerate,AISO:fakerate,DIMUON:nominal"
+	"categories" : "SIGNAL:fakerate,AISO:fakerate,QCD:nominal,DIMUON:nominal"
     },
 
     "SingleMuon_Run2016C" : {  
@@ -318,7 +323,7 @@
         "dataType" : "DATA",
         "xsec" : -1,
         "ncores" : 64,
-	"categories" : "SIGNAL:nominal,AISO:nominal,DIMUON:nominal"
+	"categories" : "SIGNAL:fakerate,AISO:fakerate,QCD:nominal,DIMUON:nominal"
     },
 
     "SingleMuon_Run2016D" : {  
@@ -328,7 +333,7 @@
         "dataType" : "DATA",
         "xsec" : -1,
         "ncores" : 64,
-	"categories" : "SIGNAL:nominal,AISO:nominal,DIMUON:nominal"
+	"categories" : "SIGNAL:fakerate,AISO:fakerate,QCD:nominal,DIMUON:nominal"
     },
 
 
@@ -339,7 +344,7 @@
         "dataType" : "DATA",
         "xsec" : -1,
         "ncores" : 64,
-	"categories" : "SIGNAL:nominal,AISO:nominal,DIMUON:nominal"
+	"categories" : "SIGNAL:fakerate,AISO:fakerate,QCD:nominal,DIMUON:nominal"
     },
 
     "SingleMuon_Run2016F" : {  
@@ -349,7 +354,7 @@
         "dataType" : "DATA",
         "xsec" : -1,
         "ncores" : 64,
-	"categories" : "SIGNAL:nominal,AISO:nominal,DIMUON:nominal"
+	"categories" : "SIGNAL:fakerate,AISO:fakerate,QCD:nominal,DIMUON:nominal"
     },
 
     "SingleMuon_Run2016G" : {  
@@ -359,7 +364,17 @@
         "dataType" : "DATA",
         "xsec" : -1,
         "ncores" : 64,
-	"categories" : "SIGNAL:nominal,AISO:nominal,DIMUON:nominal"
+	"categories" : "SIGNAL:fakerate,AISO:fakerate,QCD:nominal,DIMUON:nominal"
+    },
+
+    "SingleMuon_Run2016H" : {  
+        "dirs" : {
+            "SingleMuon_Run2016H" : ["tree"]
+        },							  
+        "dataType" : "DATA",
+        "xsec" : -1,
+        "ncores" : 64,
+	"categories" : "SIGNAL:fakerate,AISO:fakerate,QCD:nominal,DIMUON:nominal"
     }
 
 }

@@ -4,6 +4,17 @@
 RNode getVars::run(RNode d){
 
   RNode d_start = d;
+
+  /*
+  auto getPositive = [](float pt1, float pt2, float q1)->float {
+    if(q1>0.) return pt1;
+    return pt2;
+  };
+  auto getNegative = [](float pt1, float pt2, float q1)->float {
+    if(q1<0.) return pt1;
+    return pt2;
+  };
+  */
     
   auto d_post = d_start
     .Define("dummy", dummy, {"event"})
@@ -38,11 +49,26 @@ RNode getVars::run(RNode d){
       .Define("SelMuon2_pt",               getFromIdx,  {"Muon_pt",              _idx2})
       .Define("SelMuon2_eta",              getFromIdx,  {"Muon_eta",             _idx2})
       .Define("SelMuon2_phi",              getFromIdx,  {"Muon_phi",             _idx2})
+      //.Define("SelMuonP_pt",               getPositive, {"SelMuon1_pt", "SelMuon2_pt", "SelMuon1_charge"})
+      //.Define("SelMuonN_pt",               geNegative,  {"SelMuon1_pt", "SelMuon2_pt", "SelMuon1_charge"})
+      //.Define("SelMuonP_corrected_pt",     getPositive, {"SelMuon1_corrected_pt", "SelMuon2_corrected_pt", "SelMuon1_charge"})
+      //.Define("SelMuonN_corrected_pt",     geNegative,  {"SelMuon1_corrected_pt", "SelMuon2_corrected_pt", "SelMuon1_charge"})
+      //.Define("SelMuonP_eta",              getPositive, {"SelMuon1_eta", "SelMuon2_eta", "SelMuon1_charge"})
+      //.Define("SelMuonN_eta",              geNegative,  {"SelMuon1_eta", "SelMuon2_eta", "SelMuon1_charge"})
+      //.Define("SelMuonP_phi",              getPositive, {"SelMuon1_phi", "SelMuon2_phi", "SelMuon1_charge"})
+      //.Define("SelMuonN_phi",              geNegative,  {"SelMuon1_phi", "SelMuon2_phi", "SelMuon1_charge"})
+      //.Define("SelMuonP_charge",           getPositive, {"SelMuon1_charge", "SelMuon2_charge", "SelMuon1_charge"})
+      //.Define("SelMuonN_charge",           geNegative,  {"SelMuon1_charge", "SelMuon2_charge", "SelMuon1_charge"})
+      //.Define("SelMuonP_dxy",              getPositive, {"SelMuon1_dxy", "SelMuon2_dxy", "SelMuon1_charge"})
+      //.Define("SelMuonN_dxy",              geNegative,  {"SelMuon1_dxy", "SelMuon2_dxy", "SelMuon1_charge"})
+      //.Define("SelMuonP_pfRelIso04_all",   getPositive, {"SelMuon1_pfRelIso04_all", "SelMuon2_pfRelIso04_all", "SelMuon1_charge"})
+      //.Define("SelMuonN_pfRelIso04_all",   geNegative,  {"SelMuon1_pfRelIso04_all", "SelMuon2_pfRelIso04_all", "SelMuon1_charge"})
       ;
     d_start = d_post;
 
     if(_isMC){
-      auto d_post = d_start.Define("SelMuon2_ISO_BCDEF_SF",     getFromIdx,  {"Muon_ISO_BCDEF_SF",    _idx2})
+      auto d_post = d_start
+	.Define("SelMuon2_ISO_BCDEF_SF",     getFromIdx,  {"Muon_ISO_BCDEF_SF",    _idx2})
 	.Define("SelMuon2_ISO_GH_SF",        getFromIdx,  {"Muon_ISO_GH_SF",       _idx2})
 	.Define("SelMuon2_ID_BCDEF_SF",      getFromIdx,  {"Muon_ID_BCDEF_SF",     _idx2})
 	.Define("SelMuon2_ID_GH_SF",         getFromIdx,  {"Muon_ID_GH_SF",        _idx2})

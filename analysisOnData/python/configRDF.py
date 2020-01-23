@@ -469,14 +469,14 @@ class ConfigRDF():
                 if modules.has_key('muon_nominal'): self._branch_muon_nominal()
                 for key,value in modules.items():
                     if 'event_syst' in key:
-                        if ('LHE' not in key) and ('mass' not in key) and ('fakerate' not in key): 
-                            self._branch_event_syst_weight( key.replace('event_syst_',''), value)
-                        elif 'LHE' in key: 
+                        if   'LHE' in key: 
                             self._branch_LHE_weight( key.replace('event_syst_',''), value )
                         elif 'mass' in key:
                             self._branch_mass_weight( value['masses'], value['M'], value['G'], value['leptonType'], value['scheme'] )
                         elif 'fakerate' in key:
                             self._branch_fakerate_weight(value['input'], value['systs'])
+                        else:
+                            self._branch_event_syst_weight( key.replace('event_syst_',''), value)
                     elif 'muon_syst_scalefactor' in key:
                         self._branch_muon_syst_scalefactor( key.replace('muon_syst_scalefactor_',''), value )
                     elif 'muon_syst_column' in key:                         
@@ -487,7 +487,7 @@ class ConfigRDF():
         if self.verbose: print " ==>", len(self.def_modules), " defs modules have been loaded..."
         if self.verbose: print 'Get output...'
         self.p.getOutput()
-        self.p.saveGraph()
+        if self.verbose: self.p.saveGraph()
         return
 
 
