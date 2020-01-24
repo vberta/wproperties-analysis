@@ -69,62 +69,70 @@ categories_all = {
         'cut_base' : '',
         'category_cut_base' : 'defs',
         'modules' : modules_nominal
-    },
+        },
     'QCD': {
         'weight' : 'puWeight*lumiweight*SelMuon1_ID_SF*SelMuon1_ISO_SF*SelMuon1_Trigger_SF',
         'category_weight_base' : 'QCD',
         'cut' : 'Vtype==0 ' + \
-        '&& HLT_SingleMu24 '+ \
-        '&& MET_filters==1 ' + \
-        '&& nVetoElectrons==0 ' + \
-        '&& SelMuon1_corrected_pt>26.0 ' + \
-        '&& SelMuon1_corrected_pt<65.0 ' + \
-        '&& SelMuon1_corrected_MET_nom_mt<40.0 ',
+            '&& HLT_SingleMu24 '+ \
+            '&& MET_filters==1 ' + \
+            '&& nVetoElectrons==0 ' + \
+            '&& SelMuon1_corrected_pt>26.0 ' + \
+            '&& SelMuon1_corrected_pt<65.0 ' + \
+            '&& SelMuon1_corrected_MET_nom_mt<40.0 ',
         'cut_base' : '',
         'category_cut_base' : 'defs',
         'modules' : modules_nominal,
-    },
+        },
     'AISO': {
         'weight' : 'puWeight*lumiweight',
         'category_weight_base' : 'AISO',
         'cut' : 'Vtype==1 ' + \
-        '&& HLT_SingleMu24 '+ \
-        '&& MET_filters==1 ' + \
-        '&& nVetoElectrons==0 ' + \
-        '&& SelMuon1_corrected_pt>26.0 ' + \
-        '&& SelMuon1_corrected_pt<65.0 ' + \
-        '&& SelMuon1_corrected_MET_nom_mt>=40.0 ',
+            '&& HLT_SingleMu24 '+ \
+            '&& MET_filters==1 ' + \
+            '&& nVetoElectrons==0 ' + \
+            '&& SelMuon1_corrected_pt>26.0 ' + \
+            '&& SelMuon1_corrected_pt<65.0 ' + \
+            '&& SelMuon1_corrected_MET_nom_mt>=40.0 ',
         'cut_base' : '',
         'category_cut_base' : 'defs',
         'modules' : modules_nominal,
-    },
+        },
     'SIDEBAND': {
         'weight' : 'puWeight*lumiweight',
         'category_weight_base' : 'SIDEBAND',
         'cut' : 'Vtype==1 ' + \
-        '&& HLT_SingleMu24 '+ \
-        '&& MET_filters==1 ' + \
-        '&& nVetoElectrons==0 ' + \
-        '&& SelMuon1_corrected_pt>26.0 ' + \
-        '&& SelMuon1_corrected_pt<65.0 ' + \
-        '&& SelMuon1_corrected_MET_nom_mt<40.0 ',
+            '&& HLT_SingleMu24 '+ \
+            '&& MET_filters==1 ' + \
+            '&& nVetoElectrons==0 ' + \
+            '&& SelMuon1_corrected_pt>26.0 ' + \
+            '&& SelMuon1_corrected_pt<65.0 ' + \
+            '&& SelMuon1_corrected_MET_nom_mt<40.0 ',
         'cut_base' : '',
         'category_cut_base' : 'defs',
         'modules' : modules_nominal,
-    },
+        },
     'DIMUON': {
         'weight' : 'puWeight*lumiweight*SelMuon1_ID_SF*SelMuon1_ISO_SF*SelMuon1_Trigger_SF*SelMuon2_ID_SF*SelMuon2_ISO_SF*SelMuon2_Trigger_SF',
         'category_weight_base' : 'DIMUON',
         'cut' : 'Vtype==2 ' + \
-        '&& HLT_SingleMu24 '+ \
-        '&& MET_filters==1 ' + \
-        '&& nVetoElectrons==0 ' + \
-        '&& SelMuon1_corrected_pt>26.0 ' + \
-        '&& SelMuon2_corrected_pt>26.0 ' + \
-        '&& TMath::Abs(SelRecoZ_corrected_mass-91.1876)<15.0', 
+            '&& HLT_SingleMu24 '+ \
+            '&& MET_filters==1 ' + \
+            '&& nVetoElectrons==0 ' + \
+            '&& SelMuon1_corrected_pt>26.0 ' + \
+            '&& SelMuon2_corrected_pt>26.0 ' + \
+            '&& TMath::Abs(SelRecoZ_corrected_mass-91.1876)<15.0', 
         'cut_base' : '',
         'category_cut_base' : 'defs',
         'modules' : modules_all,
+        },
+    'GENINCLUSIVE': {
+        'weight' : '1.0',
+        'category_weight_base' : 'GENINCLUSIVE',
+        'cut' : '1',
+        'cut_base' : '',
+        'category_cut_base' : 'defs',
+        'modules' : modules_nominal
         },
     }
 
@@ -172,7 +180,9 @@ def get_categories(dataType,categories_str, common):
               'DIMUON',
               'AISO',
               'QCD',
-              'SIDEBAND'
+              'SIDEBAND',
+              'GENINCLUSIVE_WtoMuP', 'GENINCLUSIVE_WtoMuN',
+              'GENINCLUSIVE',
               ]:
 
         # check whether c is in the json file
@@ -292,3 +302,28 @@ def LHEPdfWeight_meaning(wid=0):
         return 'NNPDF_alphaSUp'
     else:
         return 'NNPDF_XXXreplica'                
+
+def get_histo_coeff(ps):
+    import ROOT
+    from array import array
+    x,y = [],[]
+    read_once = False
+    for ps_key,ps_val in ps.items():
+        y_bin = ps_key.lstrip("y[").rstrip("]").split(',')
+        (y_low,y_high) = (y_bin[0],y_bin[1])
+        x.append(float(y_low))
+        qT_bins = ps_val["qT"]
+        if read_once: continue
+        for iqT in range(len(qT_bins)-1):
+            qT_low  = "{:0.1f}".format(qT_bins[iqT])
+            qT_high = "{:0.1f}".format(qT_bins[iqT+1]) if qT_bins[iqT+1]>=0. else "Inf"    
+            y.append(float(qT_low))
+        read_once = True
+    x = sorted(x, key=float)
+    y = sorted(y, key=float)
+    print '|y| bins:', x
+    print 'qt bins: ', y
+    xx = array('f', x)
+    yy = array('f', y)
+    h = ROOT.TH2F('histo','', len(xx)-1, xx, len(yy)-1, yy)
+    return h

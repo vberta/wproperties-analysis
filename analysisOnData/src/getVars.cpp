@@ -15,6 +15,66 @@ RNode getVars::run(RNode d){
     return pt2;
   };
   */
+
+  if(_isMC && _run_gen){
+
+    auto prod = [](float x, float y)->float{
+      return x*y;
+    };
+
+    auto abs = [](float x)->float{
+      return TMath::Abs(x);
+    };
+
+    RNode d_post = d_start.Define("GenV_"+_leptonType+"_absy", abs, {"GenV_"+_leptonType+"_y"});
+    d_start = d_post;
+
+    for(unsigned int c = 0; c<10; c++){
+      auto tester = [c](float cos, float phi)->float{
+	float val = 1.0;
+	switch(c){
+	case 0:
+	  val = 20./3.*(0.5*(1-3*cos*cos)) + 2./3.;
+	  break;
+	case 1:
+	  val = 5.*2.*TMath::Sqrt(1-cos*cos)*cos*TMath::Cos(phi);
+	  break;
+	case 2:
+	  val = 10.*(1-cos*cos)*TMath::Cos(2*phi);
+	  break;
+	case 3:
+	  val =  4.*TMath::Sqrt(1-cos*cos)*TMath::Cos(phi);
+	  break;
+	case 4:
+	  val = 4.*cos;
+	  break;
+	case 5:
+	  val = 5.*(1-cos*cos)*TMath::Sin(2*phi);
+	  break;
+	case 6:
+	  val = 5.*2.*TMath::Sqrt(1-cos*cos)*cos*TMath::Sin(phi);
+	  break;
+	case 7:
+	  val = 4.*TMath::Sqrt(1-cos*cos)*TMath::Sin(phi);
+	  break;
+	case 8:
+	  val = 14.-10.*(1+cos*cos);
+	  break;
+	case 9:
+	  val = 1.0;
+	  break;
+	default:
+	  break;
+	}
+	return val;
+      };
+      auto d_post = d_start
+	.Define("test_A"+std::to_string(c), tester, {"GenV_"+_leptonType+"_CStheta", "GenV_"+_leptonType+"_CSphi"})
+	.Define("weight_test_A"+std::to_string(c), prod, {"test_A"+std::to_string(c), "Generator_weight"});
+      d_start = d_post;    
+    }
+    return d_start;
+  }
     
   auto d_post = d_start
     .Define("dummy", dummy, {"event"})
@@ -77,7 +137,7 @@ RNode getVars::run(RNode d){
 	;
       d_start = d_post;
     }    
-  }  
+  }
 
   return d_start;
 }

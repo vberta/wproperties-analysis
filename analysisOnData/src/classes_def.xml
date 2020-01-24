@@ -9,4 +9,5 @@
   <class name="getFilter"/>
   <class name="getVars"/>
   <class name="getCompVars"/>
+  <class name="computeAngularCoeff"/>
 </lcgdict>

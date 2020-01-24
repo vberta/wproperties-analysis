@@ -47,12 +47,14 @@ class ConfigRDF():
         self.xsec = 61526.7
         self.dataYear = '2016'        
 
-    def set_sample_specifics(self,isMC,lumi,xsec,dataYear,era_ratios):
+    def set_sample_specifics(self,isMC,lumi,xsec,dataYear,era_ratios,lepton_def, ps):
         self.isMC = isMC
         self.lumi = lumi
         self.xsec = xsec
         self.dataYear = dataYear
         self.era_ratios = pair_f(era_ratios[0],era_ratios[1])
+        self.lepton_def = lepton_def
+        self.ps = ps
         return
     
     """
@@ -61,7 +63,10 @@ class ConfigRDF():
     def _branch_defs(self):
         if self.iteration==0 and not hasattr(self, 'branch_defs_iter0'):
             Idx_mu2 = "Idx_mu2" if hasattr(self,'run_DIMUON') else ""
-            self.def_modules.append( ROOT.getVars("Idx_mu1", Idx_mu2, self.isMC) )
+            self.def_modules.append( ROOT.getVars("Idx_mu1", Idx_mu2, self.isMC, hasattr(self,'run_GENINCLUSIVE'), ROOT.std.string(self.lepton_def) ) )
+            if hasattr(self,'run_GENINCLUSIVE'): 
+                setattr(self, 'branch_defs_iter0', True )
+                return
             if self.recompute_vars:
                 self.def_modules.append( ROOT.getCompVars("Idx_mu1", Idx_mu2, vec_s(), vec_s()) )          
             if self.isMC: 
@@ -116,11 +121,15 @@ class ConfigRDF():
             self._branch_base_categories('nominal', [])
             if self.cut!='': 
                 modules.append( ROOT.getFilter( ROOT.std.string(self.cut)) )
-            modules.append( ROOT.muonHistos(self.category, 'weight_'+self.category_weight_base+'_nominal', vec_s(), "", "", False, self.verbose) )
+            if 'GENINCLUSIVE' in self.category:
+                 modules.append( ROOT.computeAngularCoeff(ROOT.std.string(self.category), ROOT.std.string(self.lepton_def), get_histo_coeff(self.ps) ))
+            else:
+                modules.append( ROOT.muonHistos(self.category, 'weight_'+self.category_weight_base+'_nominal', vec_s(), "", "", False, self.verbose) )
             nodeToStart = 'defs' if self.category_cut_base=='defs' else self.category_cut_base+'_nominal'
             if self.verbose: print 'branch_muon_nominal:', nodeToStart, ' --> ', self.category+'_nominal', ('' if self.cut=='' else 'with cut: '+self.cut)
             self.p.branch(nodeToStart=nodeToStart, nodeToEnd=self.category+'_nominal', modules=modules)
         return
+
 
     """
     Branch event syst weight
@@ -449,6 +458,9 @@ class ConfigRDF():
             if 'DIMUON' in key:
                 if self.verbose: print ">> ConfigRDF: run DIMUON module: precompute new columns with 'Idx2'"
                 self.run_DIMUON = True            
+            if 'GENINCLUSIVE' in key:
+                if self.verbose: print ">> ConfigRDF: run GENINCLUSIVE module: precompute CS variables"
+                self.run_GENINCLUSIVE = True                        
 
         self.base_categories = copy.deepcopy(base_categories)
 

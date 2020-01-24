@@ -23,6 +23,9 @@ output_dir = args.output_dir
 dataYear = args.dataYear
 restrictDataset = [ x for x in args.input.split(',') if args.input != ""]
 
+#whoami = 'sroychow'
+whoami = 'bianchini'
+
 samplef = open('./python/samples_'+dataYear+'.json')
 sampledata = json.load(samplef)
 samplef.close()
@@ -31,7 +34,7 @@ if args.rdf:
    print "Loading shared library..."
    ROOT.gSystem.Load('bin/libAnalysisOnData.so')
 
-def run_one_sample(inputFiles,output_dir, sampledata, sample, verbose=False):
+def run_one_sample(inputFiles,output_dir, sampledata, sample, verbose=True):
    v          = sampledata[sample]
    dataType   = v['dataType']
    dirs       = v['dirs']
@@ -40,6 +43,8 @@ def run_one_sample(inputFiles,output_dir, sampledata, sample, verbose=False):
    categories = v['categories']
    lumi       = sampledata["common"]["luminosity"]
    era_ratios = sampledata["common"]["era_ratios"]
+   lepton_def = sampledata["common"]["genLepton"]
+   ps         = sampledata["common"]["phase_space_"+lepton_def]    
    isMC       = (dataType=='MC')
    print "sample:      ", sample
    print "num of dirs: ", len(dirs)
@@ -48,7 +53,7 @@ def run_one_sample(inputFiles,output_dir, sampledata, sample, verbose=False):
    print "ncores:      ", ncores
    print "categories:  ", categories
    config = ConfigRDF(inputFiles, output_dir, sample+'.root', verbose)
-   config.set_sample_specifics(isMC, lumi, xsec, dataYear, era_ratios)   
+   config.set_sample_specifics(isMC, lumi, xsec, dataYear, era_ratios, lepton_def, ps)   
    ret,ret_base = get_categories(dataType, categories, sampledata["common"])
    if verbose:
       print "Categories:"
@@ -78,11 +83,11 @@ def run_multithread_all(sampledata, restrictDataset, output_dir):
       inputFiles = ROOT.std.vector(ROOT.std.string)()
       for subdir,files in v['dirs'].items():
          for f in files:
-            lf = '/scratchssd/sroychow/NanoAOD'+dataYear+'-V1MCFinal/'+str(subdir)+'/'+str(f)+'.root'
+            lf = '/scratchssd/'+whoami+'/NanoAOD'+dataYear+'-V1MCFinal/'+str(subdir)+'/'+str(f)+'.root'
             if subdir==k: inputFiles.push_back(lf)
       for subdir,files in v['dirs'].items():
          for f in files:
-            lf = '/scratchssd/sroychow/NanoAOD'+dataYear+'-V1MCFinal/'+str(subdir)+'/'+str(f)+'.root'
+            lf = '/scratchssd/'+whoami+'/NanoAOD'+dataYear+'-V1MCFinal/'+str(subdir)+'/'+str(f)+'.root'
             if subdir!=k: inputFiles.push_back(lf)
 
       print "Running on", len(inputFiles), "input files..."
@@ -110,11 +115,11 @@ def run_multicore_all(sampledata, restrictDataset, output_dir):
       inputFiles = ROOT.std.vector(ROOT.std.string)()
       for subdir,files in v['dirs'].items():
          for f in files:
-            lf = '/scratchssd/sroychow/NanoAOD'+dataYear+'-V1MCFinal/'+str(subdir)+'/'+str(f)+'.root'
+            lf = '/scratchssd/'+whoami+'/NanoAOD'+dataYear+'-V1MCFinal/'+str(subdir)+'/'+str(f)+'.root'
             if subdir==k: inputFiles.push_back(lf)
       for subdir,files in v['dirs'].items():
          for f in files:
-            lf = '/scratchssd/sroychow/NanoAOD'+dataYear+'-V1MCFinal/'+str(subdir)+'/'+str(f)+'.root'
+            lf = '/scratchssd/'+whoami+'/NanoAOD'+dataYear+'-V1MCFinal/'+str(subdir)+'/'+str(f)+'.root'
             if subdir!=k: inputFiles.push_back(lf)
       print "Running on", len(inputFiles), "input files..."
 
