@@ -3,7 +3,7 @@
 
 RNode computeAngularCoeff::run(RNode d){
 
-  for(unsigned int c = 0; c<10; c++){
+  for(unsigned int c=0; c<10; c++){
     std::string hname = c<9 ? _category+"_A"+std::to_string(c) : _category+"_MC"; 
     auto h =  d
       .Histo2D({ hname.c_str(), "", 

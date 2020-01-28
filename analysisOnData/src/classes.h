@@ -10,3 +10,4 @@
 #include "interface/getVars.hpp"
 #include "interface/getCompVars.hpp"
 #include "interface/computeAngularCoeff.hpp"
+#include "interface/applyAngularCoeff.hpp"

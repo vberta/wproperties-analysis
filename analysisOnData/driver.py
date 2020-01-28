@@ -23,8 +23,8 @@ output_dir = args.output_dir
 dataYear = args.dataYear
 restrictDataset = [ x for x in args.input.split(',') if args.input != ""]
 
-#whoami = 'sroychow'
-whoami = 'bianchini'
+whoami = 'sroychow'
+#whoami = 'bianchini'
 
 samplef = open('./python/samples_'+dataYear+'.json')
 sampledata = json.load(samplef)
@@ -45,6 +45,7 @@ def run_one_sample(inputFiles,output_dir, sampledata, sample, verbose=True):
    era_ratios = sampledata["common"]["era_ratios"]
    lepton_def = sampledata["common"]["genLepton"]
    ps         = sampledata["common"]["phase_space_"+lepton_def]    
+   harmonics  = sampledata["common"]["harmonics"]
    isMC       = (dataType=='MC')
    print "sample:      ", sample
    print "num of dirs: ", len(dirs)
@@ -53,7 +54,7 @@ def run_one_sample(inputFiles,output_dir, sampledata, sample, verbose=True):
    print "ncores:      ", ncores
    print "categories:  ", categories
    config = ConfigRDF(inputFiles, output_dir, sample+'.root', verbose)
-   config.set_sample_specifics(isMC, lumi, xsec, dataYear, era_ratios, lepton_def, ps)   
+   config.set_sample_specifics(isMC, lumi, xsec, dataYear, era_ratios, lepton_def, ps, harmonics)   
    ret,ret_base = get_categories(dataType, categories, sampledata["common"])
    if verbose:
       print "Categories:"

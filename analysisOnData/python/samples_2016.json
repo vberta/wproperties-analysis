@@ -3,45 +3,68 @@
 	"luminosity" : 35.92,
 	"era_ratios" : [0.548,0.452],
 	"genLepton" : "preFSR",
-	"phase_space_preFSR" : {
+	"phase_space" : {
 	    "y[0.0,0.2]" : {  
-		"qT" : [0.0, 4.0, 8.0, 12.0, 16.0, 20.0, 24.0, 30.0, -1]
+		"qT" : [0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 30.0, -1]
 	    },
 	    "y[0.2,0.4]" : {  
-		"qT" : [0.0, 4.0, 8.0, 12.0, 16.0, 20.0, 24.0, 30.0, -1]
+		"qT" : [0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 30.0, -1]
 	    },
 	    "y[0.4,0.6]" : {  
-		"qT" : [0.0, 4.0, 8.0, 12.0, 16.0, 20.0, 24.0, 30.0, -1]
+		"qT" : [0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 30.0, -1]
 	    },
 	    "y[0.6,0.8]" : {  
-		"qT" : [0.0, 4.0, 8.0, 12.0, 16.0, 20.0, 24.0, 30.0, -1]
+		"qT" : [0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 30.0, -1]
 	    },
 	    "y[0.8,1.0]" : {  
-		"qT" : [0.0, 4.0, 8.0, 12.0, 16.0, 20.0, 24.0, 30.0, -1]
+		"qT" : [0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 30.0, -1]
 	    },
 	    "y[1.0,1.2]" : {  
-		"qT" : [0.0, 4.0, 8.0, 12.0, 16.0, 20.0, 24.0, 30.0, -1]
+		"qT" : [0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 30.0, -1]
 	    },
 	    "y[1.2,1.4]" : {  
-		"qT" : [0.0, 4.0, 8.0, 12.0, 16.0, 20.0, 24.0, 30.0, -1]
+		"qT" : [0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 30.0, -1]
 	    },
 	    "y[1.4,1.6]" : {  
-		"qT" : [0.0, 4.0, 8.0, 12.0, 16.0, 20.0, 24.0, 30.0, -1]
+		"qT" : [0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 30.0, -1]
 	    },
 	    "y[1.6,1.8]" : {  
-		"qT" : [0.0, 4.0, 8.0, 12.0, 16.0, 20.0, 24.0, 30.0, -1]
+		"qT" : [0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 30.0, -1]
 	    },
 	    "y[1.8,2.0]" : {  
-		"qT" : [0.0, 4.0, 8.0, 12.0, 16.0, 20.0, 24.0, 30.0, -1]
+		"qT" : [0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 30.0, -1]
 	    },
-	    "y[2.0,2.5]" : {  
-		"qT" : [0.0, 4.0, 8.0, 12.0, 16.0, 20.0, 24.0, 30.0, -1]
+	    "y[2.0,2.2]" : {  
+		"qT" : [0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 30.0, -1]
 	    },
-	    "y[2.5,Inf]" : {  
-		"qT" : [0.0, 4.0, 8.0, 12.0, 16.0, 20.0, 24.0, 30.0, -1]
+	    "y[2.2,2.4]" : {  
+		"qT" : [0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 30.0, -1]
+	    },
+	    "y[2.4,2.6]" : {  
+		"qT" : [0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 30.0, -1]
+	    },
+	    "y[2.6,2.8]" : {  
+		"qT" : [0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 30.0, -1]
+	    },
+	    "y[2.8,3.0]" : {  
+		"qT" : [0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 30.0, -1]
+	    },
+	    "y[3.0,Inf]" : {  
+		"qT" : [0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 30.0, -1]
 	    }
 	},
-	"harmonics" : ["A0", "A1"],	  
+	"phase_space_preFSR" : {
+	    "y[0.0,0.2]" : {  
+		"qT" : [0.0, 4.0, 8.0, 12.0, 16.0, 20.0, 25.0, 30.0, -1]
+	    },
+	    "y[0.2,Inf]" : {  
+		"qT" : [0.0, 4.0, 8.0, 12.0, 16.0, 20.0, 25.0, 30.0, -1]
+	    }
+	},
+	"harmonics" : {
+	    "coefficients" : ["UL","A0", "A1", "A2", "A3", "A4"],
+	    "input_file"   : "./data/WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_GENINCLUSIVE.root"
+	},	
 	"Wto" : {
 	    "MuP" : "GenV_preFSR_charge==-13",  
 	    "MuN" : "GenV_preFSR_charge==+13",  
@@ -112,14 +135,40 @@
 	}		
     },  	 
 
-    "WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_GENINCLUSIVE" : {  
+    "WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_GENINCLUSIVE_0" : {  
         "dirs" : {
-            "WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_GENINCLUSIVE" : ["tree"]
+            "WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_GENINCLUSIVE_0" : ["tree_0"],
+            "WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_GENINCLUSIVE_1" : ["tree_1"],
+ 	    "WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_GENINCLUSIVE_2" : ["tree_2"]
         },											  
         "dataType" : "MC",
         "xsec" : 61526.7,
         "ncores" : 64,
-	"categories" : "GENINCLUSIVE_WtoMuP:nominal,GENINCLUSIVE_WtoMuN:nominal"
+ 	"categories" : "GENINCLUSIVE_WtoMuP:nominal,GENINCLUSIVE_WtoMuN:nominal"
+    },
+
+    "WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_GENINCLUSIVE_1" : {  
+        "dirs" : {
+            "WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_GENINCLUSIVE_0" : ["tree_0"],
+            "WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_GENINCLUSIVE_1" : ["tree_1"],
+ 	    "WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_GENINCLUSIVE_2" : ["tree_2"]
+        },											  
+        "dataType" : "MC",
+        "xsec" : 61526.7,
+        "ncores" : 64,
+ 	"categories" : "GENINCLUSIVE_WtoMuP:nominal,GENINCLUSIVE_WtoMuN:nominal"
+    },
+
+    "WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_GENINCLUSIVE_2" : {  
+        "dirs" : {
+            "WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_GENINCLUSIVE_0" : ["tree_0"],
+            "WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_GENINCLUSIVE_1" : ["tree_1"],
+ 	    "WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_GENINCLUSIVE_2" : ["tree_2"]
+        },											  
+        "dataType" : "MC",
+        "xsec" : 61526.7,
+        "ncores" : 64,
+ 	"categories" : "GENINCLUSIVE_WtoMuP:nominal,GENINCLUSIVE_WtoMuN:nominal"
     },
 
     "WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8" : {  
@@ -129,19 +178,19 @@
         },											  
         "dataType" : "MC",
         "xsec" : 61526.7,
-        "ncores" : -1,
-	"categories" : "SIGNAL_WtoMuP:wLHE,SIGNAL_WtoMuN:wLHE,SIGNAL_WtoTau:nominal,QCD:all,DIMUON:nominal"
+        "ncores" : 64,
+	"categories" : "SIGNAL_WtoMuP:wLHE:wLHE,SIGNAL_WtoMuN:wLHE,SIGNAL_WtoTau:nominal,QCD:all,DIMUON:nominal"
     },
 
     "WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_ext2" : {  
         "dirs" : {
-            "WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_ext2" : ["tree"],
-            "WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8"      : ["tree"]
+            "WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8"      : ["tree"],
+            "WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_ext2" : ["tree"]
         },											  
         "dataType" : "MC",
         "xsec" : 61526.7,
         "ncores" : 64,
-	"categories" : "SIGNAL_WtoMuP:wLHE,SIGNAL_WtoMuN:wLHE,SIGNAL_WtoTau:nominal,QCD:all,DIMUON:nominal"
+	"categories" : "SIGNAL_WtoMuP*^:wLHE,SIGNAL_WtoMuN*^:wLHE"
     },
 
     "DYJetsToLL_M-10to50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8" : {  
@@ -184,7 +233,7 @@
         "dataType" : "MC",
         "xsec" : 115,
         "ncores" : -1,
-	"categories" : "SIGNAL:nominal,QCD:nominal,DIMUON:nominal"
+	"categories" : "SIGNAL_WtoMuP*^:all"
     },
 
     "WW_TuneCUETP8M1_13TeV-pythia8_ext1" : {  

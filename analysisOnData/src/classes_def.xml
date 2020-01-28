@@ -10,4 +10,5 @@
   <class name="getVars"/>
   <class name="getCompVars"/>
   <class name="computeAngularCoeff"/>
+  <class name="applyAngularCoeff"/>
 </lcgdict>

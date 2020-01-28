@@ -3,8 +3,12 @@
 
 RNode getVars::run(RNode d){
 
-  RNode d_start = d;
-
+  auto abs = [](float x)->float{
+    return TMath::Abs(x);
+  };
+  auto prod = [](float x, float y)->float{
+    return x*y;
+  };
   /*
   auto getPositive = [](float pt1, float pt2, float q1)->float {
     if(q1>0.) return pt1;
@@ -15,18 +19,20 @@ RNode getVars::run(RNode d){
     return pt2;
   };
   */
+  RNode d_start = d;
 
-  if(_isMC && _run_gen){
-
-    auto prod = [](float x, float y)->float{
-      return x*y;
-    };
-
-    auto abs = [](float x)->float{
-      return TMath::Abs(x);
-    };
+  if(_isMC && _compute_coeff){
 
     RNode d_post = d_start.Define("GenV_"+_leptonType+"_absy", abs, {"GenV_"+_leptonType+"_y"});
+    d_start = d_post;
+
+    // BUG FIX
+    auto fixCS = [](float phiold, float y)->float{
+      if(y>=0.) return phiold;
+      if ( phiold >=0.) return +TMath::Pi()-phiold;
+      else return -TMath::Pi()-phiold;
+    };
+    d_post = d_start.Define("GenV_"+_leptonType+"_CSphiFIX", fixCS, {"GenV_"+_leptonType+"_CSphi", "GenV_"+_leptonType+"_y"});
     d_start = d_post;
 
     for(unsigned int c = 0; c<10; c++){
@@ -69,8 +75,8 @@ RNode getVars::run(RNode d){
 	return val;
       };
       auto d_post = d_start
-	.Define("test_A"+std::to_string(c), tester, {"GenV_"+_leptonType+"_CStheta", "GenV_"+_leptonType+"_CSphi"})
-	.Define("weight_test_A"+std::to_string(c), prod, {"test_A"+std::to_string(c), "Generator_weight"});
+	.Define("test_A"+std::to_string(c), tester, {"GenV_"+_leptonType+"_CStheta", "GenV_"+_leptonType+"_CSphiFIX"})
+	.Define("weight_test_A"+std::to_string(c), prod, {"test_A"+std::to_string(c), "lumiweight"});
       d_start = d_post;    
     }
     return d_start;
@@ -90,7 +96,8 @@ RNode getVars::run(RNode d){
   d_start = d_post;
 
   if(_isMC){
-    auto d_post = d_start.Define("SelMuon1_ISO_BCDEF_SF",     getFromIdx,  {"Muon_ISO_BCDEF_SF",    _idx1})
+    auto d_post = d_start
+      .Define("SelMuon1_ISO_BCDEF_SF",     getFromIdx,  {"Muon_ISO_BCDEF_SF",    _idx1})
       .Define("SelMuon1_ISO_GH_SF",        getFromIdx,  {"Muon_ISO_GH_SF",       _idx1})
       .Define("SelMuon1_ID_BCDEF_SF",      getFromIdx,  {"Muon_ID_BCDEF_SF",     _idx1})
       .Define("SelMuon1_ID_GH_SF",         getFromIdx,  {"Muon_ID_GH_SF",        _idx1})
@@ -98,6 +105,18 @@ RNode getVars::run(RNode d){
       .Define("SelMuon1_Trigger_GH_SF",    getFromIdx,  {"Muon_Trigger_GH_SF",   _idx1})
       ;
     d_start = d_post;
+    if( _ps_slicing ){
+      // BUG FIX
+      auto fixCS = [](float phiold, float y)->float{
+	if(y>=0.) return phiold;
+	if ( phiold >=0.) return +TMath::Pi()-phiold;
+	else return -TMath::Pi()-phiold;
+      };
+      auto d_post = d_start
+	.Define("GenV_"+_leptonType+"_absy", abs, {"GenV_"+_leptonType+"_y"})
+	.Define("GenV_"+_leptonType+"_CSphiFIX", fixCS, {"GenV_"+_leptonType+"_CSphi", "GenV_"+_leptonType+"_y"});
+      d_start = d_post;
+    }
   }
   
   if(_idx2!=""){
