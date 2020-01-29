@@ -216,13 +216,81 @@ def make_dictionary(sampledata, vname, verbose=True):
                   out[krc][kp][cat][syst]['delta'] = (tot-tot_nominal)/tot_nominal*1e+02
 
          f.Close()
-      if verbose: print 'Data: '+'{:.3E}'.format(total_data)
-      if verbose: print 'MC:   '+'{:.3E}'.format(total_mc)
-      from json import encoder
-      encoder.FLOAT_REPR = lambda o: format(o, '.3f')
-      with open(output_dir+'/hadded/dictionary_'+vname+'.json', 'w') as fp:
-         json.dump(out, fp)
+   if verbose: print 'Data: '+'{:.3E}'.format(total_data)
+   if verbose: print 'MC:   '+'{:.3E}'.format(total_mc)
+   from json import encoder
+   encoder.FLOAT_REPR = lambda o: format(o, '.3f')
+   with open(output_dir+'/hadded/dictionary_'+vname+'.json', 'w') as fp:
+      json.dump(out, fp)
    return
+
+def make_dictionary2(sampledata, vname, verbose=True):
+   out = {}
+   out['variable'] = vname
+   output = sampledata["common"]["output"]
+   for krc,r in output.items():
+      out[krc] = {}
+      kr = krc.split('_')[0]
+      for kp,p in r.items():
+         fname = p.split('/')[0]
+         f     = ROOT.TFile(output_dir+'/hadded/'+fname)
+         dname = ((p.split('/')[1].split(':')[0]).replace('*',kr))
+         cats  = p.split('/')[1].split(':')[1].split(',')
+         tot_nominal = -1.
+         for cat in cats:
+            if not out[krc].has_key(cat):
+               out[krc][cat] = {}
+            systs = []
+            for sk,sv in modules_any.items():
+               if cat==(sk.split('_')[-1]):
+                  systs = sv
+                  if cat=='fakerate': 
+                     systs = sv['systs']
+                  elif cat=='mass':
+                     systs = sv['masses']
+            if len(systs)==0: systs.append('')
+            if cat=='LHEScaleWeight':
+               first,last = systs[0],systs[1]
+               systs = []
+               for i in range(first,last+1):
+                  systs.append(LHEScaleWeight_meaning(i))
+            elif cat=='LHEPdfWeight':
+               first,last = systs[0],systs[1]
+               systs = []
+               for i in range(first,last+1):
+                  systs.append(LHEPdfWeight_meaning(i))
+            for syst in systs:               
+               tag = syst
+               if cat in ['ISO','ID','Trigger']:
+                  tag = cat+'_'+tag
+               elif cat=='puWeight':
+                  tag = cat+syst
+               elif cat=='fakerate':
+                  tag = cat+'_'+tag
+               elif 'LHE' in cat:
+                  tag = cat+'_'+tag                  
+               hname = dname+'_'+cat+'/'+dname+'__'+vname+'__'+tag
+               f.cd()
+               h3 = ROOT.gDirectory.Get(hname)
+               if h3==None:
+                  continue
+               if not out[krc][cat].has_key(syst):
+                  print "adding ", krc,cat,syst
+                  out[krc][cat][syst] = {'inputs' : [ { 'pname': kp, 'fname' : fname, 'hname' : hname.replace(vname,'*') } ] }
+                  pass
+               else:
+                  out[krc][cat][syst]['inputs'].append( { 'pname': kp, 'fname' : fname, 'hname' : hname.replace(vname,'*') } )
+                  pass
+         f.Close()
+
+   from json import encoder
+   encoder.FLOAT_REPR = lambda o: format(o, '.3f')
+   with open(output_dir+'/hadded/dictionary2_'+vname+'.json', 'w') as fp:
+      json.dump(out, fp)
+   
+   return
+
+
 
 if __name__ == '__main__':
    if args.rdf:
@@ -231,5 +299,6 @@ if __name__ == '__main__':
    elif args.merge:
       merge(sampledata)
    elif args.dictionary:
-      make_dictionary(sampledata, 'SelMuon1_eta_SelMuon1_corrected_pt_SelMuon1_charge')
+      #make_dictionary2(sampledata, 'SelMuon1_eta_SelMuon1_corrected_pt_SelMuon1_charge')
       #make_dictionary(sampledata, 'SelRecoZ_corrected_qt_SelRecoZ_corrected_y_SelRecoZ_corrected_mass')
+      make_dictionary2(sampledata, 'SelRecoZ_corrected_qt_SelRecoZ_corrected_y_SelRecoZ_corrected_mass')

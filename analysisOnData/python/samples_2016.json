@@ -107,21 +107,25 @@
 	    "SIGNAL_Plus" : {
 		"WtoMuP"      : "WJets.root/*_WtoMuP:nominal,corrected,nom,puWeight,Trigger,ISO,ID,LHEScaleWeight,LHEPdfWeight",
 		"WtoMuN"      : "WJets.root/*_WtoMuN:nominal,corrected,nom,puWeight,Trigger,ISO,ID,LHEScaleWeight,LHEPdfWeight",
+		"WtoTau"      : "WJets.root/*_WtoTau:nominal",
 		"AISO_Fake"   : "SingleMuon.root/AISO:fakerate",
 		"SIGNAL_Fake" : "SingleMuon.root/SIGNAL:fakerate",
 		"Z"           : "DYJets.root/*:nominal,corrected,nom,puWeight,Trigger,ISO,ID",
 		"TTbar"       : "TTbar.root/*:nominal",
-		"ST"          : "ST.root/*:nominal",		
+		"ST"          : "ST.root/*:nominal",
+		"DiBoson"     : "DiBoson.root/*:nominal",
 		"Data"        : "SingleMuon.root/*:nominal"
 	    },
 	    "SIGNAL_Minus"  : {
 		"WtoMuP"      : "WJets.root/*_WtoMuP:nominal,corrected,nom,puWeight,Trigger,ISO,ID,LHEScaleWeight,LHEPdfWeight",
 		"WtoMuN"      : "WJets.root/*_WtoMuN:nominal,corrected,nom,puWeight,Trigger,ISO,ID,LHEScaleWeight,LHEPdfWeight",
+		"WtoTau"      : "WJets.root/*_WtoTau:nominal",
 		"AISO_Fake"   : "SingleMuon.root/AISO:fakerate",
 		"SIGNAL_Fake" : "SingleMuon.root/SIGNAL:fakerate",
 		"Z"           : "DYJets.root/*:nominal,corrected,nom,puWeight,Trigger,ISO,ID",
 		"TTbar"       : "TTbar.root/*:nominal",
-		"ST"          : "ST.root/*:nominal",		
+		"ST"          : "ST.root/*:nominal",	
+		"DiBoson"     : "DiBoson.root/*:nominal",	
 		"Data"        : "SingleMuon.root/*:nominal"
 	    },
 	    "DIMUON" : {
@@ -130,6 +134,7 @@
 		"ZtoTauTau" : "DYJets.root/*_ZtoTauTau:nominal",
 		"TTbar"     : "TTbar.root/*:nominal",
 		"ST"        : "ST.root/*:nominal",
+		"DiBoson"   : "DiBoson.root/*:nominal",
 		"Data"      : "SingleMuon.root/*:nominal"
 	    }
 	}		
@@ -179,7 +184,7 @@
         "dataType" : "MC",
         "xsec" : 61526.7,
         "ncores" : 64,
-	"categories" : "SIGNAL_WtoMuP:wLHE:wLHE,SIGNAL_WtoMuN:wLHE,SIGNAL_WtoTau:nominal,QCD:all,DIMUON:nominal"
+	"categories" : "SIGNAL_WtoMuP:wLHE,SIGNAL_WtoMuN:wLHE,SIGNAL_WtoTau:nominal,QCD:all,DIMUON:nominal"
     },
 
     "WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_ext2" : {  

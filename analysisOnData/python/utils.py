@@ -127,7 +127,7 @@ categories_all = {
             '&& nVetoElectrons==0 ' + \
             '&& SelMuon1_corrected_pt>26.0 ' + \
             '&& SelMuon2_corrected_pt>26.0 ' + \
-            '&& TMath::Abs(SelRecoZ_corrected_mass-91.1876)<15.0', 
+            '&& TMath::Abs(SelRecoZ_corrected_mass-90.0)<15.0', 
         'cut_base' : '',
         'category_cut_base' : 'defs',
         'modules' : modules_all,

@@ -22,13 +22,13 @@ RNode muonHistos::run(RNode d){
   // ZQT vs ZY vs ZMASS
   unsigned int nbins_RecoZ_qt   = 50;
   unsigned int nbins_RecoZ_y    = 30;
-  unsigned int nbins_RecoZ_mass = 60;
+  unsigned int nbins_RecoZ_mass = 30;
   std::vector<float> RecoZ_qt_Arr(nbins_RecoZ_qt+1); 
   std::vector<float> RecoZ_y_Arr(nbins_RecoZ_y+1); 
   std::vector<float> RecoZ_mass_Arr(nbins_RecoZ_mass+1); 
   for(unsigned int i=0; i<nbins_RecoZ_qt+1; i++)   RecoZ_qt_Arr[i]   =   0. + i*(100.)/nbins_RecoZ_qt;      
   for(unsigned int i=0; i<nbins_RecoZ_y+1; i++)    RecoZ_y_Arr[i]    = -3.0 + i*(3.0 + 3.0)/nbins_RecoZ_y;      
-  for(unsigned int i=0; i<nbins_RecoZ_mass+1; i++) RecoZ_mass_Arr[i] =  60. + i*(120.)/nbins_RecoZ_mass;      
+  for(unsigned int i=0; i<nbins_RecoZ_mass+1; i++) RecoZ_mass_Arr[i] =  75. + i*(105.)/nbins_RecoZ_mass;      
   if(_category.find("DIMUON")!=std::string::npos && !veto_LHE) 
     this->add_group_3D( &d, "SelRecoZ_corrected_qt", "SelRecoZ_corrected_y", "SelRecoZ_corrected_mass", "", RecoZ_qt_Arr,RecoZ_y_Arr,RecoZ_mass_Arr);    
 
