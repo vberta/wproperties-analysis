@@ -76,6 +76,20 @@ categories_all = {
         'category_cut_base' : 'defs',
         'modules' : modules_nominal
         },
+    'SIGNALNORM': {
+        'weight' : 'puWeight*lumiweight*SelMuon1_ID_SF*SelMuon1_ISO_SF*SelMuon1_Trigger_SF',
+        'category_weight_base' : 'SIGNALNORM',
+        'cut' : 'Vtype==0 ' + \
+            '&& HLT_SingleMu24 '+ \
+            '&& MET_filters==1 ' + \
+            '&& nVetoElectrons==0 ' + \
+            '&& SelMuon1_corrected_pt>26.0 ' + \
+            '&& SelMuon1_corrected_pt<65.0 ' + \
+            '&& SelMuon1_corrected_MET_nom_mt>=90.0 ',
+        'cut_base' : '',
+        'category_cut_base' : 'defs',
+        'modules' : modules_nominal
+        },
     'QCD': {
         'weight' : 'puWeight*lumiweight*SelMuon1_ID_SF*SelMuon1_ISO_SF*SelMuon1_Trigger_SF',
         'category_weight_base' : 'QCD',
@@ -85,13 +99,27 @@ categories_all = {
             '&& nVetoElectrons==0 ' + \
             '&& SelMuon1_corrected_pt>26.0 ' + \
             '&& SelMuon1_corrected_pt<65.0 ' + \
-            '&& SelMuon1_corrected_MET_nom_mt<40.0 ',
+            '&& SelMuon1_corrected_MET_nom_mt<30.0 ',
         'cut_base' : '',
         'category_cut_base' : 'defs',
         'modules' : modules_nominal,
-        },
+    },
+    'SIGNALNOISOSF': {
+        'weight' : 'puWeight*lumiweight*SelMuon1_ID_SF*SelMuon1_Trigger_SF',
+        'category_weight_base' : 'SIGNALNOISOSF',
+        'cut' : 'Vtype==0 ' + \
+            '&& HLT_SingleMu24 '+ \
+            '&& MET_filters==1 ' + \
+            '&& nVetoElectrons==0 ' + \
+            '&& SelMuon1_corrected_pt>26.0 ' + \
+            '&& SelMuon1_corrected_pt<65.0 ' + \
+            '&& SelMuon1_corrected_MET_nom_mt>=40.0 ',
+        'cut_base' : '',
+        'category_cut_base' : 'defs',
+        'modules' : modules_nominal
+    },
     'AISO': {
-        'weight' : 'puWeight*lumiweight',
+        'weight' : 'puWeight*lumiweight*SelMuon1_ID_SF',
         'category_weight_base' : 'AISO',
         'cut' : 'Vtype==1 ' + \
             '&& HLT_SingleMu24 '+ \
@@ -104,8 +132,22 @@ categories_all = {
         'category_cut_base' : 'defs',
         'modules' : modules_nominal,
         },
+    'AISONORM': {
+        'weight' : 'puWeight*lumiweight*SelMuon1_ID_SF',
+        'category_weight_base' : 'AISONORM',
+        'cut' : 'Vtype==1 ' + \
+            '&& HLT_SingleMu24 '+ \
+            '&& MET_filters==1 ' + \
+            '&& nVetoElectrons==0 ' + \
+            '&& SelMuon1_corrected_pt>26.0 ' + \
+            '&& SelMuon1_corrected_pt<65.0 ' + \
+            '&& SelMuon1_corrected_MET_nom_mt>=90.0 ',
+        'cut_base' : '',
+        'category_cut_base' : 'defs',
+        'modules' : modules_nominal,
+        },
     'SIDEBAND': {
-        'weight' : 'puWeight*lumiweight',
+        'weight' : 'puWeight*lumiweight*SelMuon1_ID_SF',
         'category_weight_base' : 'SIDEBAND',
         'cut' : 'Vtype==1 ' + \
             '&& HLT_SingleMu24 '+ \
@@ -113,7 +155,7 @@ categories_all = {
             '&& nVetoElectrons==0 ' + \
             '&& SelMuon1_corrected_pt>26.0 ' + \
             '&& SelMuon1_corrected_pt<65.0 ' + \
-            '&& SelMuon1_corrected_MET_nom_mt<40.0 ',
+            '&& SelMuon1_corrected_MET_nom_mt<30.0 ',
         'cut_base' : '',
         'category_cut_base' : 'defs',
         'modules' : modules_nominal,
@@ -179,12 +221,15 @@ def get_categories(dataType,categories_str, common):
     ret_base = {}
 
     # these are all the base categories
-    for c in ['SIGNAL_WtoMuP', 'SIGNAL_WtoMuN','SIGNAL_WtoTau',
+    for c in ['SIGNAL_WtoMuP', 'SIGNAL_WtoMuN', 'SIGNAL_WtoTau',
               'SIGNAL_ZtoMuMu','SIGNAL_ZtoTauTau',
               'SIGNAL',
+              'SIGNALNORM',
+              'SIGNALNOISOSF',
               'DIMUON_ZtoMuMu','DIMUON_ZtoTauTau',
               'DIMUON',
               'AISO',
+              'AISONORM',
               'QCD',
               'SIDEBAND',
               'GENINCLUSIVE_WtoMuP', 'GENINCLUSIVE_WtoMuN',

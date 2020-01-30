@@ -1,0 +1,115 @@
+{    
+    "common" : {
+	"luminosity" : 35.92,
+	"era_ratios" : [0.548,0.452],
+	"genLepton" : "preFSR",
+	"phase_space" : {
+	    "y[0.0,0.2]" : {  
+		"qT" : [0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 30.0, -1]
+	    },
+	    "y[0.2,0.4]" : {  
+		"qT" : [0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 30.0, -1]
+	    },
+	    "y[0.4,0.6]" : {  
+		"qT" : [0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 30.0, -1]
+	    },
+	    "y[0.6,0.8]" : {  
+		"qT" : [0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 30.0, -1]
+	    },
+	    "y[0.8,1.0]" : {  
+		"qT" : [0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 30.0, -1]
+	    },
+	    "y[1.0,1.2]" : {  
+		"qT" : [0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 30.0, -1]
+	    },
+	    "y[1.2,1.4]" : {  
+		"qT" : [0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 30.0, -1]
+	    },
+	    "y[1.4,1.6]" : {  
+		"qT" : [0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 30.0, -1]
+	    },
+	    "y[1.6,1.8]" : {  
+		"qT" : [0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 30.0, -1]
+	    },
+	    "y[1.8,2.0]" : {  
+		"qT" : [0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 30.0, -1]
+	    },
+	    "y[2.0,2.2]" : {  
+		"qT" : [0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 30.0, -1]
+	    },
+	    "y[2.2,2.4]" : {  
+		"qT" : [0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 30.0, -1]
+	    },
+	    "y[2.4,2.6]" : {  
+		"qT" : [0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 30.0, -1]
+	    },
+	    "y[2.6,2.8]" : {  
+		"qT" : [0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 30.0, -1]
+	    },
+	    "y[2.8,3.0]" : {  
+		"qT" : [0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 30.0, -1]
+	    },
+	    "y[3.0,Inf]" : {  
+		"qT" : [0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 30.0, -1]
+	    }
+	},
+	"phase_space_preFSR" : {
+	    "y[0.0,0.2]" : {  
+		"qT" : [0.0, 4.0, 8.0, 12.0, 16.0, 20.0, 25.0, 30.0, -1]
+	    },
+	    "y[0.2,Inf]" : {  
+		"qT" : [0.0, 4.0, 8.0, 12.0, 16.0, 20.0, 25.0, 30.0, -1]
+	    }
+	},
+	"harmonics" : {
+	    "coefficients" : ["UL","A0", "A1", "A2", "A3", "A4"],
+	    "input_file"   : "./data/WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_GENINCLUSIVE.root"
+	},	
+	"Wto" : {
+	    "MuP" : "GenV_preFSR_charge==-13",  
+	    "MuN" : "GenV_preFSR_charge==+13",  
+	    "Tau" : "TMath::Abs(GenV_preFSR_charge)!=13"
+	},
+	"Zto" : {
+	    "MuMu"   : "genVtype==13",  
+	    "TauTau" : "genVtype!=13"
+	},
+	"merged" : {
+	    "WJets" : ["WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8", 
+		       "WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_ext2"]
+	},
+	"output" : {
+	    "SIGNAL_Plus" : {
+		"WtoMuP"      : "WJets.root/*_WtoMuP:nominal,corrected,nom,puWeight,Trigger,ISO,ID,LHEScaleWeight,LHEPdfWeight",
+		"WtoMuN"      : "WJets.root/*_WtoMuN:nominal,corrected,nom,puWeight,Trigger,ISO,ID,LHEScaleWeight,LHEPdfWeight"
+	    },
+	    "SIGNAL_Minus"  : {
+		"WtoMuP"      : "WJets.root/*_WtoMuP:nominal,corrected,nom,puWeight,Trigger,ISO,ID,LHEScaleWeight,LHEPdfWeight",
+		"WtoMuN"      : "WJets.root/*_WtoMuN:nominal,corrected,nom,puWeight,Trigger,ISO,ID,LHEScaleWeight,LHEPdfWeight"
+	    }
+	}		
+    },  	 
+
+    "WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8" : {  
+        "dirs" : {
+            "WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8"      : ["tree"],
+            "WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_ext2" : ["tree"]
+        },											  
+        "dataType" : "MC",
+        "xsec" : 61526.7,
+        "ncores" : 64,
+	"categories" : "SIGNAL_WtoMuP*^:wLHE,SIGNAL_WtoMuN*^:wLHE"
+    },
+
+    "WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_ext2" : {  
+        "dirs" : {
+            "WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8"      : ["tree"],
+            "WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_ext2" : ["tree"]
+        },											  
+        "dataType" : "MC",
+        "xsec" : 61526.7,
+        "ncores" : 64,
+	"categories" : "SIGNAL_WtoMuP*^:wLHE,SIGNAL_WtoMuN*^:wLHE"
+    }
+
+}

@@ -8,9 +8,11 @@ pp = pprint.PrettyPrinter(indent=2)
 
 parser = argparse.ArgumentParser("")
 parser.add_argument('-o', '--output_dir',type=str, default='TEST', help="")
+parser.add_argument('-s', '--systematics',type=str, default='', help="")
 parser.add_argument('-b', '--batch', help="", action='store_true')
 args = parser.parse_args()
 output_dir = args.output_dir
+systematics = args.systematics
 
 if args.batch:
     from sys import argv
@@ -57,25 +59,28 @@ def plot(category, variable, proj, xtitle, ytitle, tag):
         cat = js[category]
 
         c = ROOT.TCanvas("c", "canvas", 700, 700)
-        c.SetLeftMargin(0.15)
 
         pad1 = ROOT.TPad("pad1", "pad1", 0, 0.3, 1, 1.0)
         pad1.SetBottomMargin(0)
+        pad1.SetLeftMargin(0.15)
         pad1.SetGridx()
         pad1.Draw()
         pad1.cd()
 
-        leg = ROOT.TLegend(0.12,0.65,0.35,0.88, "","brNDC")
+        leg = ROOT.TLegend(0.18,0.70,0.66,0.88, "","brNDC")
         leg.SetFillStyle(0)
         leg.SetBorderSize(0)
-        leg.SetTextSize(0.03)
+        leg.SetTextSize(0.04)
         leg.SetFillColor(10)
+        leg.SetNColumns(3)
 
         hs = ROOT.THStack("hs", "")
         hData = None
         hMC = None
         open_files = {}
         to_stack = []
+        nominals = {}
+        systs = {}
 
         h_base = None
         for key,val in cat.items():
@@ -103,13 +108,15 @@ def plot(category, variable, proj, xtitle, ytitle, tag):
                         pass
                     hp = h.Project3D(proj+"e").Clone(pname+"_nominal")
                     if pname!='Data':
+                        if not nominals.has_key(pname): nominals[pname] = hp.Clone(pname+"_nominal_copy")
                         to_stack.append( [pname, hp] )
                         print "MC: adding "+pname+" ("+fname+"/"+hname_fix+") -> "+"{:.3E}".format(hp.Integral())
                     else:
                         hData = hp
                         print "Data: adding "+fname+"/"+hname_fix
-
-
+            else:
+                pass                            
+        
         to_stack.sort(key=lambda h: h[1].Integral(), reverse=False)
         idx_AISO_fake = -1
         idx_SIGNAL_fake = -1
@@ -118,44 +125,45 @@ def plot(category, variable, proj, xtitle, ytitle, tag):
             elif h[0]=='SIGNAL_Fake' : idx_SIGNAL_fake = ih
         if idx_AISO_fake!=-1 and idx_SIGNAL_fake!=-1:
             to_stack[idx_AISO_fake][1].Add( to_stack[idx_SIGNAL_fake][1] )            
-            to_stack[idx_AISO_fake][1].Scale(0.5)
+            #to_stack[idx_AISO_fake][1].Scale(0.5)
             to_stack.pop(idx_SIGNAL_fake)
         for h in to_stack: 
             h[1].SetFillColor(colors[h[0]])
             h[1].SetFillStyle(1001)            
             hs.Add(h[1])
             if hMC==None: hMC = h[1].Clone("MC")
-            else: hMC.Add(h[1])
+            else: hMC.Add(h[1])        
 
         to_stack.sort(key=lambda h: h[1].Integral(), reverse=True)
         for h in to_stack:  leg.AddEntry(h[1], nicknames[h[0]], "F")
         hs.SetMaximum( max(hData.GetMaximum(), hs.GetMaximum())*1.30 )
         hs.Draw("HIST")
+        h = hs.GetHistogram()
+        h.GetYaxis().SetLabelSize(0.04)
+        h.GetYaxis().SetTitleSize(25)
+        h.GetYaxis().SetTitleFont(43)
+        h.GetYaxis().SetTitleOffset(1.55)
+        h.GetYaxis().SetTitle(ytitle)
+        #c.Modified()
+
         hData.SetLineColor(ROOT.kBlack)
         hData.SetMarkerStyle(ROOT.kFullCircle)
-        hData.SetMarkerSize(0.8)
+        hData.SetMarkerSize(0.9)
         leg.AddEntry(hData, nicknames['Data'], "P")
         hData.Draw("PESAME")
         leg.Draw()
 
-        h = hs.GetHistogram()
-        h.GetYaxis().SetLabelSize(18)
-        h.GetYaxis().SetTitleSize(20)
-        h.GetYaxis().SetTitleFont(43)
-        h.GetYaxis().SetTitleOffset(1.15)
-        h.GetYaxis().SetTitle(ytitle)
-
-        #axis = ROOT.TGaxis( -5, 20, -5, 220, 20,220,510,"")
-        #axis.SetLabelFont(43)
-        #axis.SetLabelSize(18)
-        #axis.SetTitle(ytitle)
-        #axis.SetTitleOffset(0.8)
-        #axis.Draw()
+        lat = ROOT.TLatex( 0.69, 0.85, "35.9 fb^{-1} (2016)")
+        lat.SetNDC()
+        lat.SetTextFont(43)
+        lat.SetTextSize(22)
+        lat.Draw()
 
         c.cd()
         pad2 = ROOT.TPad("pad2", "pad2", 0, 0.05, 1, 0.3)
+        pad2.SetLeftMargin(0.15)
         pad2.SetTopMargin(0)
-        pad2.SetBottomMargin(0.2)
+        pad2.SetBottomMargin(0.25)
         pad2.SetGridx()
         pad2.Draw()
         pad2.cd()
@@ -168,26 +176,75 @@ def plot(category, variable, proj, xtitle, ytitle, tag):
         hratio.Sumw2()
         hratio.SetStats(0)
         hratio.Divide(hMC)
-        hratio.SetMarkerStyle(21)
+        hratio.SetMarkerStyle(ROOT.kFullCircle)
+        hratio.SetMarkerSize(0.9)
         hratio.Draw("ep")
+        line = ROOT.TLine( hratio.GetXaxis().GetXmin(), 1.0, hratio.GetXaxis().GetXmax(), 1.0)
+        line.SetLineWidth(2)
+        line.SetLineStyle(ROOT.kDashed)
+        line.Draw()
 
- 
-        hratio.GetYaxis().SetTitle("Data/MC")
         hratio.GetXaxis().SetTitle(xtitle)
-        hratio.GetYaxis().SetNdivisions(505)
-        hratio.GetYaxis().SetTitleSize(20)
-        hratio.GetYaxis().SetTitleFont(43)
-        hratio.GetYaxis().SetTitleOffset(1.35)
-        hratio.GetYaxis().SetLabelFont(43)
-        hratio.GetYaxis().SetLabelSize(18)
-        hratio.GetXaxis().SetTitleSize(20)
+        hratio.GetXaxis().SetTitleSize(25)
         hratio.GetXaxis().SetTitleFont(43)
         hratio.GetXaxis().SetTitleOffset(3.)
         hratio.GetXaxis().SetLabelFont(43)
         hratio.GetXaxis().SetLabelSize(18)
+        hratio.GetYaxis().SetTitle("Data/Pred.")
+        hratio.GetYaxis().SetNdivisions(505)
+        hratio.GetYaxis().SetTitleSize(25)
+        hratio.GetYaxis().SetTitleFont(43)
+        hratio.GetYaxis().SetTitleOffset(1.55)
+        hratio.GetYaxis().SetLabelFont(43)
+        hratio.GetYaxis().SetLabelSize(18)
+
+        for key,val in cat.items():
+            if key in ["nominal", "fakerate"]: continue
+            for kvar,var in val.items():
+                inputs = var["inputs"]
+                for i in inputs: 
+                    pname = i["pname"]
+                    fname = i["fname"]
+                    hname = i["hname"]
+                    if not open_files.has_key(fname):
+                        open_files[fname] = ROOT.TFile.Open(output_dir+'/hadded/'+fname)
+                    open_files[fname].cd()
+                    hname_fix = hname.replace('*', js["variable"])
+                    h = ROOT.gDirectory.Get(hname_fix)                        
+                    if h==None:                     
+                        print "File NOT found"
+                        continue
+                    if 'Plus' in category:
+                        h.GetZaxis().SetRange(2,2)
+                    elif 'Minus' in category:
+                        h.GetZaxis().SetRange(1,1)
+                    else:
+                        pass
+                    if not systs.has_key(key+"_"+kvar):
+                        systs[key+"_"+kvar] = h.Project3D(proj+"e").Clone(pname+"_"+key+"_"+kvar)
+                        systs[key+"_"+kvar].Add(nominals[pname], -1.0)
+                    else:
+                        systs[key+"_"+kvar].Add( h.Project3D(proj+"e") )
+                        systs[key+"_"+kvar].Add(nominals[pname], -1.0)    
+
+        for k,v in systs.items(): 
+            for kp,vp in nominals.items(): v.Add(vp, 1.0)                
+            print k, v.Integral()/hMC.Integral() 
+        for k,v in systs.items():
+            accept = False
+            for s in systematics.split(','): 
+                if s in k: 
+                    accept = True
+                    break
+            if not accept: continue
+            v.Divide(hMC)
+            v.SetLineColor(ROOT.kRed)
+            v.SetLineWidth(2)
+            v.Draw("HISTSAME")
 
         c.Update()
         c.Draw()
+
         if not args.batch: raw_input()
         c.SaveAs(output_dir+'/plots/'+category+'_'+variable+'_'+tag+'.png')
         c.IsA().Destructor( c )
@@ -198,8 +255,8 @@ def plot(category, variable, proj, xtitle, ytitle, tag):
 
 
 if __name__ == "__main__":
-    #plot('DIMUON',  'SelRecoZ_corrected_qt_SelRecoZ_corrected_y_SelRecoZ_corrected_mass', 'y', 'mass',  'Events', 'mass')
-    plot('SIGNAL_Plus',  'SelMuon1_eta_SelMuon1_corrected_pt_SelMuon1_charge', 'x', '#eta',  'Events', 'eta')
-    #plot('SIGNAL_Plus',  'SelMuon1_eta_SelMuon1_corrected_pt_SelMuon1_charge', 'y', 'p_{T}', 'Events', 'pt')
+    #plot('DIMUON',  'SelRecoZ_corrected_qt_SelRecoZ_corrected_y_SelRecoZ_corrected_mass', 'z', 'mass',  'Events', 'mass')
+    #plot('SIGNAL_Plus',  'SelMuon1_eta_SelMuon1_corrected_pt_SelMuon1_charge', 'x', '#eta',  'Events', 'eta')
+    plot('SIGNAL_Plus',  'SelMuon1_eta_SelMuon1_corrected_pt_SelMuon1_charge', 'y', 'p_{T}', 'Events', 'pt')
     #plot('SIGNAL_Minus', 'SelMuon1_eta_SelMuon1_corrected_pt_SelMuon1_charge', 'x', '#eta',  'Events', 'eta')
     #plot('SIGNAL_Minus', 'SelMuon1_eta_SelMuon1_corrected_pt_SelMuon1_charge', 'y', 'p_{T}', 'Events', 'pt')

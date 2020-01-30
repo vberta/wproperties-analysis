@@ -18,15 +18,17 @@ parser.add_argument('-d', '--dictionary',help="", action='store_true')
 parser.add_argument('-o', '--output_dir',type=str, default='TEST', help="")
 parser.add_argument('-y', '--dataYear',  type=str, default='2016', help="")
 parser.add_argument('-i', '--input',     type=str, default="",     help="")
+parser.add_argument('-c', '--config',    type=str, default="data/samples_2016.json",     help="")
 args = parser.parse_args()
 output_dir = args.output_dir
 dataYear = args.dataYear
+config = args.config
 restrictDataset = [ x for x in args.input.split(',') if args.input != ""]
 
 whoami = 'sroychow'
 #whoami = 'bianchini'
 
-samplef = open('./python/samples_'+dataYear+'.json')
+samplef = open('./'+config)
 sampledata = json.load(samplef)
 samplef.close()
 
