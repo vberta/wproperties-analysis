@@ -11,4 +11,5 @@
   <class name="getCompVars"/>
   <class name="computeAngularCoeff"/>
   <class name="applyAngularCoeff"/>
+  <class name="applyReweightZ"/>
 </lcgdict>

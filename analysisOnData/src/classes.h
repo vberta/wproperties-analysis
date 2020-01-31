@@ -11,3 +11,4 @@
 #include "interface/getCompVars.hpp"
 #include "interface/computeAngularCoeff.hpp"
 #include "interface/applyAngularCoeff.hpp"
+#include "interface/applyReweightZ.hpp"

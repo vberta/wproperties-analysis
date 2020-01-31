@@ -47,7 +47,7 @@ class ConfigRDF():
         self.xsec = 61526.7
         self.dataYear = '2016'        
 
-    def set_sample_specifics(self,isMC,lumi,xsec,dataYear,era_ratios,lepton_def, ps, harmonics):
+    def set_sample_specifics(self,isMC,lumi,xsec,dataYear,era_ratios,lepton_def, ps, harmonics, Z_reweighter):
         self.isMC = isMC
         self.lumi = lumi
         self.xsec = xsec
@@ -57,6 +57,9 @@ class ConfigRDF():
         self.ps = ps
         self.coefficients       = harmonics['coefficients']
         self.coefficients_input = harmonics['input_file']
+        self.Z_reweighter_qt_input = Z_reweighter['input_file_qt']
+        self.Z_reweighter_y_input  = Z_reweighter['input_file_y']
+        self.Z_reweighter_leptonDef = Z_reweighter['genLepton']
         return
     
     """
@@ -71,6 +74,11 @@ class ConfigRDF():
                 return
             Idx_mu2 = "Idx_mu2" if hasattr(self,'run_DIMUON') else ""
             self.def_modules.append( ROOT.getVars("Idx_mu1", Idx_mu2, self.isMC, False, hasattr(self,'run_PSSLICING'), ROOT.std.string(self.lepton_def) ) )
+            if hasattr(self, 'run_REWEIGHTZ'):
+                self.def_modules.append( ROOT.applyReweightZ( ROOT.std.string(self.Z_reweighter_qt_input), 
+                                                                ROOT.std.string(self.Z_reweighter_y_input), 
+                                                                ROOT.std.string(self.Z_reweighter_leptonDef)) )
+                
             if self.recompute_vars:
                 self.def_modules.append( ROOT.getCompVars("Idx_mu1", Idx_mu2, vec_s(), vec_s()) )          
             if self.isMC: 
@@ -474,7 +482,6 @@ class ConfigRDF():
     """
     def run( self, categories, base_categories ):
 
-        self.categories_for_harmonics = []
         for key,val in categories.items():
             if 'DIMUON' in key and not hasattr(self, 'run_DIMUON'):
                 if self.verbose: print ">> ConfigRDF: run DIMUON module: precompute new columns with 'Idx2'"
@@ -486,6 +493,7 @@ class ConfigRDF():
                 if self.verbose: print ">> ConfigRDF: run PSSLICING: precompute PS columns"
                 self.run_PSSLICING = True
             if 'coeff' in key:
+                self.categories_for_harmonics = []
                 cats = ['WtoMuP','WtoMuN', 'WtoTau','ZtoMuMu', 'ZtoMuMu', 'ZtoTauTau']
                 for c in cats:                     
                     if (c in key):
@@ -494,6 +502,9 @@ class ConfigRDF():
                             if self.verbose: print ">> ConfigRDF: harmonics reweighting enabled module: precompute weights for "+c
                             self.categories_for_harmonics.append(c)
                 self.run_HARMONICS = True                                        
+            if 'reweight_Z' in val['weight'] and not hasattr(self, 'run_REWEIGHTZ'):
+                if self.verbose: print ">> ConfigRDF: run REWEIGHTZ: reweight Z qt/y distribution to measured one"
+                self.run_REWEIGHTZ = True
 
         self.base_categories = copy.deepcopy(base_categories)
 

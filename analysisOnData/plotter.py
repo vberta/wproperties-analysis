@@ -54,7 +54,7 @@ nicknames = {
 
 def plot(category, variable, proj, xtitle, ytitle, tag):
 
-    with open(output_dir+'/hadded/dictionary2_'+variable+'.json', 'r') as fp:
+    with open(output_dir+'/hadded/dictionaryHisto_'+variable+'.json', 'r') as fp:
         js = json.load(fp)
         cat = js[category]
 
@@ -255,8 +255,8 @@ def plot(category, variable, proj, xtitle, ytitle, tag):
 
 
 if __name__ == "__main__":
-    #plot('DIMUON',  'SelRecoZ_corrected_qt_SelRecoZ_corrected_y_SelRecoZ_corrected_mass', 'z', 'mass',  'Events', 'mass')
+    plot('DIMUON',  'SelRecoZ_corrected_qt_SelRecoZ_corrected_y_SelRecoZ_corrected_mass', 'z', 'mass',  'Events', 'mass')
     #plot('SIGNAL_Plus',  'SelMuon1_eta_SelMuon1_corrected_pt_SelMuon1_charge', 'x', '#eta',  'Events', 'eta')
-    plot('SIGNAL_Plus',  'SelMuon1_eta_SelMuon1_corrected_pt_SelMuon1_charge', 'y', 'p_{T}', 'Events', 'pt')
+    #plot('SIGNAL_Plus',  'SelMuon1_eta_SelMuon1_corrected_pt_SelMuon1_charge', 'y', 'p_{T}', 'Events', 'pt')
     #plot('SIGNAL_Minus', 'SelMuon1_eta_SelMuon1_corrected_pt_SelMuon1_charge', 'x', '#eta',  'Events', 'eta')
     #plot('SIGNAL_Minus', 'SelMuon1_eta_SelMuon1_corrected_pt_SelMuon1_charge', 'y', 'p_{T}', 'Events', 'pt')

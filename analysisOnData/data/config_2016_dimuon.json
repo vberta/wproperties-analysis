@@ -15,8 +15,10 @@
 	    "coefficients" : ["UL","A0", "A1", "A2", "A3", "A4"],
 	    "input_file"   : "./data/WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_GENINCLUSIVE.root"
 	},	
-	"Zqt_reweight" : {
-            "input_file"   : "./data/histoUnfoldingSystPt_nsel2_dy3_rebin1_default.root"
+	"Z_reweighter" : {
+            "input_file_qt"  : "./data/histoUnfoldingSystPt_nsel2_dy3_rebin1_default.root",
+            "input_file_y"   : "./data/histoUnfoldingSystRap_nsel2_dy3_rebin1_default.root",
+	    "genLepton"      : "dress"
         },	
 	"Wto" : {
 	    "MuP" : "GenV_preFSR_charge==-13",  
@@ -57,33 +59,9 @@
                            "SingleMuon_Run2016H"]
 	},
 	"output" : {
-	    "SIGNAL_Plus" : {
-		"WtoMuP"      : "WJets.root/*_WtoMuP:nominal,corrected,nom,puWeight,Trigger,ISO,ID,LHEScaleWeight,LHEPdfWeight",
-		"WtoMuN"      : "WJets.root/*_WtoMuN:nominal,corrected,nom,puWeight,Trigger,ISO,ID,LHEScaleWeight,LHEPdfWeight",
-		"WtoTau"      : "WJets.root/*_WtoTau:nominal",
-		"AISO_Fake"   : "SingleMuon.root/AISO:fakerate",
-		"SIGNAL_Fake" : "SingleMuon.root/SIGNAL:fakerate",
-		"Z"           : "DYJets.root/*:nominal,corrected,nom,puWeight,Trigger,ISO,ID",
-		"TTbar"       : "TTbar.root/*:nominal",
-		"ST"          : "ST.root/*:nominal",
-		"DiBoson"     : "DiBoson.root/*:nominal",
-		"Data"        : "SingleMuon.root/*:nominal"
-	    },
-	    "SIGNAL_Minus"  : {
-		"WtoMuP"      : "WJets.root/*_WtoMuP:nominal,corrected,nom,puWeight,Trigger,ISO,ID,LHEScaleWeight,LHEPdfWeight",
-		"WtoMuN"      : "WJets.root/*_WtoMuN:nominal,corrected,nom,puWeight,Trigger,ISO,ID,LHEScaleWeight,LHEPdfWeight",
-		"WtoTau"      : "WJets.root/*_WtoTau:nominal",
-		"AISO_Fake"   : "SingleMuon.root/AISO:fakerate",
-		"SIGNAL_Fake" : "SingleMuon.root/SIGNAL:fakerate",
-		"Z"           : "DYJets.root/*:nominal,corrected,nom,puWeight,Trigger,ISO,ID",
-		"TTbar"       : "TTbar.root/*:nominal",
-		"ST"          : "ST.root/*:nominal",	
-		"DiBoson"     : "DiBoson.root/*:nominal",	
-		"Data"        : "SingleMuon.root/*:nominal"
-	    },
 	    "DIMUON" : {
 		"W"         : "WJets.root/*:nominal",
-		"ZtoMuMu"   : "DYJets.root/*_ZtoMuMu:nominal,corrected,nom,puWeight,Trigger,ISO,ID",
+		"ZtoMuMu"   : "DYJets.root/*_ZtoMuMu:nominal",
 		"ZtoTauTau" : "DYJets.root/*_ZtoTauTau:nominal",
 		"TTbar"     : "TTbar.root/*:nominal",
 		"ST"        : "ST.root/*:nominal",
@@ -101,7 +79,7 @@
         "dataType" : "MC",
         "xsec" : 61526.7,
         "ncores" : 64,
-	"categories" : "SIGNAL_WtoMuP:wLHE,SIGNAL_WtoMuN:wLHE,SIGNAL_WtoTau:nominal,QCD:all,DIMUON:nominal"
+	"categories" : "DIMUON:nominal"
     },
 
     "WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_ext2" : {  
@@ -112,7 +90,7 @@
         "dataType" : "MC",
         "xsec" : 61526.7,
         "ncores" : 64,
-	"categories" : "SIGNAL_WtoMuP:wLHE,SIGNAL_WtoMuN:wLHE,SIGNAL_WtoTau:nominal,QCD:all,DIMUON:nominal"
+	"categories" : "DIMUON:nominal"
     },
 
     "DYJetsToLL_M-10to50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8" : {  
@@ -123,7 +101,7 @@
         "dataType" : "MC",
         "xsec" : 1903.0,
         "ncores" : -1,
-	"categories" : "SIGNAL:all,QCD:nominal,DIMUON_ZtoMuMu:all,DIMUON_ZtoTauTau:nominal"
+	"categories" : "DIMUON_ZtoMuMu:nominal,DIMUON_ZtoTauTau:nominal"
     },
 
     "DYJetsToLL_M-10to50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_ext1" : {  
@@ -134,7 +112,7 @@
         "dataType" : "MC",
         "xsec" : 1903.0,
         "ncores" : 64,
-	"categories" : "SIGNAL:all,QCD:nominal,DIMUON_ZtoMuMu:all,DIMUON_ZtoTauTau:nominal"
+	"categories" : "DIMUON_ZtoMuMu:nominal,DIMUON_ZtoTauTau:nominal"
     },
 
     "DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_ext2" : {  
@@ -144,7 +122,7 @@
         "dataType" : "MC",
         "xsec" : 6025.2,
         "ncores" : 64,
-	"categories" : "SIGNAL:all,QCD:nominal,DIMUON_ZtoMuMu:all,DIMUON_ZtoTauTau:nominal"
+	"categories" : "DIMUON_ZtoMuMu++:nominal,DIMUON_ZtoTauTau++:nominal"
     },
 
     "WW_TuneCUETP8M1_13TeV-pythia8" : {  
@@ -155,7 +133,7 @@
         "dataType" : "MC",
         "xsec" : 115,
         "ncores" : -1,
-	"categories" : "SIGNAL_WtoMuP*^:all"
+	"categories" : "DIMUON:nominal"
     },
 
     "WW_TuneCUETP8M1_13TeV-pythia8_ext1" : {  
@@ -166,7 +144,7 @@
         "dataType" : "MC",
         "xsec" : 115,
         "ncores" : -1,
-	"categories" : "SIGNAL:nominal,QCD:nominal,DIMUON:nominal"
+	"categories" : "DIMUON:nominal"
     },
 
     "WZ_TuneCUETP8M1_13TeV-pythia8" : {  
@@ -177,7 +155,7 @@
         "dataType" : "MC",
         "xsec" : 47.13,
         "ncores" : -1,
-	"categories" : "SIGNAL:nominal,QCD:nominal,DIMUON:nominal"
+	"categories" : "DIMUON:nominal"
     },
 
     "WZ_TuneCUETP8M1_13TeV-pythia8_ext1" : {  
@@ -188,7 +166,7 @@
         "dataType" : "MC",
         "xsec" : 47.13,
         "ncores" : -1,
-	"categories" : "SIGNAL:nominal,QCD:nominal,DIMUON:nominal"
+	"categories" : "DIMUON:nominal"
     },
 
     "ZZ_TuneCUETP8M1_13TeV-pythia8" : {  
@@ -198,7 +176,7 @@
         "dataType" : "MC",
         "xsec" : 16.523,
         "ncores" : -1,
-	"categories" : "SIGNAL:nominal,QCD:nominal,DIMUON:nominal"
+	"categories" : "DIMUON:nominal"
     },
 
     "ST_s-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1" : {  
@@ -208,7 +186,7 @@
         "dataType" : "MC",
         "xsec" : 3.68,
         "ncores" : -1,
-	"categories" : "SIGNAL:nominal,QCD:nominal,DIMUON:nominal"
+	"categories" : "DIMUON:nominal"
     },
 
     "ST_t-channel_top_4f_inclusiveDecays_13TeV-powhegV2-madspin-pythia8_TuneCUETP8M1" : {  
@@ -218,7 +196,7 @@
         "dataType" : "MC",
         "xsec" : 136.02,
         "ncores" : -1,
-	"categories" : "SIGNAL:nominal,QCD:nominal,DIMUON:nominal"
+	"categories" : "DIMUON:nominal"
     },
 
     "ST_t-channel_antitop_4f_inclusiveDecays_13TeV-powhegV2-madspin-pythia8_TuneCUETP8M1" : {  
@@ -228,7 +206,7 @@
         "dataType" : "MC",
         "xsec" : 80.95,
         "ncores" : -1,
-	"categories" : "SIGNAL:nominal,QCD:nominal,DIMUON:nominal"
+	"categories" : "DIMUON:nominal"
     },
 
     "ST_tW_top_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1_ext1" : {  
@@ -238,7 +216,7 @@
         "dataType" : "MC",
         "xsec" : 35.6,
         "ncores" : -1,
-	"categories" : "SIGNAL:nominal,QCD:nominal,DIMUON:nominal"
+	"categories" : "DIMUON:nominal"
     },
 
     "ST_tW_antitop_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1_ext1" : {  
@@ -248,7 +226,7 @@
         "dataType" : "MC",
         "xsec" : 35.6,
         "ncores" : -1,
-	"categories" : "SIGNAL:nominal,QCD:nominal,DIMUON:nominal"
+	"categories" : "DIMUON:nominal"
     },
 
     "TTJets_SingleLeptFromT_TuneCUETP8M1_13TeV-madgraphMLM-pythia8" : {  
@@ -259,7 +237,7 @@
         "dataType" : "MC",
         "xsec" : 182.0,
         "ncores" : -1,
-	"categories" : "SIGNAL:nominal,QCD:nominal,DIMUON:nominal"
+	"categories" : "DIMUON:nominal"
     },
 
     "TTJets_SingleLeptFromT_TuneCUETP8M1_13TeV-madgraphMLM-pythia8_ext1" : {  
@@ -270,7 +248,7 @@
         "dataType" : "MC",
         "xsec" : 182.0,
         "ncores" : 64,
-	"categories" : "SIGNAL:nominal,QCD:nominal,DIMUON:nominal"
+	"categories" : "DIMUON:nominal"
     },
 
     "TTJets_SingleLeptFromTbar_TuneCUETP8M1_13TeV-madgraphMLM-pythia8" : {  
@@ -281,7 +259,7 @@
         "dataType" : "MC",
         "xsec" : 182.0,
         "ncores" : -1,
-	"categories" : "SIGNAL:nominal,QCD:nominal,DIMUON:nominal"
+	"categories" : "DIMUON:nominal"
     },
 
     "TTJets_SingleLeptFromTbar_TuneCUETP8M1_13TeV-madgraphMLM-pythia8_ext1" : {  
@@ -292,7 +270,7 @@
         "dataType" : "MC",
         "xsec" : 182.0,
         "ncores" : 64,
-	"categories" : "SIGNAL:nominal,QCD:nominal,DIMUON:nominal"
+	"categories" : "DIMUON:nominal"
     },
 
     "TTJets_DiLept_TuneCUETP8M1_13TeV-madgraphMLM-pythia8" : {  
@@ -303,7 +281,7 @@
         "dataType" : "MC",
         "xsec" : 95.02,
         "ncores" : -1,
-	"categories" : "SIGNAL:nominal,QCD:nominal,DIMUON:nominal"
+	"categories" : "DIMUON:nominal"
     },
 
     "TTJets_DiLept_TuneCUETP8M1_13TeV-madgraphMLM-pythia8_ext1" : {  
@@ -314,7 +292,7 @@
         "dataType" : "MC",
         "xsec" : 95.02,
         "ncores" : 64,
-	"categories" : "SIGNAL:nominal,QCD:nominal,DIMUON:nominal"
+	"categories" : "DIMUON:nominal"
     },
 
     "SingleMuon_Run2016B_ver2" : {  
@@ -324,7 +302,7 @@
         "dataType" : "DATA",
         "xsec" : -1,
         "ncores" : 64,
-	"categories" : "SIGNAL:fakerate,AISO:fakerate,QCD:nominal,DIMUON:nominal"
+	"categories" : "DIMUON:nominal"
     },
 
     "SingleMuon_Run2016C" : {  
@@ -334,7 +312,7 @@
         "dataType" : "DATA",
         "xsec" : -1,
         "ncores" : 64,
-	"categories" : "SIGNAL:fakerate,AISO:fakerate,QCD:nominal,DIMUON:nominal"
+	"categories" : "DIMUON:nominal"
     },
 
     "SingleMuon_Run2016D" : {  
@@ -344,7 +322,7 @@
         "dataType" : "DATA",
         "xsec" : -1,
         "ncores" : 64,
-	"categories" : "SIGNAL:fakerate,AISO:fakerate,QCD:nominal,DIMUON:nominal"
+	"categories" : "DIMUON:nominal"
     },
 
 
@@ -355,7 +333,7 @@
         "dataType" : "DATA",
         "xsec" : -1,
         "ncores" : 64,
-	"categories" : "SIGNAL:fakerate,AISO:fakerate,QCD:nominal,DIMUON:nominal"
+	"categories" : "DIMUON:nominal"
     },
 
     "SingleMuon_Run2016F" : {  
@@ -365,7 +343,7 @@
         "dataType" : "DATA",
         "xsec" : -1,
         "ncores" : 64,
-	"categories" : "SIGNAL:fakerate,AISO:fakerate,QCD:nominal,DIMUON:nominal"
+	"categories" : "DIMUON:nominal"
     },
 
     "SingleMuon_Run2016G" : {  
@@ -375,7 +353,7 @@
         "dataType" : "DATA",
         "xsec" : -1,
         "ncores" : 64,
-	"categories" : "SIGNAL:fakerate,AISO:fakerate,QCD:nominal,DIMUON:nominal"
+	"categories" : "DIMUON:nominal"
     },
 
     "SingleMuon_Run2016H" : {  
@@ -385,7 +363,7 @@
         "dataType" : "DATA",
         "xsec" : -1,
         "ncores" : 64,
-	"categories" : "SIGNAL:fakerate,AISO:fakerate,QCD:nominal,DIMUON:nominal"
+	"categories" : "DIMUON:nominal"
     }
 
 }

@@ -161,7 +161,7 @@ categories_all = {
         'modules' : modules_nominal,
         },
     'DIMUON': {
-        'weight' : 'puWeight*lumiweight*SelMuon1_ID_SF*SelMuon1_ISO_SF*SelMuon1_Trigger_SF*SelMuon2_ID_SF*SelMuon2_ISO_SF*SelMuon2_Trigger_SF',
+        'weight' : 'puWeight*lumiweight*SelMuon1_ID_SF*SelMuon1_ISO_SF*SelMuon1_Trigger_SF*SelMuon2_ID_SF*SelMuon2_ISO_SF',
         'category_weight_base' : 'DIMUON',
         'cut' : 'Vtype==2 ' + \
             '&& HLT_SingleMu24 '+ \
@@ -190,6 +190,7 @@ def get_categories(dataType,categories_str, common):
     categories_split_syst  = []
     categories_split_slice = []
     categories_split_reweight = []
+    categories_split_Z_reweight = []
     for c in categories_split:
 
         # phase-space splitting ?
@@ -205,6 +206,14 @@ def get_categories(dataType,categories_str, common):
             categories_split_reweight.append(True)
         else:
             categories_split_reweight.append(False)
+
+        # qt/y reweighting ?
+        if "+" in c: 
+            count = c.count('+')
+            c = c.replace("+", "")
+            categories_split_Z_reweight.append(count)
+        else:
+            categories_split_Z_reweight.append(0)
 
         # modules to be run. Default: all
         if ':' in c:
@@ -255,26 +264,32 @@ def get_categories(dataType,categories_str, common):
             if not ret_base.has_key(c.split('_')[0]):
                 ret_base[c.split('_')[0]] = copy.deepcopy(ret[c.split('_')[0]])
 
+        cat_syst = categories_split_syst[pos_c]
         if dataType=='DATA':
             ret[c]['weight'] = 'Float_t(1.0)'
-            if categories_split_syst[pos_c] == 'nominal':
+            if cat_syst == 'nominal':
                 ret[c]['modules'] =  modules_nominal
-            elif categories_split_syst[pos_c] == 'fakerate':
+            elif cat_syst == 'fakerate':
                 ret[c]['modules'] =  modules_fakerate
         else:
-            if categories_split_syst[pos_c] == 'nominal':
+            if cat_syst == 'nominal':
                 ret[c]['modules'] = modules_nominal
-            elif categories_split_syst[pos_c] == 'all':
+            elif cat_syst == 'all':
                 ret[c]['modules'] = modules_all
-            elif categories_split_syst[pos_c] == 'LHE':
+            elif cat_syst == 'LHE':
                 ret[c]['modules'] = modules_LHE
-            elif categories_split_syst[pos_c] == 'wLHE':
+            elif cat_syst == 'wLHE':
                 ret[c]['modules'] = modules_wLHE                
-            elif categories_split_syst[pos_c] == 'wLHEMass':
+            elif cat_syst == 'wLHEMass':
                 ret[c]['modules'] = modules_wLHEMass
-            elif categories_split_syst[pos_c] == 'wMass':
+            elif cat_syst == 'wMass':
                 ret[c]['modules'] = modules_wMass                
-                
+
+        cat_Z_reweight = categories_split_Z_reweight[pos_c]
+        if cat_Z_reweight>0:
+            ret[c]['category_weight_base'] += 'ZREWEIGHT'
+            ret[c]['weight'] += '*reweight_Z_qt'
+            if cat_Z_reweight>1: ret[c]['weight'] += '*reweight_Z_y'
 
         # phase-space slicing is enabled
         if categories_split_slice[pos_c]:

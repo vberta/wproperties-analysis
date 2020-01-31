@@ -48,6 +48,7 @@ def run_one_sample(inputFiles,output_dir, sampledata, sample, verbose=True):
    lepton_def = sampledata["common"]["genLepton"]
    ps         = sampledata["common"]["phase_space_"+lepton_def]    
    harmonics  = sampledata["common"]["harmonics"]
+   Z_reweighter = sampledata["common"]["Z_reweighter"]
    isMC       = (dataType=='MC')
    print "sample:      ", sample
    print "num of dirs: ", len(dirs)
@@ -56,7 +57,7 @@ def run_one_sample(inputFiles,output_dir, sampledata, sample, verbose=True):
    print "ncores:      ", ncores
    print "categories:  ", categories
    config = ConfigRDF(inputFiles, output_dir, sample+'.root', verbose)
-   config.set_sample_specifics(isMC, lumi, xsec, dataYear, era_ratios, lepton_def, ps, harmonics)   
+   config.set_sample_specifics(isMC, lumi, xsec, dataYear, era_ratios, lepton_def, ps, harmonics, Z_reweighter)   
    ret,ret_base = get_categories(dataType, categories, sampledata["common"])
    if verbose:
       print "Categories:"
@@ -226,7 +227,7 @@ def make_dictionary(sampledata, vname, verbose=True):
       json.dump(out, fp)
    return
 
-def make_dictionary2(sampledata, vname, verbose=True):
+def make_dictionary_histo(sampledata, vname, verbose=True):
    out = {}
    out['variable'] = vname
    output = sampledata["common"]["output"]
@@ -287,7 +288,7 @@ def make_dictionary2(sampledata, vname, verbose=True):
 
    from json import encoder
    encoder.FLOAT_REPR = lambda o: format(o, '.3f')
-   with open(output_dir+'/hadded/dictionary2_'+vname+'.json', 'w') as fp:
+   with open(output_dir+'/hadded/dictionaryHisto_'+vname+'.json', 'w') as fp:
       json.dump(out, fp)
    
    return
@@ -301,6 +302,5 @@ if __name__ == '__main__':
    elif args.merge:
       merge(sampledata)
    elif args.dictionary:
-      #make_dictionary2(sampledata, 'SelMuon1_eta_SelMuon1_corrected_pt_SelMuon1_charge')
-      #make_dictionary(sampledata, 'SelRecoZ_corrected_qt_SelRecoZ_corrected_y_SelRecoZ_corrected_mass')
-      make_dictionary2(sampledata, 'SelRecoZ_corrected_qt_SelRecoZ_corrected_y_SelRecoZ_corrected_mass')
+      #make_dictionary_histo(sampledata, 'SelMuon1_eta_SelMuon1_corrected_pt_SelMuon1_charge')
+      make_dictionary_histo(sampledata, 'SelRecoZ_corrected_qt_SelRecoZ_corrected_y_SelRecoZ_corrected_mass')
