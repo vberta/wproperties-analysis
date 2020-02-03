@@ -169,6 +169,9 @@ categories_all = {
             '&& nVetoElectrons==0 ' + \
             '&& SelMuon1_corrected_pt>26.0 ' + \
             '&& SelMuon2_corrected_pt>26.0 ' + \
+            #'&& SelMuon1_mediumId && SelMuon2_mediumId ' + \
+            '&& Muon_mediumId[Idx_mu1] && Muon_mediumId[Idx_mu2] ' + \
+            '&& SelMuon1_pfRelIso04_all<0.15 && SelMuon2_pfRelIso04_all<0.15 ' + \
             '&& TMath::Abs(SelRecoZ_corrected_mass-90.0)<15.0', 
         'cut_base' : '',
         'category_cut_base' : 'defs',

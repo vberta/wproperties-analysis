@@ -11,6 +11,8 @@ float getFromIdx(ROOT::VecOps::RVec<float>, int);
 
 float getIFromIdx(ROOT::VecOps::RVec<int>,int);
 
+float getBFromIdx(ROOT::VecOps::RVec<bool>,int);
+
 ROOT::VecOps::RVec<float> getRVec_FFtoV(float,float);
 ROOT::VecOps::RVec<float> getRVec_FFFFtoV(float,float,float,float);
 ROOT::VecOps::RVec<float> getRVec_FFFFFFtoV(float,float,float,float,float,float);

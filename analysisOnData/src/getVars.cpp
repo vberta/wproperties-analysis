@@ -86,6 +86,7 @@ RNode getVars::run(RNode d){
     .Define("dummy", dummy, {"event"})
     .Define("SelMuon1_charge",           getIFromIdx, {"Muon_charge",          _idx1})
     .Define("SelMuon1_pfRelIso04_all",   getFromIdx , {"Muon_pfRelIso04_all",  _idx1})
+    //.Define("SelMuon1_mediumId",         getBFromIdx, {"Muon_mediumId",        _idx1})    
     .Define("SelMuon1_dxy",              getFromIdx,  {"Muon_dxy",             _idx1})
     .Define("SelMuon1_corrected_pt",     getFromIdx,  {"Muon_corrected_pt",    _idx1})
     .Define("SelMuon1_pt",               getFromIdx,  {"Muon_pt",              _idx1})
@@ -123,6 +124,7 @@ RNode getVars::run(RNode d){
     auto d_post = d_start
       .Define("SelMuon2_charge",           getIFromIdx, {"Muon_charge",          _idx2})
       .Define("SelMuon2_pfRelIso04_all",   getFromIdx , {"Muon_pfRelIso04_all",  _idx2})
+      //.Define("SelMuon2_mediumId",         getBFromIdx, {"Muon_mediumId",        _idx2})
       .Define("SelMuon2_dxy",              getFromIdx,  {"Muon_dxy",             _idx2})
       .Define("SelMuon2_corrected_pt",     getFromIdx,  {"Muon_corrected_pt",    _idx2})
       .Define("SelMuon2_pt",               getFromIdx,  {"Muon_pt",              _idx2})

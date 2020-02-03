@@ -12,9 +12,8 @@ parser.add_argument('-c', '--category',type=str, default='SIGNAL_Plus', help="")
 parser.add_argument('-v', '--variable',type=str, default='SelMuon1_eta_SelMuon1_corrected_pt_SelMuon1_charge', help="")
 parser.add_argument('-s', '--systematics',type=str, default='', help="")
 parser.add_argument('-p', '--projection',type=str, default='x', help="")
-parser.add_argument('-x', '--xtitle',type=str, default='#eta', help="")
-parser.add_argument('-y', '--ytitle',type=str, default='p_{T}', help="")
-parser.add_argument('-z', '--ztitle',type=str, default='charge', help="")
+parser.add_argument('-x', '--xtitle',type=str, default='', help="")
+parser.add_argument('-y', '--ytitle',type=str, default='Events', help="")
 parser.add_argument('-t', '--tag',type=str, default='eta', help="")
 parser.add_argument('-b', '--batch', help="", action='store_true')
 args = parser.parse_args()
@@ -25,7 +24,6 @@ category    = args.category
 variable    = args.variable
 xtitle      = args.xtitle
 ytitle      = args.ytitle
-ztitle      = args.ztitle
 tag         = args.tag
 
 if args.batch:
@@ -192,7 +190,7 @@ def plot(category, variable, proj, xtitle, ytitle, tag):
         hs.SetMaximum( max(hData.GetMaximum(), hs.GetMaximum())*1.30 )
         hs.Draw("HIST")
 
-        setup_hstack(hs.GetHistogram(), "Events" if ytitle!="" else ytitle)
+        setup_hstack(hs.GetHistogram(), ytitle)
 
         hData.SetLineColor(ROOT.kBlack)
         hData.SetMarkerStyle(ROOT.kFullCircle)
@@ -215,7 +213,7 @@ def plot(category, variable, proj, xtitle, ytitle, tag):
 
         hratio = hData.Clone("hratio")
         hratio.Divide(hMC)
-        setup_hratio(hratio, xtitle if xtitle!="" else xtitle)
+        setup_hratio(hratio, xtitle)
         hratio.Draw("ep")
         hMCStat = hMC.Clone("hMCStat")
         hMCStat.Clear()
@@ -223,7 +221,7 @@ def plot(category, variable, proj, xtitle, ytitle, tag):
         hMCStat.SetFillColor(ROOT.kGray+1)
         for i in range(1,hMCStat.GetNbinsX()+1):
             hMCStat.SetBinContent(i, 1.0)
-            hMCStat.SetBinError(i, hMC.GetBinError(i)/hMC.GetBinContent(i))
+            hMCStat.SetBinError(i, hMC.GetBinError(i)/hMC.GetBinContent(i) if hMC.GetBinContent(i)>0. else 0.0)
         hMCStat.Draw("E3SAME")
 
         line = ROOT.TLine( hratio.GetXaxis().GetXmin(), 1.0, hratio.GetXaxis().GetXmax(), 1.0)
