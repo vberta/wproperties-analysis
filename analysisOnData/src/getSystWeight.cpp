@@ -36,6 +36,12 @@ RNode getSystWeight::run(RNode d){
     for(unsigned int i=_range.first; i<=_range.second ; i++) v.emplace_back(statUp[i]);
     return v;
   };
+
+  auto getRVec_subVtoV = [this](ROOT::VecOps::RVec<float> statUp){
+    ROOT::VecOps::RVec<float> v;
+    for(unsigned int i=0; i<=_set.size() ; i++) v.emplace_back(statUp[ _set[i] ]);
+    return v;
+  };
   
   auto getRVec_FFtoV = [](float statA, float statB){
     ROOT::VecOps::RVec<float> v;
@@ -102,6 +108,15 @@ RNode getSystWeight::run(RNode d){
     v /= (nom>0. ? nom : 1.0);
     return v;
   };
+
+  auto getRVec_subVtoVnorm = [this](ROOT::VecOps::RVec<float> statUp, float nom){
+    ROOT::VecOps::RVec<float> v;        
+    for(unsigned int i=0; i<=_set.size() ; i++){
+      v.emplace_back(statUp[ _set[i] ]);
+    }
+    v /= (nom>0. ? nom : 1.0);
+    return v;
+  };
   
   auto getRVec_FFtoVnorm = [](float statA, float statB, float nom){
     ROOT::VecOps::RVec<float> v;
@@ -156,6 +171,11 @@ RNode getSystWeight::run(RNode d){
     auto d1 = d.Define(_new_syst_column, getRVec_VtoV,{_syst_columns[0]});
     return d1;
   }
+  else if(_type=="subV->V"){
+    if(_verbose) std::cout << "getSystWeight::run(): getRVec_subVtoV" << std::endl;
+    auto d1 = d.Define(_new_syst_column, getRVec_subVtoV,{_syst_columns[0]});
+    return d1;
+  }
   else if(_type=="ff->V"){
     if(_verbose) std::cout << "getSystWeight::run(): getRVec_FFtoV" << std::endl;
     auto d1 = d.Define(_new_syst_column, getRVec_FFtoV, {_syst_columns[0], _syst_columns[1]});
@@ -189,6 +209,11 @@ RNode getSystWeight::run(RNode d){
   else if(_type=="V->Vnorm"){
     if(_verbose) std::cout << "getSystWeight::run(): getRVec_VtoVnorm" << std::endl;
     auto d1 = d.Define(_new_syst_column, getRVec_VtoVnorm,{_syst_columns[0], _nom_column});
+    return d1;
+  }
+  else if(_type=="subV->Vnorm"){
+    if(_verbose) std::cout << "getSystWeight::run(): getRVec_subVtoVnorm" << std::endl;
+    auto d1 = d.Define(_new_syst_column, getRVec_subVtoVnorm,{_syst_columns[0], _nom_column});
     return d1;
   }
   else if(_type=="ff->Vnorm"){

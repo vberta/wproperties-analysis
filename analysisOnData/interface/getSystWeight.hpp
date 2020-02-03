@@ -29,6 +29,7 @@ private:
   std::vector<std::string> _syst_columns;
   std::string _new_syst_column, _idx1, _nom_column;
   std::pair<unsigned int,unsigned int> _range;
+  std::vector<unsigned int> _set;
   std::string _type;
   bool _verbose;
   
@@ -39,8 +40,9 @@ public:
 		std::string idx1, 
 		std::string nom_column,
 		std::pair<unsigned int,unsigned int> range,
+		std::vector<unsigned int> set,
 		std::string type): 
-    _syst_columns(syst_columns), _new_syst_column(new_syst_column), _idx1(idx1), _nom_column(nom_column), _range(range), _type(type) {
+    _syst_columns(syst_columns), _new_syst_column(new_syst_column), _idx1(idx1), _nom_column(nom_column), _range(range), _set(set), _type(type) {
     _verbose = false;
   };
 

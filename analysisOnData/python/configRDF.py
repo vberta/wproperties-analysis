@@ -13,6 +13,7 @@ pair_s  = ROOT.pair('string','string')
 pair_ui = ROOT.std.pair('unsigned int','unsigned int')
 vec_s   = ROOT.vector('string')
 vec_f   = ROOT.vector('float')
+vec_ui  = ROOT.vector('unsigned int')
 
 """
 Class that configures RDFtree. Add new modules as class functions.
@@ -182,23 +183,23 @@ class ConfigRDF():
 
     def _get_LHEScaleWeight_meaning(self,wid=0):
         if wid==0:
-            return 'muR1_muF1'
-        elif wid==1:
-            return 'muR1_muF2'
-        elif wid==2:
-            return 'muR1_muF0p5'
-        elif wid==3:
-            return 'muR2_muF1'
-        elif wid==4:
-            return 'muR2_muF2'
-        elif wid==5:
-            return 'muR2_muF0p5'
-        elif wid==6:
-            return 'muR0p5_muF1'
-        elif wid==7:
-            return 'muR0p5_muF2'
-        elif wid==8:
             return 'muR0p5_muF0p5'
+        elif wid==1:
+            return 'muR0p5_muF1p0'
+        elif wid==2:
+            return 'muR0p5_muF2p0'
+        elif wid==3:
+            return 'muR1p0_muF0p5'
+        elif wid==4:
+            return 'muR1p0_muF1p0'
+        elif wid==5:
+            return 'muR1p0_muF2p0'
+        elif wid==6:
+            return 'muR2p0_muF0p5'
+        elif wid==7:
+            return 'muR2p0_muF1p0'
+        elif wid==8:
+            return 'muR2p0_muF2p0'
         else:
             return 'muRX_muFX'
 
@@ -217,20 +218,29 @@ class ConfigRDF():
     """
     def _branch_LHE_weight(self,var, systs):
 
-        new_weight_name = var+'_'+str(systs[0])+'_'+str(systs[1])+'All'
+        #new_weight_name = var+'_'+str(systs[0])+'_'+str(systs[1])+'All'
+        new_weight_name = var+'All'        
 
         if self.iteration==0 and not hasattr(self, 'branch_'+var+'_iter0'):
             syst_columns = vec_s()
             syst_columns.push_back(var)
-            self.def_modules.append( ROOT.getSystWeight(syst_columns, new_weight_name, "", "", pair_ui(systs[0], systs[1]), "V->V" ) )
+            if 'Pdf' in var:
+                pair = pair_ui(systs[0], systs[1])
+                self.def_modules.append( ROOT.getSystWeight(syst_columns, new_weight_name, "", "", pair, vec_ui(), "V->V" ) )
+            else:
+                subset = vec_ui()
+                for s in systs: subset.push_back(s) 
+                self.def_modules.append( ROOT.getSystWeight(syst_columns, new_weight_name, "", "", pair_ui(), subset, "subV->V" ) )
             setattr(self, 'branch_'+var+'_iter0', True )
         elif self.iteration==1:
             pass
         elif self.iteration==2:
             modules = []
             syst_column_names = vec_s()
-            for i in range(systs[0], systs[1]+1):
-                syst_column_names.push_back( ROOT.string(var+'_'+getattr(self, '_get_'+var+'_meaning')(i)) )
+            if 'Pdf' in var:
+                for i in range(systs[0], systs[1]+1): syst_column_names.push_back( ROOT.string(var+'_'+getattr(self, '_get_'+var+'_meaning')(i)) )
+            else:
+                for i in systs: syst_column_names.push_back( ROOT.string(var+'_'+getattr(self, '_get_'+var+'_meaning')(i)) )
             modules.append( ROOT.muonHistos(self.category, 'weight_'+self.category_weight_base+'_nominal', syst_column_names, new_weight_name, "", False, self.verbose) )
             if self.verbose: print 'branch_LHE_weight: ', bc.H, self.category+'_nominal', bc.E, ' --> ', bc.B, self.category+'_'+var,  bc.E
             self.p.branch(nodeToStart=self.category+'_nominal', nodeToEnd=self.category+'_'+var, modules=modules)
@@ -544,7 +554,7 @@ class ConfigRDF():
         if self.verbose: print " ==>", len(self.def_modules), " defs modules have been loaded..."
         if self.verbose: print 'Get output...'
         self.p.getOutput()
-        if self.verbose: self.p.saveGraph()
+        #if self.verbose: self.p.saveGraph()
         return
 
 

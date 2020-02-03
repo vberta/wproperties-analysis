@@ -46,9 +46,18 @@ def run_one_sample(inputFiles,output_dir, sampledata, sample, verbose=True):
    lumi       = sampledata["common"]["luminosity"]
    era_ratios = sampledata["common"]["era_ratios"]
    lepton_def = sampledata["common"]["genLepton"]
-   ps         = sampledata["common"]["phase_space_"+lepton_def]    
-   harmonics  = sampledata["common"]["harmonics"]
-   Z_reweighter = sampledata["common"]["Z_reweighter"]
+   if sampledata["common"].has_key("phase_space_"+lepton_def):
+      ps = sampledata["common"]["phase_space_"+lepton_def]
+   else:
+      ps = {}
+   if sampledata["common"].has_key("harmonics"):
+      harmonics  = sampledata["common"]["harmonics"]
+   else:
+      harmonics = {}
+   if sampledata["common"].has_key("Z_reweighter"):
+      Z_reweighter = sampledata["common"]["Z_reweighter"]
+   else:
+      Z_reweighter = {}
    isMC       = (dataType=='MC')
    print "sample:      ", sample
    print "num of dirs: ", len(dirs)
@@ -302,5 +311,8 @@ if __name__ == '__main__':
    elif args.merge:
       merge(sampledata)
    elif args.dictionary:
-      #make_dictionary_histo(sampledata, 'SelMuon1_eta_SelMuon1_corrected_pt_SelMuon1_charge')
-      make_dictionary_histo(sampledata, 'SelRecoZ_corrected_qt_SelRecoZ_corrected_y_SelRecoZ_corrected_mass')
+      for v in ['SelMuon1_eta_SelMuon1_corrected_pt_SelMuon1_charge', 
+                'SelMuon2_eta_SelMuon2_corrected_pt_SelMuon2_charge', 
+                'SelRecoZ_corrected_qt_SelRecoZ_corrected_y_SelRecoZ_corrected_mass',
+                'SelMuon1_corrected_MET_nom_mt_SelMuon1_corrected_MET_nom_hpt_SelMuon1_charge']:
+         make_dictionary_histo(sampledata, v)

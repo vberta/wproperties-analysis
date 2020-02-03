@@ -21,7 +21,7 @@ modules_all = {
     }
 
 submodules_LHE = {
-    'event_syst_LHEScaleWeight' : [0,8],
+    'event_syst_LHEScaleWeight' : [0,8,1,7,3,5],
     'event_syst_LHEPdfWeight'   : [98,101]    
     }
 modules_LHE = {
@@ -348,25 +348,25 @@ def get_categories(dataType,categories_str, common):
     return ret, ret_base
                 
 
-def LHEScaleWeight_meaning(wid=0):
+def get_LHEScaleWeight_meaning(self,wid=0):
     if wid==0:
-        return 'muR1_muF1'
-    elif wid==1:
-        return 'muR1_muF2'
-    elif wid==2:
-        return 'muR1_muF0p5'
-    elif wid==3:
-        return 'muR2_muF1'
-    elif wid==4:
-        return 'muR2_muF2'
-    elif wid==5:
-        return 'muR2_muF0p5'
-    elif wid==6:
-        return 'muR0p5_muF1'
-    elif wid==7:
-        return 'muR0p5_muF2'
-    elif wid==8:
         return 'muR0p5_muF0p5'
+    elif wid==1:
+        return 'muR0p5_muF1p0'
+    elif wid==2:
+        return 'muR0p5_muF2p0'
+    elif wid==3:
+        return 'muR1p0_muF0p5'
+    elif wid==4:
+        return 'muR1p0_muF1p0'
+    elif wid==5:
+        return 'muR1p0_muF2p0'
+    elif wid==6:
+        return 'muR2p0_muF0p5'
+    elif wid==7:
+        return 'muR2p0_muF1p0'
+    elif wid==8:
+        return 'muR2p0_muF2p0'
     else:
         return 'muRX_muFX'
 
