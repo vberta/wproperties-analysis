@@ -43,6 +43,30 @@
 		       "TTJets_SingleLeptFromTbar_TuneCUETP8M1_13TeV-madgraphMLM-pythia8",
 		       "TTJets_SingleLeptFromTbar_TuneCUETP8M1_13TeV-madgraphMLM-pythia8_ext1",
 		       "TTJets_DiLept_TuneCUETP8M1_13TeV-madgraphMLM-pythia8"],
+	    "QCD"  : [
+		"QCD_Pt-1000toInf_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext1.root",
+		"QCD_Pt-1000toInf_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8.root",
+		"QCD_Pt-120to170_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8.root",
+		"QCD_Pt-15to20_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8.root",
+		"QCD_Pt-170to300_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext1.root",
+		"QCD_Pt-170to300_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8.root",
+		"QCD_Pt-20to30_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8.root",
+		"QCD_Pt-300to470_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext1.root",
+		"QCD_Pt-300to470_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext2.root",
+		"QCD_Pt-300to470_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8.root",
+		"QCD_Pt-30to50_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8.root",
+		"QCD_Pt-470to600_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext1.root",
+		"QCD_Pt-470to600_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext2.root",
+		"QCD_Pt-470to600_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8.root",
+		"QCD_Pt-50to80_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8.root",
+		"QCD_Pt-600to800_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext1.root",
+		"QCD_Pt-600to800_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8.root",
+		"QCD_Pt-800to1000_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext1.root",
+		"QCD_Pt-800to1000_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext2.root",
+		"QCD_Pt-800to1000_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8.root",
+		"QCD_Pt-80to120_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext1.root",
+		"QCD_Pt-80to120_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8.root"
+	    ],
 	    "SingleMuon" : ["SingleMuon_Run2016B_ver2",
 			   "SingleMuon_Run2016C",
 			   "SingleMuon_Run2016D",
@@ -284,6 +308,231 @@
         "dataType" : "MC",
         "xsec" : 95.02,
         "ncores" : 64,
+	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal,SIGNALNOISOSF:nominal"
+    },
+
+    "QCD_Pt-15to20_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8": {
+	"dirs" : {
+	    "QCD_Pt-15to20_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8": ["tree"]
+	},
+	"dataType" :"MC",
+	"xsec" : 3616000.0,
+	"ncores" : -1,
+	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal,SIGNALNOISOSF:nominal"
+    },
+    "QCD_Pt-20to30_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8": {
+	"dirs" : {
+	    "QCD_Pt-20to30_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8": ["tree"]
+	},
+	"dataType" :"MC",
+	"xsec" : 3160000.0,
+	"ncores" : -1,
+	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal,SIGNALNOISOSF:nominal"
+    },
+    "QCD_Pt-30to50_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8": {
+	"dirs" : {
+	    "QCD_Pt-30to50_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8": ["tree"]
+	},
+	"dataType" :"MC",
+	"xsec" : 1655000,
+	"ncores" : -1,
+	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal,SIGNALNOISOSF:nominal"
+    },
+    "QCD_Pt-50to80_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8": {
+	"dirs" : {
+	    "QCD_Pt-50to80_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8": ["tree"]
+	},
+	"dataType" :"MC",
+	"xsec" : 448700,
+	"ncores" : -1,
+	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal,SIGNALNOISOSF:nominal"
+    },
+    "QCD_Pt-80to120_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8": {
+	"dirs" : {
+	    "QCD_Pt-80to120_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8": ["tree"],
+	    "QCD_Pt-80to120_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext1": ["tree"]
+	},
+	"dataType" :"MC",
+	"xsec" : 105200,
+	"ncores" : -1,
+	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal,SIGNALNOISOSF:nominal"
+    },
+    "QCD_Pt-80to120_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext1": {
+	"dirs" : {
+	    "QCD_Pt-80to120_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8": ["tree"],
+	    "QCD_Pt-80to120_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext1": ["tree"]
+	},
+	"dataType" :"MC",
+	"xsec" : 105200,
+	"ncores" : -1,
+	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal,SIGNALNOISOSF:nominal"
+    },
+    "QCD_Pt-120to170_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8": {
+	"dirs" : {
+	    "QCD_Pt-120to170_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8": ["tree"]
+	},
+	"dataType" :"MC",
+	"xsec" : 25510,
+	"ncores" : -1,
+	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal,SIGNALNOISOSF:nominal"
+    },
+    "QCD_Pt-170to300_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8": {
+	"dirs" : {
+	    "QCD_Pt-170to300_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8": ["tree"],
+	    "QCD_Pt-170to300_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext1": ["tree"]
+	},
+	"dataType" :"MC",
+	"xsec" : 8624,
+	"ncores" : -1,
+	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal,SIGNALNOISOSF:nominal"
+    },
+    "QCD_Pt-170to300_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext1": {
+	"dirs" : {
+	    "QCD_Pt-170to300_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8": ["tree"],
+	    "QCD_Pt-170to300_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext1": ["tree"]
+	},
+	"dataType" :"MC",
+	"xsec" : 8624,
+	"ncores" : -1,
+	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal,SIGNALNOISOSF:nominal"
+    },
+    "QCD_Pt-300to470_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8": {
+	"dirs" : {
+	    "QCD_Pt-300to470_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8": ["tree"],
+	    "QCD_Pt-300to470_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext1": ["tree"],
+	    "QCD_Pt-300to470_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext2": ["tree"]
+	},
+	"dataType" :"MC",
+	"xsec" : 792.2,
+	"ncores" : -1,
+	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal,SIGNALNOISOSF:nominal"
+    },
+    "QCD_Pt-300to470_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext1": {
+	"dirs" : {
+	    "QCD_Pt-300to470_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8": ["tree"],
+	    "QCD_Pt-300to470_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext1": ["tree"],
+	    "QCD_Pt-300to470_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext2": ["tree"]
+	},
+	"dataType" :"MC",
+	"xsec" : 792.2,
+	"ncores" : -1,
+	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal,SIGNALNOISOSF:nominal"
+    },
+    "QCD_Pt-300to470_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext2": {
+	"dirs" : {
+	    "QCD_Pt-300to470_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8": ["tree"],
+	    "QCD_Pt-300to470_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext1": ["tree"],
+	    "QCD_Pt-300to470_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext2": ["tree"]
+	},
+	"dataType" :"MC",
+	"xsec" : 792.2,
+	"ncores" : -1,
+	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal,SIGNALNOISOSF:nominal"
+    },
+    "QCD_Pt-470to600_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8": {
+	"dirs" : {
+	    "QCD_Pt-470to600_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8": ["tree"],
+	    "QCD_Pt-470to600_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext1": ["tree"],
+	    "QCD_Pt-470to600_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext2": ["tree"]
+	},
+	"dataType" :"MC",
+	"xsec" : 79.18,
+	"ncores" : -1,
+	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal,SIGNALNOISOSF:nominal"
+    },
+    "QCD_Pt-470to600_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext1": {
+	"dirs" : {
+	    "QCD_Pt-470to600_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8": ["tree"],
+	    "QCD_Pt-470to600_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext1": ["tree"],
+	    "QCD_Pt-470to600_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_exts": ["tree"]
+	},
+	"dataType" :"MC",
+	"xsec" : 79.18,
+	"ncores" : -1,
+	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal,SIGNALNOISOSF:nominal"
+    },
+    "QCD_Pt-470to600_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext2": {
+	"dirs" : {
+	    "QCD_Pt-470to600_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8": ["tree"],
+	    "QCD_Pt-470to600_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext1": ["tree"],
+	    "QCD_Pt-470to600_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext2": ["tree"]
+	},
+	"dataType" :"MC",
+	"xsec" : 79.18,
+	"ncores" : -1,
+	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal,SIGNALNOISOSF:nominal"
+    },
+    "QCD_Pt-600to800_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8": {
+	"dirs" : {
+	    "QCD_Pt-600to800_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8": ["tree"],
+	    "QCD_Pt-600to800_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext1": ["tree"]
+	},
+	"dataType" :"MC",
+	"xsec" : 25.22,
+	"ncores" : -1,
+	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal,SIGNALNOISOSF:nominal"
+    },
+    "QCD_Pt-600to800_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext1": {
+	"dirs" : {
+	    "QCD_Pt-600to800_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8": ["tree"],
+	    "QCD_Pt-600to800_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext1": ["tree"]
+	},
+	"dataType" :"MC",
+	"xsec" : 25.22,
+	"ncores" : -1,
+	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal,SIGNALNOISOSF:nominal"
+    },
+    "QCD_Pt-800to1000_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8": {
+	"dirs" : {
+	    "QCD_Pt-800to1000_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8": ["tree"],
+	    "QCD_Pt-800to1000_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext1": ["tree"],
+	    "QCD_Pt-800to1000_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext2": ["tree"]
+	},
+	"dataType" :"MC",
+	"xsec" : 4.717,
+	"ncores" : -1,
+	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal,SIGNALNOISOSF:nominal"
+    },
+    "QCD_Pt-800to1000_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext1": {
+	"dirs" : {
+	    "QCD_Pt-800to1000_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8": ["tree"],
+	    "QCD_Pt-800to1000_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext1": ["tree"],
+	    "QCD_Pt-800to1000_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext2": ["tree"]
+	},
+	"dataType" :"MC",
+	"xsec" : 4.717,
+	"ncores" : -1,
+	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal,SIGNALNOISOSF:nominal"
+    },
+    "QCD_Pt-800to1000_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext2": {
+	"dirs" : {
+	    "QCD_Pt-800to1000_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8": ["tree"],
+	    "QCD_Pt-800to1000_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext1": ["tree"],
+	    "QCD_Pt-800to1000_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext2": ["tree"]
+	},
+	"dataType" :"MC",
+	"xsec" : 4.717,
+	"ncores" : -1,
+	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal,SIGNALNOISOSF:nominal"
+    },
+    "QCD_Pt-1000toInf_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8": {
+	"dirs" : {
+	    "QCD_Pt-1000toInf_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8": ["tree"],
+	    "QCD_Pt-1000toInf_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext1": ["tree"]
+	},
+	"dataType" :"MC",
+	"xsec" : 1.615,
+	"ncores" : -1,
+	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal,SIGNALNOISOSF:nominal"
+    },
+    "QCD_Pt-1000toInf_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext1": {
+	"dirs" : {
+	    "QCD_Pt-1000toInf_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8": ["tree"],
+	    "QCD_Pt-1000toInf_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext1": ["tree"]
+	},
+	"dataType" :"MC",
+	"xsec" : 1.615,
+	"ncores" : -1,
 	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal,SIGNALNOISOSF:nominal"
     },
 

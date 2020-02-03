@@ -88,7 +88,8 @@ def run_multithread_all(sampledata, restrictDataset, output_dir):
    for k,v in sampledata.items():
 
       if k=='common': continue
-      if len(restrictDataset)>0 and (k not in restrictDataset): continue
+      if len(restrictDataset)>0 and "*" not in restrictDataset[0] and (k not in restrictDataset): continue
+      if len(restrictDataset)>0 and "*" in restrictDataset[0] and restrictDataset[0].replace('*','') not in k: continue 
 
       if v['ncores']>0: continue
 
@@ -120,7 +121,8 @@ def run_multicore_all(sampledata, restrictDataset, output_dir):
    for k,v in sampledata.items():
 
       if k=='common': continue
-      if len(restrictDataset)>0 and (k not in restrictDataset): continue
+      if len(restrictDataset)>0 and "*" not in restrictDataset[0] and (k not in restrictDataset): continue
+      if len(restrictDataset)>0 and "*" in restrictDataset[0] and restrictDataset[0].replace('*','') not in k: continue 
 
       if v['ncores']<=0: continue
 
