@@ -57,8 +57,10 @@ RNode getCompVars::run(RNode d){
 	std::string new_col     = "SelMuon"+mu+"_corrected_MET_nom_"+compVar;
 	std::string mu_pt_col   = "SelMuon"+mu+"_corrected_pt";
 	std::string mu_phi_col  = "SelMuon"+mu+"_phi";      
-	std::string met_pt_col  = "MET_nom_pt";
-	std::string met_phi_col = "MET_nom_phi";
+	//std::string met_pt_col  = "MET_nom_pt";
+	//std::string met_phi_col = "MET_nom_phi";
+	std::string met_pt_col  = "MET_pt";
+	std::string met_phi_col = "MET_phi";
 	auto d_post = d_start.Define(new_col, func, {mu_pt_col, mu_phi_col, met_pt_col, met_phi_col});
 	d_start = d_post;
       }

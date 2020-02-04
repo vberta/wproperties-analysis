@@ -15,8 +15,10 @@
 	    "coefficients" : ["UL","A0", "A1", "A2", "A3", "A4"],
 	    "input_file"   : "./data/WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_GENINCLUSIVE.root"
 	},	
-	"Zqt_reweight" : {
-            "input_file"   : "./data/histoUnfoldingSystPt_nsel2_dy3_rebin1_default.root"
+	"Z_reweighter" : {
+            "input_file_qt"  : "./data/histoUnfoldingSystPt_nsel2_dy3_rebin1_default.root",
+            "input_file_y"   : "./data/histoUnfoldingSystRap_nsel2_dy3_rebin1_default.root",
+	    "genLepton"      : "dress"
         },	
 	"Wto" : {
 	    "MuP" : "GenV_preFSR_charge==-13",  

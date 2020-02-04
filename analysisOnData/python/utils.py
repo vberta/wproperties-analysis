@@ -41,7 +41,7 @@ submodules_mass = {
 
 submodules_fakerate = {
     'event_syst_fakerate' : {
-        'input' : './data/bkg_parameters_file_CFstatAna.root',
+        'input' : './data/bkg_parameters_file.root',
         'systs' : ['nominal']
         }
     }
@@ -78,7 +78,7 @@ categories_all = {
         },
     'SIGNALNORM': {
         'weight' : 'puWeight*lumiweight*SelMuon1_ID_SF*SelMuon1_ISO_SF*SelMuon1_Trigger_SF',
-        'category_weight_base' : 'SIGNALNORM',
+        'category_weight_base' : 'SIGNAL',
         'cut' : 'Vtype==0 ' + \
             '&& HLT_SingleMu24 '+ \
             '&& MET_filters==1 ' + \
@@ -92,7 +92,7 @@ categories_all = {
         },
     'QCD': {
         'weight' : 'puWeight*lumiweight*SelMuon1_ID_SF*SelMuon1_ISO_SF*SelMuon1_Trigger_SF',
-        'category_weight_base' : 'QCD',
+        'category_weight_base' : 'SIGNAL',
         'cut' : 'Vtype==0 ' + \
             '&& HLT_SingleMu24 '+ \
             '&& MET_filters==1 ' + \
@@ -134,7 +134,7 @@ categories_all = {
         },
     'AISONORM': {
         'weight' : 'puWeight*lumiweight*SelMuon1_ID_SF',
-        'category_weight_base' : 'AISONORM',
+        'category_weight_base' : 'AISO',
         'cut' : 'Vtype==1 ' + \
             '&& HLT_SingleMu24 '+ \
             '&& MET_filters==1 ' + \
@@ -148,7 +148,7 @@ categories_all = {
         },
     'SIDEBAND': {
         'weight' : 'puWeight*lumiweight*SelMuon1_ID_SF',
-        'category_weight_base' : 'SIDEBAND',
+        'category_weight_base' : 'AISO',
         'cut' : 'Vtype==1 ' + \
             '&& HLT_SingleMu24 '+ \
             '&& MET_filters==1 ' + \
