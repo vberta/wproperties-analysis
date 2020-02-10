@@ -3,13 +3,14 @@
 
 RNode computeAngularCoeff::run(RNode d){
 
+  auto prod = [](float x, float y)->float{ return x*y; };
+
   for(unsigned int c=0; c<10; c++){
-    std::string hname = c<9 ? _category+"_A"+std::to_string(c) : _category+"_MC"; 
+    std::string hname = c<9 ? _category+"_A"+std::to_string(c) : _category+"_MC";     
     auto h =  d
-      .Histo2D({ hname.c_str(), "", 
-	    _histo->GetNbinsX(), _histo->GetXaxis()->GetXmin(),  _histo->GetXaxis()->GetXmax(),
-	    _histo->GetNbinsY(), _histo->GetYaxis()->GetXmin(),  _histo->GetYaxis()->GetXmax()
-	    }, "GenV_"+_leptonType+"_absy", "GenV_"+_leptonType+"_qt", "weight_test_A"+std::to_string(c));
+      .Define("weight_test_"+_category+"_A"+std::to_string(c), prod, {"test_A"+std::to_string(c), _weight} )
+      .Histo2D({ hname.c_str(), "", int(_xbins.size()-1), _xbins.data() , int(_ybins.size()-1), _ybins.data()}, 
+	"GenV_"+_leptonType+"_absy", "GenV_"+_leptonType+"_qt", "weight_test_"+_category+"_A"+std::to_string(c));
     _h2List.emplace_back( h );
   }
   

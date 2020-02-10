@@ -29,13 +29,22 @@ class computeAngularCoeff : public Module {
   std::vector<ROOT::RDF::RResultPtr<std::vector<TH3D>>> _h3Group;
 
   std::string _category;
+  std::string _weight;
   std::string _leptonType;
-  TH2F* _histo;
+  std::vector<double> _xbins;
+  std::vector<double> _ybins;
   
  public:
     
-  computeAngularCoeff(std::string category, std::string leptonType, TH2F* histo) : _category(category), _leptonType(leptonType) {
-    _histo = (TH2F*)histo->Clone("histo");
+  computeAngularCoeff(std::string category, std::string weight, std::string leptonType, TH2F* histo) : _category(category), _weight(weight), _leptonType(leptonType) {
+    _xbins = {};
+    int nbinsX = histo->GetXaxis()->GetNbins();
+    for(int i = 1; i<=nbinsX; i++ ) _xbins.push_back( histo->GetXaxis()->GetBinLowEdge(i) );
+    _xbins.push_back( histo->GetXaxis()->GetBinLowEdge(nbinsX) + histo->GetXaxis()->GetBinWidth(nbinsX) );
+    _ybins = {};
+    int nbinsY = histo->GetYaxis()->GetNbins();
+    for(int i = 1; i<=nbinsY; i++ ) _ybins.push_back( histo->GetYaxis()->GetBinLowEdge(i) );
+    _ybins.push_back( histo->GetYaxis()->GetBinLowEdge(nbinsY) + histo->GetYaxis()->GetBinWidth(nbinsY) );
   }
 
   ~computeAngularCoeff() {};

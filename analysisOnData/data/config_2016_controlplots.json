@@ -18,7 +18,8 @@
 	"Z_reweighter" : {
             "input_file_qt"  : "./data/histoUnfoldingSystPt_nsel2_dy3_rebin1_default.root",
             "input_file_y"   : "./data/histoUnfoldingSystRap_nsel2_dy3_rebin1_default.root",
-	    "genLepton"      : "dress"
+	    "genLepton"      : "dress",
+	    "scaleFactor"    : -1.0
         },	
 	"Wto" : {
 	    "MuP" : "GenV_preFSR_charge==-13",  

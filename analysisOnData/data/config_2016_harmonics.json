@@ -3,56 +3,6 @@
 	"luminosity" : 35.92,
 	"era_ratios" : [0.548,0.452],
 	"genLepton" : "preFSR",
-	"phase_space" : {
-	    "y[0.0,0.2]" : {  
-		"qT" : [0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 30.0, -1]
-	    },
-	    "y[0.2,0.4]" : {  
-		"qT" : [0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 30.0, -1]
-	    },
-	    "y[0.4,0.6]" : {  
-		"qT" : [0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 30.0, -1]
-	    },
-	    "y[0.6,0.8]" : {  
-		"qT" : [0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 30.0, -1]
-	    },
-	    "y[0.8,1.0]" : {  
-		"qT" : [0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 30.0, -1]
-	    },
-	    "y[1.0,1.2]" : {  
-		"qT" : [0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 30.0, -1]
-	    },
-	    "y[1.2,1.4]" : {  
-		"qT" : [0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 30.0, -1]
-	    },
-	    "y[1.4,1.6]" : {  
-		"qT" : [0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 30.0, -1]
-	    },
-	    "y[1.6,1.8]" : {  
-		"qT" : [0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 30.0, -1]
-	    },
-	    "y[1.8,2.0]" : {  
-		"qT" : [0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 30.0, -1]
-	    },
-	    "y[2.0,2.2]" : {  
-		"qT" : [0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 30.0, -1]
-	    },
-	    "y[2.2,2.4]" : {  
-		"qT" : [0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 30.0, -1]
-	    },
-	    "y[2.4,2.6]" : {  
-		"qT" : [0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 30.0, -1]
-	    },
-	    "y[2.6,2.8]" : {  
-		"qT" : [0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 30.0, -1]
-	    },
-	    "y[2.8,3.0]" : {  
-		"qT" : [0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 30.0, -1]
-	    },
-	    "y[3.0,Inf]" : {  
-		"qT" : [0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 30.0, -1]
-	    }
-	},
 	"phase_space_preFSR" : {
 	    "y[0.0,0.2]" : {  
 		"qT" : [0.0, 4.0, 8.0, 12.0, 16.0, 20.0, 25.0, 30.0, -1]
@@ -66,9 +16,42 @@
 	    "input_file"   : "./data/WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_GENINCLUSIVE.root"
 	},	
 	"Z_reweighter" : {
-            "input_file_qt"  : "./data/histoUnfoldingSystPt_nsel2_dy3_rebin1_default.root",
-            "input_file_y"   : "./data/histoUnfoldingSystRap_nsel2_dy3_rebin1_default.root",
-	    "genLepton"      : "dress"
+	    "V" : {
+		"input_qt"  : "./data/histoUnfoldingSystPt_nsel2_dy3_rebin1_default.root",
+		"input_y"   : "./data/histoUnfoldingSystRap_nsel2_dy3_rebin1_default.root",
+		"genLepton"      : "dress",
+		"scaleFactor"    : -1.0
+	    },
+	    "WtoMuP" : {
+		"input_qt"  : "./data/histoUnfoldingSystPt_nsel2_dy3_rebin1_default.root",
+		"input_y"   : "./data/histoUnfoldingSystRap_nsel2_dy3_rebin1_default.root",
+		"genLepton"      : "dress",
+		"scaleFactor"    : -1.0
+	    },
+	    "WtoMuN" : {
+		"input_qt"  : "./data/histoUnfoldingSystPt_nsel2_dy3_rebin1_default.root",
+		"input_y"   : "./data/histoUnfoldingSystRap_nsel2_dy3_rebin1_default.root",
+		"genLepton"      : "dress",
+		"scaleFactor"    : -1.0
+	    },
+	    "WtoTau" : {
+		"input_qt"  : "./data/histoUnfoldingSystPt_nsel2_dy3_rebin1_default.root",
+		"input_y"   : "./data/histoUnfoldingSystRap_nsel2_dy3_rebin1_default.root",
+		"genLepton"      : "dress",
+		"scaleFactor"    : -1.0
+	    },
+	    "ZtoMuMu" : {
+		"input_qt"  : "./data/histoUnfoldingSystPt_nsel2_dy3_rebin1_default.root",
+		"input_y"   : "./data/histoUnfoldingSystRap_nsel2_dy3_rebin1_default.root",
+		"genLepton"      : "dress",
+		"scaleFactor"    : -1.0
+	    },
+	    "ZtoTauTau" : {
+		"input_qt"  : "./data/histoUnfoldingSystPt_nsel2_dy3_rebin1_default.root",
+		"input_y"   : "./data/histoUnfoldingSystRap_nsel2_dy3_rebin1_default.root",
+		"genLepton"      : "dress",
+		"scaleFactor"    : -1.0
+	    }
         },	
 	"Wto" : {
 	    "MuP" : "GenV_preFSR_charge==-13",  
@@ -103,7 +86,7 @@
         "dataType" : "MC",
         "xsec" : 61526.7,
         "ncores" : 64,
-	"categories" : "SIGNAL_WtoMuP*^:wLHE,SIGNAL_WtoMuN*^:wLHE"
+	"categories" : "SIGNAL_WtoMuP+*^:nominal,SIGNAL_WtoMuN+*^:nominal"
     },
 
     "WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_ext2" : {  

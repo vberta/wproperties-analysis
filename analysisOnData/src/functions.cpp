@@ -11,16 +11,16 @@ float castToFloat(int n){
 }
 
 float getFromIdx(ROOT::VecOps::RVec<float> vec, int index){
-  return vec[index];
+  return vec.at(index,0);
 }
 
 float getIFromIdx(ROOT::VecOps::RVec<int> vec, int index){
-  return vec[index];
+  return vec.at(index,0);
 }
 
-//bool getBFromIdx(ROOT::VecOps::RVec<bool> vec, int index){
-//  return vec[index];
-//}
+bool getBFromIdx(ROOT::VecOps::RVec<bool> vec, int index){
+  return vec.at(index,0);
+}
 
 float W_mt(float mu_pt, float mu_phi, float met_pt, float met_phi){
   return TMath::Sqrt(2*mu_pt*met_pt*(1.0-TMath::Cos(mu_phi-met_phi)));

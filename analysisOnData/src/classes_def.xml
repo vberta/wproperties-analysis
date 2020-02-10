@@ -8,6 +8,7 @@
   <class name="getWeight"/>
   <class name="getFilter"/>
   <class name="getVars"/>
+  <class name="getCoeffVars"/>
   <class name="getCompVars"/>
   <class name="computeAngularCoeff"/>
   <class name="applyAngularCoeff"/>

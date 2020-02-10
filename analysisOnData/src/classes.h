@@ -8,6 +8,7 @@
 #include "interface/getWeight.hpp"
 #include "interface/getFilter.hpp"
 #include "interface/getVars.hpp"
+#include "interface/getCoeffVars.hpp"
 #include "interface/getCompVars.hpp"
 #include "interface/computeAngularCoeff.hpp"
 #include "interface/applyAngularCoeff.hpp"

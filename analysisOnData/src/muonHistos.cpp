@@ -16,14 +16,9 @@ RNode muonHistos::run(RNode d){
   for(unsigned int i=0; i<nbins_eta+1; i++)       eta_Arr[i] = -2.4 + i*(2.4 + 2.4)/nbins_eta;      
   for(unsigned int i=0; i<nbins_charge+1; i++) charge_Arr[i] = -2.0 + i*(4.0)/nbins_charge;      
 
-  if(_category.find("DIMUON")==std::string::npos)
-    this->add_group_3D( &d, "SelMuon1_eta", "SelMuon1_corrected_pt", "SelMuon1_charge", "", eta_Arr, pt_Arr, charge_Arr);
-
-  // PT1,2 vs ETA1,2 vs CHARGE1,2
-  if(_category.find("DIMUON")!=std::string::npos){
-    this->add_group_3D( &d, "SelMuon1_eta", "SelMuon1_corrected_pt", "SelMuon1_charge", "", eta_Arr, pt_Arr, charge_Arr);
+  this->add_group_3D( &d, "SelMuon1_eta", "SelMuon1_corrected_pt", "SelMuon1_charge", "", eta_Arr, pt_Arr, charge_Arr);
+  if(_category.find("DIMUON")!=std::string::npos)
     this->add_group_3D( &d, "SelMuon2_eta", "SelMuon2_corrected_pt", "SelMuon2_charge", "", eta_Arr, pt_Arr, charge_Arr);
-  }
 
   // ZQT vs ZY vs ZMASS
   unsigned int nbins_RecoZ_qt   = 50;
@@ -36,7 +31,7 @@ RNode muonHistos::run(RNode d){
   for(unsigned int i=0; i<nbins_RecoZ_y+1; i++)    RecoZ_y_Arr[i]    = -3.0 + i*(3.0 + 3.0)/nbins_RecoZ_y;      
   for(unsigned int i=0; i<nbins_RecoZ_mass+1; i++) RecoZ_mass_Arr[i] =  75. + i*(105.0-75.0)/nbins_RecoZ_mass;      
   if(_category.find("DIMUON")!=std::string::npos && !veto_LHE) 
-    this->add_group_3D( &d, "SelRecoZ_corrected_qt", "SelRecoZ_corrected_y", "SelRecoZ_corrected_mass", "", RecoZ_qt_Arr,RecoZ_y_Arr,RecoZ_mass_Arr);    
+    this->add_group_3D( &d, "SelRecoZ_corrected_qt", "SelRecoZ_corrected_y", "SelRecoZ_corrected_mass", "", RecoZ_qt_Arr,RecoZ_y_Arr,RecoZ_mass_Arr);  
 
   // MT1 vs HT1 vs CHARGE1
   unsigned int nbins_mt  = 30;
@@ -48,22 +43,20 @@ RNode muonHistos::run(RNode d){
   if((_category.find("DIMUON")==std::string::npos) && !veto_LHE)
     this->add_group_3D( &d, "SelMuon1_corrected_MET_nom_mt", "SelMuon1_corrected_MET_nom_hpt", "SelMuon1_charge", "", mt_Arr, hpt_Arr, charge_Arr);
 
-  // FAST DEBUG
-  return d;
-
-
   // DXY1,2 vs ISO1,2 vs CHARGE1,2
   unsigned int nbins_dxy = 25;
-  unsigned int nbins_iso = 25;
+  unsigned int nbins_iso = 30;
   std::vector<float> dxy_Arr(nbins_dxy+1); 
-  std::vector<float> iso_Arr(nbins_eta+1); 
-  for(unsigned int i=0; i<nbins_dxy+1; i++) dxy_Arr[i] = -0.02 + i*(+0.02+0.02)/nbins_dxy;      
-  for(unsigned int i=0; i<nbins_iso+1; i++) iso_Arr[i] =  0.0  + i*(1.0)/nbins_iso;      
-  if(!veto_LHE) 
+  std::vector<float> iso_Arr(nbins_iso+1); 
+  for(unsigned int i=0; i<nbins_dxy+1; i++) dxy_Arr[i] = -0.02 + i*(0.02+0.02)/nbins_dxy;      
+  for(unsigned int i=0; i<nbins_iso+1; i++) iso_Arr[i] =  0.0  + i*(0.3)/nbins_iso;      
+  if(!veto_LHE)
     this->add_group_3D( &d, "SelMuon1_pfRelIso04_all", "SelMuon1_dxy", "SelMuon1_charge", "", iso_Arr, dxy_Arr, charge_Arr);
   if((_category.find("DIMUON")!=std::string::npos) && !veto_LHE)
     this->add_group_3D( &d, "SelMuon2_pfRelIso04_all", "SelMuon2_dxy", "SelMuon2_charge", "", iso_Arr, dxy_Arr, charge_Arr);  
 
+  // FAST DEBUG
+  return d;
 
   // MET_PT vs MET_phi vs N_PVs
   unsigned int nbins_MET_pt  = 25;

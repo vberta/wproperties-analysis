@@ -19,14 +19,13 @@ parser.add_argument('-o', '--output_dir',type=str, default='TEST', help="")
 parser.add_argument('-y', '--dataYear',  type=str, default='2016', help="")
 parser.add_argument('-i', '--input',     type=str, default="",     help="")
 parser.add_argument('-c', '--config',    type=str, default="data/samples_2016.json",     help="")
+parser.add_argument('-w', '--whoami',    type=str, default="sroychow",     help="")
 args = parser.parse_args()
 output_dir = args.output_dir
 dataYear = args.dataYear
 config = args.config
+whoami = args.whoami
 restrictDataset = [ x for x in args.input.split(',') if args.input != ""]
-
-whoami = 'sroychow'
-#whoami = 'bianchini'
 
 samplef = open('./'+config)
 sampledata = json.load(samplef)
@@ -36,7 +35,7 @@ if args.rdf:
    print "Loading shared library..."
    ROOT.gSystem.Load('bin/libAnalysisOnData.so')
 
-def run_one_sample(inputFiles,output_dir, sampledata, sample, verbose=True):
+def run_one_sample(inputFiles,output_dir, sampledata, sample, verbose=True, print_graph=True):
    v          = sampledata[sample]
    dataType   = v['dataType']
    dirs       = v['dirs']
@@ -65,7 +64,7 @@ def run_one_sample(inputFiles,output_dir, sampledata, sample, verbose=True):
    print "xsec:        ", xsec
    print "ncores:      ", ncores
    print "categories:  ", categories
-   config = ConfigRDF(inputFiles, output_dir, sample+'.root', verbose)
+   config = ConfigRDF(inputFiles, output_dir, sample+'.root', verbose, print_graph)
    config.set_sample_specifics(isMC, lumi, xsec, dataYear, era_ratios, lepton_def, ps, harmonics, Z_reweighter)   
    ret,ret_base = get_categories(dataType, categories, sampledata["common"])
    if verbose:
@@ -289,7 +288,7 @@ def make_dictionary_histo(sampledata, vname, verbose=True):
                if h3==None:
                   continue
                if not out[krc][cat].has_key(syst):
-                  print "adding ", krc,cat,syst
+                  print "Adding ", krc+':'+cat+':'+syst+' --> '+vname
                   out[krc][cat][syst] = {'inputs' : [ { 'pname': kp, 'fname' : fname, 'hname' : hname.replace(vname,'*') } ] }
                   pass
                else:
@@ -316,5 +315,8 @@ if __name__ == '__main__':
       for v in ['SelMuon1_eta_SelMuon1_corrected_pt_SelMuon1_charge', 
                 'SelMuon2_eta_SelMuon2_corrected_pt_SelMuon2_charge', 
                 'SelRecoZ_corrected_qt_SelRecoZ_corrected_y_SelRecoZ_corrected_mass',
-                'SelMuon1_corrected_MET_nom_mt_SelMuon1_corrected_MET_nom_hpt_SelMuon1_charge']:
+                'SelMuon1_corrected_MET_nom_mt_SelMuon1_corrected_MET_nom_hpt_SelMuon1_charge',
+                'SelMuon1_pfRelIso04_all_SelMuon1_dxy_SelMuon1_charge', 
+                'SelMuon2_pfRelIso04_all_SelMuon2_dxy_SelMuon2_charge' 
+                ]:
          make_dictionary_histo(sampledata, v)

@@ -27,13 +27,14 @@ private:
   std::vector<ROOT::RDF::RResultPtr<std::vector<TH3D>>> _h3Group;
 
   std::string _idx1, _idx2;
-  bool _isMC, _compute_coeff, _ps_slicing; 
+  bool _isMC;
+  bool _ps_slicing; 
   std::string _leptonType;
 
 public:
     
-  getVars(std::string idx1, std::string idx2, bool isMC, bool compute_coeff, bool ps_slicing, std::string leptonType) : 
-    _idx1(idx1), _idx2(idx2), _isMC(isMC), _compute_coeff(compute_coeff), _ps_slicing(ps_slicing), _leptonType(leptonType) {};
+  getVars(std::string idx1, std::string idx2, bool isMC, bool ps_slicing, std::string leptonType) :
+    _idx1(idx1), _idx2(idx2), _isMC(isMC), _ps_slicing(ps_slicing), _leptonType(leptonType) {};
   
   ~getVars() {};
   

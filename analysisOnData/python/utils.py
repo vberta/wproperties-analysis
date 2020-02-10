@@ -169,8 +169,7 @@ categories_all = {
             '&& nVetoElectrons==0 ' + \
             '&& SelMuon1_corrected_pt>26.0 ' + \
             '&& SelMuon2_corrected_pt>26.0 ' + \
-            #'&& SelMuon1_mediumId && SelMuon2_mediumId ' + \
-            '&& Muon_mediumId[Idx_mu1] && Muon_mediumId[Idx_mu2] ' + \
+            '&& SelMuon1_mediumId && SelMuon2_mediumId ' + \
             '&& SelMuon1_pfRelIso04_all<0.15 && SelMuon2_pfRelIso04_all<0.15 ' + \
             '&& TMath::Abs(SelRecoZ_corrected_mass-90.0)<15.0', 
         'cut_base' : '',
@@ -178,7 +177,7 @@ categories_all = {
         'modules' : modules_all,
         },
     'GENINCLUSIVE': {
-        'weight' : '1.0',
+        'weight' : 'lumiweight',
         'category_weight_base' : 'GENINCLUSIVE',
         'cut' : '1',
         'cut_base' : '',
@@ -289,10 +288,11 @@ def get_categories(dataType,categories_str, common):
                 ret[c]['modules'] = modules_wMass                
 
         cat_Z_reweight = categories_split_Z_reweight[pos_c]
-        if cat_Z_reweight>0:
-            ret[c]['category_weight_base'] += 'ZREWEIGHT'
-            ret[c]['weight'] += '*reweight_Z_qt'
-            if cat_Z_reweight>1: ret[c]['weight'] += '*reweight_Z_y'
+        if cat_Z_reweight>0:            
+            if charge=="": charge += "V"
+            ret[c]['category_weight_base'] += (charge+'REWEIGHT')
+            ret[c]['weight'] += '*reweight_'+charge+'_qt'
+            if cat_Z_reweight>1: ret[c]['weight'] += '*reweight_'+charge+'_y'
 
         # phase-space slicing is enabled
         if categories_split_slice[pos_c]:

@@ -177,6 +177,7 @@ def plot(category, variable, proj, xtitle, ytitle, tag):
             elif h[0]=='SIGNAL_Fake' : idx_SIGNAL_fake = ih
         if idx_AISO_fake!=-1 and idx_SIGNAL_fake!=-1:
             to_stack[idx_AISO_fake][1].Add( to_stack[idx_SIGNAL_fake][1] )            
+            #to_stack[idx_AISO_fake][1].Scale(0.5)
             to_stack.pop(idx_SIGNAL_fake)
         for h in to_stack: 
             h[1].SetFillColor(colors[h[0]])

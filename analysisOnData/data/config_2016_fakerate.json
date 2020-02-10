@@ -11,7 +11,8 @@
 	"Z_reweighter" : {
             "input_file_qt"  : "./data/histoUnfoldingSystPt_nsel2_dy3_rebin1_default.root",
             "input_file_y"   : "./data/histoUnfoldingSystRap_nsel2_dy3_rebin1_default.root",
-            "genLepton"      : "dress"
+            "genLepton"      : "dress",
+	    "scaleFactor"    : -1.0
         },
 	"Wto" : {
 	    "MuP" : "GenV_preFSR_charge==-13",  
@@ -44,28 +45,28 @@
 		       "TTJets_SingleLeptFromTbar_TuneCUETP8M1_13TeV-madgraphMLM-pythia8_ext1",
 		       "TTJets_DiLept_TuneCUETP8M1_13TeV-madgraphMLM-pythia8"],
 	    "QCD"  : [
-		"QCD_Pt-1000toInf_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext1.root",
-		"QCD_Pt-1000toInf_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8.root",
-		"QCD_Pt-120to170_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8.root",
-		"QCD_Pt-15to20_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8.root",
-		"QCD_Pt-170to300_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext1.root",
-		"QCD_Pt-170to300_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8.root",
-		"QCD_Pt-20to30_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8.root",
-		"QCD_Pt-300to470_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext1.root",
-		"QCD_Pt-300to470_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext2.root",
-		"QCD_Pt-300to470_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8.root",
-		"QCD_Pt-30to50_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8.root",
-		"QCD_Pt-470to600_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext1.root",
-		"QCD_Pt-470to600_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext2.root",
-		"QCD_Pt-470to600_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8.root",
-		"QCD_Pt-50to80_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8.root",
-		"QCD_Pt-600to800_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext1.root",
-		"QCD_Pt-600to800_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8.root",
-		"QCD_Pt-800to1000_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext1.root",
-		"QCD_Pt-800to1000_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext2.root",
-		"QCD_Pt-800to1000_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8.root",
-		"QCD_Pt-80to120_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext1.root",
-		"QCD_Pt-80to120_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8.root"
+		"QCD_Pt-1000toInf_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext1",
+		"QCD_Pt-1000toInf_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8",
+		"QCD_Pt-120to170_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8",
+		"QCD_Pt-15to20_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8",
+		"QCD_Pt-170to300_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext1",
+		"QCD_Pt-170to300_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8",
+		"QCD_Pt-20to30_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8",
+		"QCD_Pt-300to470_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext1",
+		"QCD_Pt-300to470_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext2",
+		"QCD_Pt-300to470_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8",
+		"QCD_Pt-30to50_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8",
+		"QCD_Pt-470to600_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext1",
+		"QCD_Pt-470to600_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext2",
+		"QCD_Pt-470to600_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8",
+		"QCD_Pt-50to80_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8",
+		"QCD_Pt-600to800_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext1",
+		"QCD_Pt-600to800_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8",
+		"QCD_Pt-800to1000_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext1",
+		"QCD_Pt-800to1000_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext2",
+		"QCD_Pt-800to1000_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8",
+		"QCD_Pt-80to120_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext1",
+		"QCD_Pt-80to120_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8"
 	    ],
 	    "SingleMuon" : ["SingleMuon_Run2016B_ver2",
 			   "SingleMuon_Run2016C",
@@ -95,7 +96,7 @@
         "dataType" : "MC",
         "xsec" : 61526.7,
         "ncores" : 64,
-	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal,SIGNALNOISOSF:nominal"
+	"categories" : "SIGNAL+:nominal,SIDEBAND+:nominal,QCD+:nominal,AISO+:nominal,SIGNALNORM+:nominal,AISONORM+:nominal,SIGNALNOISOSF+:nominal"
     },
 
     "WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_ext2" : {  
@@ -106,7 +107,7 @@
         "dataType" : "MC",
         "xsec" : 61526.7,
         "ncores" : 64,
-	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal,SIGNALNOISOSF:nominal"
+	"categories" : "SIGNAL+:nominal,SIDEBAND+:nominal,QCD+:nominal,AISO+:nominal,SIGNALNORM+:nominal,AISONORM+:nominal,SIGNALNOISOSF+:nominal"
     },
 
     "DYJetsToLL_M-10to50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8" : {  
@@ -138,7 +139,7 @@
         "dataType" : "MC",
         "xsec" : 6025.2,
         "ncores" : 64,
-	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal,SIGNALNOISOSF:nominal"
+	"categories" : "SIGNAL++:nominal,SIDEBAND++:nominal,QCD++:nominal,AISO++:nominal,SIGNALNORM++:nominal,AISONORM++:nominal,SIGNALNOISOSF++:nominal"
     },
 
     "WW_TuneCUETP8M1_13TeV-pythia8" : {  

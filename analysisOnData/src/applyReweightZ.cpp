@@ -5,22 +5,25 @@ RNode applyReweightZ::run(RNode d){
   
   auto getWeightQt = [this](float qt)->float {
     int bin = _hQt->FindBin(qt);
-    if( _hQt->IsBinOverflow(bin) ||  _hQt->IsBinUnderflow(bin) ) return 1.0;
-    return _hQt->GetBinContent(bin);
+    if( _hQt->IsBinOverflow(bin) ) return _hQt->GetBinContent(_lastBinQt);
+    else if( _hQt->IsBinUnderflow(bin) ) return _hQt->GetBinContent(1);
+    else return _hQt->GetBinContent(bin);
   };
   auto getWeightY = [this](float y)->float {
-    int bin = _hY->FindBin(TMath::Abs(y));
-    if( _hY->IsBinOverflow(bin) ||  _hY->IsBinUnderflow(bin) ) return 1.0;
-    return _hY->GetBinContent(bin);
+    float absy = TMath::Abs(y);
+    int bin = _hY->FindBin(absy);
+    if( _hY->IsBinOverflow(bin) ) return _hY->GetBinContent(_lastBinY);
+    else if( _hY->IsBinUnderflow(bin) ) return _hY->GetBinContent(1);
+    else return _hY->GetBinContent(bin);
   };
   
   RNode d_start = d;
   if(_hQt!=nullptr){
-    auto d_post = d_start.Define("reweight_Z_qt", getWeightQt, {"GenV_"+_leptonType+"_qt"});
+    auto d_post = d_start.Define("reweight_"+_genV+"_qt", getWeightQt, {"GenV_"+_leptonType+"_qt"});
     d_start = d_post;
   }
   if(_hY!=nullptr){
-    auto d_post = d_start.Define("reweight_Z_y", getWeightY, {"GenV_"+_leptonType+"_y"});
+    auto d_post = d_start.Define("reweight_"+_genV+"_y", getWeightY, {"GenV_"+_leptonType+"_y"});
     d_start = d_post;
   }
 

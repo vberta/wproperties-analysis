@@ -20,10 +20,11 @@ Class that configures RDFtree. Add new modules as class functions.
 """
 class ConfigRDF():    
 
-    def __init__(self, inputFiles, outputDir, outputFile, verbose):
+    def __init__(self, inputFiles, outputDir, outputFile, verbose, printGraph):
         self.inputFiles = inputFiles
         self.p = RDFtree(outputDir=outputDir, inputFile=inputFiles[0], outputFile=outputFile)
         self.verbose = verbose
+        self.printGraph = printGraph
         self.recompute_vars = True
         self.use_externalSF_Iso = False
         self.use_externalSF_ID = False
@@ -58,9 +59,7 @@ class ConfigRDF():
         self.ps = ps
         self.coefficients       = harmonics['coefficients']
         self.coefficients_input = harmonics['input_file']
-        self.Z_reweighter_qt_input = Z_reweighter['input_file_qt']
-        self.Z_reweighter_y_input  = Z_reweighter['input_file_y']
-        self.Z_reweighter_leptonDef = Z_reweighter['genLepton']
+        self.Z_reweighter = Z_reweighter
         return
     
     """
@@ -68,18 +67,15 @@ class ConfigRDF():
     """
     def _branch_defs(self):
         if self.iteration==0 and not hasattr(self, 'branch_defs_iter0'):
-            if hasattr(self,'run_GENINCLUSIVE'):                 
-                self.def_modules.append( ROOT.getLumiWeight(self.inputFiles, 0.001, self.xsec) )
-                self.def_modules.append( ROOT.getVars("", "", self.isMC, True, False, ROOT.std.string(self.lepton_def) ) )
-                setattr(self, 'branch_defs_iter0', True )
-                return
             Idx_mu2 = "Idx_mu2" if hasattr(self,'run_DIMUON') else ""
-            self.def_modules.append( ROOT.getVars("Idx_mu1", Idx_mu2, self.isMC, False, hasattr(self,'run_PSSLICING'), ROOT.std.string(self.lepton_def) ) )
-            if hasattr(self, 'run_REWEIGHTZ'):
-                self.def_modules.append( ROOT.applyReweightZ( ROOT.std.string(self.Z_reweighter_qt_input), 
-                                                                ROOT.std.string(self.Z_reweighter_y_input), 
-                                                                ROOT.std.string(self.Z_reweighter_leptonDef)) )
-                
+            self.def_modules.append( ROOT.getVars("Idx_mu1", Idx_mu2, self.isMC, hasattr(self,'run_PSSLICING'), ROOT.std.string(self.lepton_def) ) )
+            if hasattr(self, 'run_REWEIGHTV'):
+                for c in self.categories_for_reweightV:
+                    self.def_modules.append( ROOT.applyReweightZ( ROOT.std.string(c), 
+                                                                  ROOT.std.string(self.Z_reweighter[c]["input_qt"]), 
+                                                                  ROOT.std.string(self.Z_reweighter[c]["input_y"]), 
+                                                                  ROOT.std.string(self.Z_reweighter[c]["genLepton"]), 
+                                                                  self.Z_reweighter[c]["scaleFactor"]) )                
             if self.recompute_vars:
                 self.def_modules.append( ROOT.getCompVars("Idx_mu1", Idx_mu2, vec_s(), vec_s()) )          
             if self.isMC: 
@@ -102,6 +98,30 @@ class ConfigRDF():
             if self.verbose: print 'branch_defs:', bc.H, 'input', bc.E, ' --> ', bc.B, 'defs',  bc.E
             self.p.branch(nodeToStart='input', nodeToEnd='defs', modules=self.def_modules)
             setattr(self, 'branch_defs_iter2', True )
+        return
+
+    """
+    Branch defs for angular coefficients
+    """
+    def _branch_defs_coeff(self):
+        if self.iteration==0 and not hasattr(self, 'branch_defs_coeff_iter0'):
+            self.def_modules.append( ROOT.getLumiWeight(self.inputFiles, 0.001, self.xsec) )
+            if hasattr(self, 'run_REWEIGHTV'):
+                for c in self.categories_for_reweightV:
+                    self.def_modules.append( ROOT.applyReweightZ( ROOT.std.string(c), 
+                                                                  ROOT.std.string(self.Z_reweighter[c]["input_qt"]), 
+                                                                  ROOT.std.string(self.Z_reweighter[c]["input_y"]), 
+                                                                  ROOT.std.string(self.Z_reweighter[c]["genLepton"]), 
+                                                                  self.Z_reweighter[c]["scaleFactor"]) )                
+            self.def_modules.append( ROOT.getCoeffVars( ROOT.std.string(self.lepton_def) ) )
+            setattr(self, 'branch_defs_coeff_iter0', True )
+        elif self.iteration==1 and not hasattr(self, 'branch_defs_coeff_'+self.category_weight_base+'_iter1'):
+            self.def_modules.append( ROOT.getWeight('weight_'+self.category_weight_base+'_nominal', self.weight) )
+            setattr(self, 'branch_defs_coeff_'+self.category_weight_base+'_iter1', True)
+        elif self.iteration==2 and not hasattr(self, 'branch_defs_coeff_iter2'):
+            if self.verbose: print 'branch_defs_coeff:', bc.H, 'input', bc.E, ' --> ', bc.B, 'defs',  bc.E
+            self.p.branch(nodeToStart='input', nodeToEnd='defs', modules=self.def_modules)
+            setattr(self, 'branch_defs_coeff_iter2', True )
         return
         
 
@@ -150,14 +170,29 @@ class ConfigRDF():
         elif self.iteration==2:
             modules = []
             self._branch_base_categories('nominal', [])
-            if self.cut!='': 
-                modules.append( ROOT.getFilter( ROOT.std.string(self.cut)) )
-            if 'GENINCLUSIVE' in self.category:
-                 modules.append( ROOT.computeAngularCoeff(ROOT.std.string(self.category), ROOT.std.string(self.lepton_def), get_histo_coeff(self.ps) ))
-            else:
-                modules.append( ROOT.muonHistos(self.category, 'weight_'+self.category_weight_base+'_nominal', vec_s(), "", "", False, self.verbose) )
+            if self.cut!='': modules.append( ROOT.getFilter( ROOT.std.string(self.cut)) )
+            modules.append( ROOT.muonHistos(self.category, 'weight_'+self.category_weight_base+'_nominal', vec_s(), "", "", False, self.verbose) )
             nodeToStart = 'defs' if self.category_cut_base=='defs' else self.category_cut_base+'_nominal'
             if self.verbose: print 'branch_muon_nominal:', bc.H, nodeToStart, bc.E, ' --> ',  bc.B, self.category+'_nominal',  bc.E,  ('' if self.cut=='' else 'with cut: '+self.cut)
+            self.p.branch(nodeToStart=nodeToStart, nodeToEnd=self.category+'_nominal', modules=modules)
+        return
+
+
+    """
+    Branch coefficient computer
+    """
+    def _branch_coeff_nominal(self):
+        if self.iteration==0:
+            pass
+        elif self.iteration==1:
+            pass
+        elif self.iteration==2:
+            modules = []
+            self._branch_base_categories('nominal', [])
+            if self.cut!='': modules.append( ROOT.getFilter( ROOT.std.string(self.cut)) )
+            modules.append( ROOT.computeAngularCoeff(ROOT.std.string(self.category),  'weight_'+self.category_weight_base+'_nominal', ROOT.std.string(self.lepton_def), get_histo_coeff(self.ps)  ))
+            nodeToStart = 'defs' if self.category_cut_base=='defs' else self.category_cut_base+'_nominal'
+            if self.verbose: print 'branch_coeff_nominal:', bc.H, nodeToStart, bc.E, ' --> ',  bc.B, self.category+'_nominal',  bc.E,  ('' if self.cut=='' else 'with cut: '+self.cut)
             self.p.branch(nodeToStart=nodeToStart, nodeToEnd=self.category+'_nominal', modules=modules)
         return
 
@@ -492,6 +527,9 @@ class ConfigRDF():
     """
     def run( self, categories, base_categories ):
 
+        self.categories_for_reweightV = []
+        self.categories_for_harmonics = []
+
         for key,val in categories.items():
             if 'DIMUON' in key and not hasattr(self, 'run_DIMUON'):
                 if self.verbose: print ">> ConfigRDF: run DIMUON module: precompute new columns with 'Idx2'"
@@ -503,18 +541,26 @@ class ConfigRDF():
                 if self.verbose: print ">> ConfigRDF: run PSSLICING: precompute PS columns"
                 self.run_PSSLICING = True
             if 'coeff' in key:
-                self.categories_for_harmonics = []
-                cats = ['WtoMuP','WtoMuN', 'WtoTau','ZtoMuMu', 'ZtoMuMu', 'ZtoTauTau']
+                cats = ['WtoMuP','WtoMuN', 'WtoTau', 'ZtoMuMu', 'ZtoTauTau']
                 for c in cats:                     
-                    if (c in key):
+                    if ('_'+c in key):
                         is_there =  (c in self.categories_for_harmonics)
                         if not is_there:
                             if self.verbose: print ">> ConfigRDF: harmonics reweighting enabled module: precompute weights for "+c
                             self.categories_for_harmonics.append(c)
                 self.run_HARMONICS = True                                        
-            if 'reweight_Z' in val['weight'] and not hasattr(self, 'run_REWEIGHTZ'):
-                if self.verbose: print ">> ConfigRDF: run REWEIGHTZ: reweight Z qt/y distribution to measured one"
-                self.run_REWEIGHTZ = True
+            if 'reweight_' in val['weight']:
+                cats = [ 'WtoMuP','WtoMuN', 'WtoTau', 'ZtoMuMu', 'ZtoTauTau']
+                for c in cats:                     
+                    if ('_'+c in key):
+                        is_there =  (c in self.categories_for_reweightV)
+                        if not is_there:
+                            if self.verbose: print ">> ConfigRDF: run REWEIGHTV: reweight "+c+" qt/y distribution to measured one"
+                            self.categories_for_reweightV.append(c)
+                if len(self.categories_for_reweightV)==0:
+                    if self.verbose: print ">> ConfigRDF: run REWEIGHTV: reweight V=W,Z qt/y distribution to measured one"
+                    self.categories_for_reweightV.append('V')
+                self.run_REWEIGHTV = True
 
         self.base_categories = copy.deepcopy(base_categories)
 
@@ -530,6 +576,13 @@ class ConfigRDF():
                 self.category = category                
                 self.category_weight_base = specifics['category_weight_base']
                 self.category_cut_base = specifics['category_cut_base']
+                
+                # compute the angular coefficients
+                if hasattr(self, 'run_GENINCLUSIVE'):
+                    self._branch_defs_coeff()
+                    self._branch_coeff_nominal()
+                    continue
+
                 self._branch_defs()
                 if hasattr(self, 'run_HARMONICS'): self._branch_harmonics()
                 modules = specifics['modules']
@@ -548,13 +601,12 @@ class ConfigRDF():
                         self._branch_muon_syst_scalefactor( key.replace('muon_syst_scalefactor_',''), value )
                     elif 'muon_syst_column' in key:                         
                         self._branch_muon_syst_column( key.replace('muon_syst_column_',''), value)
-
                 pass
 
         if self.verbose: print " ==>", len(self.def_modules), " defs modules have been loaded..."
         if self.verbose: print 'Get output...'
         self.p.getOutput()
-        #if self.verbose: self.p.saveGraph()
+        if self.printGraph: self.p.saveGraph()
         return
 
 

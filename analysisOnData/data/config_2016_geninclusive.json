@@ -74,6 +74,12 @@
 	    "MuMu"   : "genVtype==13",  
 	    "TauTau" : "genVtype!=13"
 	},
+	"Z_reweighter" : {
+            "input_file_qt"  : "./data/histoUnfoldingSystPt_nsel2_dy3_rebin1_default.root",
+            "input_file_y"   : "./data/histoUnfoldingSystRap_nsel2_dy3_rebin1_default.root",
+	    "genLepton"      : "dress",
+	    "scaleFactor"    : -1.0
+        },	
 	"merged" : {
 	    "WJets" : ["WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_GENINCLUSIVE_0", 
 		       "WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_GENINCLUSIVE_1",
