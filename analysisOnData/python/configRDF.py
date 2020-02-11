@@ -49,7 +49,7 @@ class ConfigRDF():
         self.xsec = 61526.7
         self.dataYear = '2016'        
 
-    def set_sample_specifics(self,isMC,lumi,xsec,dataYear,era_ratios,lepton_def, ps, harmonics, Z_reweighter):
+    def set_sample_specifics(self,isMC,lumi,xsec,dataYear,era_ratios,lepton_def, ps, harmonics, Z_reweighter, procId, external_SF):
         self.isMC = isMC
         self.lumi = lumi
         self.xsec = xsec
@@ -60,6 +60,8 @@ class ConfigRDF():
         self.coefficients       = harmonics['coefficients']
         self.coefficients_input = harmonics['input_file']
         self.Z_reweighter = Z_reweighter
+        self.procId = procId
+        self.external_SF = external_SF
         return
     
     """
@@ -69,13 +71,19 @@ class ConfigRDF():
         if self.iteration==0 and not hasattr(self, 'branch_defs_iter0'):
             Idx_mu2 = "Idx_mu2" if hasattr(self,'run_DIMUON') else ""
             self.def_modules.append( ROOT.getVars("Idx_mu1", Idx_mu2, self.isMC, hasattr(self,'run_PSSLICING'), ROOT.std.string(self.lepton_def) ) )
+            syst_columns_antiSF = vec_s()
+            for syst in self.external_SF['ISO']['systs']: syst_columns_antiSF.push_back(ROOT.std.string(syst))
+            self.def_modules.append( ROOT.applySmoothAntiSF( ROOT.std.string(self.external_SF['ISO']['input_wSF']), 
+                                                             ROOT.std.string(self.external_SF['ISO']['input_woSF']),
+                                                             "ISO", syst_columns_antiSF)  )
             if hasattr(self, 'run_REWEIGHTV'):
                 for c in self.categories_for_reweightV:
+                    proc = c if self.procId=='' else self.procId
                     self.def_modules.append( ROOT.applyReweightZ( ROOT.std.string(c), 
-                                                                  ROOT.std.string(self.Z_reweighter[c]["input_qt"]), 
-                                                                  ROOT.std.string(self.Z_reweighter[c]["input_y"]), 
-                                                                  ROOT.std.string(self.Z_reweighter[c]["genLepton"]), 
-                                                                  self.Z_reweighter[c]["scaleFactor"]) )                
+                                                                  ROOT.std.string(self.Z_reweighter[proc]["input_qt"]), 
+                                                                  ROOT.std.string(self.Z_reweighter[proc]["input_y"]), 
+                                                                  ROOT.std.string(self.Z_reweighter[proc]["genLepton"]), 
+                                                                  self.Z_reweighter[proc]["scaleFactor"]) )                
             if self.recompute_vars:
                 self.def_modules.append( ROOT.getCompVars("Idx_mu1", Idx_mu2, vec_s(), vec_s()) )          
             if self.isMC: 
@@ -108,11 +116,12 @@ class ConfigRDF():
             self.def_modules.append( ROOT.getLumiWeight(self.inputFiles, 0.001, self.xsec) )
             if hasattr(self, 'run_REWEIGHTV'):
                 for c in self.categories_for_reweightV:
+                    proc = c if self.procId=='' else self.procId
                     self.def_modules.append( ROOT.applyReweightZ( ROOT.std.string(c), 
-                                                                  ROOT.std.string(self.Z_reweighter[c]["input_qt"]), 
-                                                                  ROOT.std.string(self.Z_reweighter[c]["input_y"]), 
-                                                                  ROOT.std.string(self.Z_reweighter[c]["genLepton"]), 
-                                                                  self.Z_reweighter[c]["scaleFactor"]) )                
+                                                                  ROOT.std.string(self.Z_reweighter[proc]["input_qt"]), 
+                                                                  ROOT.std.string(self.Z_reweighter[proc]["input_y"]), 
+                                                                  ROOT.std.string(self.Z_reweighter[proc]["genLepton"]), 
+                                                                  self.Z_reweighter[proc]["scaleFactor"]) )                
             self.def_modules.append( ROOT.getCoeffVars( ROOT.std.string(self.lepton_def) ) )
             setattr(self, 'branch_defs_coeff_iter0', True )
         elif self.iteration==1 and not hasattr(self, 'branch_defs_coeff_'+self.category_weight_base+'_iter1'):

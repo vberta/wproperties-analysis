@@ -13,4 +13,5 @@
   <class name="computeAngularCoeff"/>
   <class name="applyAngularCoeff"/>
   <class name="applyReweightZ"/>
+  <class name="applySmoothAntiSF"/>
 </lcgdict>

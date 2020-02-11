@@ -9,11 +9,62 @@
 	    "input_file"   : ""
 	},	
 	"Z_reweighter" : {
-            "input_file_qt"  : "./data/histoUnfoldingSystPt_nsel2_dy3_rebin1_default.root",
-            "input_file_y"   : "./data/histoUnfoldingSystRap_nsel2_dy3_rebin1_default.root",
-            "genLepton"      : "dress",
-	    "scaleFactor"    : -1.0
-        },
+	    "V" : {
+		"input_qt"  : "./data/histoUnfoldingSystPt_nsel2_dy3_rebin1_default.root",
+		"input_y"   : "./data/histoUnfoldingSystRap_nsel2_dy3_rebin1_default.root",
+		"genLepton"      : "dress",
+		"scaleFactor"    : -1.0
+	    },
+	    "W" : {
+		"input_qt"  : "./data/histoUnfoldingSystPt_nsel2_dy3_rebin1_default.root",
+		"input_y"   : "./data/histoUnfoldingSystRap_nsel2_dy3_rebin1_default.root",
+		"genLepton"      : "dress",
+		"scaleFactor"    : 0.979
+	    },
+	    "Z" : {
+		"input_qt"  : "./data/histoUnfoldingSystPt_nsel2_dy3_rebin1_default.root",
+		"input_y"   : "./data/histoUnfoldingSystRap_nsel2_dy3_rebin1_default.root",
+		"genLepton"      : "dress",
+		"scaleFactor"    : -1.0
+	    },
+	    "WtoMuP" : {
+		"input_qt"  : "./data/histoUnfoldingSystPt_nsel2_dy3_rebin1_default.root",
+		"input_y"   : "./data/histoUnfoldingSystRap_nsel2_dy3_rebin1_default.root",
+		"genLepton"      : "dress",
+		"scaleFactor"    : 0.979
+	    },
+	    "WtoMuN" : {
+		"input_qt"  : "./data/histoUnfoldingSystPt_nsel2_dy3_rebin1_default.root",
+		"input_y"   : "./data/histoUnfoldingSystRap_nsel2_dy3_rebin1_default.root",
+		"genLepton"      : "dress",
+		"scaleFactor"    : 0.979
+	    },
+	    "WtoTau" : {
+		"input_qt"  : "./data/histoUnfoldingSystPt_nsel2_dy3_rebin1_default.root",
+		"input_y"   : "./data/histoUnfoldingSystRap_nsel2_dy3_rebin1_default.root",
+		"genLepton"      : "dress",
+		"scaleFactor"    : 0.979
+	    },
+	    "ZtoMuMu" : {
+		"input_qt"  : "./data/histoUnfoldingSystPt_nsel2_dy3_rebin1_default.root",
+		"input_y"   : "./data/histoUnfoldingSystRap_nsel2_dy3_rebin1_default.root",
+		"genLepton"      : "dress",
+		"scaleFactor"    : -1.0
+	    },
+	    "ZtoTauTau" : {
+		"input_qt"  : "./data/histoUnfoldingSystPt_nsel2_dy3_rebin1_default.root",
+		"input_y"   : "./data/histoUnfoldingSystRap_nsel2_dy3_rebin1_default.root",
+		"genLepton"      : "dress",
+		"scaleFactor"    : -1.0
+	    }
+        },	
+        "external_SF" : {
+	    "ISO" : {
+		"input_wSF"  : "data/externalSF/bkg_parameters_file.root",
+		"input_woSF" : "data/externalSF/bkg_parameters_file_noIsoSF_.root",
+		"systs"      : ["nominal"]
+	    }
+	},
 	"Wto" : {
 	    "MuP" : "GenV_preFSR_charge==-13",  
 	    "MuN" : "GenV_preFSR_charge==+13",  
@@ -96,7 +147,7 @@
         "dataType" : "MC",
         "xsec" : 61526.7,
         "ncores" : 64,
-	"categories" : "SIGNAL+:nominal,SIDEBAND+:nominal,QCD+:nominal,AISO+:nominal,SIGNALNORM+:nominal,AISONORM+:nominal,SIGNALNOISOSF+:nominal"
+	"categories" : "SIGNAL+:nominal,SIDEBAND+:nominal,QCD+:nominal,AISO+:nominal,SIGNALNORM+:nominal,AISONORM+:nominal"
     },
 
     "WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_ext2" : {  
@@ -107,7 +158,7 @@
         "dataType" : "MC",
         "xsec" : 61526.7,
         "ncores" : 64,
-	"categories" : "SIGNAL+:nominal,SIDEBAND+:nominal,QCD+:nominal,AISO+:nominal,SIGNALNORM+:nominal,AISONORM+:nominal,SIGNALNOISOSF+:nominal"
+	"categories" : "SIGNAL+:nominal,SIDEBAND+:nominal,QCD+:nominal,AISO+:nominal,SIGNALNORM+:nominal,AISONORM+:nominal"
     },
 
     "DYJetsToLL_M-10to50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8" : {  
@@ -118,7 +169,7 @@
         "dataType" : "MC",
         "xsec" : 1903.0,
         "ncores" : -1,
-	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal,SIGNALNOISOSF:nominal"
+	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal"
     },
 
     "DYJetsToLL_M-10to50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_ext1" : {  
@@ -129,7 +180,7 @@
         "dataType" : "MC",
         "xsec" : 1903.0,
         "ncores" : 64,
-	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal,SIGNALNOISOSF:nominal"
+	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal"
     },
 
     "DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_ext2" : {  
@@ -150,7 +201,7 @@
         "dataType" : "MC",
         "xsec" : 115,
         "ncores" : -1,
-	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal,SIGNALNOISOSF:nominal"
+	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal"
     },
 
     "WW_TuneCUETP8M1_13TeV-pythia8_ext1" : {  
@@ -161,7 +212,7 @@
         "dataType" : "MC",
         "xsec" : 115,
         "ncores" : -1,
-	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal,SIGNALNOISOSF:nominal"
+	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal"
     },
 
     "WZ_TuneCUETP8M1_13TeV-pythia8" : {  
@@ -172,7 +223,7 @@
         "dataType" : "MC",
         "xsec" : 47.13,
         "ncores" : -1,
-	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal,SIGNALNOISOSF:nominal"
+	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal"
     },
 
     "WZ_TuneCUETP8M1_13TeV-pythia8_ext1" : {  
@@ -183,7 +234,7 @@
         "dataType" : "MC",
         "xsec" : 47.13,
         "ncores" : -1,
-	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal,SIGNALNOISOSF:nominal"
+	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal"
     },
 
     "ZZ_TuneCUETP8M1_13TeV-pythia8" : {  
@@ -193,7 +244,7 @@
         "dataType" : "MC",
         "xsec" : 16.523,
         "ncores" : -1,
-	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal,SIGNALNOISOSF:nominal"
+	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal"
     },
 
     "ST_s-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1" : {  
@@ -203,7 +254,7 @@
         "dataType" : "MC",
         "xsec" : 3.68,
         "ncores" : -1,
-	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal,SIGNALNOISOSF:nominal"
+	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal"
     },
 
     "ST_t-channel_top_4f_inclusiveDecays_13TeV-powhegV2-madspin-pythia8_TuneCUETP8M1" : {  
@@ -213,7 +264,7 @@
         "dataType" : "MC",
         "xsec" : 136.02,
         "ncores" : -1,
-	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal,SIGNALNOISOSF:nominal"
+	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal"
     },
 
     "ST_t-channel_antitop_4f_inclusiveDecays_13TeV-powhegV2-madspin-pythia8_TuneCUETP8M1" : {  
@@ -223,7 +274,7 @@
         "dataType" : "MC",
         "xsec" : 80.95,
         "ncores" : -1,
-	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal,SIGNALNOISOSF:nominal"
+	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal"
     },
 
     "ST_tW_top_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1_ext1" : {  
@@ -233,7 +284,7 @@
         "dataType" : "MC",
         "xsec" : 35.6,
         "ncores" : -1,
-	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal,SIGNALNOISOSF:nominal"
+	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal"
     },
 
     "ST_tW_antitop_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1_ext1" : {  
@@ -243,7 +294,7 @@
         "dataType" : "MC",
         "xsec" : 35.6,
         "ncores" : -1,
-	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal,SIGNALNOISOSF:nominal"
+	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal"
     },
 
     "TTJets_SingleLeptFromT_TuneCUETP8M1_13TeV-madgraphMLM-pythia8" : {  
@@ -254,7 +305,7 @@
         "dataType" : "MC",
         "xsec" : 182.0,
         "ncores" : -1,
-	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal,SIGNALNOISOSF:nominal"
+	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal"
     },
 
     "TTJets_SingleLeptFromT_TuneCUETP8M1_13TeV-madgraphMLM-pythia8_ext1" : {  
@@ -265,7 +316,7 @@
         "dataType" : "MC",
         "xsec" : 182.0,
         "ncores" : 64,
-	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal,SIGNALNOISOSF:nominal"
+	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal"
     },
 
     "TTJets_SingleLeptFromTbar_TuneCUETP8M1_13TeV-madgraphMLM-pythia8" : {  
@@ -276,7 +327,7 @@
         "dataType" : "MC",
         "xsec" : 182.0,
         "ncores" : -1,
-	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal,SIGNALNOISOSF:nominal"
+	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal"
     },
 
     "TTJets_SingleLeptFromTbar_TuneCUETP8M1_13TeV-madgraphMLM-pythia8_ext1" : {  
@@ -287,7 +338,7 @@
         "dataType" : "MC",
         "xsec" : 182.0,
         "ncores" : 64,
-	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal,SIGNALNOISOSF:nominal"
+	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal"
     },
 
     "TTJets_DiLept_TuneCUETP8M1_13TeV-madgraphMLM-pythia8" : {  
@@ -298,7 +349,7 @@
         "dataType" : "MC",
         "xsec" : 95.02,
         "ncores" : -1,
-	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal,SIGNALNOISOSF:nominal"
+	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal"
     },
 
     "TTJets_DiLept_TuneCUETP8M1_13TeV-madgraphMLM-pythia8_ext1" : {  
@@ -309,7 +360,7 @@
         "dataType" : "MC",
         "xsec" : 95.02,
         "ncores" : 64,
-	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal,SIGNALNOISOSF:nominal"
+	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal"
     },
 
     "QCD_Pt-15to20_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8": {
@@ -319,7 +370,7 @@
 	"dataType" :"MC",
 	"xsec" : 3616000.0,
 	"ncores" : -1,
-	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal,SIGNALNOISOSF:nominal"
+	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal"
     },
     "QCD_Pt-20to30_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8": {
 	"dirs" : {
@@ -328,7 +379,7 @@
 	"dataType" :"MC",
 	"xsec" : 3160000.0,
 	"ncores" : -1,
-	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal,SIGNALNOISOSF:nominal"
+	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal"
     },
     "QCD_Pt-30to50_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8": {
 	"dirs" : {
@@ -337,7 +388,7 @@
 	"dataType" :"MC",
 	"xsec" : 1655000,
 	"ncores" : -1,
-	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal,SIGNALNOISOSF:nominal"
+	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal"
     },
     "QCD_Pt-50to80_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8": {
 	"dirs" : {
@@ -346,7 +397,7 @@
 	"dataType" :"MC",
 	"xsec" : 448700,
 	"ncores" : -1,
-	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal,SIGNALNOISOSF:nominal"
+	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal"
     },
     "QCD_Pt-80to120_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8": {
 	"dirs" : {
@@ -356,7 +407,7 @@
 	"dataType" :"MC",
 	"xsec" : 105200,
 	"ncores" : -1,
-	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal,SIGNALNOISOSF:nominal"
+	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal"
     },
     "QCD_Pt-80to120_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext1": {
 	"dirs" : {
@@ -366,7 +417,7 @@
 	"dataType" :"MC",
 	"xsec" : 105200,
 	"ncores" : -1,
-	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal,SIGNALNOISOSF:nominal"
+	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal"
     },
     "QCD_Pt-120to170_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8": {
 	"dirs" : {
@@ -375,7 +426,7 @@
 	"dataType" :"MC",
 	"xsec" : 25510,
 	"ncores" : -1,
-	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal,SIGNALNOISOSF:nominal"
+	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal"
     },
     "QCD_Pt-170to300_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8": {
 	"dirs" : {
@@ -385,7 +436,7 @@
 	"dataType" :"MC",
 	"xsec" : 8624,
 	"ncores" : -1,
-	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal,SIGNALNOISOSF:nominal"
+	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal"
     },
     "QCD_Pt-170to300_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext1": {
 	"dirs" : {
@@ -395,7 +446,7 @@
 	"dataType" :"MC",
 	"xsec" : 8624,
 	"ncores" : -1,
-	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal,SIGNALNOISOSF:nominal"
+	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal"
     },
     "QCD_Pt-300to470_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8": {
 	"dirs" : {
@@ -406,7 +457,7 @@
 	"dataType" :"MC",
 	"xsec" : 792.2,
 	"ncores" : -1,
-	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal,SIGNALNOISOSF:nominal"
+	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal"
     },
     "QCD_Pt-300to470_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext1": {
 	"dirs" : {
@@ -417,7 +468,7 @@
 	"dataType" :"MC",
 	"xsec" : 792.2,
 	"ncores" : -1,
-	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal,SIGNALNOISOSF:nominal"
+	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal"
     },
     "QCD_Pt-300to470_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext2": {
 	"dirs" : {
@@ -428,7 +479,7 @@
 	"dataType" :"MC",
 	"xsec" : 792.2,
 	"ncores" : -1,
-	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal,SIGNALNOISOSF:nominal"
+	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal"
     },
     "QCD_Pt-470to600_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8": {
 	"dirs" : {
@@ -439,7 +490,7 @@
 	"dataType" :"MC",
 	"xsec" : 79.18,
 	"ncores" : -1,
-	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal,SIGNALNOISOSF:nominal"
+	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal"
     },
     "QCD_Pt-470to600_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext1": {
 	"dirs" : {
@@ -450,7 +501,7 @@
 	"dataType" :"MC",
 	"xsec" : 79.18,
 	"ncores" : -1,
-	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal,SIGNALNOISOSF:nominal"
+	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal"
     },
     "QCD_Pt-470to600_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext2": {
 	"dirs" : {
@@ -461,7 +512,7 @@
 	"dataType" :"MC",
 	"xsec" : 79.18,
 	"ncores" : -1,
-	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal,SIGNALNOISOSF:nominal"
+	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal"
     },
     "QCD_Pt-600to800_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8": {
 	"dirs" : {
@@ -471,7 +522,7 @@
 	"dataType" :"MC",
 	"xsec" : 25.22,
 	"ncores" : -1,
-	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal,SIGNALNOISOSF:nominal"
+	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal"
     },
     "QCD_Pt-600to800_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext1": {
 	"dirs" : {
@@ -481,7 +532,7 @@
 	"dataType" :"MC",
 	"xsec" : 25.22,
 	"ncores" : -1,
-	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal,SIGNALNOISOSF:nominal"
+	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal"
     },
     "QCD_Pt-800to1000_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8": {
 	"dirs" : {
@@ -492,7 +543,7 @@
 	"dataType" :"MC",
 	"xsec" : 4.717,
 	"ncores" : -1,
-	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal,SIGNALNOISOSF:nominal"
+	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal"
     },
     "QCD_Pt-800to1000_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext1": {
 	"dirs" : {
@@ -503,7 +554,7 @@
 	"dataType" :"MC",
 	"xsec" : 4.717,
 	"ncores" : -1,
-	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal,SIGNALNOISOSF:nominal"
+	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal"
     },
     "QCD_Pt-800to1000_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext2": {
 	"dirs" : {
@@ -514,7 +565,7 @@
 	"dataType" :"MC",
 	"xsec" : 4.717,
 	"ncores" : -1,
-	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal,SIGNALNOISOSF:nominal"
+	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal"
     },
     "QCD_Pt-1000toInf_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8": {
 	"dirs" : {
@@ -524,7 +575,7 @@
 	"dataType" :"MC",
 	"xsec" : 1.615,
 	"ncores" : -1,
-	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal,SIGNALNOISOSF:nominal"
+	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal"
     },
     "QCD_Pt-1000toInf_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext1": {
 	"dirs" : {
@@ -534,7 +585,7 @@
 	"dataType" :"MC",
 	"xsec" : 1.615,
 	"ncores" : -1,
-	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal,SIGNALNOISOSF:nominal"
+	"categories" : "SIGNAL:nominal,SIDEBAND:nominal,QCD:nominal,AISO:nominal,SIGNALNORM:nominal,AISONORM:nominal"
     },
 
     "SingleMuon_Run2016B_ver2" : {  

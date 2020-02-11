@@ -63,7 +63,7 @@ modules_any.update(modules_fakerate)
 
 categories_all = { 
     'SIGNAL': {
-        'weight' : 'puWeight*lumiweight*SelMuon1_ID_SF*SelMuon1_ISO_SF*SelMuon1_Trigger_SF',
+        'weight' : 'puWeight*lumiweight*SelMuon1_ID_SF*SelMuon1_ISO_SmoothSF*SelMuon1_Trigger_SF',
         'category_weight_base' : 'SIGNAL',
         'cut' : 'Vtype==0 ' + \
             '&& HLT_SingleMu24 '+ \
@@ -77,7 +77,7 @@ categories_all = {
         'modules' : modules_nominal
         },
     'SIGNALNORM': {
-        'weight' : 'puWeight*lumiweight*SelMuon1_ID_SF*SelMuon1_ISO_SF*SelMuon1_Trigger_SF',
+        'weight' : 'puWeight*lumiweight*SelMuon1_ID_SF*SelMuon1_ISO_SmoothSF*SelMuon1_Trigger_SF',
         'category_weight_base' : 'SIGNAL',
         'cut' : 'Vtype==0 ' + \
             '&& HLT_SingleMu24 '+ \
@@ -91,7 +91,7 @@ categories_all = {
         'modules' : modules_nominal
         },
     'QCD': {
-        'weight' : 'puWeight*lumiweight*SelMuon1_ID_SF*SelMuon1_ISO_SF*SelMuon1_Trigger_SF',
+        'weight' : 'puWeight*lumiweight*SelMuon1_ID_SF*SelMuon1_ISO_SmoothSF*SelMuon1_Trigger_SF',
         'category_weight_base' : 'SIGNAL',
         'cut' : 'Vtype==0 ' + \
             '&& HLT_SingleMu24 '+ \
@@ -119,7 +119,7 @@ categories_all = {
         'modules' : modules_nominal
     },
     'AISO': {
-        'weight' : 'puWeight*lumiweight*SelMuon1_ID_SF',
+        'weight' : 'puWeight*lumiweight*SelMuon1_ID_SF*SelMuon1_Trigger_SF*SelMuon1_ISO_SmoothAntiSF',
         'category_weight_base' : 'AISO',
         'cut' : 'Vtype==1 ' + \
             '&& HLT_SingleMu24 '+ \
@@ -133,7 +133,7 @@ categories_all = {
         'modules' : modules_nominal,
         },
     'AISONORM': {
-        'weight' : 'puWeight*lumiweight*SelMuon1_ID_SF',
+        'weight' : 'puWeight*lumiweight*SelMuon1_ID_SF*SelMuon1_Trigger_SF*SelMuon1_ISO_SmoothAntiSF',
         'category_weight_base' : 'AISO',
         'cut' : 'Vtype==1 ' + \
             '&& HLT_SingleMu24 '+ \
@@ -147,7 +147,7 @@ categories_all = {
         'modules' : modules_nominal,
         },
     'SIDEBAND': {
-        'weight' : 'puWeight*lumiweight*SelMuon1_ID_SF',
+        'weight' : 'puWeight*lumiweight*SelMuon1_ID_SF*SelMuon1_Trigger_SF*SelMuon1_ISO_SmoothAntiSF',
         'category_weight_base' : 'AISO',
         'cut' : 'Vtype==1 ' + \
             '&& HLT_SingleMu24 '+ \

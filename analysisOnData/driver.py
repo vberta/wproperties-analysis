@@ -35,7 +35,7 @@ if args.rdf:
    print "Loading shared library..."
    ROOT.gSystem.Load('bin/libAnalysisOnData.so')
 
-def run_one_sample(inputFiles,output_dir, sampledata, sample, verbose=True, print_graph=True):
+def run_one_sample(inputFiles,output_dir, sampledata, sample, verbose=False, print_graph=False):
    v          = sampledata[sample]
    dataType   = v['dataType']
    dirs       = v['dirs']
@@ -57,6 +57,11 @@ def run_one_sample(inputFiles,output_dir, sampledata, sample, verbose=True, prin
       Z_reweighter = sampledata["common"]["Z_reweighter"]
    else:
       Z_reweighter = {}
+   if sampledata["common"].has_key("external_SF"):
+      external_SF = sampledata["common"]["external_SF"]
+   else:
+      external_SF = {}
+
    isMC       = (dataType=='MC')
    print "sample:      ", sample
    print "num of dirs: ", len(dirs)
@@ -65,7 +70,11 @@ def run_one_sample(inputFiles,output_dir, sampledata, sample, verbose=True, prin
    print "ncores:      ", ncores
    print "categories:  ", categories
    config = ConfigRDF(inputFiles, output_dir, sample+'.root', verbose, print_graph)
-   config.set_sample_specifics(isMC, lumi, xsec, dataYear, era_ratios, lepton_def, ps, harmonics, Z_reweighter)   
+   procId = ''
+   if   'WJets'  in sample: procId = 'W'
+   elif 'DYJets' in sample: procId = 'Z'   
+   print "procId:      ", procId
+   config.set_sample_specifics(isMC, lumi, xsec, dataYear, era_ratios, lepton_def, ps, harmonics, Z_reweighter, procId, external_SF)   
    ret,ret_base = get_categories(dataType, categories, sampledata["common"])
    if verbose:
       print "Categories:"

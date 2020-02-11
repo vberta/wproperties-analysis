@@ -22,6 +22,18 @@
 		"genLepton"      : "dress",
 		"scaleFactor"    : -1.0
 	    },
+	    "W" : {
+		"input_qt"  : "./data/histoUnfoldingSystPt_nsel2_dy3_rebin1_default.root",
+		"input_y"   : "./data/histoUnfoldingSystRap_nsel2_dy3_rebin1_default.root",
+		"genLepton"      : "dress",
+		"scaleFactor"    : 0.979
+	    },
+	    "Z" : {
+		"input_qt"  : "./data/histoUnfoldingSystPt_nsel2_dy3_rebin1_default.root",
+		"input_y"   : "./data/histoUnfoldingSystRap_nsel2_dy3_rebin1_default.root",
+		"genLepton"      : "dress",
+		"scaleFactor"    : -1.0
+	    },
 	    "WtoMuP" : {
 		"input_qt"  : "./data/histoUnfoldingSystPt_nsel2_dy3_rebin1_default.root",
 		"input_y"   : "./data/histoUnfoldingSystRap_nsel2_dy3_rebin1_default.root",

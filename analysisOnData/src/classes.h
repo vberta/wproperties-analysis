@@ -13,3 +13,4 @@
 #include "interface/computeAngularCoeff.hpp"
 #include "interface/applyAngularCoeff.hpp"
 #include "interface/applyReweightZ.hpp"
+#include "interface/applySmoothAntiSF.hpp"
