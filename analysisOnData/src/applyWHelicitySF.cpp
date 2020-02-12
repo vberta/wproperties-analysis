@@ -35,6 +35,51 @@ RNode applyWHelicitySF::run(RNode d){
       .Define("SelMuon2_ID_WHelicitySF",      get_id_SF,      {});
     d_start = d_post;
   }
+
+
+  if( _syst_columns_trigger.size()>0){
+    auto get_trigger_systSFAll = [this](float pt, float eta, float charge)->ROOT::VecOps::RVec<float>{ 
+      ROOT::VecOps::RVec<float> v;
+      for( auto s : _syst_columns_trigger){
+	std::string c = charge>0. ? "plus" : "minus";
+	TH2D* h = _hmap.at(s+"_"+c);
+	int bin = h->FindBin(eta,pt);          
+	float val = 1.0;
+	if( !(h->IsBinOverflow(bin) || h->IsBinUnderflow(bin))) val = h->GetBinContent(bin); 
+	v.emplace_back(val);
+      }
+      return v;
+    };
+    auto d_post = d_start.Define("SelMuon1_Trigger_WHelicitySFAll", get_trigger_systSFAll, {"SelMuon1_corrected_pt", "SelMuon1_eta", "SelMuon1_charge"});
+    d_start = d_post;    
+    if(_idx2!=""){
+      auto d_post = d_start.Define("SelMuon2_Trigger_WHelicitySFAll", get_trigger_systSFAll, {"SelMuon2_corrected_pt", "SelMuon2_eta", "SelMuon2_charge"});
+      d_start = d_post;
+    }   
+  }
+
+  if( _syst_columns_reco.size()>0){
+    auto get_reco_systSFAll = [this](float pt, float eta)->ROOT::VecOps::RVec<float>{ 
+      ROOT::VecOps::RVec<float> v;
+      for( auto s : _syst_columns_reco){
+	TH2D* h = _hmap.at(s);
+	int bin = h->FindBin(eta,pt);          
+	float val = 1.0;
+	if( !(h->IsBinOverflow(bin) || h->IsBinUnderflow(bin))) val = h->GetBinContent(bin); 
+	v.emplace_back(val);
+      }
+      return v;
+    };
+    auto d_post = d_start.Define("SelMuon1_ISO_WHelicitySFAll", get_reco_systSFAll, {"SelMuon1_corrected_pt", "SelMuon1_eta"});
+    d_start = d_post;    
+    if(_idx2!=""){
+      auto d_post = d_start.Define("SelMuon2_ISO_WHelicitySFAll", get_reco_systSFAll, {"SelMuon2_corrected_pt", "SelMuon2_eta"});
+      d_start = d_post;
+    }   
+  }
+    
+  
+
   
   return d_start; 
 }

@@ -12,12 +12,14 @@ modules_nominal = {
 
 modules_all = {
     'muon_nominal'                  : [],
-    'event_syst_puWeight'           : ['Up', 'Down'],
-    'muon_syst_scalefactor_ID'      : ['statUp', 'statDown', 'systUp', 'systDown'],
-    'muon_syst_scalefactor_ISO'     : ['statUp', 'statDown', 'systUp', 'systDown'],
-    'muon_syst_scalefactor_Trigger' : ['statUp', 'statDown', 'systUp', 'systDown'],
+    #'event_syst_puWeight'           : ['Up', 'Down'],
+    #'muon_syst_scalefactor_ID'      : ['statUp', 'statDown', 'systUp', 'systDown'],
+    #'muon_syst_scalefactor_ISO'     : ['statUp', 'statDown', 'systUp', 'systDown'],
+    #'muon_syst_scalefactor_Trigger' : ['statUp', 'statDown', 'systUp', 'systDown'],
     'muon_syst_column_corrected'    : ['correctedUp','correctedDown'],
-    'muon_syst_column_nom'          : ['jerUp','jerDown','jesTotalUp','jesTotalDown','unclustEnUp','unclustEnDown'],
+    #'muon_syst_column_nom'          : ['jerUp','jerDown','jesTotalUp','jesTotalDown','unclustEnUp','unclustEnDown'],
+    'muon_syst_scalefactor_external_Trigger' : ['trigger_data_eigen0Up', 'trigger_data_eigen0Down'],
+    'muon_syst_scalefactor_external_ISO'     : ['reco_data_eigen0Up', 'reco_data_eigen0Down'],
     }
 
 submodules_LHE = {

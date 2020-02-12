@@ -72,9 +72,14 @@ class ConfigRDF():
             self.def_modules.append( ROOT.getVars("Idx_mu1", Idx_mu2, self.isMC, hasattr(self,'run_PSSLICING'), ROOT.std.string(self.lepton_def) ) )
             
             if self.use_externalSF:
-                self.def_modules.append( ROOT.applyWHelicitySF( ROOT.std.string(self.external_SF['WHelicity']['Trigger']['Plus']),
-                                                                ROOT.std.string(self.external_SF['WHelicity']['Trigger']['Minus']),
-                                                                ROOT.std.string(self.external_SF['WHelicity']['Reco']), Idx_mu2) )
+                syst_columns_trigger = vec_s()
+                for syst in self.external_SF['WHelicity']['trigger']['systs']: syst_columns_trigger.push_back(ROOT.std.string(syst))
+                syst_columns_reco = vec_s()
+                for syst in self.external_SF['WHelicity']['reco']['systs']: syst_columns_reco.push_back(ROOT.std.string(syst))
+                self.def_modules.append( ROOT.applyWHelicitySF( ROOT.std.string(self.external_SF['WHelicity']['trigger']['input_plus']),
+                                                                ROOT.std.string(self.external_SF['WHelicity']['trigger']['input_minus']),
+                                                                ROOT.std.string(self.external_SF['WHelicity']['reco']['input']), Idx_mu2, 
+                                                                syst_columns_trigger, syst_columns_reco ) )
             
             if self.applySmoothAntiISOSF:
                 syst_columns_antiSF = vec_s()
@@ -220,7 +225,7 @@ class ConfigRDF():
         for syst in systs: syst_columns.push_back(var+syst)
 
         if self.iteration==0 and not hasattr(self, 'branch_event_syst_'+var+'_iter0'):
-            self.def_modules.append( ROOT.getSystWeight(syst_columns, var+"All", "", var, pair_ui(0,0), "ff->Vnorm" ) )
+            self.def_modules.append( ROOT.getSystWeight(syst_columns, var+"All", "", var, pair_ui(0,0), vec_ui(), "ff->Vnorm" ) )
             setattr(self, 'branch_event_syst_'+var+'_iter0', True )
         elif self.iteration==1:
             pass
@@ -365,7 +370,7 @@ class ConfigRDF():
                     cols = syst_columns[key]
                     col_new = "SelMuon"+mu+"_"+var+"_"+key+"_SFAll"
                     col_nom = "SelMuon"+mu+"_"+var+"_"+key+"_SF"
-                    self.def_modules.append( ROOT.getSystWeight(cols, col_new, "Idx_mu"+mu, col_nom, pair_ui(0,0), "VVVV->Vnorm") )
+                    self.def_modules.append( ROOT.getSystWeight(cols, col_new, "Idx_mu"+mu, col_nom, pair_ui(0,0), vec_ui(), "VVVV->Vnorm") )
             mus = ['1']
             if hasattr(self,'run_DIMUON'): mus.append('2')
             for mu in mus:
@@ -390,6 +395,25 @@ class ConfigRDF():
             new_weight_name = "SelMuon12_"+var+"_SFAll" if 'DIMUON' in self.category else "SelMuon1_"+var+"_SFAll"
             modules.append( ROOT.muonHistos(self.category, 'weight_'+self.category_weight_base+'_nominal', syst_columns['ALL'], new_weight_name, "", False, self.verbose) )
             if self.verbose: print 'branch_muon_'+var+'_scalefactor:',  bc.H, self.category+'_nominal', bc.E, ' --> ', bc.B, self.category+'_'+var, bc.E
+            self.p.branch(nodeToStart=self.category+'_nominal', nodeToEnd=self.category+'_'+var, modules=modules)
+        return
+
+    """
+    Branch muon syst scale factor external
+    """
+    def _branch_muon_syst_scalefactor_external(self,var,systs):
+
+        if self.iteration==0:
+            pass
+        elif self.iteration==1:
+            pass
+        elif self.iteration==2:
+            modules = []
+            syst_columns = vec_s()
+            for syst in systs: syst_columns.push_back(var+syst)
+            new_weight_name = "SelMuon1_"+var+"_WHelicitySFAll"
+            modules.append( ROOT.muonHistos(self.category, 'weight_'+self.category_weight_base+'_nominal', syst_columns, new_weight_name, "", False, self.verbose) )
+            if self.verbose: print 'branch_muon_'+var+'_scalefactor_external:',  bc.H, self.category+'_nominal', bc.E, ' --> ', bc.B, self.category+'_'+var, bc.E
             self.p.branch(nodeToStart=self.category+'_nominal', nodeToEnd=self.category+'_'+var, modules=modules)
         return
 
@@ -426,7 +450,7 @@ class ConfigRDF():
                 if hasattr(self,'run_DIMUON'): mus.append('2')
                 for mu in mus:
                     col_new = col.replace('Muon', 'SelMuon'+mu).replace(var, var+'All') 
-                    self.def_modules.append( ROOT.getSystWeight( syst_columns, col_new, "Idx_mu"+mu, "", pair_ui(0,0), signatureV) )
+                    self.def_modules.append( ROOT.getSystWeight( syst_columns, col_new, "Idx_mu"+mu, "", pair_ui(0,0), vec_ui(), signatureV) )
                     
         elif var=='nom':
             # This is a duplication of code. FIXME
@@ -437,12 +461,12 @@ class ConfigRDF():
                 if hasattr(self,'run_DIMUON'): mus.append('2')
                 for mu in mus:
                     col_new = col.replace('Muon', 'SelMuon'+mu).replace(var, var+'All') 
-                    self.def_modules.append( ROOT.getSystWeight( syst_columns, col_new, "Idx_mu"+mu, "", pair_ui(0,0), signatureV) )
+                    self.def_modules.append( ROOT.getSystWeight( syst_columns, col_new, "Idx_mu"+mu, "", pair_ui(0,0), vec_ui(), signatureV) )
             for col in ['MET_nom_pt', 'MET_nom_phi']:
                 syst_columns = vec_s()
                 for syst in systs: syst_columns.push_back( col.replace(var, syst) )
                 col_new = col.replace(var, var+'All')
-                self.def_modules.append( ROOT.getSystWeight( syst_columns, col_new, "", "", pair_ui(0,0), signatureF ) )
+                self.def_modules.append( ROOT.getSystWeight( syst_columns, col_new, "", "", pair_ui(0,0), vec_ui(), signatureF ) )
         return
 
     def _get_subcuts(self,cut,var,systs):
@@ -510,7 +534,7 @@ class ConfigRDF():
                 for i in range(len(systs)) : signature += "f"
                 signature += "->V"
                 if not hasattr(self, 'branch_muon_'+var+'All_'+self.category_weight_base+'_iter1'):
-                    self.def_modules.append( ROOT.getSystWeight(weight_columns, 'weight_'+self.category_weight_base+'_cut_'+var+'All', "", "", pair_ui(0,0), signature) )
+                    self.def_modules.append( ROOT.getSystWeight(weight_columns, 'weight_'+self.category_weight_base+'_cut_'+var+'All', "", "", pair_ui(0,0), vec_ui(), signature) )
                     setattr(self, 'branch_muon_'+var+'All_'+self.category_weight_base+'_iter1', True)
                 return
             else:
@@ -613,7 +637,11 @@ class ConfigRDF():
                         else:
                             self._branch_event_syst_weight( key.replace('event_syst_',''), value)
                     elif 'muon_syst_scalefactor' in key:
-                        self._branch_muon_syst_scalefactor( key.replace('muon_syst_scalefactor_',''), value )
+                        if not self.use_externalSF:
+                            self._branch_muon_syst_scalefactor( key.replace('muon_syst_scalefactor_',''), value )
+                        else:
+                            self._branch_muon_syst_scalefactor_external( key.replace('muon_syst_scalefactor_external_',''), 
+                                                                         value.replace('trigger_','').replace('reco_','') )
                     elif 'muon_syst_column' in key:                         
                         self._branch_muon_syst_column( key.replace('muon_syst_column_',''), value)
                 pass
