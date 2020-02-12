@@ -20,15 +20,14 @@ Class that configures RDFtree. Add new modules as class functions.
 """
 class ConfigRDF():    
 
-    def __init__(self, inputFiles, outputDir, outputFile, verbose, printGraph):
+    def __init__(self, inputFiles, outputDir, outputFile, verbose, printGraph, applySmoothAntiISOSF, use_externalSF):
         self.inputFiles = inputFiles
         self.p = RDFtree(outputDir=outputDir, inputFile=inputFiles[0], outputFile=outputFile)
         self.verbose = verbose
         self.printGraph = printGraph
         self.recompute_vars = True
-        self.use_externalSF_Iso = False
-        self.use_externalSF_ID = False
-        self.use_externalSF_Trigger = False
+        self.applySmoothAntiISOSF = applySmoothAntiISOSF
+        self.use_externalSF = use_externalSF
         self.def_modules = []        
         self.categories = {}
         self.iteration = -1
@@ -71,11 +70,18 @@ class ConfigRDF():
         if self.iteration==0 and not hasattr(self, 'branch_defs_iter0'):
             Idx_mu2 = "Idx_mu2" if hasattr(self,'run_DIMUON') else ""
             self.def_modules.append( ROOT.getVars("Idx_mu1", Idx_mu2, self.isMC, hasattr(self,'run_PSSLICING'), ROOT.std.string(self.lepton_def) ) )
-            syst_columns_antiSF = vec_s()
-            for syst in self.external_SF['ISO']['systs']: syst_columns_antiSF.push_back(ROOT.std.string(syst))
-            self.def_modules.append( ROOT.applySmoothAntiSF( ROOT.std.string(self.external_SF['ISO']['input_wSF']), 
-                                                             ROOT.std.string(self.external_SF['ISO']['input_woSF']),
-                                                             "ISO", syst_columns_antiSF)  )
+            
+            if self.use_externalSF:
+                self.def_modules.append( ROOT.applyWHelicitySF( ROOT.std.string(self.external_SF['WHelicity']['Trigger']['Plus']),
+                                                                ROOT.std.string(self.external_SF['WHelicity']['Trigger']['Minus']),
+                                                                ROOT.std.string(self.external_SF['WHelicity']['Reco']), Idx_mu2) )
+            
+            if self.applySmoothAntiISOSF:
+                syst_columns_antiSF = vec_s()
+                for syst in self.external_SF['POG']['ISO']['systs']: syst_columns_antiSF.push_back(ROOT.std.string(syst))
+                self.def_modules.append( ROOT.applySmoothAntiSF( ROOT.std.string(self.external_SF['POG']['ISO']['input_wSF']), 
+                                                                 ROOT.std.string(self.external_SF['POG']['ISO']['input_woSF']),
+                                                                 "ISO", syst_columns_antiSF)  )
             if hasattr(self, 'run_REWEIGHTV'):
                 for c in self.categories_for_reweightV:
                     proc = c if self.procId=='' else self.procId

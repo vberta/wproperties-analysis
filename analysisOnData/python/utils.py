@@ -63,7 +63,7 @@ modules_any.update(modules_fakerate)
 
 categories_all = { 
     'SIGNAL': {
-        'weight' : 'puWeight*lumiweight*SelMuon1_ID_SF*SelMuon1_ISO_SmoothSF*SelMuon1_Trigger_SF',
+        'weight' : 'puWeight*lumiweight*SelMuon1_ID_SF*SelMuon1_ISO_SF*SelMuon1_Trigger_SF',
         'category_weight_base' : 'SIGNAL',
         'cut' : 'Vtype==0 ' + \
             '&& HLT_SingleMu24 '+ \
@@ -77,7 +77,7 @@ categories_all = {
         'modules' : modules_nominal
         },
     'SIGNALNORM': {
-        'weight' : 'puWeight*lumiweight*SelMuon1_ID_SF*SelMuon1_ISO_SmoothSF*SelMuon1_Trigger_SF',
+        'weight' : 'puWeight*lumiweight*SelMuon1_ID_SF*SelMuon1_ISO_SF*SelMuon1_Trigger_SF',
         'category_weight_base' : 'SIGNAL',
         'cut' : 'Vtype==0 ' + \
             '&& HLT_SingleMu24 '+ \
@@ -91,7 +91,7 @@ categories_all = {
         'modules' : modules_nominal
         },
     'QCD': {
-        'weight' : 'puWeight*lumiweight*SelMuon1_ID_SF*SelMuon1_ISO_SmoothSF*SelMuon1_Trigger_SF',
+        'weight' : 'puWeight*lumiweight*SelMuon1_ID_SF*SelMuon1_ISO_SF*SelMuon1_Trigger_SF',
         'category_weight_base' : 'SIGNAL',
         'cut' : 'Vtype==0 ' + \
             '&& HLT_SingleMu24 '+ \
@@ -119,7 +119,7 @@ categories_all = {
         'modules' : modules_nominal
     },
     'AISO': {
-        'weight' : 'puWeight*lumiweight*SelMuon1_ID_SF*SelMuon1_Trigger_SF*SelMuon1_ISO_SmoothAntiSF',
+        'weight' : 'puWeight*lumiweight*SelMuon1_ID_SF*SelMuon1_Trigger_SF*SelMuon1_ISO_SF',
         'category_weight_base' : 'AISO',
         'cut' : 'Vtype==1 ' + \
             '&& HLT_SingleMu24 '+ \
@@ -133,7 +133,7 @@ categories_all = {
         'modules' : modules_nominal,
         },
     'AISONORM': {
-        'weight' : 'puWeight*lumiweight*SelMuon1_ID_SF*SelMuon1_Trigger_SF*SelMuon1_ISO_SmoothAntiSF',
+        'weight' : 'puWeight*lumiweight*SelMuon1_ID_SF*SelMuon1_Trigger_SF*SelMuon1_ISO_SF',
         'category_weight_base' : 'AISO',
         'cut' : 'Vtype==1 ' + \
             '&& HLT_SingleMu24 '+ \
@@ -147,7 +147,7 @@ categories_all = {
         'modules' : modules_nominal,
         },
     'SIDEBAND': {
-        'weight' : 'puWeight*lumiweight*SelMuon1_ID_SF*SelMuon1_Trigger_SF*SelMuon1_ISO_SmoothAntiSF',
+        'weight' : 'puWeight*lumiweight*SelMuon1_ID_SF*SelMuon1_Trigger_SF*SelMuon1_ISO_SF',
         'category_weight_base' : 'AISO',
         'cut' : 'Vtype==1 ' + \
             '&& HLT_SingleMu24 '+ \
@@ -186,7 +186,7 @@ categories_all = {
         },
     }
 
-def get_categories(dataType,categories_str, common):
+def get_categories(dataType,categories_str, common, apply_SmoothAntiISOSF, apply_SmoothISOSF, use_externalSF):
     categories_split = categories_str.split(',')
     categories_split_name  = []
     categories_split_syst  = []
@@ -231,6 +231,25 @@ def get_categories(dataType,categories_str, common):
     ret = copy.deepcopy(categories_all)
     ret_base = {}
 
+    # global customization of SF
+    if apply_SmoothAntiISOSF:
+        for k,v in ret.items():
+            if k not in ['SIDEBAND', 'AISO', 'AISONORM']: continue
+            old = copy.deepcopy(v['weight'])
+            v['weight'] = old.replace('ISO_SF', 'ISO_SmoothAntiSF')
+            print k+': \n', bc.H, old, bc.E, ' --> \n', bc.B, v['weight'], bc.E
+    if apply_SmoothISOSF and use_externalSF==0:
+        for k,v in ret.items():
+            if k not in ['SIGNAL', 'SIGNALNORM', 'QCD', 'DIMUON']: continue
+            old = copy.deepcopy(v['weight'])
+            v['weight'] = old.replace('ISO_SF', 'ISO_SmoothSF')
+            print k+': \n', bc.H, old, bc.E, ' --> \n', bc.B, v['weight'], bc.E
+    if use_externalSF:
+        for k,v in ret.items():
+            old = copy.deepcopy(v['weight'])
+            v['weight'] = old.replace('ISO_SF','ISO_WHelicitySF').replace('ID_SF','ID_WHelicitySF').replace('Trigger_SF', 'Trigger_WHelicitySF')
+            print k+': \n', bc.H, old, bc.E, ' --> \n', bc.B, v['weight'], bc.E
+                    
     # these are all the base categories
     for c in ['SIGNAL_WtoMuP', 'SIGNAL_WtoMuN', 'SIGNAL_WtoTau',
               'SIGNAL_ZtoMuMu','SIGNAL_ZtoTauTau',

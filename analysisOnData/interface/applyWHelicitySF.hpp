@@ -1,0 +1,67 @@
+#ifndef APPLYWHELICITYSF_H
+#define APPLYWHELICITYSF_H
+
+
+#include "ROOT/RDataFrame.hxx"
+#include "ROOT/RVec.hxx"
+#include "ROOT/RDF/RInterface.hxx"
+#include "TH1D.h"
+#include "TH2D.h"
+#include "TFile.h"
+#include "TString.h"
+#include "TMath.h"
+#include "interface/module.hpp"
+#include "interface/functions.hpp"
+
+using RNode = ROOT::RDF::RNode;
+
+class applyWHelicitySF : public Module {
+
+ private:
+
+  std::vector<ROOT::RDF::RResultPtr<TH1D>> _h1List;
+  std::vector<ROOT::RDF::RResultPtr<TH2D>> _h2List;
+  std::vector<ROOT::RDF::RResultPtr<TH3D>> _h3List;
+
+    // groups of histos
+  std::vector<ROOT::RDF::RResultPtr<std::vector<TH1D>>> _h1Group;
+  std::vector<ROOT::RDF::RResultPtr<std::vector<TH2D>>> _h2Group;
+  std::vector<ROOT::RDF::RResultPtr<std::vector<TH3D>>> _h3Group;
+
+  TFile* _file_trigger_plus;
+  TFile* _file_trigger_minus;
+  TFile* _file_reco;
+  std::string _idx2;
+  std::map<std::string, TH2D*> _hmap;
+
+ public:
+    
+  applyWHelicitySF(std::string fname_trigger_plus, std::string fname_trigger_minus, std::string fname_reco, std::string idx2) : _idx2(idx2) {
+    _file_trigger_plus  = TFile::Open(fname_trigger_plus.c_str(),  "READ");
+    _file_trigger_minus = TFile::Open(fname_trigger_minus.c_str(), "READ");
+    _file_reco = TFile::Open(fname_reco.c_str(), "READ");
+    _hmap.insert( std::pair<std::string, TH2D*>("trigger_plus", (TH2D*)_file_trigger_plus->Get("scaleFactor") ) );
+    _hmap.insert( std::pair<std::string, TH2D*>("trigger_minus", (TH2D*)_file_trigger_minus->Get("scaleFactor") ) );
+    _hmap.insert( std::pair<std::string, TH2D*>("reco", (TH2D*)_file_reco->Get("scaleFactor_etaInterpolated") ) );
+  }
+
+  ~applyWHelicitySF() {
+    _file_trigger_plus->Close();
+    _file_trigger_minus->Close();
+    _file_reco->Close();
+  };
+  
+  RNode run(RNode) override;
+  std::vector<ROOT::RDF::RResultPtr<TH1D>> getTH1() override;
+  std::vector<ROOT::RDF::RResultPtr<TH2D>> getTH2() override;
+  std::vector<ROOT::RDF::RResultPtr<TH3D>> getTH3() override;
+
+  std::vector<ROOT::RDF::RResultPtr<std::vector<TH1D>>> getGroupTH1() override;
+  std::vector<ROOT::RDF::RResultPtr<std::vector<TH2D>>> getGroupTH2() override;
+  std::vector<ROOT::RDF::RResultPtr<std::vector<TH3D>>> getGroupTH3() override;
+  
+  void reset() override;
+
+};
+
+#endif

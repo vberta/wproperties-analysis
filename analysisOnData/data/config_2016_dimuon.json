@@ -14,13 +14,76 @@
 	"harmonics" : {
 	    "coefficients" : ["UL","A0", "A1", "A2", "A3", "A4"],
 	    "input_file"   : "./data/WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_GENINCLUSIVE.root"
-	},	
+	},
 	"Z_reweighter" : {
-            "input_file_qt"  : "./data/histoUnfoldingSystPt_nsel2_dy3_rebin1_default.root",
-            "input_file_y"   : "./data/histoUnfoldingSystRap_nsel2_dy3_rebin1_default.root",
-	    "genLepton"      : "dress",
-	    "scaleFactor"    : -1.0
+	    "V" : {
+		"input_qt"  : "./data/histoUnfoldingSystPt_nsel2_dy3_rebin1_default.root",
+		"input_y"   : "./data/histoUnfoldingSystRap_nsel2_dy3_rebin1_default.root",
+		"genLepton"      : "dress",
+		"scaleFactor"    : -1.0
+	    },
+	    "W" : {
+		"input_qt"  : "./data/histoUnfoldingSystPt_nsel2_dy3_rebin1_default.root",
+		"input_y"   : "./data/histoUnfoldingSystRap_nsel2_dy3_rebin1_default.root",
+		"genLepton"      : "dress",
+		"scaleFactor"    : 0.979
+	    },
+	    "Z" : {
+		"input_qt"  : "./data/histoUnfoldingSystPt_nsel2_dy3_rebin1_default.root",
+		"input_y"   : "./data/histoUnfoldingSystRap_nsel2_dy3_rebin1_default.root",
+		"genLepton"      : "dress",
+		"scaleFactor"    : -1.0
+	    },
+	    "WtoMuP" : {
+		"input_qt"  : "./data/histoUnfoldingSystPt_nsel2_dy3_rebin1_default.root",
+		"input_y"   : "./data/histoUnfoldingSystRap_nsel2_dy3_rebin1_default.root",
+		"genLepton"      : "dress",
+		"scaleFactor"    : 0.979
+	    },
+	    "WtoMuN" : {
+		"input_qt"  : "./data/histoUnfoldingSystPt_nsel2_dy3_rebin1_default.root",
+		"input_y"   : "./data/histoUnfoldingSystRap_nsel2_dy3_rebin1_default.root",
+		"genLepton"      : "dress",
+		"scaleFactor"    : 0.979
+	    },
+	    "WtoTau" : {
+		"input_qt"  : "./data/histoUnfoldingSystPt_nsel2_dy3_rebin1_default.root",
+		"input_y"   : "./data/histoUnfoldingSystRap_nsel2_dy3_rebin1_default.root",
+		"genLepton"      : "dress",
+		"scaleFactor"    : 0.979
+	    },
+	    "ZtoMuMu" : {
+		"input_qt"  : "./data/histoUnfoldingSystPt_nsel2_dy3_rebin1_default.root",
+		"input_y"   : "./data/histoUnfoldingSystRap_nsel2_dy3_rebin1_default.root",
+		"genLepton"      : "dress",
+		"scaleFactor"    : -1.0
+	    },
+	    "ZtoTauTau" : {
+		"input_qt"  : "./data/histoUnfoldingSystPt_nsel2_dy3_rebin1_default.root",
+		"input_y"   : "./data/histoUnfoldingSystRap_nsel2_dy3_rebin1_default.root",
+		"genLepton"      : "dress",
+		"scaleFactor"    : -1.0
+	    }
         },	
+        "external_SF" : {		
+	    "use_externalSF" : 1,	    
+	    "POG" : {
+		"ISO" : {
+		    "apply_SmoothAntiISOSF" : 1,
+		    "apply_SmoothISOSF"     : 0,
+		    "input_wSF"  : "data/externalSF/bkg_parameters_file.root",
+		    "input_woSF" : "data/externalSF/bkg_parameters_file_noIsoSF_.root",
+		    "systs"      : ["nominal"]
+		}
+	    },
+	    "WHelicity" : {
+		"Trigger" : {
+		    "Plus"  : "data/externalSF/fromWhelicity/smoothEfficiency_muons_plus_trigger.root",
+		    "Minus" : "data/externalSF/fromWhelicity/smoothEfficiency_muons_minus_trigger.root"
+		},
+		"Reco" : "data/externalSF/fromWhelicity/smoothEfficiency_muons_recoToSel_finerETA.root"
+	    }
+	},
 	"Wto" : {
 	    "MuP" : "GenV_preFSR_charge==-13",  
 	    "MuN" : "GenV_preFSR_charge==+13",  
@@ -80,7 +143,7 @@
         "dataType" : "MC",
         "xsec" : 61526.7,
         "ncores" : 64,
-	"categories" : "DIMUON:nominal"
+	"categories" : "DIMUON+:nominal"
     },
 
     "WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_ext2" : {  
@@ -91,7 +154,7 @@
         "dataType" : "MC",
         "xsec" : 61526.7,
         "ncores" : 64,
-	"categories" : "DIMUON:nominal"
+	"categories" : "DIMUON+:nominal"
     },
 
     "DYJetsToLL_M-10to50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8" : {  

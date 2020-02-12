@@ -45,6 +45,11 @@ def run_one_sample(inputFiles,output_dir, sampledata, sample, verbose=False, pri
    lumi       = sampledata["common"]["luminosity"]
    era_ratios = sampledata["common"]["era_ratios"]
    lepton_def = sampledata["common"]["genLepton"]
+   isMC       = (dataType=='MC')
+   procId = ''
+   if   'WJets'  in sample: procId = 'W'
+   elif 'DYJets' in sample: procId = 'Z'   
+
    if sampledata["common"].has_key("phase_space_"+lepton_def):
       ps = sampledata["common"]["phase_space_"+lepton_def]
    else:
@@ -62,20 +67,25 @@ def run_one_sample(inputFiles,output_dir, sampledata, sample, verbose=False, pri
    else:
       external_SF = {}
 
-   isMC       = (dataType=='MC')
-   print "sample:      ", sample
-   print "num of dirs: ", len(dirs)
-   print "dataType:    ", dataType
-   print "xsec:        ", xsec
-   print "ncores:      ", ncores
-   print "categories:  ", categories
-   config = ConfigRDF(inputFiles, output_dir, sample+'.root', verbose, print_graph)
-   procId = ''
-   if   'WJets'  in sample: procId = 'W'
-   elif 'DYJets' in sample: procId = 'Z'   
-   print "procId:      ", procId
+   use_externalSF        = external_SF['use_externalSF']
+   apply_SmoothAntiISOSF = external_SF['POG']['ISO']['apply_SmoothAntiISOSF']
+   apply_SmoothISOSF     = external_SF['POG']['ISO']['apply_SmoothISOSF']
+
+   print "sample:                ", sample
+   print "num of dirs:           ", len(dirs)
+   print "dataType:              ", dataType
+   print "xsec:                  ", xsec
+   print "ncores:                ", ncores
+   print "categories:            ", categories
+   print "procId:                ", (procId if procId!="" else "UNKOWN")
+   print "use_externalSF:        ", "True" if use_externalSF else "False"
+   print "apply_SmoothAntiISOSF: ", "True" if apply_SmoothAntiISOSF else "False"
+   print "apply_SmoothISOSF:     ", "True" if apply_SmoothISOSF else "False"
+   
+   config = ConfigRDF(inputFiles, output_dir, sample+'.root', verbose, print_graph, apply_SmoothAntiISOSF, use_externalSF)
    config.set_sample_specifics(isMC, lumi, xsec, dataYear, era_ratios, lepton_def, ps, harmonics, Z_reweighter, procId, external_SF)   
-   ret,ret_base = get_categories(dataType, categories, sampledata["common"])
+   ret,ret_base = get_categories(dataType, categories, sampledata["common"], apply_SmoothAntiISOSF, apply_SmoothISOSF, use_externalSF)
+
    if verbose:
       print "Categories:"
       pp.pprint(ret)
