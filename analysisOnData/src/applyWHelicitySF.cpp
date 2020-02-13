@@ -46,6 +46,7 @@ RNode applyWHelicitySF::run(RNode d){
 	int bin = h->FindBin(eta,pt);          
 	float val = 1.0;
 	if( !(h->IsBinOverflow(bin) || h->IsBinUnderflow(bin))) val = h->GetBinContent(bin); 
+	//std::cout << s << ": (" << pt << "," << eta << ") => " << val << std::endl;
 	v.emplace_back(val);
       }
       return v;
@@ -66,6 +67,7 @@ RNode applyWHelicitySF::run(RNode d){
 	int bin = h->FindBin(eta,pt);          
 	float val = 1.0;
 	if( !(h->IsBinOverflow(bin) || h->IsBinUnderflow(bin))) val = h->GetBinContent(bin); 
+	//std::cout << s << ": (" << pt << "," << eta << ") => " << val << std::endl;
 	v.emplace_back(val);
       }
       return v;

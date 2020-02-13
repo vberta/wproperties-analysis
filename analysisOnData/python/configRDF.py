@@ -589,9 +589,9 @@ class ConfigRDF():
                             self.categories_for_harmonics.append(c)
                 self.run_HARMONICS = True                                        
             if 'reweight_' in val['weight']:
-                cats = [ 'WtoMuP','WtoMuN', 'WtoTau', 'ZtoMuMu', 'ZtoTauTau']
+                cats = [ 'WtoMuP','WtoMuN', 'WtoTau', 'ZtoMuMu', 'ZtoTauTau', 'V']
                 for c in cats:                     
-                    if ('_'+c in key):
+                    if ( ('_'+c in key) or ('_' not in key and c=='V') ):
                         is_there =  (c in self.categories_for_reweightV)
                         if not is_there:
                             if self.verbose: print ">> ConfigRDF: run REWEIGHTV: reweight "+c+" qt/y distribution to measured one"
@@ -640,8 +640,7 @@ class ConfigRDF():
                         if not self.use_externalSF:
                             self._branch_muon_syst_scalefactor( key.replace('muon_syst_scalefactor_',''), value )
                         else:
-                            self._branch_muon_syst_scalefactor_external( key.replace('muon_syst_scalefactor_external_',''), 
-                                                                         value.replace('trigger_','').replace('reco_','') )
+                            self._branch_muon_syst_scalefactor_external( key.replace('muon_syst_scalefactor_external_',''), value )
                     elif 'muon_syst_column' in key:                         
                         self._branch_muon_syst_column( key.replace('muon_syst_column_',''), value)
                 pass

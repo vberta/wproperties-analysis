@@ -68,8 +68,8 @@ def run_one_sample(inputFiles,output_dir, sampledata, sample, verbose=False, pri
       external_SF = {}
 
    use_externalSF        = external_SF['use_externalSF']
-   apply_SmoothAntiISOSF = external_SF['POG']['ISO']['apply_SmoothAntiISOSF']
-   apply_SmoothISOSF     = external_SF['POG']['ISO']['apply_SmoothISOSF']
+   apply_SmoothAntiISOSF = external_SF['apply_SmoothAntiISOSF']
+   apply_SmoothISOSF     = external_SF['apply_SmoothISOSF']
 
    print "sample:                ", sample
    print "num of dirs:           ", len(dirs)

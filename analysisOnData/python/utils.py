@@ -12,14 +12,24 @@ modules_nominal = {
 
 modules_all = {
     'muon_nominal'                  : [],
-    #'event_syst_puWeight'           : ['Up', 'Down'],
-    #'muon_syst_scalefactor_ID'      : ['statUp', 'statDown', 'systUp', 'systDown'],
-    #'muon_syst_scalefactor_ISO'     : ['statUp', 'statDown', 'systUp', 'systDown'],
-    #'muon_syst_scalefactor_Trigger' : ['statUp', 'statDown', 'systUp', 'systDown'],
+    'event_syst_puWeight'           : ['Up', 'Down'],
+    'muon_syst_scalefactor_ID'      : ['statUp', 'statDown', 'systUp', 'systDown'],
+    'muon_syst_scalefactor_ISO'     : ['statUp', 'statDown', 'systUp', 'systDown'],
+    'muon_syst_scalefactor_Trigger' : ['statUp', 'statDown', 'systUp', 'systDown'],
     'muon_syst_column_corrected'    : ['correctedUp','correctedDown'],
-    #'muon_syst_column_nom'          : ['jerUp','jerDown','jesTotalUp','jesTotalDown','unclustEnUp','unclustEnDown'],
-    'muon_syst_scalefactor_external_Trigger' : ['trigger_data_eigen0Up', 'trigger_data_eigen0Down'],
-    'muon_syst_scalefactor_external_ISO'     : ['reco_data_eigen0Up', 'reco_data_eigen0Down'],
+    'muon_syst_column_nom'          : ['jerUp','jerDown','jesTotalUp','jesTotalDown','unclustEnUp','unclustEnDown'],
+    'muon_syst_scalefactor_external_Trigger' : ["trigger_data_eigen0Up", "trigger_data_eigen0Down", 
+                                                "trigger_data_eigen1Up", "trigger_data_eigen1Down", 
+                                                "trigger_data_eigen2Up", "trigger_data_eigen2Down",
+                                                "trigger_mc_eigen0Up",   "trigger_mc_eigen0Down", 
+                                                "trigger_mc_eigen1Up",   "trigger_mc_eigen1Down", 
+                                                "trigger_mc_eigen2Up",   "trigger_mc_eigen2Down"],
+    'muon_syst_scalefactor_external_ISO'     : ["reco_data_eigen0Up",    "reco_data_eigen0Down", 
+                                                "reco_data_eigen1Up",    "reco_data_eigen1Down", 
+                                                "reco_data_eigen2Up",    "reco_data_eigen2Down",
+                                                "reco_mc_eigen0Up",      "reco_mc_eigen0Down", 
+                                                "reco_mc_eigen1Up",      "reco_mc_eigen1Down", 
+                                                "reco_mc_eigen2Up",      "reco_mc_eigen2Down"],
     }
 
 submodules_LHE = {
@@ -43,7 +53,7 @@ submodules_mass = {
 
 submodules_fakerate = {
     'event_syst_fakerate' : {
-        'input' : './data/bkg_parameters_file.root',
+        'input' : './data/fakerate/bkg_parameters_file.root',
         'systs' : ['nominal']
         }
     }
@@ -249,8 +259,18 @@ def get_categories(dataType,categories_str, common, apply_SmoothAntiISOSF, apply
     if use_externalSF:
         for k,v in ret.items():
             old = copy.deepcopy(v['weight'])
-            v['weight'] = old.replace('ISO_SF','ISO_WHelicitySF').replace('ID_SF','ID_WHelicitySF').replace('Trigger_SF', 'Trigger_WHelicitySF')
+            if k not in ['SIDEBAND', 'AISO', 'AISONORM']:
+                v['weight'] = old.replace('ISO_SF','ISO_WHelicitySF').replace('ID_SF','ID_WHelicitySF').replace('Trigger_SF', 'Trigger_WHelicitySF')
+            else:
+                v['weight'] = old.replace('Trigger_SF', 'Trigger_WHelicitySF')
             print k+': \n', bc.H, old, bc.E, ' --> \n', bc.B, v['weight'], bc.E
+    else:
+        for k,v in ret.items():
+            externals = []
+            for mk,mv in v['modules'].items():
+                if 'external' in mk: externals.append(mk)
+            for mk in externals: del v['modules'][mk]
+
                     
     # these are all the base categories
     for c in ['SIGNAL_WtoMuP', 'SIGNAL_WtoMuN', 'SIGNAL_WtoTau',

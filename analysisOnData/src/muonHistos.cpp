@@ -6,13 +6,13 @@ RNode muonHistos::run(RNode d){
   bool veto_LHE = _syst_column.find("LHE")!=std::string::npos;
     
   // PT1 vs ETA1 vs CHARGE1
-  unsigned int nbins_pt     = 39;
+  unsigned int nbins_pt     = 29;
   unsigned int nbins_eta    = 48;
   unsigned int nbins_charge =  2;
   std::vector<float> pt_Arr(nbins_pt+1); 
   std::vector<float> eta_Arr(nbins_eta+1); 
   std::vector<float> charge_Arr(nbins_charge+1); 
-  for(unsigned int i=0; i<nbins_pt+1; i++)         pt_Arr[i] = 26.0 + i*(65.-26.)/nbins_pt;      
+  for(unsigned int i=0; i<nbins_pt+1; i++)         pt_Arr[i] = 26.0 + i*(55.-26.)/nbins_pt;      
   for(unsigned int i=0; i<nbins_eta+1; i++)       eta_Arr[i] = -2.4 + i*(2.4 + 2.4)/nbins_eta;      
   for(unsigned int i=0; i<nbins_charge+1; i++) charge_Arr[i] = -2.0 + i*(4.0)/nbins_charge;      
 

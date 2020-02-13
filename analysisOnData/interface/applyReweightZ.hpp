@@ -45,20 +45,20 @@ class applyReweightZ : public Module {
 
     if( fnameQt!="" ){
       _fileQt = TFile::Open(fnameQt.c_str(), "READ");
-      std::cout << "applyReweightZ: Opening file " << fnameQt << std::endl;
+      std::cout << "applyReweightZ(): Opening file " << fnameQt << std::endl;
       _fileQt->cd();
       _hQt = (TH1F*)gDirectory->Get("unfold");
       _lastBinQt = _hQt->GetNbinsX();
       TH1F* hMC = (TH1F*)gDirectory->Get("hDDilPtLL");
       if(rescaled_once_internal){
 	hMC->Scale(_hQt->Integral()/hMC->Integral());
-	std::cout << "applyReweightZ: rescaling Qt unfolded to MC" << std::endl;
+	std::cout << "applyReweightZ: rescaling qt unfolded to MC" << std::endl;
       }
       _hQt->Divide(hMC);
       rescaled_once_internal = true;
       if(scaleFactor>0.){
 	_hQt->Scale(scaleFactor);
-	std::cout << "applyReweightZ: rescaling Qt unfolded by " << scaleFactor << std::endl;
+	std::cout << "applyReweightZ(): rescaling qt unfolded by " << scaleFactor << std::endl;
       }
     }
     else{
@@ -67,7 +67,7 @@ class applyReweightZ : public Module {
     }
     if( fnameY!="" ){
       _fileY = TFile::Open(fnameY.c_str(), "READ");
-      std::cout << "applyReweightZ: Opening file " << fnameY << std::endl;
+      std::cout << "applyReweightZ(): Opening file " << fnameY << std::endl;
       _fileY->cd();
       _hY = (TH1F*)gDirectory->Get("unfold");
       _lastBinY = _hY->GetNbinsX();
@@ -75,7 +75,7 @@ class applyReweightZ : public Module {
       // do not rescale twice
       if(rescaled_once_internal){
 	hMC->Scale(_hY->Integral()/hMC->Integral());
-	std::cout << "applyReweightZ: rescaling Y unfolded to MC" << std::endl;
+	std::cout << "applyReweightZ(): rescaling |y| unfolded to MC" << std::endl;
       }
       _hY->Divide(hMC);
     }

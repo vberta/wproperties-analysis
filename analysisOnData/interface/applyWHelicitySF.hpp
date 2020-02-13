@@ -33,8 +33,6 @@ class applyWHelicitySF : public Module {
   std::vector<ROOT::RDF::RResultPtr<std::vector<TH3D>>> _h3Group;
 
   std::map<std::string, TFile*> _fmap;
-  TFile* _file_trigger_minus;
-  TFile* _file_reco;
   std::string _idx2;
   std::vector<std::string> _syst_columns_trigger;
   std::vector<std::string> _syst_columns_reco;
@@ -52,7 +50,7 @@ class applyWHelicitySF : public Module {
     
     _hmap.insert( std::pair<std::string, TH2D*>("trigger_plus",  (TH2D*)_fmap.at("trigger_plus")->Get("scaleFactor") ) );
     _hmap.insert( std::pair<std::string, TH2D*>("trigger_minus", (TH2D*)_fmap.at("trigger_minus")->Get("scaleFactor") ) );
-    _hmap.insert( std::pair<std::string, TH2D*>("reco",          (TH2D*)_fmap.at("reco")->Get("scaleFactor_etaInterpolated") ) );    
+    _hmap.insert( std::pair<std::string, TH2D*>("reco",          (TH2D*)_fmap.at("reco")->Get("scaleFactor") ) );    
 
     if(syst_columns_trigger.size()>0 || syst_columns_reco.size()>0){
 
@@ -92,11 +90,13 @@ class applyWHelicitySF : public Module {
 		if( s=="trigger" && std::find(syst_columns_trigger.begin(), syst_columns_trigger.end(), mapname_nocharge)==syst_columns_trigger.end() ) continue;
 		if( s=="reco"    && std::find(syst_columns_reco.begin(), syst_columns_reco.end(), mapname_nocharge)==syst_columns_reco.end() ) continue;
 
-		std::cout << "applyWHelicitySF: Adding histo to map with name: " << mapname << std::endl;
+		std::cout << "applyWHelicitySF(): Adding histo to map with name: " << mapname << std::endl;
 		TH2D* h = (TH2D*)_hmap.at(s+c_name)->Clone(mapname.c_str());
+		h->Reset();
 		_hmap.insert( std::pair<std::string, TH2D*>(mapname, h) );
 	      }
 	    }
+
 	    int nbins_eta = cov->GetXaxis()->GetNbins();
 	    for( int ieta = 1; ieta<=nbins_eta; ieta++ ){
 	      //double eta = cov->GetXaxis()->GetBinCenter(ieta);
@@ -136,8 +136,9 @@ class applyWHelicitySF : public Module {
 		  eigen_coeffs_mod[e] += (v=="Up"? 1.0 :-1.0)*TMath::Sqrt(eigvals[e]);
 		  TVectorD coeffs_shift = U*eigen_coeffs_mod;
 		  //cout << "Eig[" << e << "] --> " << coeffs_shift[0] << "," << coeffs_shift[1] << "," << coeffs_shift[2] << std::endl;
-		  //cout << "Eig[" << e << "] + 1sigma : " << eff_shift << "/" << eff_nominal << " = " << eff_shift/eff_nominal <<  endl;
+		  //cout << "Eig[" << e << "] + 1sigma : " << eff_shift << "/" << eff_nominal << " = " << eff_shift/eff_nominal <<  endl;		  
 		  TH2D* h = _hmap.at(mapname);
+		  //std::cout << "Filling "+mapname+" with SFsyst" << std::endl;
 		  for(int ipt=1; ipt<=h->GetYaxis()->GetNbins(); ipt++){
 		    double pt = h->GetYaxis()->GetBinCenter(ipt);
 		    double eff_nominal = coeffs[0]*TMath::Erf(( pt - coeffs[1])/coeffs[2]);
@@ -146,7 +147,7 @@ class applyWHelicitySF : public Module {
 		    double sf =  eff_nominal>0. ? eff_shift/eff_nominal : 1.0;
 		    if(d=="mc" && sf>0.) sf = 1./sf;
 		    h->SetBinContent(ieta,ipt, sf);
-		    //std::cout << s+" eig[" << e << "] "+v+" at (" << eta << "," << pt << ") : " << std::setprecision(9) << sf <<  std::endl;
+		    //std::cout << mapname+" eig[" << e << "] "+v+" at (" << eta << "," << pt << ") : " << std::setprecision(9) << h->GetBinContent(ieta,ipt) <<  std::endl;
 		  }
 		}
 	      }
