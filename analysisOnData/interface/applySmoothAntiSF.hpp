@@ -40,7 +40,7 @@ class applySmoothAntiSF : public Module {
     _file_wSF = TFile::Open(fname_wSF.c_str(), "READ");
     for(unsigned int i=0; i <_syst_columns.size(); i++){
       std::string var = _syst_columns[i];
-      std::cout << "applySmoothAntiSF: Adding "+var+" for file "+fname_wSF << std::endl;
+      std::cout << "applySmoothAntiSF(): adding "+var+" for file "+fname_wSF << std::endl;
       if(var=="nominal"){
 	_hmap.insert( std::pair<std::string, TH2F*>("wSF_prompt_offset_"+var, (TH2F*)_file_wSF->Get("prompt_offset") ) );
 	_hmap.insert( std::pair<std::string, TH2F*>("wSF_prompt_slope_"+var,  (TH2F*)_file_wSF->Get("prompt_slope") ) );
@@ -50,7 +50,7 @@ class applySmoothAntiSF : public Module {
     _file_woSF = TFile::Open(fname_woSF.c_str(), "READ");
     for(unsigned int i=0; i <_syst_columns.size(); i++){
       std::string var = _syst_columns[i];
-      std::cout << "applySmoothAntiSF: Adding "+var+" for file "+fname_woSF << std::endl;
+      std::cout << "applySmoothAntiSF(): adding "+var+" for file "+fname_woSF << std::endl;
       if(var=="nominal"){
 	_hmap.insert( std::pair<std::string, TH2F*>("woSF_prompt_offset_"+var, (TH2F*)_file_woSF->Get("prompt_offset") ) );
 	_hmap.insert( std::pair<std::string, TH2F*>("woSF_prompt_slope_"+var,  (TH2F*)_file_woSF->Get("prompt_slope") ) );

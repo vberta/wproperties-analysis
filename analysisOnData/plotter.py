@@ -92,8 +92,8 @@ def setup_hstack(h, ytitle):
 def setup_hratio(hratio, xtitle):
     hratio.SetTitle("")
     hratio.SetLineColor(ROOT.kBlack)
-    hratio.SetMinimum(0.8) 
-    hratio.SetMaximum(1.2)
+    hratio.SetMinimum(0.9) 
+    hratio.SetMaximum(1.1)
     hratio.Sumw2()
     hratio.SetStats(0)
     hratio.SetMarkerStyle(ROOT.kFullCircle)
@@ -112,6 +112,19 @@ def setup_hratio(hratio, xtitle):
     hratio.GetYaxis().SetLabelFont(43)
     hratio.GetYaxis().SetLabelSize(18)
 
+def density(hp, ytitle):
+    variable_width = False
+    bin_width = hp.GetXaxis().GetBinWidth(1)
+    for i in range(2, hp.GetXaxis().GetNbins()+1):
+        if hp.GetXaxis().GetBinWidth(i)!=bin_width:
+            variable_width = True
+    if variable_width:
+        if '/bin' not in ytitle: ytitle += '/bin'
+        for i in range(1, hp.GetXaxis().GetNbins()+1):
+            old = hp.GetBinContent(i)
+            bin_width = hp.GetXaxis().GetBinWidth(i)
+            hp.SetBinContent(i, old/bin_width)
+    return ytitle
 
 def plot(category, variable, proj, xtitle, ytitle, tag):
 
@@ -159,6 +172,7 @@ def plot(category, variable, proj, xtitle, ytitle, tag):
                     elif 'Minus' in category: h.GetZaxis().SetRange(1,1)
                     else: pass
                     hp = h.Project3D(proj+"e").Clone(pname+"_nominal")
+                    new_ytitle = density(hp,ytitle)
                     if pname!='Data':
                         if not nominals.has_key(pname): nominals[pname] = hp.Clone(pname+"_nominal_copy")
                         to_stack.append( [pname, hp] )
@@ -177,9 +191,9 @@ def plot(category, variable, proj, xtitle, ytitle, tag):
             elif h[0]=='SIGNAL_Fake' : idx_SIGNAL_fake = ih
         if idx_AISO_fake!=-1 and idx_SIGNAL_fake!=-1:
             to_stack[idx_AISO_fake][1].Add( to_stack[idx_SIGNAL_fake][1] )            
-            #to_stack[idx_AISO_fake][1].Scale(0.5)
+            #to_stack[idx_AISO_fake][1].Scale(0.9)
             to_stack.pop(idx_SIGNAL_fake)
-        for h in to_stack: 
+        for h in to_stack:             
             h[1].SetFillColor(colors[h[0]])
             h[1].SetFillStyle(1001)            
             hs.Add(h[1])
@@ -191,7 +205,7 @@ def plot(category, variable, proj, xtitle, ytitle, tag):
         hs.SetMaximum( max(hData.GetMaximum(), hs.GetMaximum())*1.30 )
         hs.Draw("HIST")
 
-        setup_hstack(hs.GetHistogram(), ytitle)
+        setup_hstack(hs.GetHistogram(), new_ytitle)
 
         hData.SetLineColor(ROOT.kBlack)
         hData.SetMarkerStyle(ROOT.kFullCircle)
@@ -226,9 +240,17 @@ def plot(category, variable, proj, xtitle, ytitle, tag):
         hMCStat.Draw("E3SAME")
 
         line = ROOT.TLine( hratio.GetXaxis().GetXmin(), 1.0, hratio.GetXaxis().GetXmax(), 1.0)
-        line.SetLineWidth(2)
-        line.SetLineStyle(ROOT.kDashed)
+        line.SetLineWidth(1)
+        line.SetLineStyle(ROOT.kSolid)
         line.Draw()
+        lineUp = ROOT.TLine( hratio.GetXaxis().GetXmin(), 1.05, hratio.GetXaxis().GetXmax(), 1.05)
+        lineUp.SetLineWidth(2)
+        lineUp.SetLineStyle(ROOT.kDashed)
+        lineUp.Draw()
+        lineDown = ROOT.TLine( hratio.GetXaxis().GetXmin(), 0.95, hratio.GetXaxis().GetXmax(), 0.95)
+        lineDown.SetLineWidth(2)
+        lineDown.SetLineStyle(ROOT.kDashed)
+        lineDown.Draw()
 
         for key,val in cat.items():
             if key in ["nominal", "fakerate"]: continue

@@ -16,8 +16,8 @@ RNode muonHistos::run(RNode d){
   for(unsigned int i=0; i<nbins_eta+1; i++)       eta_Arr[i] = -2.4 + i*(2.4 + 2.4)/nbins_eta;      
   for(unsigned int i=0; i<nbins_charge+1; i++) charge_Arr[i] = -2.0 + i*(4.0)/nbins_charge;      
 
-  //eta_Arr = {-2.4, -2.3, -2.2, -2.1, -2, -1.7, -1.6, -1.5, -1.4, -1.2, -0.8, -0.5, -0.3, -0.2, 0.0, 
-  // 0.2, 0.3, 0.5, 0.8, 1.2, 1.4, 1.5, 1.6, 1.7, 2, 2.1, 2.2, 2.3, 2.4};
+  //eta_Arr = {-2.4, -2.1, -1.9, -1.7, -1.5, -1.3, -1.2, -1.1, -1.0, -0.9, -0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0.0,
+  //	     0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.5, 1.7, 1.9, 2.1, 2.4}; 
 
   this->add_group_3D( &d, "SelMuon1_eta", "SelMuon1_corrected_pt", "SelMuon1_charge", "", eta_Arr, pt_Arr, charge_Arr);
   if(_category.find("DIMUON")!=std::string::npos)

@@ -44,9 +44,9 @@ class applyWHelicitySF : public Module {
 		   std::vector<std::string> syst_columns_trigger, std::vector<std::string> syst_columns_reco) : 
     _idx2(idx2), _syst_columns_trigger(syst_columns_trigger), _syst_columns_reco(syst_columns_reco){
 
-    _fmap.insert( std::pair<std::string, TFile*>("trigger_plus", TFile::Open(fname_trigger_plus.c_str(),  "READ")) );
-    _fmap.insert( std::pair<std::string, TFile*>("trigger_minus", TFile::Open(fname_trigger_plus.c_str(),  "READ")) );
-    _fmap.insert( std::pair<std::string, TFile*>("reco", TFile::Open(fname_reco.c_str(),  "READ")) );
+    _fmap.insert( std::pair<std::string, TFile*>("trigger_plus",  TFile::Open(fname_trigger_plus.c_str(),   "READ")) );
+    _fmap.insert( std::pair<std::string, TFile*>("trigger_minus", TFile::Open(fname_trigger_minus.c_str(),  "READ")) );
+    _fmap.insert( std::pair<std::string, TFile*>("reco",          TFile::Open(fname_reco.c_str(),  "READ")) );
     
     _hmap.insert( std::pair<std::string, TH2D*>("trigger_plus",  (TH2D*)_fmap.at("trigger_plus")->Get("scaleFactor") ) );
     _hmap.insert( std::pair<std::string, TH2D*>("trigger_minus", (TH2D*)_fmap.at("trigger_minus")->Get("scaleFactor") ) );

@@ -36,10 +36,12 @@ class fakeRate : public Module {
  public:
     
   fakeRate(std::string fname, std::string category, std::vector<std::string> syst_columns) : _category(category), _syst_columns(syst_columns) {
+    std::cout << "fakerate(): opening file "+fname << std::endl;
     _file = TFile::Open(fname.c_str(), "READ");
     for(unsigned int i=0; i <_syst_columns.size(); i++){
       std::string var = _syst_columns[i];
       if(var=="nominal"){
+	std::cout << "fakerate(): reading histograms for "+var << std::endl;
 	_hmap.insert( std::pair<std::string, TH2F*>("fake_offset_"+var,   (TH2F*)_file->Get("fake_offset") ) );
 	_hmap.insert( std::pair<std::string, TH2F*>("fake_slope_"+var,    (TH2F*)_file->Get("fake_slope") ) );
 	_hmap.insert( std::pair<std::string, TH2F*>("prompt_offset_"+var, (TH2F*)_file->Get("prompt_offset") ) );

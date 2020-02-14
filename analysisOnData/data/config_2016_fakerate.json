@@ -208,7 +208,7 @@
         "dataType" : "MC",
         "xsec" : 6025.2,
         "ncores" : 64,
-	"categories" : "SIGNAL++:nominal,SIDEBAND++:nominal,QCD++:nominal,AISO++:nominal,SIGNALNORM++:nominal,AISONORM++:nominal"
+	"categories" : "SIGNAL++:nominal,SIDEBAND++:nominal,QCD++:nominal,AISO++:nominal"
     },
 
     "WW_TuneCUETP8M1_13TeV-pythia8" : {  

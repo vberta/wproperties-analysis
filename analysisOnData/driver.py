@@ -15,6 +15,7 @@ parser = argparse.ArgumentParser("")
 parser.add_argument('-r', '--rdf',       help="", action='store_true')
 parser.add_argument('-m', '--merge',     help="", action='store_true')
 parser.add_argument('-d', '--dictionary',help="", action='store_true')
+parser.add_argument('-p', '--plot',      help="", action='store_true')
 parser.add_argument('-o', '--output_dir',type=str, default='TEST', help="")
 parser.add_argument('-y', '--dataYear',  type=str, default='2016', help="")
 parser.add_argument('-i', '--input',     type=str, default="",     help="")
@@ -339,3 +340,5 @@ if __name__ == '__main__':
                 'SelMuon2_pfRelIso04_all_SelMuon2_dxy_SelMuon2_charge' 
                 ]:
          make_dictionary_histo(sampledata, v)
+   elif args.plot:
+      os.system('./plot.sh '+output_dir)
