@@ -5,6 +5,8 @@ RNode getCompVars::run(RNode d){
   
   RNode d_start = d;
 
+  std::string postfix = "FIX";
+
   // muon1,2 corrected pt systs
   if( _muon_systs.size()>0 ){
     std::vector<std::string> mus = {"1"};
@@ -25,10 +27,32 @@ RNode getCompVars::run(RNode d){
 
   // MET systsAll
   else if( _MET_systs.size()>0 ){
+
+    ///// FIX
+    if(postfix=="FIX"){
+      std::cout << "getCompVars(): applying FIX for MET systematics" << std::endl;
+      auto rescaler_pt = [](float pt, float pt_nom, float pt_syst)->float{
+	return pt_nom>0. ? pt*(pt_syst/pt_nom) : pt_nom ;
+      };
+      auto rescaler_phi = [](float phi, float phi_nom, float phi_syst)->float{
+	float ret = phi + (phi_nom-phi_syst) ;
+	if(ret > TMath::Pi())  return ret - 2*TMath::Pi(); 
+	if(ret < -TMath::Pi()) return ret + 2*TMath::Pi(); 
+	return ret;
+      };
+      for(unsigned int i=0 ; i < _MET_systs.size(); i++){
+	auto d_post = d_start
+	  .Define("MET_"+_MET_systs[i]+postfix+"_pt",  rescaler_pt,  {"MET_pt", "MET_nom_pt", "MET_"+_MET_systs[i]+"_pt"})
+	  .Define("MET_"+_MET_systs[i]+postfix+"_phi", rescaler_phi, {"MET_phi", "MET_nom_phi", "MET_"+_MET_systs[i]+"_phi"});
+	d_start = d_post;	
+      }
+    }
+    
+
     ROOT::Detail::RDF::ColumnNames_t new_cols_pt, new_cols_phi;
     for(unsigned int i=0 ; i < _MET_systs.size(); i++){
-      new_cols_pt.push_back( "MET_"+_MET_systs[i]+"_pt");
-      new_cols_phi.push_back("MET_"+_MET_systs[i]+"_phi");
+      new_cols_pt.push_back( "MET_"+_MET_systs[i]+postfix+"_pt");
+      new_cols_phi.push_back("MET_"+_MET_systs[i]+postfix+"_phi");
     }
     auto d_post = d_start
       .Define("MET_nomAll_pt",  getRVec_FFFFFFtoV, new_cols_pt)
@@ -57,10 +81,12 @@ RNode getCompVars::run(RNode d){
 	std::string new_col     = "SelMuon"+mu+"_corrected_MET_nom_"+compVar;
 	std::string mu_pt_col   = "SelMuon"+mu+"_corrected_pt";
 	std::string mu_phi_col  = "SelMuon"+mu+"_phi";      
-	//std::string met_pt_col  = "MET_nom_pt";
-	//std::string met_phi_col = "MET_nom_phi";
-	std::string met_pt_col  = "MET_pt";
-	std::string met_phi_col = "MET_phi";
+	std::string met_pt_col  = "MET_nom_pt";
+	std::string met_phi_col = "MET_nom_phi";
+	if(postfix=="FIX"){
+	  met_pt_col  = "MET_pt";
+	  met_phi_col = "MET_phi";
+	}
 	auto d_post = d_start.Define(new_col, func, {mu_pt_col, mu_phi_col, met_pt_col, met_phi_col});
 	d_start = d_post;
       }
@@ -76,6 +102,10 @@ RNode getCompVars::run(RNode d){
 	  std::string mu_phi_col  = "SelMuon"+mu+"_phi";
 	  std::string met_pt_col  = "MET_"+(im?"nom":_MET_systs[i])+"_pt";
 	  std::string met_phi_col = "MET_"+(im?"nom":_MET_systs[i])+"_phi";
+	  if(postfix=="FIX"){
+	    met_pt_col  = "MET"+(im?"":"_"+_MET_systs[i]+postfix)+"_pt";
+	    met_phi_col = "MET"+(im?"":"_"+_MET_systs[i]+postfix)+"_phi";
+	  }
 	  new_cols.push_back(new_col);
 	  auto d_post = d_start.Define(new_col, func, {mu_pt_col, mu_phi_col, met_pt_col, met_phi_col});
 	  d_start = d_post;

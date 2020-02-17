@@ -21,11 +21,13 @@ parser.add_argument('-y', '--dataYear',  type=str, default='2016', help="")
 parser.add_argument('-i', '--input',     type=str, default="",     help="")
 parser.add_argument('-c', '--config',    type=str, default="data/samples_2016.json",     help="")
 parser.add_argument('-w', '--whoami',    type=str, default="sroychow",     help="")
+parser.add_argument('-v', '--verbose',   help="", action='store_true')
 args = parser.parse_args()
 output_dir = args.output_dir
 dataYear = args.dataYear
 config = args.config
 whoami = args.whoami
+verbose = args.verbose
 restrictDataset = [ x for x in args.input.split(',') if args.input != ""]
 
 samplef = open('./'+config)
@@ -36,7 +38,7 @@ if args.rdf:
    print "Loading shared library..."
    ROOT.gSystem.Load('bin/libAnalysisOnData.so')
 
-def run_one_sample(inputFiles,output_dir, sampledata, sample, verbose=False, print_graph=False):
+def run_one_sample(inputFiles,output_dir, sampledata, sample, verbose=verbose, print_graph=False):
    v          = sampledata[sample]
    dataType   = v['dataType']
    dirs       = v['dirs']
@@ -172,7 +174,7 @@ def merge(sampledata):
       print cmd
       os.system(cmd)   
 
-def make_dictionary(sampledata, vname, verbose=True):
+def make_dictionary(sampledata, vname, verbose=verbose):
    out = {}
    out['variable'] = vname
    output = sampledata["common"]["output"]
@@ -257,7 +259,7 @@ def make_dictionary(sampledata, vname, verbose=True):
       json.dump(out, fp)
    return
 
-def make_dictionary_histo(sampledata, vname, verbose=True):
+def make_dictionary_histo(sampledata, vname, verbose=verbose):
    out = {}
    out['variable'] = vname
    output = sampledata["common"]["output"]

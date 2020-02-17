@@ -12,6 +12,21 @@
 #python plotter.py -b -o $1 -c DIMUON -v SelMuon2_pfRelIso04_all_SelMuon2_dxy_SelMuon2_charge -p x -x "rel. iso. #mu_{2}" -t iso2
 #python plotter.py -b -o $1 -c DIMUON -v SelMuon2_pfRelIso04_all_SelMuon2_dxy_SelMuon2_charge -p y -x "d_{xy} #mu_{2}" -t dxy2
 
+
+#python plotter.py -b -o $1 -c SIGNAL_Plus -v "SelMuon1_eta_SelMuon1_corrected_pt_SelMuon1_charge" -p y -x "p_{T} #mu^{+}" -s NONE -l 19_23 -t pt_0p5
+#python plotter.py -b -o $1 -c SIGNAL_Plus -v "SelMuon1_eta_SelMuon1_corrected_pt_SelMuon1_charge" -p y -x "p_{T} #mu^{+}" -s NONE -l 24_28 -t pt_1p0
+#python plotter.py -b -o $1 -c SIGNAL_Plus -v "SelMuon1_eta_SelMuon1_corrected_pt_SelMuon1_charge" -p y -x "p_{T} #mu^{+}" -s NONE -l 29_32 -t pt_1p5
+#python plotter.py -b -o $1 -c SIGNAL_Plus -v "SelMuon1_eta_SelMuon1_corrected_pt_SelMuon1_charge" -p y -x "p_{T} #mu^{+}" -s NONE -l 33_34 -t pt_1p9
+#python plotter.py -b -o $1 -c SIGNAL_Plus -v "SelMuon1_eta_SelMuon1_corrected_pt_SelMuon1_charge" -p y -x "p_{T} #mu^{+}" -s NONE -l 35_35 -t pt_2p1
+#python plotter.py -b -o $1 -c SIGNAL_Plus -v "SelMuon1_eta_SelMuon1_corrected_pt_SelMuon1_charge" -p y -x "p_{T} #mu^{+}" -s NONE -l 36_36 -t pt_2p4
+
+#python plotter.py -b -o $1 -c SIGNAL_Minus -v "SelMuon1_eta_SelMuon1_corrected_pt_SelMuon1_charge" -p y -x "p_{T} #mu^{+}" -s NONE -l 19_23 -t pt_0p5
+#python plotter.py -b -o $1 -c SIGNAL_Minus -v "SelMuon1_eta_SelMuon1_corrected_pt_SelMuon1_charge" -p y -x "p_{T} #mu^{+}" -s NONE -l 24_28 -t pt_1p0
+#python plotter.py -b -o $1 -c SIGNAL_Minus -v "SelMuon1_eta_SelMuon1_corrected_pt_SelMuon1_charge" -p y -x "p_{T} #mu^{+}" -s NONE -l 29_32 -t pt_1p5
+#python plotter.py -b -o $1 -c SIGNAL_Minus -v "SelMuon1_eta_SelMuon1_corrected_pt_SelMuon1_charge" -p y -x "p_{T} #mu^{+}" -s NONE -l 33_34 -t pt_1p9
+#python plotter.py -b -o $1 -c SIGNAL_Minus -v "SelMuon1_eta_SelMuon1_corrected_pt_SelMuon1_charge" -p y -x "p_{T} #mu^{+}" -s NONE -l 35_35 -t pt_2p1
+#python plotter.py -b -o $1 -c SIGNAL_Minus -v "SelMuon1_eta_SelMuon1_corrected_pt_SelMuon1_charge" -p y -x "p_{T} #mu^{+}" -s NONE -l 36_36 -t pt_2p4
+
 python plotter.py -b -o $1 -c SIGNAL_Plus -v "SelMuon1_eta_SelMuon1_corrected_pt_SelMuon1_charge" -p x -x "#eta #mu^{+}" -s NONE -t eta
 python plotter.py -b -o $1 -c SIGNAL_Plus -v "SelMuon1_eta_SelMuon1_corrected_pt_SelMuon1_charge" -p y -x "p_{T} #mu^{+}" -s NONE -t pt
 python plotter.py -b -o $1 -c SIGNAL_Minus -v "SelMuon1_eta_SelMuon1_corrected_pt_SelMuon1_charge" -p x -x "#eta #mu^{-}" -s NONE -t eta

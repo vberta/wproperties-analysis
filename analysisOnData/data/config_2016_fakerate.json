@@ -73,13 +73,11 @@
 		"trigger" : {
 		    "input_plus"  : "data/externalSF/fromWhelicity/smoothEfficiency_muons_plus_trigger.root",
 		    "input_minus" : "data/externalSF/fromWhelicity/smoothEfficiency_muons_minus_trigger.root",
-	            "systs" : ["trigger_data_eigen0Up", "trigger_data_eigen0Down", "trigger_data_eigen1Up", "trigger_data_eigen1Down", "trigger_data_eigen2Up", "trigger_data_eigen2Down",
-			       "trigger_mc_eigen0Up", "trigger_mc_eigen0Down", "trigger_mc_eigen1Up", "trigger_mc_eigen1Down", "trigger_mc_eigen2Up", "trigger_mc_eigen2Down"]	
+	            "systs" : ["trigger_mc_eigen0Up", "trigger_mc_eigen0Down", "trigger_mc_eigen1Up", "trigger_mc_eigen1Down", "trigger_mc_eigen2Up", "trigger_mc_eigen2Down"]
 		},
 		"reco" :  {
 		    "input" : "data/externalSF/fromWhelicity/smoothEfficiency_muons_recoToSel_finerETA.root",
-	            "systs" : ["reco_data_eigen0Up", "reco_data_eigen0Down", "reco_data_eigen1Up", "reco_data_eigen1Down", "reco_data_eigen2Up", "reco_data_eigen2Down",
-			       "reco_mc_eigen0Up", "reco_mc_eigen0Down", "reco_mc_eigen1Up", "reco_mc_eigen1Down", "reco_mc_eigen2Up", "reco_mc_eigen2Down"]	
+	            "systs" : ["reco_mc_eigen0Up", "reco_mc_eigen0Down", "reco_mc_eigen1Up", "reco_mc_eigen1Down", "reco_mc_eigen2Up", "reco_mc_eigen2Down"]
 		}
             }
 	},

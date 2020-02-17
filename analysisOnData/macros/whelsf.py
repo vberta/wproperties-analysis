@@ -1,20 +1,20 @@
 import ROOT
 
-proj = 'x'
+proj = 'y'
 region = 'SIGNAL'
 
-fileNoWeight = ROOT.TFile.Open("../NEWFAKE_WHELICITYSF/WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_ext2.root")
+fileNoWeight = ROOT.TFile.Open("../DEBUG_NOWREWEIGHT/WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8.root")
 fileNoWeight.cd()
 hNoWeightXYZ = ROOT.gDirectory.Get(region+"_nominal/"+region+"__SelMuon1_eta_SelMuon1_corrected_pt_SelMuon1_charge__")
-hNoWeightXYZ.GetZaxis().SetRange(2,2)
+hNoWeightXYZ.GetZaxis().SetRange(1,1)
 hNoWeight = hNoWeightXYZ.Project3D(proj).Clone("hold")
 for i in range(1,hNoWeight.GetNbinsX()+1): hNoWeight.SetBinContent(i, hNoWeight.GetBinContent(i)/hNoWeight.GetBinWidth(i) )
 #hNoWeight.Draw("HISTE")
 
-fileWeight = ROOT.TFile.Open("../NEWFAKE_WHELICITYSF_V2/WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_ext2.root")
+fileWeight = ROOT.TFile.Open("../DEBUG_WREWEIGHT/WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8.root")
 fileWeight.cd()
 hWeightXYZ = ROOT.gDirectory.Get(region+"_nominal/"+region+"__SelMuon1_eta_SelMuon1_corrected_pt_SelMuon1_charge__")
-hWeightXYZ.GetZaxis().SetRange(2,2)
+hWeightXYZ.GetZaxis().SetRange(1,1)
 hWeight = hWeightXYZ.Project3D(proj).Clone("hnew")
 #fileWeight.Close()
 

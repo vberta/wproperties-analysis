@@ -52,7 +52,7 @@ class applyReweightZ : public Module {
       TH1F* hMC = (TH1F*)gDirectory->Get("hDDilPtLL");
       if(rescaled_once_internal){
 	hMC->Scale(_hQt->Integral()/hMC->Integral());
-	std::cout << "applyReweightZ: rescaling qt unfolded to MC" << std::endl;
+	std::cout << "applyReweightZ(): rescaling qt unfolded to MC" << std::endl;
       }
       _hQt->Divide(hMC);
       rescaled_once_internal = true;

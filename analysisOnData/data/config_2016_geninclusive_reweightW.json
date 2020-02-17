@@ -15,6 +15,29 @@
 	    "coefficients" : ["UL","A0", "A1", "A2", "A3", "A4"],
 	    "input_file"   : "./data/generator/WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_GENINCLUSIVE.root"
 	},	
+        "external_SF" : {		
+	    "use_externalSF"        : 1,	    
+	    "apply_SmoothAntiISOSF" : 1,
+	    "apply_SmoothISOSF"     : 0,
+	    "POG" : {
+		"ISO" : {
+		    "input_wSF"  : "data/externalSF/bkg_parameters_file.root",
+		    "input_woSF" : "data/externalSF/bkg_parameters_file_noIsoSF_.root",
+		    "systs"      : ["nominal"]
+		}
+	    },
+	    "WHelicity" : {
+		"trigger" : {
+		    "input_plus"  : "data/externalSF/fromWhelicity/smoothEfficiency_muons_plus_trigger.root",
+		    "input_minus" : "data/externalSF/fromWhelicity/smoothEfficiency_muons_minus_trigger.root",
+	            "systs" : []
+		},
+		"reco" :  {
+		    "input" : "data/externalSF/fromWhelicity/smoothEfficiency_muons_recoToSel_finerETA.root",
+	            "systs" : []
+		}
+            }
+	},
 	"Wto" : {
 	    "MuP" : "GenV_preFSR_charge==-13",  
 	    "MuN" : "GenV_preFSR_charge==+13",  
@@ -35,7 +58,7 @@
 		"input_qt"  : "./data/generator/histoUnfoldingSystPt_nsel2_dy3_rebin1_default.root",
 		"input_y"   : "./data/generator/histoUnfoldingSystRap_nsel2_dy3_rebin1_default.root",
 		"genLepton"      : "dress",
-		"scaleFactor"    : 0.979
+		"scaleFactor"    : -1.0
 	    },
 	    "Z" : {
 		"input_qt"  : "./data/generator/histoUnfoldingSystPt_nsel2_dy3_rebin1_default.root",
@@ -96,7 +119,7 @@
         "dataType" : "MC",
         "xsec" : 61526.7,
         "ncores" : 64,
- 	"categories" : "GENINCLUSIVE_WtoMuP+:nominal,GENINCLUSIVE_WtoMuN+:nominal"
+ 	"categories" : "GENINCLUSIVE_WtoMuP:nominal,GENINCLUSIVE_WtoMuN:nominal"
     },
 
     "WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_GENINCLUSIVE_1" : {  

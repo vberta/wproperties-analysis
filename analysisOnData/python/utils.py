@@ -12,21 +12,21 @@ modules_nominal = {
 
 modules_all = {
     'muon_nominal'                  : [],
-    'event_syst_puWeight'           : ['Up', 'Down'],
-    'muon_syst_scalefactor_ID'      : ['statUp', 'statDown', 'systUp', 'systDown'],
-    'muon_syst_scalefactor_ISO'     : ['statUp', 'statDown', 'systUp', 'systDown'],
-    'muon_syst_scalefactor_Trigger' : ['statUp', 'statDown', 'systUp', 'systDown'],
+    #'event_syst_puWeight'           : ['Up', 'Down'],
+    #'muon_syst_scalefactor_ID'      : ['statUp', 'statDown', 'systUp', 'systDown'],
+    #'muon_syst_scalefactor_ISO'     : ['statUp', 'statDown', 'systUp', 'systDown'],
+    #'muon_syst_scalefactor_Trigger' : ['statUp', 'statDown', 'systUp', 'systDown'],
     'muon_syst_column_corrected'    : ['correctedUp','correctedDown'],
     'muon_syst_column_nom'          : ['jerUp','jerDown','jesTotalUp','jesTotalDown','unclustEnUp','unclustEnDown'],
-    'muon_syst_scalefactor_external_Trigger' : ["trigger_data_eigen0Up", "trigger_data_eigen0Down", 
-                                                "trigger_data_eigen1Up", "trigger_data_eigen1Down", 
-                                                "trigger_data_eigen2Up", "trigger_data_eigen2Down",
+    'muon_syst_scalefactor_external_Trigger' : [#"trigger_data_eigen0Up", "trigger_data_eigen0Down", 
+                                                #"trigger_data_eigen1Up", "trigger_data_eigen1Down", 
+                                                #"trigger_data_eigen2Up", "trigger_data_eigen2Down",
                                                 "trigger_mc_eigen0Up",   "trigger_mc_eigen0Down", 
                                                 "trigger_mc_eigen1Up",   "trigger_mc_eigen1Down", 
                                                 "trigger_mc_eigen2Up",   "trigger_mc_eigen2Down"],
-    'muon_syst_scalefactor_external_ISO'     : ["reco_data_eigen0Up",    "reco_data_eigen0Down", 
-                                                "reco_data_eigen1Up",    "reco_data_eigen1Down", 
-                                                "reco_data_eigen2Up",    "reco_data_eigen2Down",
+    'muon_syst_scalefactor_external_ISO'     : [#"reco_data_eigen0Up",    "reco_data_eigen0Down", 
+                                                #"reco_data_eigen1Up",    "reco_data_eigen1Down", 
+                                                #"reco_data_eigen2Up",    "reco_data_eigen2Down",
                                                 "reco_mc_eigen0Up",      "reco_mc_eigen0Down", 
                                                 "reco_mc_eigen1Up",      "reco_mc_eigen1Down", 
                                                 "reco_mc_eigen2Up",      "reco_mc_eigen2Down"],
@@ -34,7 +34,7 @@ modules_all = {
 
 submodules_LHE = {
     'event_syst_LHEScaleWeight' : [0,8,1,7,3,5],
-    'event_syst_LHEPdfWeight'   : [98,101]    
+    #'event_syst_LHEPdfWeight'   : [98,101]    
     }
 modules_LHE = {
     'muon_nominal' : [],    
@@ -82,7 +82,7 @@ categories_all = {
             '&& MET_filters==1 ' + \
             '&& nVetoElectrons==0 ' + \
             '&& SelMuon1_corrected_pt>26.0 ' + \
-            '&& SelMuon1_corrected_pt<65.0 ' + \
+            '&& SelMuon1_corrected_pt<55.0 ' + \
             '&& SelMuon1_corrected_MET_nom_mt>=40.0 ',
         'cut_base' : '',
         'category_cut_base' : 'defs',
@@ -96,7 +96,7 @@ categories_all = {
             '&& MET_filters==1 ' + \
             '&& nVetoElectrons==0 ' + \
             '&& SelMuon1_corrected_pt>26.0 ' + \
-            '&& SelMuon1_corrected_pt<65.0 ' + \
+            '&& SelMuon1_corrected_pt<55.0 ' + \
             '&& SelMuon1_corrected_MET_nom_mt>=90.0 ',
         'cut_base' : '',
         'category_cut_base' : 'defs',
@@ -104,13 +104,13 @@ categories_all = {
         },
     'QCD': {
         'weight' : 'puWeight*lumiweight*SelMuon1_ID_SF*SelMuon1_ISO_SF*SelMuon1_Trigger_SF',
-        'category_weight_base' : 'SIGNAL',
+        'category_weight_base' : 'QCD',
         'cut' : 'Vtype==0 ' + \
             '&& HLT_SingleMu24 '+ \
             '&& MET_filters==1 ' + \
             '&& nVetoElectrons==0 ' + \
             '&& SelMuon1_corrected_pt>26.0 ' + \
-            '&& SelMuon1_corrected_pt<65.0 ' + \
+            '&& SelMuon1_corrected_pt<55.0 ' + \
             '&& SelMuon1_corrected_MET_nom_mt<30.0 ',
         'cut_base' : '',
         'category_cut_base' : 'defs',
@@ -124,7 +124,7 @@ categories_all = {
             '&& MET_filters==1 ' + \
             '&& nVetoElectrons==0 ' + \
             '&& SelMuon1_corrected_pt>26.0 ' + \
-            '&& SelMuon1_corrected_pt<65.0 ' + \
+            '&& SelMuon1_corrected_pt<55.0 ' + \
             '&& SelMuon1_corrected_MET_nom_mt>=40.0 ',
         'cut_base' : '',
         'category_cut_base' : 'defs',
@@ -138,7 +138,7 @@ categories_all = {
             '&& MET_filters==1 ' + \
             '&& nVetoElectrons==0 ' + \
             '&& SelMuon1_corrected_pt>26.0 ' + \
-            '&& SelMuon1_corrected_pt<65.0 ' + \
+            '&& SelMuon1_corrected_pt<55.0 ' + \
             '&& SelMuon1_corrected_MET_nom_mt>=40.0 ',
         'cut_base' : '',
         'category_cut_base' : 'defs',
@@ -152,7 +152,7 @@ categories_all = {
             '&& MET_filters==1 ' + \
             '&& nVetoElectrons==0 ' + \
             '&& SelMuon1_corrected_pt>26.0 ' + \
-            '&& SelMuon1_corrected_pt<65.0 ' + \
+            '&& SelMuon1_corrected_pt<55.0 ' + \
             '&& SelMuon1_corrected_MET_nom_mt>=90.0 ',
         'cut_base' : '',
         'category_cut_base' : 'defs',
@@ -160,13 +160,13 @@ categories_all = {
         },
     'SIDEBAND': {
         'weight' : 'puWeight*lumiweight*SelMuon1_ID_SF*SelMuon1_Trigger_SF*SelMuon1_ISO_SF',
-        'category_weight_base' : 'AISO',
+        'category_weight_base' : 'SIDEBAND',
         'cut' : 'Vtype==1 ' + \
             '&& HLT_SingleMu24 '+ \
             '&& MET_filters==1 ' + \
             '&& nVetoElectrons==0 ' + \
             '&& SelMuon1_corrected_pt>26.0 ' + \
-            '&& SelMuon1_corrected_pt<65.0 ' + \
+            '&& SelMuon1_corrected_pt<55.0 ' + \
             '&& SelMuon1_corrected_MET_nom_mt<30.0 ',
         'cut_base' : '',
         'category_cut_base' : 'defs',
@@ -249,13 +249,13 @@ def get_categories(dataType,categories_str, common, apply_SmoothAntiISOSF, apply
             if k not in ['SIDEBAND', 'AISO', 'AISONORM']: continue
             old = copy.deepcopy(v['weight'])
             v['weight'] = old.replace('ISO_SF', 'ISO_SmoothAntiSF')
-            print k+': \n', bc.H, old, bc.E, ' --> \n', bc.B, v['weight'], bc.E
+            #print k+': \n', bc.H, old, bc.E, ' --> \n', bc.B, v['weight'], bc.E
     if apply_SmoothISOSF and use_externalSF==0:
         for k,v in ret.items():
             if k not in ['SIGNAL', 'SIGNALNORM', 'QCD', 'DIMUON']: continue
             old = copy.deepcopy(v['weight'])
             v['weight'] = old.replace('ISO_SF', 'ISO_SmoothSF')
-            print k+': \n', bc.H, old, bc.E, ' --> \n', bc.B, v['weight'], bc.E
+            #print k+': \n', bc.H, old, bc.E, ' --> \n', bc.B, v['weight'], bc.E
     if use_externalSF:
         for k,v in ret.items():
             old = copy.deepcopy(v['weight'])
@@ -263,7 +263,7 @@ def get_categories(dataType,categories_str, common, apply_SmoothAntiISOSF, apply
                 v['weight'] = old.replace('ISO_SF','ISO_WHelicitySF').replace('ID_SF','ID_WHelicitySF').replace('Trigger_SF', 'Trigger_WHelicitySF')
             else:
                 v['weight'] = old.replace('Trigger_SF', 'Trigger_WHelicitySF')
-            print k+': \n', bc.H, old, bc.E, ' --> \n', bc.B, v['weight'], bc.E
+            #print k+': \n', bc.H, old, bc.E, ' --> \n', bc.B, v['weight'], bc.E
     else:
         for k,v in ret.items():
             externals = []
@@ -334,6 +334,7 @@ def get_categories(dataType,categories_str, common, apply_SmoothAntiISOSF, apply
             ret[c]['category_weight_base'] += (charge+'REWEIGHT')
             ret[c]['weight'] += '*reweight_'+charge+'_qt'
             if cat_Z_reweight>1: ret[c]['weight'] += '*reweight_'+charge+'_y'
+            #print 'Reweight Z qt/y: ', bc.H, ret[c]['weight'] , bc.E
 
         # phase-space slicing is enabled
         if categories_split_slice[pos_c]:

@@ -16,12 +16,17 @@ RNode muonHistos::run(RNode d){
   for(unsigned int i=0; i<nbins_eta+1; i++)       eta_Arr[i] = -2.4 + i*(2.4 + 2.4)/nbins_eta;      
   for(unsigned int i=0; i<nbins_charge+1; i++) charge_Arr[i] = -2.0 + i*(4.0)/nbins_charge;      
 
+  // SMP-18-010
   //eta_Arr = {-2.4, -2.1, -1.9, -1.7, -1.5, -1.3, -1.2, -1.1, -1.0, -0.9, -0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0.0,
-  //	     0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.5, 1.7, 1.9, 2.1, 2.4}; 
+  // 	     0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.5, 1.7, 1.9, 2.1, 2.4}; 
+  //pt_Arr = {26.0, 28.0, 30.0, 31.5, 33.0, 34.5, 36.0, 37.5, 39.0, 40.5, 42.0, 43.5, 45.0, 46.5, 48.0, 50.0, 52.0, 54.0, 56.0};
 
   this->add_group_3D( &d, "SelMuon1_eta", "SelMuon1_corrected_pt", "SelMuon1_charge", "", eta_Arr, pt_Arr, charge_Arr);
   if(_category.find("DIMUON")!=std::string::npos)
     this->add_group_3D( &d, "SelMuon2_eta", "SelMuon2_corrected_pt", "SelMuon2_charge", "", eta_Arr, pt_Arr, charge_Arr);
+
+  // FAST DEBUG
+  return d;
 
   // ZQT vs ZY vs ZMASS
   unsigned int nbins_RecoZ_qt   = 50;
@@ -58,7 +63,6 @@ RNode muonHistos::run(RNode d){
   if((_category.find("DIMUON")!=std::string::npos) && !veto_LHE)
     this->add_group_3D( &d, "SelMuon2_pfRelIso04_all", "SelMuon2_dxy", "SelMuon2_charge", "", iso_Arr, dxy_Arr, charge_Arr);  
 
-  // FAST DEBUG
   return d;
 
   // MET_PT vs MET_phi vs N_PVs

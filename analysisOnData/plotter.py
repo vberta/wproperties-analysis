@@ -16,6 +16,7 @@ parser.add_argument('-x', '--xtitle',type=str, default='', help="")
 parser.add_argument('-y', '--ytitle',type=str, default='Events', help="")
 parser.add_argument('-t', '--tag',type=str, default='eta', help="")
 parser.add_argument('-b', '--batch', help="", action='store_true')
+parser.add_argument('-l', '--slices',type=str, default="", help="")
 args = parser.parse_args()
 output_dir = args.output_dir
 systematics = args.systematics
@@ -25,6 +26,7 @@ variable    = args.variable
 xtitle      = args.xtitle
 ytitle      = args.ytitle
 tag         = args.tag
+slices      = args.slices
 
 if args.batch:
     from sys import argv
@@ -55,9 +57,9 @@ nicknames = {
     "W"           : "W^{#pm}",
     "AISO_Fake"   : "Fakes",
     "SIGNAL_Fake" : "Fakes",
-    "Z"           : "Z/#gamma^{*}#rightarrow#mu^{+}#mu^{-}",
-    "ZtoMuMu"     : "Z/#gamma^{*}#rightarrow#mu^{+}#mu^{-}",
-    "ZtoTauTau"   : "Z/#gamma^{*}#rightarrow#tau^{+}#tau^{-}",
+    "Z"           : "Z/#gamma*#rightarrow#mu^{+}#mu^{-}",
+    "ZtoMuMu"     : "Z/#gamma*#rightarrow#mu^{+}#mu^{-}",
+    "ZtoTauTau"   : "Z/#gamma*#rightarrow#tau^{+}#tau^{-}",
     "TTbar"       : "t#bar{t}",
     "ST"          : "Single-t",
     "DiBoson"     : "Diboson",
@@ -126,7 +128,7 @@ def density(hp, ytitle):
             hp.SetBinContent(i, old/bin_width)
     return ytitle
 
-def plot(category, variable, proj, xtitle, ytitle, tag):
+def plot(category, variable, proj, xtitle, ytitle, tag, slices):
 
     with open(output_dir+'/hadded/dictionaryHisto_'+variable+'.json', 'r') as fp:
         js = json.load(fp)
@@ -143,6 +145,7 @@ def plot(category, variable, proj, xtitle, ytitle, tag):
         setup_leg(leg)
 
         hs = ROOT.THStack("hs", "")
+        hmaster = None
         hData = None
         hMC = None
         open_files = {}
@@ -168,9 +171,15 @@ def plot(category, variable, proj, xtitle, ytitle, tag):
                     if h==None:                     
                         print "File NOT found"
                         continue
+                    if hmaster==None: hmaster = h
                     if 'Plus' in category:    h.GetZaxis().SetRange(2,2)
                     elif 'Minus' in category: h.GetZaxis().SetRange(1,1)
                     else: pass
+                    if slices!="":
+                        sl1 = int(slices.split('_')[0])
+                        sl2 = int(slices.split('_')[1])
+                        if   proj=="x": h.GetYaxis().SetRange(sl1,sl2)
+                        elif proj=="y": h.GetXaxis().SetRange(sl1,sl2)
                     hp = h.Project3D(proj+"e").Clone(pname+"_nominal")
                     new_ytitle = density(hp,ytitle)
                     if pname!='Data':
@@ -179,7 +188,7 @@ def plot(category, variable, proj, xtitle, ytitle, tag):
                         print "MC: adding "+pname+" ("+fname+"/"+hname_fix+") -> "+"{:.3E}".format(hp.Integral())
                     else:
                         hData = hp
-                        print "Data: adding "+fname+"/"+hname_fix
+                        print "Data: adding "+pname+ " ("+fname+"/"+hname_fix+") -> "+"{:.3E}".format(hp.Integral())
             else:
                 pass                            
         
@@ -191,7 +200,7 @@ def plot(category, variable, proj, xtitle, ytitle, tag):
             elif h[0]=='SIGNAL_Fake' : idx_SIGNAL_fake = ih
         if idx_AISO_fake!=-1 and idx_SIGNAL_fake!=-1:
             to_stack[idx_AISO_fake][1].Add( to_stack[idx_SIGNAL_fake][1] )            
-            #to_stack[idx_AISO_fake][1].Scale(0.9)
+            #to_stack[idx_AISO_fake][1].Scale(0.6)
             to_stack.pop(idx_SIGNAL_fake)
         for h in to_stack:             
             h[1].SetFillColor(colors[h[0]])
@@ -219,6 +228,23 @@ def plot(category, variable, proj, xtitle, ytitle, tag):
         lat.SetTextFont(43)
         lat.SetTextSize(22)
         lat.Draw()
+
+        if slices!="":
+            sl1 = int(slices.split('_')[0])
+            sl2 = int(slices.split('_')[1])
+            #if sl2==sl1: sl2 +=1
+            txtslice = ""
+            if proj=="x":
+                txtslice = "p_{T}#in["+"{:0.1f}".format( hmaster.GetYaxis().GetBinLowEdge(sl1) )+ \
+                    ","+"{:0.1f}".format( hmaster.GetYaxis().GetBinLowEdge(sl2) + hmaster.GetYaxis().GetBinWidth(sl2) )+"]"
+            elif proj=="y":
+                txtslice = "#eta#in["+"{:0.1f}".format( hmaster.GetXaxis().GetBinLowEdge(sl1) )+ \
+                    ","+"{:0.1f}".format( hmaster.GetXaxis().GetBinLowEdge(sl2) + hmaster.GetXaxis().GetBinWidth(sl2) )+"]"
+            lat2 = ROOT.TLatex( 0.69, 0.72, txtslice)
+            lat2.SetNDC()
+            lat2.SetTextFont(43)
+            lat2.SetTextSize(22)
+            lat2.Draw()
 
         c.cd()
         pad2 = ROOT.TPad("pad2", "pad2", 0, 0.05, 1, 0.3)
@@ -311,10 +337,4 @@ def plot(category, variable, proj, xtitle, ytitle, tag):
 
 
 if __name__ == "__main__":
-    plot(category, variable, projection, xtitle, ytitle, tag)
-    #plot('DIMUON',  'SelMuon1_eta_SelMuon1_corrected_pt_SelMuon1_charge', projection, '#eta', 'Events', 'eta')
-    #plot('DIMUON',  'SelMuon2_eta_SelMuon2_corrected_pt_SelMuon2_charge', projection, '#eta', 'Events', 'eta')
-    #plot('DIMUON',  'SelRecoZ_corrected_qt_SelRecoZ_corrected_y_SelRecoZ_corrected_mass', projection, 'mass',  'Events', 'mass')
-    #plot('SIGNAL_Plus',  'SelMuon1_eta_SelMuon1_corrected_pt_SelMuon1_charge', projection, 'p_{T}', 'Events', 'pt')
-    #plot('SIGNAL_Minus', 'SelMuon1_eta_SelMuon1_corrected_pt_SelMuon1_charge', projection, '#eta',  'Events', 'eta')
-    #plot('SIGNAL_Minus', 'SelMuon1_eta_SelMuon1_corrected_pt_SelMuon1_charge', projection, 'p_{T}', 'Events', 'pt')
+    plot(category, variable, projection, xtitle, ytitle, tag, slices)
