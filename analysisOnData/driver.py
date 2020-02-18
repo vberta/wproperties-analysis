@@ -206,10 +206,9 @@ def make_dictionary(sampledata, vname, verbose=verbose):
             if len(systs)==0: systs.append('')
             if verbose: print '\t\t'+cat
             if cat=='LHEScaleWeight':
-               first,last = systs[0],systs[1]
                systs = []
-               for i in range(first,last+1):
-                  systs.append(LHEScaleWeight_meaning(i))
+               for syst in sv:
+                  systs.append(LHEScaleWeight_meaning(syst))
             elif cat=='LHEPdfWeight':
                first,last = systs[0],systs[1]
                systs = []
@@ -285,19 +284,20 @@ def make_dictionary_histo(sampledata, vname, verbose=verbose):
                      systs = sv['masses']
             if len(systs)==0: systs.append('')
             if cat=='LHEScaleWeight':
-               first,last = systs[0],systs[1]
+               systs_clone = copy.deepcopy(systs)
                systs = []
-               for i in range(first,last+1):
-                  systs.append(LHEScaleWeight_meaning(i))
+               for syst in systs_clone:
+                  systs.append(LHEScaleWeight_meaning(syst))
             elif cat=='LHEPdfWeight':
                first,last = systs[0],systs[1]
                systs = []
                for i in range(first,last+1):
                   systs.append(LHEPdfWeight_meaning(i))
+
             for syst in systs:               
                tag = syst
-               if cat in ['ISO','ID','Trigger']:
-                  tag = cat+'_'+tag
+               if cat in ['ISO','Trigger']:
+                  tag = cat+tag
                elif cat=='puWeight':
                   tag = cat+syst
                elif cat=='fakerate':
@@ -308,6 +308,7 @@ def make_dictionary_histo(sampledata, vname, verbose=verbose):
                f.cd()
                h3 = ROOT.gDirectory.Get(hname)
                if h3==None:
+                  if verbose: print 'NOT FOUND: '+fname+'/'+hname
                   continue
                if not out[krc][cat].has_key(syst):
                   print "Adding ", krc+':'+cat+':'+syst+' --> '+vname
@@ -335,11 +336,11 @@ if __name__ == '__main__':
       merge(sampledata)
    elif args.dictionary:
       for v in ['SelMuon1_eta_SelMuon1_corrected_pt_SelMuon1_charge', 
-                'SelMuon2_eta_SelMuon2_corrected_pt_SelMuon2_charge', 
-                'SelRecoZ_corrected_qt_SelRecoZ_corrected_y_SelRecoZ_corrected_mass',
-                'SelMuon1_corrected_MET_nom_mt_SelMuon1_corrected_MET_nom_hpt_SelMuon1_charge',
-                'SelMuon1_pfRelIso04_all_SelMuon1_dxy_SelMuon1_charge', 
-                'SelMuon2_pfRelIso04_all_SelMuon2_dxy_SelMuon2_charge' 
+                #'SelMuon2_eta_SelMuon2_corrected_pt_SelMuon2_charge', 
+                #'SelRecoZ_corrected_qt_SelRecoZ_corrected_y_SelRecoZ_corrected_mass',
+                #'SelMuon1_corrected_MET_nom_mt_SelMuon1_corrected_MET_nom_hpt_SelMuon1_charge',
+                #'SelMuon1_pfRelIso04_all_SelMuon1_dxy_SelMuon1_charge', 
+                #'SelMuon2_pfRelIso04_all_SelMuon2_dxy_SelMuon2_charge' 
                 ]:
          make_dictionary_histo(sampledata, v)
    elif args.plot:

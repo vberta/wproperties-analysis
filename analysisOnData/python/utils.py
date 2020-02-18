@@ -393,7 +393,7 @@ def get_categories(dataType,categories_str, common, apply_SmoothAntiISOSF, apply
     return ret, ret_base
                 
 
-def get_LHEScaleWeight_meaning(self,wid=0):
+def LHEScaleWeight_meaning(wid=0):
     if wid==0:
         return 'muR0p5_muF0p5'
     elif wid==1:

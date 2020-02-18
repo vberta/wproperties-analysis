@@ -71,7 +71,7 @@ class ConfigRDF():
             Idx_mu2 = "Idx_mu2" if hasattr(self,'run_DIMUON') else ""
             self.def_modules.append( ROOT.getVars("Idx_mu1", Idx_mu2, self.isMC, hasattr(self,'run_PSSLICING'), ROOT.std.string(self.lepton_def) ) )
             
-            if self.use_externalSF:
+            if self.isMC and self.use_externalSF:
                 syst_columns_trigger = vec_s()
                 for syst in self.external_SF['WHelicity']['trigger']['systs']: syst_columns_trigger.push_back(ROOT.std.string(syst))
                 syst_columns_reco = vec_s()
@@ -81,13 +81,13 @@ class ConfigRDF():
                                                                 ROOT.std.string(self.external_SF['WHelicity']['reco']['input']), Idx_mu2, 
                                                                 syst_columns_trigger, syst_columns_reco ) )
             
-            if self.applySmoothAntiISOSF:
+            if self.isMC and self.applySmoothAntiISOSF:
                 syst_columns_antiSF = vec_s()
                 for syst in self.external_SF['POG']['ISO']['systs']: syst_columns_antiSF.push_back(ROOT.std.string(syst))
                 self.def_modules.append( ROOT.applySmoothAntiSF( ROOT.std.string(self.external_SF['POG']['ISO']['input_wSF']), 
                                                                  ROOT.std.string(self.external_SF['POG']['ISO']['input_woSF']),
                                                                  "ISO", syst_columns_antiSF)  )
-            if hasattr(self, 'run_REWEIGHTV'):
+            if self.isMC and hasattr(self, 'run_REWEIGHTV'):
                 for c in self.categories_for_reweightV:
                     proc = c if self.procId=='' else self.procId
                     self.def_modules.append( ROOT.applyReweightZ( ROOT.std.string(c), 

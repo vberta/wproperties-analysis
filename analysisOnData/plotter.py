@@ -4,6 +4,7 @@ import json
 import argparse
 import ROOT
 import pprint 
+import math
 pp = pprint.PrettyPrinter(indent=2)
 
 parser = argparse.ArgumentParser("")
@@ -17,6 +18,7 @@ parser.add_argument('-y', '--ytitle',type=str, default='Events', help="")
 parser.add_argument('-t', '--tag',type=str, default='eta', help="")
 parser.add_argument('-b', '--batch', help="", action='store_true')
 parser.add_argument('-l', '--slices',type=str, default="", help="")
+parser.add_argument('-q', '--quadrature',   help="", action='store_true')
 args = parser.parse_args()
 output_dir = args.output_dir
 systematics = args.systematics
@@ -27,6 +29,7 @@ xtitle      = args.xtitle
 ytitle      = args.ytitle
 tag         = args.tag
 slices      = args.slices
+quadrature  = args.quadrature
 
 if args.batch:
     from sys import argv
@@ -35,11 +38,11 @@ if args.batch:
     argv.remove( '-b-' )
 
 colors = {
-    "WtoMuP"      : ROOT.kBlue-7,
-    "WtoMuN"      : ROOT.kRed-7,
-    "W"           : ROOT.kRed-7,
+    "WtoMuP"      : ROOT.kRed+2,
+    "WtoMuN"      : ROOT.kRed-3,
+    "W"           : ROOT.kRed+2,
     "ZtoMuMu"     : ROOT.kCyan-3,
-    "ZtoTauTau"   : ROOT.kOrange+5,
+    "ZtoTauTau"   : ROOT.kCyan+2,
     "WtoTau"      : ROOT.kOrange+1,
     "AISO_Fake"   : ROOT.kGray,
     "SIGNAL_Fake" : ROOT.kGray,
@@ -51,20 +54,33 @@ colors = {
     }
 
 nicknames = {
-    "WtoMuP"      : "W^{+}#rightarrow#mu^{+}#nu_{#mu}",
-    "WtoMuN"      : "W^{-}#rightarrow#mu^{-}#nu_{#bar{#mu}}",
-    "WtoTau"      : "W^{#pm}#rightarrow#tau#nu",
+    "WtoMuP"      : "W^{+}#rightarrow #mu^{+}#nu_{#mu}",
+    "WtoMuN"      : "W^{-}#rightarrow #mu^{-}#nu_{#bar{#mu}}",
+    "WtoTau"      : "W^{#pm}#rightarrow #tau^{#pm}#nu_{#tau}",
     "W"           : "W^{#pm}",
     "AISO_Fake"   : "Fakes",
     "SIGNAL_Fake" : "Fakes",
-    "Z"           : "Z/#gamma*#rightarrow#mu^{+}#mu^{-}",
-    "ZtoMuMu"     : "Z/#gamma*#rightarrow#mu^{+}#mu^{-}",
-    "ZtoTauTau"   : "Z/#gamma*#rightarrow#tau^{+}#tau^{-}",
+    "Z"           : "Z/#gamma*#rightarrow l^{+}l^{-}",
+    "ZtoMuMu"     : "Z/#gamma*#rightarrow #mu^{+}#mu^{-}",
+    "ZtoTauTau"   : "Z/#gamma*#rightarrow #tau^{+}#tau^{-}",
     "TTbar"       : "t#bar{t}",
     "ST"          : "Single-t",
     "DiBoson"     : "Diboson",
     "Data"        : "Data"
     }
+
+nicknames_syst = {
+    "Trigger"     : "trigger",
+    "ISO"         : "ID+ISO",
+    "nom"         : "E_{T}^{miss}",
+    "corrected"   : "p_{T}-scale",
+    "LHEScaleWeight_muR1p0_muF0p5"   : "#mu_{F}",
+    "LHEScaleWeight_muR1p0_muF2p0"   : "#mu_{F}",
+    "LHEScaleWeight_muR0p5_muF1p0"   : "#mu_{R}",
+    "LHEScaleWeight_muR2p0_muF1p0"   : "#mu_{R}",
+    "LHEScaleWeight_muR0p5_muF0p5"   : "#mu_{R}#mu_{F}",
+    "LHEScaleWeight_muR2p0_muF2p0"   : "#mu_{R}#mu_{F}"
+}
 
 def setup_pad1(pad1):
     pad1.SetBottomMargin(0)
@@ -193,6 +209,8 @@ def plot(category, variable, proj, xtitle, ytitle, tag, slices):
                 pass                            
         
         to_stack.sort(key=lambda h: h[1].Integral(), reverse=False)
+
+        # QCD
         idx_AISO_fake = -1
         idx_SIGNAL_fake = -1
         for ih,h in enumerate(to_stack):
@@ -202,6 +220,31 @@ def plot(category, variable, proj, xtitle, ytitle, tag, slices):
             to_stack[idx_AISO_fake][1].Add( to_stack[idx_SIGNAL_fake][1] )            
             #to_stack[idx_AISO_fake][1].Scale(0.6)
             to_stack.pop(idx_SIGNAL_fake)
+            
+        # TTbar + ST
+        idx_TTbar = -1
+        idx_ST    = -1
+        for ih,h in enumerate(to_stack):
+            if   h[0]=='TTbar' : idx_TTbar = ih
+            elif h[0]=='ST'    : idx_ST    = ih
+        if idx_TTbar != -1 and idx_ST != -1:
+            to_stack[idx_TTbar][1].Add( to_stack[idx_ST][1] )
+            to_stack.pop(idx_ST)
+            nicknames['TTbar'] = "Top"
+            
+        # Remove wrong-sign W
+        idx_WtoMuP = -1
+        idx_WtoMuN = -1
+        idx_WtoTau = -1
+        for ih,h in enumerate(to_stack):
+            if   h[0]=='WtoMuP' : idx_WtoMuP = ih
+            elif h[0]=='WtoMuN' : idx_WtoMuN = ih
+            elif h[0]=='WtoTau' : idx_WtoTau = ih
+        if idx_WtoMuN!=-1 and idx_WtoMuN!=-1 and idx_WtoTau!=-1:
+            idx_wrong = idx_WtoMuP if 'Minus' in category else idx_WtoMuN
+            to_stack[idx_WtoTau][1].Add( to_stack[idx_wrong][1] )
+            to_stack.pop(idx_wrong)
+
         for h in to_stack:             
             h[1].SetFillColor(colors[h[0]])
             h[1].SetFillStyle(1001)            
@@ -223,7 +266,7 @@ def plot(category, variable, proj, xtitle, ytitle, tag, slices):
         hData.Draw("PESAME")
         leg.Draw()
 
-        lat = ROOT.TLatex( 0.69, 0.85, "35.9 fb^{-1} (2016)")
+        lat = ROOT.TLatex( 0.70, 0.91, "35.9 fb^{-1} (2016)")
         lat.SetNDC()
         lat.SetTextFont(43)
         lat.SetTextSize(22)
@@ -298,29 +341,87 @@ def plot(category, variable, proj, xtitle, ytitle, tag, slices):
                         h.GetZaxis().SetRange(2,2)
                     elif 'Minus' in category:
                         h.GetZaxis().SetRange(1,1)
-                    else:
-                        pass
+                    else: pass
+                    if slices!="":
+                        sl1 = int(slices.split('_')[0])
+                        sl2 = int(slices.split('_')[1])
+                        if   proj=="x": h.GetYaxis().SetRange(sl1,sl2)
+                        elif proj=="y": h.GetXaxis().SetRange(sl1,sl2)
                     if not systs.has_key(key+"_"+kvar):
-                        systs[key+"_"+kvar] = h.Project3D(proj+"e").Clone(pname+"_"+key+"_"+kvar)
+                        hp = h.Project3D(proj+"e").Clone(pname+"_"+key+"_"+kvar)
+                        _ = density(hp,ytitle)
+                        systs[key+"_"+kvar] = hp
                         systs[key+"_"+kvar].Add(nominals[pname], -1.0)
                     else:
-                        systs[key+"_"+kvar].Add( h.Project3D(proj+"e") )
+                        hp = h.Project3D(proj+"e")
+                        _ = density(hp,ytitle)
+                        systs[key+"_"+kvar].Add( hp )
                         systs[key+"_"+kvar].Add(nominals[pname], -1.0)    
 
         for k,v in systs.items(): 
             for kp,vp in nominals.items(): v.Add(vp, 1.0)                
             print k, v.Integral()/hMC.Integral() 
-        for k,v in systs.items():
-            accept = False
-            for s in systematics.split(','): 
-                if s in k: 
-                    accept = True
-                    break
-            if not accept: continue
-            v.Divide(hMC)
-            v.SetLineColor(ROOT.kRed)
-            v.SetLineWidth(2)
-            v.Draw("HISTSAME")
+
+        if quadrature:
+            systs_text = 'Uncert.: '
+            systs_sum = hMC.Clone("systs_sum")
+            for ibin in range(1,systs_sum.GetXaxis().GetNbins()+1):
+                systs_sum.SetBinContent(ibin, 1.0)
+                err = 0.0
+                for k,v in systs.items():
+                    accept = False
+                    for s in systematics.split(','): 
+                        if ("*" not in s) and (s in k): 
+                            accept = True
+                            break
+                        elif ("*" in s):
+                            accept = True
+                            parts = s.split('*')
+                            for p in parts:
+                                accept = accept and (p in k)
+                    if not accept: continue
+                    kname = str(k.split('_')[0]) if 'LHE' not in k else k 
+                    if nicknames_syst[kname] not in systs_text:
+                        systs_text += (nicknames_syst[kname]+', ')
+                    delta = (v.GetBinContent(ibin) - hMC.GetBinContent(ibin))
+                    err += delta*delta
+                systs_sum.SetBinError(ibin, math.sqrt(err)/hMC.GetBinContent(ibin))
+            systs_sum.SetLineColor(ROOT.kRed)
+            systs_sum.SetFillStyle(3005)
+            systs_sum.Draw("E3SAME")
+            lat_syst = ROOT.TLatex( 0.17, 0.30, systs_text.rstrip(', '))
+            lat_syst.SetNDC()
+            lat_syst.SetTextFont(43)
+            lat_syst.SetTextSize(16)
+            lat_syst.Draw()
+
+
+        if not quadrature:
+            systs_text = 'Uncert.: '
+            for k,v in systs.items():
+                accept = False
+                for s in systematics.split(','): 
+                    if ("*" not in s) and (s in k): 
+                        accept = True
+                        break
+                    elif ("*" in s):
+                        accept = True
+                        parts = s.split('*')
+                        for p in parts:
+                            accept = accept and (p in k)
+                if not accept: continue
+                kname = str(k.split('_')[0]) if 'LHE' not in k else k 
+                if nicknames_syst[kname] not in systs_text:
+                    systs_text += (nicknames_syst[kname]+', ')
+                v.Divide(hMC)
+                v.SetLineColor(ROOT.kRed)
+                v.SetLineWidth(2)
+                v.Draw("HISTSAME")
+                lat_syst = ROOT.TLatex( 0.17, 0.30, systs_text.rstrip(', '))
+                lat_syst.SetNDC()
+                lat_syst.SetTextFont(43)
+                lat_syst.SetTextSize(16)
+                lat_syst.Draw()
 
         c.Update()
         c.Draw()

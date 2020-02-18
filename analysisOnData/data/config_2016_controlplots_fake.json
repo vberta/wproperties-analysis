@@ -80,11 +80,11 @@
 		"trigger" : {
 		    "input_plus"  : "data/externalSF/fromWhelicity/smoothEfficiency_muons_plus_trigger.root",
 		    "input_minus" : "data/externalSF/fromWhelicity/smoothEfficiency_muons_minus_trigger.root",
-	            "systs" : []
+	            "systs" : ["trigger_mc_eigen0Up", "trigger_mc_eigen0Down", "trigger_mc_eigen1Up", "trigger_mc_eigen1Down", "trigger_mc_eigen2Up", "trigger_mc_eigen2Down"]
 		},
 		"reco" :  {
 		    "input" : "data/externalSF/fromWhelicity/smoothEfficiency_muons_recoToSel_finerETA.root",
-	            "systs" : []
+	            "systs" : ["reco_mc_eigen0Up", "reco_mc_eigen0Down", "reco_mc_eigen1Up", "reco_mc_eigen1Down", "reco_mc_eigen2Up", "reco_mc_eigen2Down"]
 		}
             }
 	},
@@ -128,45 +128,45 @@
 	},
 	"output" : {
 	    "SIGNAL_Plus" : {
-		"WtoMuP"      : "WJets.root/*_WtoMuP:nominal",
-		"WtoMuN"      : "WJets.root/*_WtoMuN:nominal",
-		"WtoTau"      : "WJets.root/*_WtoTau:nominal",
+		"WtoMuP"      : "WJets.root/*_WtoMuP:nominal,corrected,nom,Trigger,ISO,LHEScaleWeight",
+		"WtoMuN"      : "WJets.root/*_WtoMuN:nominal,corrected,nom,Trigger,ISO,LHEScaleWeight",
+		"WtoTau"      : "WJets.root/*_WtoTau:nominal,corrected,nom,Trigger,ISO,LHEScaleWeight",
+		"Z"           : "DYJets.root/*:nominal,corrected,nom,Trigger,ISO,LHEScaleWeight",
+		"TTbar"       : "TTbar.root/*:nominal,corrected,nom,Trigger,ISO,LHEScaleWeight",
 		"AISO_Fake"   : "SingleMuon.root/AISO:fakerate",
 		"SIGNAL_Fake" : "SingleMuon.root/SIGNAL:fakerate",
-		"Z"           : "DYJets.root/*:nominal",
-		"TTbar"       : "TTbar.root/*:nominal",
 		"ST"          : "ST.root/*:nominal",
 		"DiBoson"     : "DiBoson.root/*:nominal",
 		"Data"        : "SingleMuon.root/*:nominal"
 	    },
 	    "SIGNAL_Minus"  : {
-		"WtoMuP"      : "WJets.root/*_WtoMuP:nominal",
-		"WtoMuN"      : "WJets.root/*_WtoMuN:nominal",
-		"WtoTau"      : "WJets.root/*_WtoTau:nominal",
+		"WtoMuP"      : "WJets.root/*_WtoMuP:nominal,corrected,nom,Trigger,ISO,LHEScaleWeight",
+		"WtoMuN"      : "WJets.root/*_WtoMuN:nominal,corrected,nom,Trigger,ISO,LHEScaleWeight",
+		"WtoTau"      : "WJets.root/*_WtoTau:nominal,corrected,nom,Trigger,ISO,LHEScaleWeight",
+		"Z"           : "DYJets.root/*:nominal,corrected,nom,Trigger,ISO,LHEScaleWeight",
+		"TTbar"       : "TTbar.root/*:nominal,corrected,nom,Trigger,ISO,LHEScaleWeight",
 		"AISO_Fake"   : "SingleMuon.root/AISO:fakerate",
 		"SIGNAL_Fake" : "SingleMuon.root/SIGNAL:fakerate",
-		"Z"           : "DYJets.root/*:nominal",
-		"TTbar"       : "TTbar.root/*:nominal",
 		"ST"          : "ST.root/*:nominal",	
 		"DiBoson"     : "DiBoson.root/*:nominal",	
 		"Data"        : "SingleMuon.root/*:nominal"
 	    },
 	    "QCD_Plus" : {
-		"W"           : "WJets.root/*:nominal",
+		"W"           : "WJets.root/*:nominal,corrected,nom,Trigger,ISO,LHEScaleWeight",
+		"Z"           : "DYJets.root/*:nominal,corrected,nom,Trigger,ISO,LHEScaleWeight",
+		"TTbar"       : "TTbar.root/*:nominal,corrected,nom,Trigger,ISO,LHEScaleWeight",
 		"AISO_Fake"   : "SingleMuon.root/SIDEBAND:fakerate",
 		"SIGNAL_Fake" : "SingleMuon.root/QCD:fakerate",
-		"Z"           : "DYJets.root/*:nominal",
-		"TTbar"       : "TTbar.root/*:nominal",
 		"ST"          : "ST.root/*:nominal",
 		"DiBoson"     : "DiBoson.root/*:nominal",
 		"Data"        : "SingleMuon.root/*:nominal"
 	    },
 	    "QCD_Minus"  : {
-		"W"             : "WJets.root/*:nominal",
+		"W"             : "WJets.root/*:nominal,corrected,nom,Trigger,ISO,LHEScaleWeight",
+		"Z"             : "DYJets.root/*:nominal,corrected,nom,Trigger,ISO,LHEScaleWeight",
+		"TTbar"         : "TTbar.root/*:nominal,corrected,nom,Trigger,ISO,LHEScaleWeight",
 		"AISO_Fake"     : "SingleMuon.root/SIDEBAND:fakerate",
 		"SIGNAL_Fake"   : "SingleMuon.root/QCD:fakerate",
-		"Z"             : "DYJets.root/*:nominal",
-		"TTbar"         : "TTbar.root/*:nominal",
 		"ST"            : "ST.root/*:nominal",	
 		"DiBoson"       : "DiBoson.root/*:nominal",	
 		"Data"          : "SingleMuon.root/*:nominal"
@@ -182,7 +182,7 @@
         "dataType" : "MC",
         "xsec" : 61526.7,
         "ncores" : 64,
-	"categories" : "SIGNAL_WtoMuP+:nominal,SIGNAL_WtoMuN+:nominal,SIGNAL_WtoTau+:nominal,QCD+:nominal"
+	"categories" : "SIGNAL_WtoMuP+:wLHE,SIGNAL_WtoMuN+:wLHE,SIGNAL_WtoTau+:wLHE,QCD+:wLHE"
     },
 
     "WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_ext2" : {  
@@ -193,7 +193,7 @@
         "dataType" : "MC",
         "xsec" : 61526.7,
         "ncores" : 64,
-	"categories" : "SIGNAL_WtoMuP+:nominal,SIGNAL_WtoMuN+:nominal,SIGNAL_WtoTau+:nominal,QCD+:nominal"
+	"categories" : "SIGNAL_WtoMuP+:wLHE,SIGNAL_WtoMuN+:wLHE,SIGNAL_WtoTau+:wLHE,QCD+:wLHE"
     },
 
     "DYJetsToLL_M-10to50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8" : {  
@@ -204,7 +204,7 @@
         "dataType" : "MC",
         "xsec" : 1903.0,
         "ncores" : -1,
-	"categories" : "SIGNAL:nominal,QCD:nominal"
+	"categories" : "SIGNAL:wLHE,QCD:wLHE"
     },
 
     "DYJetsToLL_M-10to50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_ext1" : {  
@@ -215,7 +215,7 @@
         "dataType" : "MC",
         "xsec" : 1903.0,
         "ncores" : 64,
-	"categories" : "SIGNAL:nominal,QCD:nominal"
+	"categories" : "SIGNAL:wLHE,QCD:wLHE"
     },
 
     "DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_ext2" : {  
@@ -225,7 +225,7 @@
         "dataType" : "MC",
         "xsec" : 6025.2,
         "ncores" : 64,
-	"categories" : "SIGNAL++:nominal,QCD++:nominal"
+	"categories" : "SIGNAL++:wLHE,QCD++:wLHE"
     },
 
     "WW_TuneCUETP8M1_13TeV-pythia8" : {  
@@ -340,7 +340,7 @@
         "dataType" : "MC",
         "xsec" : 182.0,
         "ncores" : -1,
-	"categories" : "SIGNAL:nominal,QCD:nominal"
+	"categories" : "SIGNAL:wLHE,QCD:wLHE"
     },
 
     "TTJets_SingleLeptFromT_TuneCUETP8M1_13TeV-madgraphMLM-pythia8_ext1" : {  
@@ -351,7 +351,7 @@
         "dataType" : "MC",
         "xsec" : 182.0,
         "ncores" : 64,
-	"categories" : "SIGNAL:nominal,QCD:nominal"
+	"categories" : "SIGNAL:wLHE,QCD:wLHE"
     },
 
     "TTJets_SingleLeptFromTbar_TuneCUETP8M1_13TeV-madgraphMLM-pythia8" : {  
@@ -362,7 +362,7 @@
         "dataType" : "MC",
         "xsec" : 182.0,
         "ncores" : -1,
-	"categories" : "SIGNAL:nominal,QCD:nominal"
+	"categories" : "SIGNAL:wLHE,QCD:wLHE"
     },
 
     "TTJets_SingleLeptFromTbar_TuneCUETP8M1_13TeV-madgraphMLM-pythia8_ext1" : {  
@@ -373,7 +373,7 @@
         "dataType" : "MC",
         "xsec" : 182.0,
         "ncores" : 64,
-	"categories" : "SIGNAL:nominal,QCD:nominal"
+	"categories" : "SIGNAL:wLHE,QCD:wLHE"
     },
 
     "TTJets_DiLept_TuneCUETP8M1_13TeV-madgraphMLM-pythia8" : {  
@@ -384,7 +384,7 @@
         "dataType" : "MC",
         "xsec" : 95.02,
         "ncores" : -1,
-	"categories" : "SIGNAL:nominal,QCD:nominal"
+	"categories" : "SIGNAL:wLHE,QCD:wLHE"
     },
 
     "TTJets_DiLept_TuneCUETP8M1_13TeV-madgraphMLM-pythia8_ext1" : {  
@@ -395,7 +395,7 @@
         "dataType" : "MC",
         "xsec" : 95.02,
         "ncores" : 64,
-	"categories" : "SIGNAL:nominal,QCD:nominal"
+	"categories" : "SIGNAL:wLHE,QCD:wLHE"
     },
 
     "SingleMuon_Run2016B_ver2" : {  
