@@ -3,57 +3,57 @@
 	"luminosity" : 35.92,
 	"era_ratios" : [0.548,0.452],
 	"genLepton" : "preFSR",
-	"phase_space" : {
+	"phase_space_preFSR" : {
 	    "y[0.0,0.2]" : {  
-		"qT" : [0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 30.0, -1]
+		"qT" : [0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 30.0, 35.0, 40.0, -1]
 	    },
 	    "y[0.2,0.4]" : {  
-		"qT" : [0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 30.0, -1]
+		"qT" : [0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 30.0, 35.0, 40.0, -1]
 	    },
 	    "y[0.4,0.6]" : {  
-		"qT" : [0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 30.0, -1]
+		"qT" : [0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 30.0, 35.0, 40.0, -1]
 	    },
 	    "y[0.6,0.8]" : {  
-		"qT" : [0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 30.0, -1]
+		"qT" : [0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 30.0, 35.0, 40.0, -1]
 	    },
 	    "y[0.8,1.0]" : {  
-		"qT" : [0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 30.0, -1]
+		"qT" : [0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 30.0, 35.0, 40.0, -1]
 	    },
 	    "y[1.0,1.2]" : {  
-		"qT" : [0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 30.0, -1]
+		"qT" : [0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 30.0, 35.0, 40.0, -1]
 	    },
 	    "y[1.2,1.4]" : {  
-		"qT" : [0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 30.0, -1]
+		"qT" : [0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 30.0, 35.0, 40.0, -1]
 	    },
 	    "y[1.4,1.6]" : {  
-		"qT" : [0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 30.0, -1]
+		"qT" : [0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 30.0, 35.0, 40.0, -1]
 	    },
 	    "y[1.6,1.8]" : {  
-		"qT" : [0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 30.0, -1]
+		"qT" : [0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 30.0, 35.0, 40.0, -1]
 	    },
 	    "y[1.8,2.0]" : {  
-		"qT" : [0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 30.0, -1]
+		"qT" : [0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 30.0, 35.0, 40.0, -1]
 	    },
 	    "y[2.0,2.2]" : {  
-		"qT" : [0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 30.0, -1]
+		"qT" : [0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 30.0, 35.0, 40.0, -1]
 	    },
 	    "y[2.2,2.4]" : {  
-		"qT" : [0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 30.0, -1]
+		"qT" : [0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 30.0, 35.0, 40.0, -1]
 	    },
 	    "y[2.4,2.6]" : {  
-		"qT" : [0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 30.0, -1]
+		"qT" : [0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 30.0, 35.0, 40.0, -1]
 	    },
 	    "y[2.6,2.8]" : {  
-		"qT" : [0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 30.0, -1]
+		"qT" : [0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 30.0, 35.0, 40.0, -1]
 	    },
 	    "y[2.8,3.0]" : {  
-		"qT" : [0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 30.0, -1]
+		"qT" : [0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 30.0, 35.0, 40.0, -1]
 	    },
 	    "y[3.0,Inf]" : {  
-		"qT" : [0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 30.0, -1]
+		"qT" : [0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 30.0, 35.0, 40.0, -1]
 	    }
 	},
-	"phase_space_preFSR" : {
+	"phase_space" : {
 	    "y[0.0,0.2]" : {  
 		"qT" : [0.0, 4.0, 8.0, 12.0, 16.0, 20.0, 25.0, 30.0, -1]
 	    },
@@ -65,6 +65,29 @@
 	    "coefficients" : ["UL","A0", "A1", "A2", "A3", "A4"],
 	    "input_file"   : "./data/generator/WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_GENINCLUSIVE.root"
 	},	
+        "external_SF" : {		
+	    "use_externalSF"        : 1,	    
+	    "apply_SmoothAntiISOSF" : 1,
+	    "apply_SmoothISOSF"     : 0,
+	    "POG" : {
+		"ISO" : {
+		    "input_wSF"  : "data/externalSF/bkg_parameters_file.root",
+		    "input_woSF" : "data/externalSF/bkg_parameters_file_noIsoSF_.root",
+		    "systs"      : ["nominal"]
+		}
+	    },
+	    "WHelicity" : {
+		"trigger" : {
+		    "input_plus"  : "data/externalSF/fromWhelicity/smoothEfficiency_muons_plus_trigger.root",
+		    "input_minus" : "data/externalSF/fromWhelicity/smoothEfficiency_muons_minus_trigger.root",
+	            "systs" : []
+		},
+		"reco" :  {
+		    "input" : "data/externalSF/fromWhelicity/smoothEfficiency_muons_recoToSel_finerETA.root",
+	            "systs" : []
+		}
+            }
+	},
 	"Wto" : {
 	    "MuP" : "GenV_preFSR_charge==-13",  
 	    "MuN" : "GenV_preFSR_charge==+13",  
@@ -75,10 +98,54 @@
 	    "TauTau" : "genVtype!=13"
 	},
 	"Z_reweighter" : {
-            "input_file_qt"  : "./data/generator/histoUnfoldingSystPt_nsel2_dy3_rebin1_default.root",
-            "input_file_y"   : "./data/generator/histoUnfoldingSystRap_nsel2_dy3_rebin1_default.root",
-	    "genLepton"      : "dress",
-	    "scaleFactor"    : -1.0
+	    "V" : {
+		"input_qt"  : "./data/generator/histoUnfoldingSystPt_nsel2_dy3_rebin1_default.root",
+		"input_y"   : "./data/generator/histoUnfoldingSystRap_nsel2_dy3_rebin1_default.root",
+		"genLepton"      : "dress",
+		"scaleFactor"    : -1.0
+	    },
+	    "W" : {
+		"input_qt"  : "./data/generator/histoUnfoldingSystPt_nsel2_dy3_rebin1_default.root",
+		"input_y"   : "./data/generator/histoUnfoldingSystRap_nsel2_dy3_rebin1_default.root",
+		"genLepton"      : "dress",
+		"scaleFactor"    : -1.0
+	    },
+	    "Z" : {
+		"input_qt"  : "./data/generator/histoUnfoldingSystPt_nsel2_dy3_rebin1_default.root",
+		"input_y"   : "./data/generator/histoUnfoldingSystRap_nsel2_dy3_rebin1_default.root",
+		"genLepton"      : "dress",
+		"scaleFactor"    : -1.0
+	    },
+	    "WtoMuP" : {
+		"input_qt"  : "./data/generator/histoUnfoldingSystPt_nsel2_dy3_rebin1_default.root",
+		"input_y"   : "./data/generator/histoUnfoldingSystRap_nsel2_dy3_rebin1_default.root",
+		"genLepton"      : "dress",
+		"scaleFactor"    : -1.0
+	    },
+	    "WtoMuN" : {
+		"input_qt"  : "./data/generator/histoUnfoldingSystPt_nsel2_dy3_rebin1_default.root",
+		"input_y"   : "./data/generator/histoUnfoldingSystRap_nsel2_dy3_rebin1_default.root",
+		"genLepton"      : "dress",
+		"scaleFactor"    : -1.0
+	    },
+	    "WtoTau" : {
+		"input_qt"  : "./data/generator/histoUnfoldingSystPt_nsel2_dy3_rebin1_default.root",
+		"input_y"   : "./data/generator/histoUnfoldingSystRap_nsel2_dy3_rebin1_default.root",
+		"genLepton"      : "dress",
+		"scaleFactor"    : -1.0
+	    },
+	    "ZtoMuMu" : {
+		"input_qt"  : "./data/generator/histoUnfoldingSystPt_nsel2_dy3_rebin1_default.root",
+		"input_y"   : "./data/generator/histoUnfoldingSystRap_nsel2_dy3_rebin1_default.root",
+		"genLepton"      : "dress",
+		"scaleFactor"    : -1.0
+	    },
+	    "ZtoTauTau" : {
+		"input_qt"  : "./data/generator/histoUnfoldingSystPt_nsel2_dy3_rebin1_default.root",
+		"input_y"   : "./data/generator/histoUnfoldingSystRap_nsel2_dy3_rebin1_default.root",
+		"genLepton"      : "dress",
+		"scaleFactor"    : -1.0
+	    }
         },	
 	"merged" : {
 	    "WJets" : ["WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_GENINCLUSIVE_0", 
@@ -102,7 +169,7 @@
         "dataType" : "MC",
         "xsec" : 61526.7,
         "ncores" : 64,
- 	"categories" : "GENINCLUSIVE_WtoMuP:nominal,GENINCLUSIVE_WtoMuN:nominal"
+ 	"categories" : "GENINCLUSIVE_WtoMuP+:nominal,GENINCLUSIVE_WtoMuN+:nominal"
     },
 
     "WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_GENINCLUSIVE_1" : {  
@@ -114,7 +181,7 @@
         "dataType" : "MC",
         "xsec" : 61526.7,
         "ncores" : 64,
- 	"categories" : "GENINCLUSIVE_WtoMuP:nominal,GENINCLUSIVE_WtoMuN:nominal"
+ 	"categories" : "GENINCLUSIVE_WtoMuP+:nominal,GENINCLUSIVE_WtoMuN+:nominal"
     },
 
     "WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_GENINCLUSIVE_2" : {  
@@ -126,7 +193,7 @@
         "dataType" : "MC",
         "xsec" : 61526.7,
         "ncores" : 64,
- 	"categories" : "GENINCLUSIVE_WtoMuP:nominal,GENINCLUSIVE_WtoMuN:nominal"
+ 	"categories" : "GENINCLUSIVE_WtoMuP+:nominal,GENINCLUSIVE_WtoMuN+:nominal"
     }
 
 }

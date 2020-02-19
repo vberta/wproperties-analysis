@@ -49,21 +49,25 @@ python plotter.py -b -o $1 -c SIGNAL_Plus -v "SelMuon1_eta_SelMuon1_corrected_pt
 python plotter.py -b -o $1 -c SIGNAL_Plus -v "SelMuon1_eta_SelMuon1_corrected_pt_SelMuon1_charge" -p x -x "muon #eta" -s "LHEScaleWeight_muR2p0_muF1p0,LHEScaleWeight_muR0p5_muF1p0" -q -t eta_muR
 python plotter.py -b -o $1 -c SIGNAL_Plus -v "SelMuon1_eta_SelMuon1_corrected_pt_SelMuon1_charge" -p x -x "muon #eta" -s "LHEScaleWeight_muR1p0_muF2p0,LHEScaleWeight_muR1p0_muF0p5" -q -t eta_muF
 python plotter.py -b -o $1 -c SIGNAL_Plus -v "SelMuon1_eta_SelMuon1_corrected_pt_SelMuon1_charge" -p x -x "muon #eta" -s "LHEScaleWeight_muR2p0_muF2p0,LHEScaleWeight_muR0p5_muF0p5" -q -t eta_muRmuF
+python plotter.py -b -o $1 -c SIGNAL_Plus -v "SelMuon1_eta_SelMuon1_corrected_pt_SelMuon1_charge" -p x -x "muon #eta" -s "LHEPdfWeight" -q -t eta_PDF
 
-#python plotter.py -b -o $1 -c SIGNAL_Plus -v "SelMuon1_eta_SelMuon1_corrected_pt_SelMuon1_charge" -p y -x "muon p_{T} [GeV]" -s "ISO,Trigger,nom,corrected,LHE" -q -t pt_quad_all
-#python plotter.py -b -o $1 -c SIGNAL_Plus -v "SelMuon1_eta_SelMuon1_corrected_pt_SelMuon1_charge" -p y -x "muon p_{T} [GeV]" -s "ISO,Trigger,nom,corrected" -q -t pt_quad_noLHE
+python plotter.py -b -o $1 -c SIGNAL_Plus -v "SelMuon1_eta_SelMuon1_corrected_pt_SelMuon1_charge" -p y -x "muon p_{T} [GeV]" -s "ISO,Trigger,nom,corrected,LHE" -q -t pt_quad_all
+python plotter.py -b -o $1 -c SIGNAL_Plus -v "SelMuon1_eta_SelMuon1_corrected_pt_SelMuon1_charge" -p y -x "muon p_{T} [GeV]" -s "ISO,Trigger,nom,corrected" -q -t pt_quad_noLHE
 python plotter.py -b -o $1 -c SIGNAL_Plus -v "SelMuon1_eta_SelMuon1_corrected_pt_SelMuon1_charge" -p y -x "muon p_{T} [GeV]" -s "LHEScaleWeight_muR2p0_muF1p0,LHEScaleWeight_muR0p5_muF1p0" -t pt_muR
 python plotter.py -b -o $1 -c SIGNAL_Plus -v "SelMuon1_eta_SelMuon1_corrected_pt_SelMuon1_charge" -p y -x "muon p_{T} [GeV]" -s "LHEScaleWeight_muR1p0_muF2p0,LHEScaleWeight_muR1p0_muF0p5" -t pt_muF
 python plotter.py -b -o $1 -c SIGNAL_Plus -v "SelMuon1_eta_SelMuon1_corrected_pt_SelMuon1_charge" -p y -x "muon p_{T} [GeV]" -s "LHEScaleWeight_muR2p0_muF2p0,LHEScaleWeight_muR0p5_muF0p5" -t pt_muRmuF
+python plotter.py -b -o $1 -c SIGNAL_Plus -v "SelMuon1_eta_SelMuon1_corrected_pt_SelMuon1_charge" -p y -x "muon p_{T} [GeV]" -s "LHEPdfWeight" -q -t pt_PDF
 
-#python plotter.py -b -o $1 -c SIGNAL_Minus -v "SelMuon1_eta_SelMuon1_corrected_pt_SelMuon1_charge" -p x -x "muon #eta" -s "ISO,Trigger,nom,corrected,LHE" -q -t eta_quad_all
-#python plotter.py -b -o $1 -c SIGNAL_Minus -v "SelMuon1_eta_SelMuon1_corrected_pt_SelMuon1_charge" -p x -x "muon #eta" -s "ISO,Trigger,nom,corrected" -q -t eta_quad_noLHE
+python plotter.py -b -o $1 -c SIGNAL_Minus -v "SelMuon1_eta_SelMuon1_corrected_pt_SelMuon1_charge" -p x -x "muon #eta" -s "ISO,Trigger,nom,corrected,LHE" -q -t eta_quad_all
+python plotter.py -b -o $1 -c SIGNAL_Minus -v "SelMuon1_eta_SelMuon1_corrected_pt_SelMuon1_charge" -p x -x "muon #eta" -s "ISO,Trigger,nom,corrected" -q -t eta_quad_noLHE
 python plotter.py -b -o $1 -c SIGNAL_Minus -v "SelMuon1_eta_SelMuon1_corrected_pt_SelMuon1_charge" -p x -x "muon #eta" -s "LHEScaleWeight_muR2p0_muF1p0,LHEScaleWeight_muR0p5_muF1p0" -t eta_muR
 python plotter.py -b -o $1 -c SIGNAL_Minus -v "SelMuon1_eta_SelMuon1_corrected_pt_SelMuon1_charge" -p x -x "muon #eta" -s "LHEScaleWeight_muR1p0_muF2p0,LHEScaleWeight_muR1p0_muF0p5" -t eta_muF
 python plotter.py -b -o $1 -c SIGNAL_Minus -v "SelMuon1_eta_SelMuon1_corrected_pt_SelMuon1_charge" -p x -x "muon #eta" -s "LHEScaleWeight_muR2p0_muF2p0,LHEScaleWeight_muR0p5_muF0p5" -t eta_muRmuF
+python plotter.py -b -o $1 -c SIGNAL_Minus -v "SelMuon1_eta_SelMuon1_corrected_pt_SelMuon1_charge" -p x -x "muon #eta" -s "LHEPdfWeight" -q -t eta_PDF
 
-#python plotter.py -b -o $1 -c SIGNAL_Minus -v "SelMuon1_eta_SelMuon1_corrected_pt_SelMuon1_charge" -p y -x "muon p_{T} [GeV]" -s "ISO,Trigger,nom,corrected,LHE" -q -t pt_quad_all
-#python plotter.py -b -o $1 -c SIGNAL_Minus -v "SelMuon1_eta_SelMuon1_corrected_pt_SelMuon1_charge" -p y -x "muon p_{T} [GeV]" -s "ISO,Trigger,nom,corrected" -q -t pt_quad_noLHE
+python plotter.py -b -o $1 -c SIGNAL_Minus -v "SelMuon1_eta_SelMuon1_corrected_pt_SelMuon1_charge" -p y -x "muon p_{T} [GeV]" -s "ISO,Trigger,nom,corrected,LHE" -q -t pt_quad_all
+python plotter.py -b -o $1 -c SIGNAL_Minus -v "SelMuon1_eta_SelMuon1_corrected_pt_SelMuon1_charge" -p y -x "muon p_{T} [GeV]" -s "ISO,Trigger,nom,corrected" -q -t pt_quad_noLHE
 python plotter.py -b -o $1 -c SIGNAL_Minus -v "SelMuon1_eta_SelMuon1_corrected_pt_SelMuon1_charge" -p y -x "muon p_{T} [GeV]" -s "LHEScaleWeight_muR2p0_muF1p0,LHEScaleWeight_muR0p5_muF1p0" -t pt_muR
 python plotter.py -b -o $1 -c SIGNAL_Minus -v "SelMuon1_eta_SelMuon1_corrected_pt_SelMuon1_charge" -p y -x "muon p_{T} [GeV]" -s "LHEScaleWeight_muR1p0_muF2p0,LHEScaleWeight_muR1p0_muF0p5" -t pt_muF
 python plotter.py -b -o $1 -c SIGNAL_Minus -v "SelMuon1_eta_SelMuon1_corrected_pt_SelMuon1_charge" -p y -x "muon p_{T} [GeV]" -s "LHEScaleWeight_muR2p0_muF2p0,LHEScaleWeight_muR0p5_muF0p5" -t pt_muRmuF
+python plotter.py -b -o $1 -c SIGNAL_Minus -v "SelMuon1_eta_SelMuon1_corrected_pt_SelMuon1_charge" -p y -x "muon p_{T} [GeV]" -s "LHEPdfWeight" -q -t pt_PDF

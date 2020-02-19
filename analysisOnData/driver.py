@@ -174,150 +174,69 @@ def merge(sampledata):
       print cmd
       os.system(cmd)   
 
-def make_dictionary(sampledata, vname, verbose=verbose):
-   out = {}
-   out['variable'] = vname
-   output = sampledata["common"]["output"]
-   for krc,r in output.items():
-      out[krc] = {}
-      if verbose: print krc
-      charge = krc.split('_')[1] if '_' in krc else ''
-      kr = krc.split('_')[0]
-      total_data = 0.0
-      total_mc   = 0.0
-      for kp,p in r.items():
-         out[krc][kp] = {}
-         if verbose: print '\t'+kp
-         fname = p.split('/')[0]
-         f     = ROOT.TFile(output_dir+'/hadded/'+fname)
-         dname = ((p.split('/')[1].split(':')[0]).replace('*',kr))
-         cats  = p.split('/')[1].split(':')[1].split(',')
-         tot_nominal = -1.
-         for cat in cats:
-            out[krc][kp][cat] = {}
-            systs = []
-            for sk,sv in modules_any.items():
-               if cat==(sk.split('_')[-1]):
-                  systs = sv
-                  if cat=='fakerate': 
-                     systs = sv['systs']
-                  elif cat=='mass':
-                     systs = sv['masses']
-            if len(systs)==0: systs.append('')
-            if verbose: print '\t\t'+cat
-            if cat=='LHEScaleWeight':
-               systs = []
-               for syst in sv:
-                  systs.append(LHEScaleWeight_meaning(syst))
-            elif cat=='LHEPdfWeight':
-               first,last = systs[0],systs[1]
-               systs = []
-               for i in range(first,last+1):
-                  systs.append(LHEPdfWeight_meaning(i))
-            for syst in systs:               
-               tag = syst
-               if cat in ['ISO','ID','Trigger']:
-                  tag = cat+'_'+tag
-               elif cat=='puWeight':
-                  tag = cat+syst
-               elif cat=='fakerate':
-                  tag = cat+'_'+tag
-               elif 'LHE' in cat:
-                  tag = cat+'_'+tag                  
-               hname = dname+'_'+cat+'/'+dname+'__'+vname+'__'+tag
-               f.cd()
-               h3 = ROOT.gDirectory.Get(hname)
-               if h3==None:
-                  continue
-               if charge=='Plus': 
-                  h3.GetZaxis().SetRange(2,2)
-               elif charge=='Minus':
-                  h3.GetZaxis().SetRange(1,1)
-               else:
-                  pass
-               tot = h3.Project3D("yxe").Integral() 
-               out[krc][kp][cat][syst] = { 'hname' : (fname+'/'+hname).replace(vname,'*'), 'integral' : tot, 'delta' : 0.0}
-               if cat=='nominal': 
-                  tot_nominal = tot
-                  if kp=='Data': total_data += tot
-                  else: total_mc += tot
-                  if verbose: print '\t\t\t'+syst+' --> '+'{:.3E}'.format(tot_nominal)
-               elif cat=='fakerate' and syst=='nominal':
-                  total_mc += tot
-                  if verbose: print '\t\t\t'+syst+' --> '+'{:.3E}'.format(tot) 
-               else:
-                  if verbose: print '\t\t\t'+syst+' --> '+'{:.3f}'.format((tot-tot_nominal)/tot_nominal*1e+02)+'%'                     
-                  out[krc][kp][cat][syst]['delta'] = (tot-tot_nominal)/tot_nominal*1e+02
-
-         f.Close()
-   if verbose: print 'Data: '+'{:.3E}'.format(total_data)
-   if verbose: print 'MC:   '+'{:.3E}'.format(total_mc)
-   from json import encoder
-   encoder.FLOAT_REPR = lambda o: format(o, '.3f')
-   with open(output_dir+'/hadded/dictionary_'+vname+'.json', 'w') as fp:
-      json.dump(out, fp)
-   return
-
 def make_dictionary_histo(sampledata, vname, verbose=verbose):
    out = {}
    out['variable'] = vname
    output = sampledata["common"]["output"]
+   
+   # categories
    for krc,r in output.items():
       out[krc] = {}
+      # strip charge (-> Plus/Minus)
       kr = krc.split('_')[0]
-      for kp,p in r.items():
-         fname = p.split('/')[0]
-         f     = ROOT.TFile(output_dir+'/hadded/'+fname)
-         dname = ((p.split('/')[1].split(':')[0]).replace('*',kr))
-         cats  = p.split('/')[1].split(':')[1].split(',')
-         tot_nominal = -1.
-         for cat in cats:
-            if not out[krc].has_key(cat):
-               out[krc][cat] = {}
-            systs = []
-            for sk,sv in modules_any.items():
-               if cat==(sk.split('_')[-1]):
-                  systs = sv
-                  if cat=='fakerate': 
-                     systs = sv['systs']
-                  elif cat=='mass':
-                     systs = sv['masses']
-            if len(systs)==0: systs.append('')
-            if cat=='LHEScaleWeight':
-               systs_clone = copy.deepcopy(systs)
+      # process
+      for kp,p in r.items():         
+         multifiles = p.split(';')
+         for sp in multifiles:
+            fname = sp.split('/')[0]
+            f     = ROOT.TFile(output_dir+'/hadded/'+fname)
+            specs = sp.split('/')[1].split(':')
+            dname = specs[0].replace('*',kr)
+            cats  = specs[1].split(',')
+            tot_nominal = -1.
+            for cat in cats:
+               if not out[krc].has_key(cat):
+                  out[krc][cat] = {}
                systs = []
-               for syst in systs_clone:
-                  systs.append(LHEScaleWeight_meaning(syst))
-            elif cat=='LHEPdfWeight':
-               first,last = systs[0],systs[1]
-               systs = []
-               for i in range(first,last+1):
-                  systs.append(LHEPdfWeight_meaning(i))
-
-            for syst in systs:               
-               tag = syst
-               if cat in ['ISO','Trigger']:
-                  tag = cat+tag
-               elif cat=='puWeight':
-                  tag = cat+syst
-               elif cat=='fakerate':
-                  tag = cat+'_'+tag
-               elif 'LHE' in cat:
-                  tag = cat+'_'+tag                  
-               hname = dname+'_'+cat+'/'+dname+'__'+vname+'__'+tag
-               f.cd()
-               h3 = ROOT.gDirectory.Get(hname)
-               if h3==None:
-                  if verbose: print 'NOT FOUND: '+fname+'/'+hname
-                  continue
-               if not out[krc][cat].has_key(syst):
-                  print "Adding ", krc+':'+cat+':'+syst+' --> '+vname
-                  out[krc][cat][syst] = {'inputs' : [ { 'pname': kp, 'fname' : fname, 'hname' : hname.replace(vname,'*') } ] }
-                  pass
-               else:
-                  out[krc][cat][syst]['inputs'].append( { 'pname': kp, 'fname' : fname, 'hname' : hname.replace(vname,'*') } )
-                  pass
-         f.Close()
+               for sk,sv in modules_any.items():
+                  if cat==(sk.split('_')[-1]):
+                     systs = sv
+                     if cat=='fakerate': 
+                        systs = sv['systs']
+                     elif cat=='mass':
+                        systs = sv['masses']
+               if len(systs)==0: systs.append('')
+               if cat=='LHEScaleWeight':
+                  systs_clone = copy.deepcopy(systs)
+                  systs = []
+                  for syst in systs_clone:
+                     systs.append(LHEScaleWeight_meaning(syst))
+               elif cat=='LHEPdfWeight':
+                  first,last = systs[0],systs[1]
+                  systs = []
+                  for i in range(first,last+1):
+                     systs.append(LHEPdfWeight_meaning(i))
+               # systs
+               for syst in systs:               
+                  tag = syst
+                  if cat in ['ISO','Trigger']: tag = cat+tag
+                  elif cat=='puWeight':        tag = cat+syst
+                  elif cat=='fakerate':        tag = cat+'_'+tag
+                  elif 'LHE' in cat:           tag = cat+'_'+tag                  
+                  hname = dname+'_'+cat+'/'+dname+'__'+vname+'__'+tag
+                  f.cd()
+                  h3 = ROOT.gDirectory.Get(hname)
+                  if h3==None:
+                     if verbose: print 'NOT FOUND: '+fname+'/'+hname
+                     continue
+                  if not out[krc][cat].has_key(syst):
+                     print "Adding ", krc+':'+cat+':'+syst+' --> '+vname
+                     out[krc][cat][syst] = {'inputs' : [ { 'pname': kp, 'fname' : fname, 'hname' : hname.replace(vname,'*') } ] }
+                     pass
+                  else:
+                     out[krc][cat][syst]['inputs'].append( { 'pname': kp, 'fname' : fname, 'hname' : hname.replace(vname,'*') } )
+                     pass
+            f.Close()
 
    from json import encoder
    encoder.FLOAT_REPR = lambda o: format(o, '.3f')

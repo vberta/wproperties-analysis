@@ -128,9 +128,9 @@
 	},
 	"output" : {
 	    "SIGNAL_Plus" : {
-		"WtoMuP"      : "WJets.root/*_WtoMuP:nominal,corrected,nom,Trigger,ISO,LHEScaleWeight",
-		"WtoMuN"      : "WJets.root/*_WtoMuN:nominal,corrected,nom,Trigger,ISO,LHEScaleWeight",
-		"WtoTau"      : "WJets.root/*_WtoTau:nominal,corrected,nom,Trigger,ISO,LHEScaleWeight",
+		"WtoMuP"      : "WJets.root/*_WtoMuP:nominal,corrected,nom,Trigger,ISO,LHEScaleWeight;WJets_PDFs.root/*_WtoMuP:LHEPdfWeight",
+		"WtoMuN"      : "WJets.root/*_WtoMuN:nominal,corrected,nom,Trigger,ISO,LHEScaleWeight;WJets_PDFs.root/*_WtoMuN:LHEPdfWeight",
+		"WtoTau"      : "WJets.root/*_WtoTau:nominal,corrected,nom,Trigger,ISO,LHEScaleWeight;WJets_PDFs.root/*_WtoTau:LHEPdfWeight",
 		"Z"           : "DYJets.root/*:nominal,corrected,nom,Trigger,ISO,LHEScaleWeight",
 		"TTbar"       : "TTbar.root/*:nominal,corrected,nom,Trigger,ISO,LHEScaleWeight",
 		"AISO_Fake"   : "SingleMuon.root/AISO:fakerate",
@@ -140,9 +140,9 @@
 		"Data"        : "SingleMuon.root/*:nominal"
 	    },
 	    "SIGNAL_Minus"  : {
-		"WtoMuP"      : "WJets.root/*_WtoMuP:nominal,corrected,nom,Trigger,ISO,LHEScaleWeight",
-		"WtoMuN"      : "WJets.root/*_WtoMuN:nominal,corrected,nom,Trigger,ISO,LHEScaleWeight",
-		"WtoTau"      : "WJets.root/*_WtoTau:nominal,corrected,nom,Trigger,ISO,LHEScaleWeight",
+		"WtoMuP"      : "WJets.root/*_WtoMuP:nominal,corrected,nom,Trigger,ISO,LHEScaleWeight;WJets_PDFs.root/*_WtoMuP:LHEPdfWeight",
+		"WtoMuN"      : "WJets.root/*_WtoMuN:nominal,corrected,nom,Trigger,ISO,LHEScaleWeight;WJets_PDFs.root/*_WtoMuN:LHEPdfWeight",
+		"WtoTau"      : "WJets.root/*_WtoTau:nominal,corrected,nom,Trigger,ISO,LHEScaleWeight;WJets_PDFs.root/*_WtoTau:LHEPdfWeight",
 		"Z"           : "DYJets.root/*:nominal,corrected,nom,Trigger,ISO,LHEScaleWeight",
 		"TTbar"       : "TTbar.root/*:nominal,corrected,nom,Trigger,ISO,LHEScaleWeight",
 		"AISO_Fake"   : "SingleMuon.root/AISO:fakerate",
@@ -152,7 +152,7 @@
 		"Data"        : "SingleMuon.root/*:nominal"
 	    },
 	    "QCD_Plus" : {
-		"W"           : "WJets.root/*:nominal,corrected,nom,Trigger,ISO,LHEScaleWeight",
+		"W"           : "WJets.root/*:nominal,corrected,nom,Trigger,ISO,LHEScaleWeight;WJets_PDFs.root/*_WtoMuP:LHEPdfWeight",
 		"Z"           : "DYJets.root/*:nominal,corrected,nom,Trigger,ISO,LHEScaleWeight",
 		"TTbar"       : "TTbar.root/*:nominal,corrected,nom,Trigger,ISO,LHEScaleWeight",
 		"AISO_Fake"   : "SingleMuon.root/SIDEBAND:fakerate",
@@ -162,7 +162,7 @@
 		"Data"        : "SingleMuon.root/*:nominal"
 	    },
 	    "QCD_Minus"  : {
-		"W"             : "WJets.root/*:nominal,corrected,nom,Trigger,ISO,LHEScaleWeight",
+		"W"             : "WJets.root/*:nominal,corrected,nom,Trigger,ISO,LHEScaleWeight;WJets_PDFs.root/*_WtoMuP:LHEPdfWeight",
 		"Z"             : "DYJets.root/*:nominal,corrected,nom,Trigger,ISO,LHEScaleWeight",
 		"TTbar"         : "TTbar.root/*:nominal,corrected,nom,Trigger,ISO,LHEScaleWeight",
 		"AISO_Fake"     : "SingleMuon.root/SIDEBAND:fakerate",

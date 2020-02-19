@@ -79,7 +79,8 @@ nicknames_syst = {
     "LHEScaleWeight_muR0p5_muF1p0"   : "#mu_{R}",
     "LHEScaleWeight_muR2p0_muF1p0"   : "#mu_{R}",
     "LHEScaleWeight_muR0p5_muF0p5"   : "#mu_{R}#mu_{F}",
-    "LHEScaleWeight_muR2p0_muF2p0"   : "#mu_{R}#mu_{F}"
+    "LHEScaleWeight_muR2p0_muF2p0"   : "#mu_{R}#mu_{F}",
+    "LHEPdfWeight_NNPDF"             : "NNPDF3.0 #oplus #alpha_{s}"
 }
 
 def setup_pad1(pad1):
@@ -368,6 +369,8 @@ def plot(category, variable, proj, xtitle, ytitle, tag, slices):
             for ibin in range(1,systs_sum.GetXaxis().GetNbins()+1):
                 systs_sum.SetBinContent(ibin, 1.0)
                 err = 0.0
+                delta_PDFs = 0.0 
+                n_replicas = 0
                 for k,v in systs.items():
                     accept = False
                     for s in systematics.split(','): 
@@ -380,11 +383,22 @@ def plot(category, variable, proj, xtitle, ytitle, tag, slices):
                             for p in parts:
                                 accept = accept and (p in k)
                     if not accept: continue
-                    kname = str(k.split('_')[0]) if 'LHE' not in k else k 
+                    kname = str(k.split('_')[0]) if 'LHEScaleWeight' not in k else k 
+                    kname = str(k.split('_')[0]+'_'+k.split('_')[1]) if 'LHEPdfWeight_NNPDF' in k else kname
                     if nicknames_syst[kname] not in systs_text:
                         systs_text += (nicknames_syst[kname]+', ')
                     delta = (v.GetBinContent(ibin) - hMC.GetBinContent(ibin))
-                    err += delta*delta
+                    if 'LHEPdfWeight' in k and 'replica' in k:
+                        delta_PDFs += delta*delta
+                        n_replicas += 1
+                        continue
+                    elif 'LHEPdfWeight' in k and 'alpha' in k:
+                        pass
+                    # divide by 2 to account for plus/minus
+                    err += delta*delta/2
+                if n_replicas>0:
+                    err += delta_PDFs/n_replicas
+                    #print math.sqrt(delta_PDFs/n_replicas)/hMC.GetBinContent(ibin)
                 systs_sum.SetBinError(ibin, math.sqrt(err)/hMC.GetBinContent(ibin))
             systs_sum.SetLineColor(ROOT.kRed)
             systs_sum.SetFillStyle(3005)
