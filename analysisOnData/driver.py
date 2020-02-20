@@ -255,7 +255,9 @@ if __name__ == '__main__':
       merge(sampledata)
    elif args.dictionary:
       for v in ['SelMuon1_eta_SelMuon1_corrected_pt_SelMuon1_charge', 
-                #'SelMuon2_eta_SelMuon2_corrected_pt_SelMuon2_charge', 
+                'SelMuon2_eta_SelMuon2_corrected_pt_SelMuon2_charge', 
+                'SelMuon1_eta_SelMuon1_corrected_pt_SelMuon1_corrected_MET_nom_Wlike_mt', 
+                'SelMuon2_eta_SelMuon2_corrected_pt_SelMuon2_corrected_MET_nom_Wlike_mt', 
                 #'SelRecoZ_corrected_qt_SelRecoZ_corrected_y_SelRecoZ_corrected_mass',
                 #'SelMuon1_corrected_MET_nom_mt_SelMuon1_corrected_MET_nom_hpt_SelMuon1_charge',
                 #'SelMuon1_pfRelIso04_all_SelMuon1_dxy_SelMuon1_charge', 

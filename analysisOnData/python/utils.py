@@ -34,7 +34,7 @@ modules_all = {
 
 submodules_LHE = {
     'event_syst_LHEScaleWeight' : [0,8,1,7,3,5],
-    'event_syst_LHEPdfWeight'   : [1,101]    
+    #'event_syst_LHEPdfWeight'   : [1,101]    
     }
 modules_LHE = {
     'muon_nominal' : [],    
