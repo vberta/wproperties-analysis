@@ -385,7 +385,7 @@ def plot(category, variable, proj, xtitle, ytitle, tag, slices):
                     if not accept: continue
                     kname = str(k.split('_')[0]) if 'LHEScaleWeight' not in k else k 
                     kname = str(k.split('_')[0]+'_'+k.split('_')[1]) if 'LHEPdfWeight_NNPDF' in k else kname
-                    if nicknames_syst[kname] not in systs_text:
+                    if (', '+nicknames_syst[kname]+', ') not in systs_text or systs_text=='':
                         systs_text += (nicknames_syst[kname]+', ')
                     delta = (v.GetBinContent(ibin) - hMC.GetBinContent(ibin))
                     if 'LHEPdfWeight' in k and 'replica' in k:
