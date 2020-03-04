@@ -54,10 +54,28 @@ RNode getCompVars::run(RNode d){
       new_cols_pt.push_back( "MET_"+_MET_systs[i]+postfix+"_pt");
       new_cols_phi.push_back("MET_"+_MET_systs[i]+postfix+"_phi");
     }
-    auto d_post = d_start
-      .Define("MET_nomAll_pt",  getRVec_FFFFFFtoV, new_cols_pt)
-      .Define("MET_nomAll_phi", getRVec_FFFFFFtoV, new_cols_phi)
-      ;
+
+    RNode d_post = d_start;
+    switch(_MET_systs.size()){
+    case 2:
+      d_post = d_start
+	.Define("MET_nomAll_pt",  getRVec_FFtoV, new_cols_pt)
+	.Define("MET_nomAll_phi", getRVec_FFtoV, new_cols_phi);
+      break;
+    case 4:
+      d_post = d_start
+	.Define("MET_nomAll_pt",  getRVec_FFFFtoV, new_cols_pt)
+	.Define("MET_nomAll_phi", getRVec_FFFFtoV, new_cols_phi);
+      break;      
+    case 6:
+      d_post = d_start
+	.Define("MET_nomAll_pt",  getRVec_FFFFFFtoV, new_cols_pt)
+	.Define("MET_nomAll_phi", getRVec_FFFFFFtoV, new_cols_phi);
+      break;            
+    default:
+      std::cout << "getCompVars(): " << _MET_systs.size() << " MET systs not supported" << std::endl;
+      break;
+    }
     d_start = d_post;
   }
 
@@ -112,7 +130,7 @@ RNode getCompVars::run(RNode d){
 	}
 	
 	RNode d_post = d_start;
-	switch(syst_size){
+ 	switch(syst_size){
 	case 2:
 	  d_post = d_start.Define(new_colAll, getRVec_FFtoV, new_cols);
 	  break;

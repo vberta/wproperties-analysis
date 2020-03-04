@@ -17,7 +17,8 @@ modules_all = {
     #'muon_syst_scalefactor_ISO'     : ['statUp', 'statDown', 'systUp', 'systDown'],
     #'muon_syst_scalefactor_Trigger' : ['statUp', 'statDown', 'systUp', 'systDown'],
     'muon_syst_column_corrected'    : ['correctedUp','correctedDown'],
-    'muon_syst_column_nom'          : ['jerUp','jerDown','jesTotalUp','jesTotalDown','unclustEnUp','unclustEnDown'],
+    'muon_syst_column_nom'          : [#'jerUp','jerDown',
+                                       'jesTotalUp','jesTotalDown','unclustEnUp','unclustEnDown'],
     'muon_syst_scalefactor_external_Trigger' : [#"trigger_data_eigen0Up", "trigger_data_eigen0Down", 
                                                 #"trigger_data_eigen1Up", "trigger_data_eigen1Down", 
                                                 #"trigger_data_eigen2Up", "trigger_data_eigen2Down",
@@ -27,9 +28,9 @@ modules_all = {
     'muon_syst_scalefactor_external_ISO'     : [#"reco_data_eigen0Up",    "reco_data_eigen0Down", 
                                                 #"reco_data_eigen1Up",    "reco_data_eigen1Down", 
                                                 #"reco_data_eigen2Up",    "reco_data_eigen2Down",
-                                                "reco_mc_eigen0Up",      "reco_mc_eigen0Down", 
-                                                "reco_mc_eigen1Up",      "reco_mc_eigen1Down", 
-                                                "reco_mc_eigen2Up",      "reco_mc_eigen2Down"],
+                                                "reco_mc_syst0Up",      "reco_mc_syst0Down", 
+                                                "reco_mc_syst1Up",      "reco_mc_syst1Down", 
+                                                "reco_mc_syst2Up",      "reco_mc_syst2Down"],
     }
 
 submodules_LHE = {
@@ -60,6 +61,10 @@ submodules_fakerate = {
 
 modules_fakerate = copy.deepcopy(modules_nominal)
 modules_fakerate.update(submodules_fakerate)
+
+modules_wSF = copy.deepcopy(modules_all)
+del modules_wSF['muon_syst_column_corrected']
+del modules_wSF['muon_syst_column_nom']
 
 modules_wLHE = copy.deepcopy(modules_all)
 modules_wLHE.update( submodules_LHE )
@@ -116,6 +121,48 @@ categories_all = {
         'category_cut_base' : 'defs',
         'modules' : modules_nominal,
     },
+    'QCDA': {
+        'weight' : 'puWeight*lumiweight*SelMuon1_ID_SF*SelMuon1_ISO_SF*SelMuon1_Trigger_SF',
+        'category_weight_base' : 'QCD',
+        'cut' : 'Vtype==0 ' + \
+            '&& HLT_SingleMu24 '+ \
+            '&& MET_filters==1 ' + \
+            '&& nVetoElectrons==0 ' + \
+            '&& SelMuon1_corrected_pt>26.0 ' + \
+            '&& SelMuon1_corrected_pt<55.0 ' + \
+            '&& SelMuon1_corrected_MET_nom_mt<=15 ',
+        'cut_base' : '',
+        'category_cut_base' : 'defs',
+        'modules' : modules_nominal,
+    },
+    'QCDB': {
+        'weight' : 'puWeight*lumiweight*SelMuon1_ID_SF*SelMuon1_ISO_SF*SelMuon1_Trigger_SF',
+        'category_weight_base' : 'QCD',
+        'cut' : 'Vtype==0 ' + \
+            '&& HLT_SingleMu24 '+ \
+            '&& MET_filters==1 ' + \
+            '&& nVetoElectrons==0 ' + \
+            '&& SelMuon1_corrected_pt>26.0 ' + \
+            '&& SelMuon1_corrected_pt<55.0 ' + \
+            '&& SelMuon1_corrected_MET_nom_mt>15 && SelMuon1_corrected_MET_nom_mt<=30 ',
+        'cut_base' : '',
+        'category_cut_base' : 'defs',
+        'modules' : modules_nominal,
+    },
+    'QCDC': {
+        'weight' : 'puWeight*lumiweight*SelMuon1_ID_SF*SelMuon1_ISO_SF*SelMuon1_Trigger_SF',
+        'category_weight_base' : 'QCD',
+        'cut' : 'Vtype==0 ' + \
+            '&& HLT_SingleMu24 '+ \
+            '&& MET_filters==1 ' + \
+            '&& nVetoElectrons==0 ' + \
+            '&& SelMuon1_corrected_pt>26.0 ' + \
+            '&& SelMuon1_corrected_pt<55.0 ' + \
+            '&& SelMuon1_corrected_MET_nom_mt>30 && SelMuon1_corrected_MET_nom_mt<40 ',
+        'cut_base' : '',
+        'category_cut_base' : 'defs',
+        'modules' : modules_nominal,
+    },
     'SIGNALNOISOSF': {
         'weight' : 'puWeight*lumiweight*SelMuon1_ID_SF*SelMuon1_Trigger_SF',
         'category_weight_base' : 'SIGNALNOISOSF',
@@ -168,6 +215,48 @@ categories_all = {
             '&& SelMuon1_corrected_pt>26.0 ' + \
             '&& SelMuon1_corrected_pt<55.0 ' + \
             '&& SelMuon1_corrected_MET_nom_mt<30.0 ',
+        'cut_base' : '',
+        'category_cut_base' : 'defs',
+        'modules' : modules_nominal,
+        },
+    'SIDEBANDA': {
+        'weight' : 'puWeight*lumiweight*SelMuon1_ID_SF*SelMuon1_Trigger_SF*SelMuon1_ISO_SF',
+        'category_weight_base' : 'SIDEBAND',
+        'cut' : 'Vtype==1 ' + \
+            '&& HLT_SingleMu24 '+ \
+            '&& MET_filters==1 ' + \
+            '&& nVetoElectrons==0 ' + \
+            '&& SelMuon1_corrected_pt>26.0 ' + \
+            '&& SelMuon1_corrected_pt<55.0 ' + \
+            '&& SelMuon1_corrected_MET_nom_mt<=15.0 ',
+        'cut_base' : '',
+        'category_cut_base' : 'defs',
+        'modules' : modules_nominal,
+    },
+    'SIDEBANDB': {
+        'weight' : 'puWeight*lumiweight*SelMuon1_ID_SF*SelMuon1_Trigger_SF*SelMuon1_ISO_SF',
+        'category_weight_base' : 'SIDEBAND',
+        'cut' : 'Vtype==1 ' + \
+            '&& HLT_SingleMu24 '+ \
+            '&& MET_filters==1 ' + \
+            '&& nVetoElectrons==0 ' + \
+            '&& SelMuon1_corrected_pt>26.0 ' + \
+            '&& SelMuon1_corrected_pt<55.0 ' + \
+            '&& SelMuon1_corrected_MET_nom_mt>15.0 && SelMuon1_corrected_MET_nom_mt<=30 ',
+        'cut_base' : '',
+        'category_cut_base' : 'defs',
+        'modules' : modules_nominal,
+        },
+    'SIDEBANDC': {
+        'weight' : 'puWeight*lumiweight*SelMuon1_ID_SF*SelMuon1_Trigger_SF*SelMuon1_ISO_SF',
+        'category_weight_base' : 'SIDEBAND',
+        'cut' : 'Vtype==1 ' + \
+            '&& HLT_SingleMu24 '+ \
+            '&& MET_filters==1 ' + \
+            '&& nVetoElectrons==0 ' + \
+            '&& SelMuon1_corrected_pt>26.0 ' + \
+            '&& SelMuon1_corrected_pt<55.0 ' + \
+            '&& SelMuon1_corrected_MET_nom_mt>30.0 && SelMuon1_corrected_MET_nom_mt<40',
         'cut_base' : '',
         'category_cut_base' : 'defs',
         'modules' : modules_nominal,
@@ -246,20 +335,20 @@ def get_categories(dataType,categories_str, common, apply_SmoothAntiISOSF, apply
     # global customization of SF
     if apply_SmoothAntiISOSF:
         for k,v in ret.items():
-            if k not in ['SIDEBAND', 'AISO', 'AISONORM']: continue
+            if k not in ['SIDEBAND', 'SIDEBANDA', 'SIDEBANDB', 'SIDEBANDC', 'AISO', 'AISONORM']: continue
             old = copy.deepcopy(v['weight'])
             v['weight'] = old.replace('ISO_SF', 'ISO_SmoothAntiSF')
             #print k+': \n', bc.H, old, bc.E, ' --> \n', bc.B, v['weight'], bc.E
     if apply_SmoothISOSF and use_externalSF==0:
         for k,v in ret.items():
-            if k not in ['SIGNAL', 'SIGNALNORM', 'QCD', 'DIMUON']: continue
+            if k not in ['SIGNAL', 'SIGNALNORM', 'QCD', 'QCDA', 'QCDB', 'QCDC', 'DIMUON']: continue
             old = copy.deepcopy(v['weight'])
             v['weight'] = old.replace('ISO_SF', 'ISO_SmoothSF')
             #print k+': \n', bc.H, old, bc.E, ' --> \n', bc.B, v['weight'], bc.E
     if use_externalSF:
         for k,v in ret.items():
             old = copy.deepcopy(v['weight'])
-            if k not in ['SIDEBAND', 'AISO', 'AISONORM']:
+            if k not in ['SIDEBAND', 'SIDEBANDA', 'SIDEBANDB', 'SIDEBANDC', 'AISO', 'AISONORM']:
                 v['weight'] = old.replace('ISO_SF','ISO_WHelicitySF').replace('ID_SF','ID_WHelicitySF').replace('Trigger_SF', 'Trigger_WHelicitySF')
             else:
                 v['weight'] = old.replace('Trigger_SF', 'Trigger_WHelicitySF')
@@ -283,7 +372,9 @@ def get_categories(dataType,categories_str, common, apply_SmoothAntiISOSF, apply
               'AISO',
               'AISONORM',
               'QCD',
+              'QCDA','QCDB','QCDC',
               'SIDEBAND',
+              'SIDEBANDA', 'SIDEBANDB','SIDEBANDC',
               'GENINCLUSIVE_WtoMuP', 'GENINCLUSIVE_WtoMuN',
               'GENINCLUSIVE',
               ]:
@@ -319,6 +410,8 @@ def get_categories(dataType,categories_str, common, apply_SmoothAntiISOSF, apply
                 ret[c]['modules'] = modules_nominal
             elif cat_syst == 'all':
                 ret[c]['modules'] = modules_all
+            elif cat_syst == 'wSF':
+                ret[c]['modules'] = modules_wSF
             elif cat_syst == 'LHE':
                 ret[c]['modules'] = modules_LHE
             elif cat_syst == 'wLHE':

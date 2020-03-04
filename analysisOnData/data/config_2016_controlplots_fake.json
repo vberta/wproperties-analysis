@@ -84,7 +84,7 @@
 		},
 		"reco" :  {
 		    "input" : "data/externalSF/fromWhelicity/smoothEfficiency_muons_recoToSel_finerETA.root",
-	            "systs" : ["reco_mc_eigen0Up", "reco_mc_eigen0Down", "reco_mc_eigen1Up", "reco_mc_eigen1Down", "reco_mc_eigen2Up", "reco_mc_eigen2Down"]
+	            "systs" : ["reco_mc_syst0Up", "reco_mc_syst0Down", "reco_mc_syst1Up", "reco_mc_syst1Down", "reco_mc_syst2Up", "reco_mc_syst2Down"]
 		}
             }
 	},

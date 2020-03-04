@@ -25,6 +25,8 @@ RNode muonHistos::run(RNode d){
   if(_category.find("DIMUON")!=std::string::npos)
     this->add_group_3D( &d, "SelMuon2_eta", "SelMuon2_corrected_pt", "SelMuon2_charge", "", eta_Arr, pt_Arr, charge_Arr);
 
+  return d;
+
   // ETA1,2 vs PT1,2 vs MT1,2
   unsigned int nbins_mt  = 30;
   std::vector<float> mt_Arr(nbins_mt+1); 
