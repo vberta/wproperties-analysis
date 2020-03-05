@@ -28,8 +28,8 @@ private:
   
   std::vector<std::string> _syst_columns;
   std::string _new_syst_column, _idx1, _nom_column;
-  std::pair<unsigned int,unsigned int> _range;
-  std::vector<unsigned int> _set;
+  const std::pair<unsigned int,unsigned int> _range;
+  const std::vector<unsigned int>* _set;
   std::string _type;
   bool _verbose;
   
@@ -42,11 +42,14 @@ public:
 		std::pair<unsigned int,unsigned int> range,
 		std::vector<unsigned int> set,
 		std::string type): 
-    _syst_columns(syst_columns), _new_syst_column(new_syst_column), _idx1(idx1), _nom_column(nom_column), _range(range), _set(set), _type(type) {
+    _syst_columns(syst_columns), _new_syst_column(new_syst_column), _idx1(idx1), _nom_column(nom_column), _range(range), _type(type) {
+    _set = new std::vector<unsigned int>(set);
     _verbose = false;
   };
 
-  ~getSystWeight() {};
+  ~getSystWeight() {
+    delete _set;
+  };
   
   RNode run(RNode) override;
   std::vector<ROOT::RDF::RResultPtr<TH1D>> getTH1() override;
