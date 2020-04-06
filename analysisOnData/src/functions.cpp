@@ -26,6 +26,14 @@ float W_mt(float mu_pt, float mu_phi, float met_pt, float met_phi){
   return TMath::Sqrt(2*mu_pt*met_pt*(1.0-TMath::Cos(mu_phi-met_phi)));
 }
 
+float Wlike_mt(float mu1_pt, float mu1_phi, float mu2_pt, float mu2_phi, float met_pt, float met_phi){
+  float newmet_px = met_pt*TMath::Cos(met_phi) + mu2_pt*TMath::Cos(mu2_phi);
+  float newmet_py = met_pt*TMath::Sin(met_phi) + mu2_pt*TMath::Sin(mu2_phi);
+  float newmet_pt = TMath::Sqrt(newmet_px*newmet_px+newmet_py*newmet_py);
+  float newmet_phi = TMath::ATan2(newmet_py,newmet_px);
+  return TMath::Sqrt(2*mu1_pt*newmet_pt*(1.0-TMath::Cos(mu1_phi-newmet_phi)))*(80.379/91.1876);
+}
+
 float W_hpt(float mu_pt, float mu_phi, float met_pt, float met_phi){
   float px = mu_pt*TMath::Cos(mu_phi)+met_pt*TMath::Cos(met_phi);
   float py = mu_pt*TMath::Sin(mu_phi)+met_pt*TMath::Sin(met_phi);

@@ -54,10 +54,28 @@ RNode getCompVars::run(RNode d){
       new_cols_pt.push_back( "MET_"+_MET_systs[i]+postfix+"_pt");
       new_cols_phi.push_back("MET_"+_MET_systs[i]+postfix+"_phi");
     }
-    auto d_post = d_start
-      .Define("MET_nomAll_pt",  getRVec_FFFFFFtoV, new_cols_pt)
-      .Define("MET_nomAll_phi", getRVec_FFFFFFtoV, new_cols_phi)
-      ;
+
+    RNode d_post = d_start;
+    switch(_MET_systs.size()){
+    case 2:
+      d_post = d_start
+	.Define("MET_nomAll_pt",  getRVec_FFtoV, new_cols_pt)
+	.Define("MET_nomAll_phi", getRVec_FFtoV, new_cols_phi);
+      break;
+    case 4:
+      d_post = d_start
+	.Define("MET_nomAll_pt",  getRVec_FFFFtoV, new_cols_pt)
+	.Define("MET_nomAll_phi", getRVec_FFFFtoV, new_cols_phi);
+      break;      
+    case 6:
+      d_post = d_start
+	.Define("MET_nomAll_pt",  getRVec_FFFFFFtoV, new_cols_pt)
+	.Define("MET_nomAll_phi", getRVec_FFFFFFtoV, new_cols_phi);
+      break;            
+    default:
+      std::cout << "getCompVars(): " << _MET_systs.size() << " MET systs not supported" << std::endl;
+      break;
+    }
     d_start = d_post;
   }
 
@@ -112,7 +130,7 @@ RNode getCompVars::run(RNode d){
 	}
 	
 	RNode d_post = d_start;
-	switch(syst_size){
+ 	switch(syst_size){
 	case 2:
 	  d_post = d_start.Define(new_colAll, getRVec_FFtoV, new_cols);
 	  break;
@@ -131,6 +149,76 @@ RNode getCompVars::run(RNode d){
   } // END Composite muon-MET variables
 
   if(_idx2=="") return d_start;
+
+  // Composite muon-muon-MET variables
+  compVars = {"Wlike_mt"};
+  for(unsigned int i=0; i<compVars.size(); i++){
+
+    std::string compVar = compVars[i];
+    float (*func)(float,float,float,float,float,float) = nullptr;
+    if( compVar=="Wlike_mt" ) func = Wlike_mt;
+    
+    std::vector<std::string> mus = {"1","2"};
+    for(unsigned int imu = 0 ; imu<mus.size(); imu++){
+      std::string mu1 = mus[imu];
+      std::string mu2 = mus[imu==0?1:0];
+
+      if(_muon_systs.size()==0 && _MET_systs.size()==0){      
+	std::string new_col     = "SelMuon"+mu1+"_corrected_MET_nom_"+compVar;
+	std::string mu1_pt_col  = "SelMuon"+mu1+"_corrected_pt";
+	std::string mu1_phi_col = "SelMuon"+mu1+"_phi";      
+	std::string mu2_pt_col  = "SelMuon"+mu2+"_corrected_pt";
+	std::string mu2_phi_col = "SelMuon"+mu2+"_phi";      
+	std::string met_pt_col  = "MET_nom_pt";
+	std::string met_phi_col = "MET_nom_phi";
+	if(postfix=="FIX"){
+	  met_pt_col  = "MET_pt";
+	  met_phi_col = "MET_phi";
+	}
+	auto d_post = d_start.Define(new_col, func, {mu1_pt_col, mu1_phi_col, mu2_pt_col, mu2_phi_col, met_pt_col, met_phi_col});
+	d_start = d_post;
+      }
+      else{ 
+	bool im =  _muon_systs.size()>0;     
+	unsigned int syst_size = im ? _muon_systs.size() : _MET_systs.size();
+	std::string new_colAll = im ? "SelMuon"+mu1+"_correctedAll_MET_nom_"+compVar : "SelMuon"+mu1+"_corrected_MET_nomAll_"+compVar;
+	
+	ROOT::Detail::RDF::ColumnNames_t new_cols;
+	for(unsigned int i=0 ; i < syst_size; i++){
+	  std::string new_col     = "SelMuon"+mu1+"_"+(im?_muon_systs[i]:"corrected")+"_MET_"+(im?"nom":_MET_systs[i])+"_"+compVar;
+	  std::string mu1_pt_col  = "SelMuon"+mu1+"_"+(im?_muon_systs[i]:"corrected")+"_pt";
+	  std::string mu1_phi_col = "SelMuon"+mu1+"_phi";
+	  std::string mu2_pt_col  = "SelMuon"+mu2+"_"+(im?_muon_systs[i]:"corrected")+"_pt";
+	  std::string mu2_phi_col = "SelMuon"+mu2+"_phi";
+	  std::string met_pt_col  = "MET_"+(im?"nom":_MET_systs[i])+"_pt";
+	  std::string met_phi_col = "MET_"+(im?"nom":_MET_systs[i])+"_phi";
+	  if(postfix=="FIX"){
+	    met_pt_col  = "MET"+(im?"":"_"+_MET_systs[i]+postfix)+"_pt";
+	    met_phi_col = "MET"+(im?"":"_"+_MET_systs[i]+postfix)+"_phi";
+	  }
+	  new_cols.push_back(new_col);
+	  auto d_post = d_start.Define(new_col, func, {mu1_pt_col, mu1_phi_col, mu2_pt_col, mu2_phi_col, met_pt_col, met_phi_col});
+	  d_start = d_post;
+	}
+	
+	RNode d_post = d_start;
+	switch(syst_size){
+	case 2:
+	  d_post = d_start.Define(new_colAll, getRVec_FFtoV, new_cols);
+	  break;
+	case 4:
+	  d_post = d_start.Define(new_colAll, getRVec_FFFFtoV, new_cols);
+	  break;      
+	case 6:
+	  d_post = d_start.Define(new_colAll, getRVec_FFFFFFtoV, new_cols);
+	  break;            
+	default:
+	  break;
+	}
+	d_start = d_post;
+      }
+    }
+  } // END Composite muon-muon-MET variables
 
   // Composite muon-muon variables
   compVars = {"qt","mass","y"};

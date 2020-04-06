@@ -624,8 +624,10 @@ class ConfigRDF():
 
                 self._branch_defs()
                 if hasattr(self, 'run_HARMONICS'): self._branch_harmonics()
+
                 modules = specifics['modules']
                 if modules.has_key('muon_nominal'): self._branch_muon_nominal()
+
                 for key,value in modules.items():
                     if 'event_syst' in key:
                         if   'LHE' in key: 

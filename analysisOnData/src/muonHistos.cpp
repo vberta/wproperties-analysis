@@ -17,13 +17,24 @@ RNode muonHistos::run(RNode d){
   for(unsigned int i=0; i<nbins_charge+1; i++) charge_Arr[i] = -2.0 + i*(4.0)/nbins_charge;      
 
   // SMP-18-010
-  eta_Arr = {-2.4, -2.1, -1.9, -1.7, -1.5, -1.3, -1.2, -1.1, -1.0, -0.9, -0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0.0,
-   	     0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.5, 1.7, 1.9, 2.1, 2.4}; 
-  pt_Arr = {26.0, 28.0, 30.0, 31.5, 33.0, 34.5, 36.0, 37.5, 39.0, 40.5, 42.0, 43.5, 45.0, 46.5, 48.0, 50.0, 52.0, 54.0, 56.0};
+  //eta_Arr = {-2.4, -2.1, -1.9, -1.7, -1.5, -1.3, -1.2, -1.1, -1.0, -0.9, -0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0.0,
+  //  	     0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.5, 1.7, 1.9, 2.1, 2.4}; 
+  //pt_Arr = {26.0, 28.0, 30.0, 31.5, 33.0, 34.5, 36.0, 37.5, 39.0, 40.5, 42.0, 43.5, 45.0, 46.5, 48.0, 50.0, 52.0, 54.0, 56.0};
 
   this->add_group_3D( &d, "SelMuon1_eta", "SelMuon1_corrected_pt", "SelMuon1_charge", "", eta_Arr, pt_Arr, charge_Arr);
   if(_category.find("DIMUON")!=std::string::npos)
     this->add_group_3D( &d, "SelMuon2_eta", "SelMuon2_corrected_pt", "SelMuon2_charge", "", eta_Arr, pt_Arr, charge_Arr);
+
+  return d;
+
+  // ETA1,2 vs PT1,2 vs MT1,2
+  unsigned int nbins_mt  = 30;
+  std::vector<float> mt_Arr(nbins_mt+1); 
+  for(unsigned int i=0; i<nbins_mt+1; i++)   mt_Arr[i] = 0. + i*(150.-0.)/nbins_mt;
+  if((_category.find("DIMUON")!=std::string::npos)){
+    this->add_group_3D( &d, "SelMuon1_eta", "SelMuon1_corrected_pt", "SelMuon1_corrected_MET_nom_Wlike_mt", "", eta_Arr, pt_Arr, mt_Arr);
+    this->add_group_3D( &d, "SelMuon2_eta", "SelMuon2_corrected_pt", "SelMuon2_corrected_MET_nom_Wlike_mt", "", eta_Arr, pt_Arr, mt_Arr);
+  }
 
   // FAST DEBUG
   return d;
@@ -42,11 +53,8 @@ RNode muonHistos::run(RNode d){
     this->add_group_3D( &d, "SelRecoZ_corrected_qt", "SelRecoZ_corrected_y", "SelRecoZ_corrected_mass", "", RecoZ_qt_Arr,RecoZ_y_Arr,RecoZ_mass_Arr);  
 
   // MT1 vs HT1 vs CHARGE1
-  unsigned int nbins_mt  = 30;
   unsigned int nbins_hpt = 20;
-  std::vector<float> mt_Arr(nbins_mt+1); 
   std::vector<float> hpt_Arr(nbins_hpt+1); 
-  for(unsigned int i=0; i<nbins_mt+1; i++)   mt_Arr[i] = 0. + i*(150.-0.)/nbins_mt;
   for(unsigned int i=0; i<nbins_hpt+1; i++) hpt_Arr[i] = 0. + i*(100.-0.)/nbins_hpt;
   if((_category.find("DIMUON")==std::string::npos) && !veto_LHE)
     this->add_group_3D( &d, "SelMuon1_corrected_MET_nom_mt", "SelMuon1_corrected_MET_nom_hpt", "SelMuon1_charge", "", mt_Arr, hpt_Arr, charge_Arr);
@@ -306,7 +314,7 @@ void muonHistos::add_group_3D(RNode* d1,
       }
       else{
 	if(_verbose) std::cout << "muonHistos::run(): TH3varsHelper<f,f,V,f> for variable " << var_name1 << "," << var_name2 << "," << var_name3_mod << "[] (" << _weight << "*):" << std::endl;
-	if(false) _h3Group.emplace_back(d1->Book<float,float,ROOT::VecOps::RVec<float>,float>(std::move(v_helper), {var_name1, var_name2, var_name3_mod, _weight }));
+	_h3Group.emplace_back(d1->Book<float,float,ROOT::VecOps::RVec<float>,float>(std::move(v_helper), {var_name1, var_name2, var_name3_mod, _weight }));
       }
     } 
   }

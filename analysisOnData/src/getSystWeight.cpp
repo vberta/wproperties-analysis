@@ -33,13 +33,13 @@ RNode getSystWeight::run(RNode d){
   
   auto getRVec_VtoV = [this](ROOT::VecOps::RVec<float> statUp){
     ROOT::VecOps::RVec<float> v;
-    for(unsigned int i=_range.first; i<=_range.second ; i++) v.emplace_back(statUp[i]);
+    for(unsigned int i=std::get<0>(_range); i<=std::get<1>(_range) ; i++) v.emplace_back(statUp[i]);
     return v;
   };
-
+  
   auto getRVec_subVtoV = [this](ROOT::VecOps::RVec<float> statUp){
     ROOT::VecOps::RVec<float> v;
-    for(unsigned int i=0; i<=_set.size() ; i++) v.emplace_back(statUp[ _set[i] ]);
+    for(unsigned int i=0; i<_set->size() ; i++) v.emplace_back(statUp[ _set->at(i) ]);
     return v;
   };
   
@@ -102,7 +102,7 @@ RNode getSystWeight::run(RNode d){
   
   auto getRVec_VtoVnorm = [this](ROOT::VecOps::RVec<float> statUp, float nom){
     ROOT::VecOps::RVec<float> v;        
-    for(unsigned int i=_range.first; i<=_range.second ; i++){
+    for(unsigned int i=std::get<0>(_range); i<=std::get<1>(_range) ; i++){
       v.emplace_back(statUp[i]);
     }
     v /= (nom>0. ? nom : 1.0);
@@ -111,8 +111,8 @@ RNode getSystWeight::run(RNode d){
 
   auto getRVec_subVtoVnorm = [this](ROOT::VecOps::RVec<float> statUp, float nom){
     ROOT::VecOps::RVec<float> v;        
-    for(unsigned int i=0; i<=_set.size() ; i++){
-      v.emplace_back(statUp[ _set[i] ]);
+    for(unsigned int i=0; i<_set->size() ; i++){
+      v.emplace_back(statUp[ _set->at(i) ]);
     }
     v /= (nom>0. ? nom : 1.0);
     return v;

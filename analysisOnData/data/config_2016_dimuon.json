@@ -66,23 +66,27 @@
 	    }
         },	
         "external_SF" : {		
-	    "use_externalSF" : 1,	    
+	    "use_externalSF"        : 1,	    
+	    "apply_SmoothAntiISOSF" : 0,
+	    "apply_SmoothISOSF"     : 0,
 	    "POG" : {
 		"ISO" : {
-		    "apply_SmoothAntiISOSF" : 1,
-		    "apply_SmoothISOSF"     : 0,
 		    "input_wSF"  : "data/externalSF/bkg_parameters_file.root",
 		    "input_woSF" : "data/externalSF/bkg_parameters_file_noIsoSF_.root",
 		    "systs"      : ["nominal"]
 		}
 	    },
 	    "WHelicity" : {
-		"Trigger" : {
-		    "Plus"  : "data/externalSF/fromWhelicity/smoothEfficiency_muons_plus_trigger.root",
-		    "Minus" : "data/externalSF/fromWhelicity/smoothEfficiency_muons_minus_trigger.root"
+		"trigger" : {
+		    "input_plus"  : "data/externalSF/fromWhelicity/smoothEfficiency_muons_plus_trigger.root",
+		    "input_minus" : "data/externalSF/fromWhelicity/smoothEfficiency_muons_minus_trigger.root",
+	            "systs" : ["trigger_mc_eigen0Up", "trigger_mc_eigen0Down", "trigger_mc_eigen1Up", "trigger_mc_eigen1Down", "trigger_mc_eigen2Up", "trigger_mc_eigen2Down"]
 		},
-		"Reco" : "data/externalSF/fromWhelicity/smoothEfficiency_muons_recoToSel_finerETA.root"
-	    }
+		"reco" :  {
+		    "input" : "data/externalSF/fromWhelicity/smoothEfficiency_muons_recoToSel_finerETA.root",
+	            "systs" : ["reco_mc_eigen0Up", "reco_mc_eigen0Down", "reco_mc_eigen1Up", "reco_mc_eigen1Down", "reco_mc_eigen2Up", "reco_mc_eigen2Down"]
+		}
+            }
 	},
 	"Wto" : {
 	    "MuP" : "GenV_preFSR_charge==-13",  
@@ -125,7 +129,7 @@
 	"output" : {
 	    "DIMUON" : {
 		"W"         : "WJets.root/*:nominal",
-		"ZtoMuMu"   : "DYJets.root/*_ZtoMuMu:nominal",
+		"ZtoMuMu"   : "DYJets.root/*_ZtoMuMu:nominal,corrected,nom,Trigger,ISO,LHEScaleWeight",
 		"ZtoTauTau" : "DYJets.root/*_ZtoTauTau:nominal",
 		"TTbar"     : "TTbar.root/*:nominal",
 		"ST"        : "ST.root/*:nominal",
@@ -165,7 +169,7 @@
         "dataType" : "MC",
         "xsec" : 1903.0,
         "ncores" : -1,
-	"categories" : "DIMUON_ZtoMuMu:nominal,DIMUON_ZtoTauTau:nominal"
+	"categories" : "DIMUON_ZtoMuMu:wLHE,DIMUON_ZtoTauTau:nominal"
     },
 
     "DYJetsToLL_M-10to50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_ext1" : {  
@@ -176,7 +180,7 @@
         "dataType" : "MC",
         "xsec" : 1903.0,
         "ncores" : 64,
-	"categories" : "DIMUON_ZtoMuMu:nominal,DIMUON_ZtoTauTau:nominal"
+	"categories" : "DIMUON_ZtoMuMu:wLHE,DIMUON_ZtoTauTau:nominal"
     },
 
     "DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_ext2" : {  
@@ -186,7 +190,7 @@
         "dataType" : "MC",
         "xsec" : 6025.2,
         "ncores" : 64,
-	"categories" : "DIMUON_ZtoMuMu++:nominal,DIMUON_ZtoTauTau++:nominal"
+	"categories" : "DIMUON_ZtoMuMu++:wLHE,DIMUON_ZtoTauTau++:nominal"
     },
 
     "WW_TuneCUETP8M1_13TeV-pythia8" : {  

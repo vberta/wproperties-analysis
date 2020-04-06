@@ -50,12 +50,35 @@ class applyWHelicitySF : public Module {
     
     _hmap.insert( std::pair<std::string, TH2D*>("trigger_plus",  (TH2D*)_fmap.at("trigger_plus")->Get("scaleFactor") ) );
     _hmap.insert( std::pair<std::string, TH2D*>("trigger_minus", (TH2D*)_fmap.at("trigger_minus")->Get("scaleFactor") ) );
-    _hmap.insert( std::pair<std::string, TH2D*>("reco",          (TH2D*)_fmap.at("reco")->Get("scaleFactor") ) );    
+    //_hmap.insert( std::pair<std::string, TH2D*>("reco",          (TH2D*)_fmap.at("reco")->Get("scaleFactor") ) );    
+    _hmap.insert( std::pair<std::string, TH2D*>("reco",          (TH2D*)_fmap.at("reco")->Get("scaleFactor_etaInterpolated") ) );    
 
+    if(syst_columns_reco.size()>0){
+      const float edges[3]  = {0.0, 1.0, 1.5};
+      const float shifts[3] = {0.002, 0.0035, 0.0130};
+      std::vector<std::string> vars = {"Up","Down"};
+      for(int e = 0 ; e<3 ; e++ ){
+	for(auto v : vars ){	  
+	  std::string mapname = "reco_mc_syst"+std::to_string(e)+v;
+	  TH2D* h = (TH2D*)_hmap.at("reco")->Clone(mapname.c_str());	  
+	  h->Reset();
+	  for(int i = 1; i<=h->GetXaxis()->GetNbins(); i++){
+	    float val = TMath::Abs(h->GetXaxis()->GetBinCenter(i));
+	    for(int j = 1; j<=h->GetYaxis()->GetNbins(); j++){
+	      h->SetBinContent(i,j, 1.0 + (val>=edges[e]? 1.0 : 0.0)*(v=="Up"? 1.0 : -1.0)*shifts[e] );
+	    }
+	  }
+	  _hmap.insert( std::pair<std::string, TH2D*>(mapname, h) );      
+	}
+      }
+    }
+    
     if(syst_columns_trigger.size()>0 || syst_columns_reco.size()>0){
 
-      std::vector<std::string> systs   = {"trigger", "reco"};
-      std::vector<std::string> data    = {"mc","data"};
+      //std::vector<std::string> systs   = {"trigger", "reco"};
+      //std::vector<std::string> data    = {"mc","data"};
+      std::vector<std::string> systs   = {"trigger"};
+      std::vector<std::string> data    = {"mc"};
       std::vector<std::string> charges = {"plus","minus"};
       std::vector<std::string> vars    = {"Up","Down"};
 
