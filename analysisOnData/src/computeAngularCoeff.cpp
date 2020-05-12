@@ -3,15 +3,20 @@
 
 RNode computeAngularCoeff::run(RNode d){
 
-  auto prod = [](float x, float y)->float{ return x*y; };
+  auto prod     = [](float x, float y)->float{ return x*y; };
+  auto prodErr  = [](float x, float y)->float{ return x*x*y; };
 
   for(unsigned int c=0; c<10; c++){
-    std::string hname = c<9 ? _category+"_A"+std::to_string(c) : _category+"_MC";     
-    auto h =  d
-      .Define("weight_test_"+_category+"_A"+std::to_string(c), prod, {"test_A"+std::to_string(c), _weight} )
-      .Histo2D({ hname.c_str(), "", int(_xbins.size()-1), _xbins.data() , int(_ybins.size()-1), _ybins.data()}, 
-	"GenV_"+_leptonType+"_absy", "GenV_"+_leptonType+"_qt", "weight_test_"+_category+"_A"+std::to_string(c));
-    _h2List.emplace_back( h );
+    std::string hname = (c<9 ? _category+"_A"+std::to_string(c) : _category+"_MC");
+    auto d_post = d
+      .Define("weight_test_"+_category+"_A"+std::to_string(c),    prod,    {"test_A"+std::to_string(c), _weight} )
+      .Define("weight_testErr_"+_category+"_A"+std::to_string(c), prodErr, {"test_A"+std::to_string(c), _weight});
+    auto hc    =  d_post.Histo2D({ hname.c_str(),         "", int(_xbins.size()-1), _xbins.data() , int(_ybins.size()-1), _ybins.data()}, 
+			      "GenV_"+_leptonType+"_absy", "GenV_"+_leptonType+"_qt", "weight_test_"+_category+"_A"+std::to_string(c));    
+    auto hcErr =  d_post.Histo2D({ (hname+"Err").c_str(), "", int(_xbins.size()-1), _xbins.data() , int(_ybins.size()-1), _ybins.data()}, 
+			      "GenV_"+_leptonType+"_absy", "GenV_"+_leptonType+"_qt", "weight_testErr_"+_category+"_A"+std::to_string(c));    
+    _h2List.emplace_back( hc );
+    _h2List.emplace_back( hcErr );
   }
   
   return d;
