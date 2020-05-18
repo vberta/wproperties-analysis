@@ -25,6 +25,8 @@ parser.add_argument('-o', '--output_dir',type=str, default='TEST', help="")
 parser.add_argument('-validation_only', '--validation_only',type=int, default=False, help="False: skip fit and do validation only")
 parser.add_argument('-input_name', '--input_name',type=str, default='regularizationFit', help="Name of the input file for validation_only")
 parser.add_argument('-map01', '--map01',type=int, default=False, help="if true map the polynomial between 0 and 1, otherwise between -1,1")
+parser.add_argument('-suffix', '--suffix',type=str, default='', help="suffix for output file")
+
 
 
 
@@ -32,6 +34,18 @@ args = parser.parse_args()
 output_dir = args.output_dir
 VALONLY = args.validation_only
 IN_NAME = args.input_name
+SUFFIX = args.suffix
+MAP01 = args.map01
+
+if VALONLY :
+    SUFFIX = 'rebuild_'+SUFFIX
+    
+if MAP01 :
+    SUFFIX = 'range01_'+SUFFIX
+else :
+    SUFFIX = 'range11_'+SUFFIX
+ 
+
 
 
 # ROOT.Math.MinimizerOptions.SetDefaultMinimizer("Minuit2")
@@ -211,7 +225,7 @@ def fit_coeff(fname="WJets.root", charge="WtoMuP", coeff="A4", constraint='y->0'
     
     # print qt_max_bin,qt_min_bin,qt_max_cut,qt_min_cut
     # print y_max_bin,y_min_bin,y_max_cut,y_min_cut
-# 
+ 
     x,y = [], []
     if Map01 :
         for i in range(y_min_bin, y_max_bin+1):   x.append( (hMC.GetXaxis().GetBinCenter(i)- y_min_cut)/(y_max_cut-  y_min_cut)) #range between 0,1
@@ -411,7 +425,7 @@ def fit_coeff(fname="WJets.root", charge="WtoMuP", coeff="A4", constraint='y->0'
     return outDict
 
 
-def rebuilHistoDict(charge="WtoMuP", coeff="A4", constraint='y->0', qt_max = 24., y_max = 2.5, degreeY=4,degreeQt=3,Map01=False):
+def rebuildHistoDict(charge="WtoMuP", coeff="A4", constraint='y->0', qt_max = 24., y_max = 2.5, degreeY=4,degreeQt=3,Map01=False):
     inputFile   = ROOT.TFile.Open(output_dir+'/'+IN_NAME+'.root')
     
     path = 'Y'+str(degreeY)+'_Qt'+str(degreeQt)+'/'
@@ -489,7 +503,7 @@ def findBest_path(hdict,valDict,signDict, degreeYList, degreeQtList,Npt,VALONLY,
         else :
             contY=False
             pvalY=1
-        if yy<degreeQtList[-1] :
+        if qq<degreeQtList[-1] :
             qtMax = qq+1
             pvalQt = F_test(hdict=hdict,valDict=valDict,signDict=signDict, degreeYList=degreeYList, degreeQtList=degreeQtList,Npt=Npt,VALONLY=VALONLY,s=s,coeff=coeff,yMax=yy,qtMax=qtMax,yMin=yy,qtMin=qq)
         else :
@@ -793,7 +807,7 @@ def Validation(hdict, signDict, coeffDict, degreeYList,degreeQtList) :
         valDict[kind].SetGridy()
         h_chosen.SetStats(0)
         h_chosen.DrawCopy()
-        printedList = []
+        printedList = [] #multiple list needed to avoid overlapping writing if a 2 or 3 coeff. have same combination
         printedList2 = []
         for s,sName in signDict.iteritems() :
             for coeff,constr in coeffDict.iteritems() :
@@ -812,6 +826,18 @@ def Validation(hdict, signDict, coeffDict, degreeYList,degreeQtList) :
                 else :
                     cellname.DrawLatex(cell[0][0]-0.3,cell[0][1]-0.4, coeff+'_'+s)
                 printedList.append(cell)
+                 
+                # useful output lines 
+                if not VALONLY :
+                    chi2abs = hdict[str(cell[0][0])+str(cell[0][1])+s+coeff]['fit'+'Res'+sName+coeff].Chi2()
+                    ndf4chi2 = hdict[str(cell[0][0])+str(cell[0][1])+s+coeff]['fit'+'Res'+sName+coeff].Ndf()
+                else :
+                    chi2abs = hdict[str(cell[0][0])+str(cell[0][1])+s+coeff]['fit'+'Res'+sName+coeff].GetChisquare()
+                    ndf4chi2 = hdict[str(cell[0][0])+str(cell[0][1])+s+coeff]['fit'+'Res'+sName+coeff].GetNDF()
+                chi2red = chi2abs/ndf4chi2
+                chi2redErr=math.sqrt(2*ndf4chi2)/chi2abs
+                print kind, ":::", s,coeff,"(y,qt)=", cell, ", chi2_abs=", chi2abs, ", NDF=",ndf4chi2, ", chi2_reduced=", chi2red, "+/-",chi2redErr
+                
         valDict[kind].Update()
                             
     return valDict
@@ -906,8 +932,8 @@ if __name__ == "__main__":
     degreeYList = [2,3,4,5,6,7]
     degreeQtList = [2,3,4,5,6,7]
     
-    # degreeYList = [3,4]
-    # degreeQtList = [3,4]
+    # degreeYList = [2,3]
+    # degreeQtList = [2,3]
     
     
     #do the analysis
@@ -917,9 +943,9 @@ if __name__ == "__main__":
             for s,sname in signDict.iteritems() :
                 for coeff,constr in coeffDict.iteritems() :
                     if not VALONLY :
-                        tempDict = fit_coeff(charge=sname,coeff=coeff,constraint=constr,degreeY=yDeg,degreeQt=qtDeg,Map01=False)
+                        tempDict = fit_coeff(charge=sname,coeff=coeff,constraint=constr,degreeY=yDeg,degreeQt=qtDeg,Map01=MAP01,y_max=2.0)
                     else : #skip analyisis, do validation only
-                        tempDict = rebuilHistoDict(charge=sname,coeff=coeff,constraint=constr,degreeY=yDeg,degreeQt=qtDeg,Map01=False)    
+                        tempDict = rebuildHistoDict(charge=sname,coeff=coeff,constraint=constr,degreeY=yDeg,degreeQt=qtDeg,Map01=MAP01)    
                     cumulativeDict[str(yDeg)+str(qtDeg)+s+coeff] = tempDict
         
    
@@ -930,7 +956,7 @@ if __name__ == "__main__":
 
     #writing
     print "writing..."
-    output = ROOT.TFile(output_dir+"/regularizationFit_LoreRange_rebuild.root", "recreate")
+    output = ROOT.TFile(output_dir+"/regularizationFit_"+SUFFIX+".root", "recreate")
     output.cd()
     
     #general histos
@@ -964,7 +990,7 @@ if __name__ == "__main__":
                 val.Write()
     
     print "saving figures"
-    figureSaver(cumulativeDict = cumulativeDict, valDict=valDict, outputname='plots_LoreRange', signDict=signDict, coeffDict=coeffDict,degreeYList=degreeYList,degreeQtList=degreeQtList, validationList = validationList)
+    # figureSaver(cumulativeDict = cumulativeDict, valDict=valDict, outputname='plots_'+SUFFIX, signDict=signDict, coeffDict=coeffDict,degreeYList=degreeYList,degreeQtList=degreeQtList, validationList = validationList)
     
         
                  
