@@ -210,7 +210,7 @@ class ConfigRDF():
             modules = []
             self._branch_base_categories('nominal', [])
             if self.cut!='': modules.append( ROOT.getFilter( ROOT.std.string(self.cut)) )
-            modules.append( ROOT.computeAngularCoeff(ROOT.std.string(self.category),  'weight_'+self.category_weight_base+'_nominal', ROOT.std.string(self.lepton_def), get_histo_coeff(self.ps)  ))
+            modules.append( ROOT.computeAngularCoeff(ROOT.std.string(self.category),  'weight_'+self.category_weight_base+'_nominal',  ROOT.std.string(self.lepton_def), ROOT.std.string(""), vec_s(), get_histo_coeff(self.ps)  ))
             nodeToStart = 'defs' if self.category_cut_base=='defs' else self.category_cut_base+'_nominal'
             if self.verbose: print 'branch_coeff_nominal:', bc.H, nodeToStart, bc.E, ' --> ',  bc.B, self.category+'_nominal',  bc.E,  ('' if self.cut=='' else 'with cut: '+self.cut)
             self.p.branch(nodeToStart=nodeToStart, nodeToEnd=self.category+'_nominal', modules=modules)
@@ -298,6 +298,38 @@ class ConfigRDF():
                 for i in systs: syst_column_names.push_back( ROOT.string(var+'_'+getattr(self, '_get_'+var+'_meaning')(i)) )
             modules.append( ROOT.muonHistos(self.category, 'weight_'+self.category_weight_base+'_nominal', syst_column_names, new_weight_name, "", False, self.verbose) )
             if self.verbose: print 'branch_LHE_weight: ', bc.H, self.category+'_nominal', bc.E, ' --> ', bc.B, self.category+'_'+var,  bc.E
+            self.p.branch(nodeToStart=self.category+'_nominal', nodeToEnd=self.category+'_'+var, modules=modules)
+        return
+
+    """
+    Branch LHE weights for coefficient calculator
+    """
+    def _branch_coeff_LHE_weight(self,var, systs):
+
+        new_weight_name = var+'All'        
+
+        if self.iteration==0 and not hasattr(self, 'branch_'+var+'_iter0'):
+            syst_columns = vec_s()
+            syst_columns.push_back(var)
+            if 'Pdf' in var:
+                pair = pair_ui(systs[0], systs[1])
+                self.def_modules.append( ROOT.getSystWeight(syst_columns, new_weight_name, "", "", pair, vec_ui(), "V->V" ) )
+            else:
+                subset = vec_ui()
+                for s in systs: subset.push_back(s) 
+                self.def_modules.append( ROOT.getSystWeight(syst_columns, new_weight_name, "", "", pair_ui(), subset, "subV->V" ) )
+            setattr(self, 'branch_'+var+'_iter0', True )
+        elif self.iteration==1:
+            pass
+        elif self.iteration==2:
+            modules = []
+            syst_column_names = vec_s()
+            if 'Pdf' in var:
+                for i in range(systs[0], systs[1]+1): syst_column_names.push_back( ROOT.string(var+'_'+getattr(self, '_get_'+var+'_meaning')(i)) )
+            else:
+                for i in systs: syst_column_names.push_back( ROOT.string(var+'_'+getattr(self, '_get_'+var+'_meaning')(i)) )
+            modules.append( ROOT.computeAngularCoeff(ROOT.std.string(self.category),  'weight_'+self.category_weight_base+'_nominal', ROOT.std.string(self.lepton_def), new_weight_name, syst_column_names, get_histo_coeff(self.ps)  ))            
+            if self.verbose: print 'branch_coeff_LHE_weight:', bc.H, self.category+'_nominal', bc.E, ' --> ',  bc.B, self.category+'_'+var,  bc.E
             self.p.branch(nodeToStart=self.category+'_nominal', nodeToEnd=self.category+'_'+var, modules=modules)
         return
 
@@ -615,17 +647,21 @@ class ConfigRDF():
                 self.category = category                
                 self.category_weight_base = specifics['category_weight_base']
                 self.category_cut_base = specifics['category_cut_base']
+
+                modules = specifics['modules']
                 
                 # compute the angular coefficients
                 if hasattr(self, 'run_GENINCLUSIVE'):
                     self._branch_defs_coeff()
                     self._branch_coeff_nominal()
+                    for key,value in modules.items():
+                        if 'event_syst' in key:
+                            if 'LHE' in key:
+                                self._branch_coeff_LHE_weight( key.replace('event_syst_',''), value )
                     continue
 
                 self._branch_defs()
                 if hasattr(self, 'run_HARMONICS'): self._branch_harmonics()
-
-                modules = specifics['modules']
                 if modules.has_key('muon_nominal'): self._branch_muon_nominal()
 
                 for key,value in modules.items():

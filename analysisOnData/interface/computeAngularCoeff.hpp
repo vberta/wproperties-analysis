@@ -12,6 +12,7 @@
 #include "TMath.h"
 #include "interface/module.hpp"
 #include "interface/functions.hpp"
+#include "interface/TH2weightsHelper.hpp"
 
 using RNode = ROOT::RDF::RNode;
 
@@ -30,13 +31,15 @@ class computeAngularCoeff : public Module {
 
   std::string _category;
   std::string _weight;
+  std::string _syst_column;
+  std::vector<std::string> _syst_names;
   std::string _leptonType;
   std::vector<double> _xbins;
   std::vector<double> _ybins;
   
  public:
     
-  computeAngularCoeff(std::string category, std::string weight, std::string leptonType, TH2F* histo) : _category(category), _weight(weight), _leptonType(leptonType) {
+  computeAngularCoeff(std::string category, std::string weight, std::string leptonType, std::string syst_column, std::vector<std::string> syst_names, TH2F* histo) : _category(category), _weight(weight), _syst_column(syst_column),  _syst_names(syst_names), _leptonType(leptonType) {
     _xbins = {};
     int nbinsX = histo->GetXaxis()->GetNbins();
     for(int i = 1; i<=nbinsX; i++ ) _xbins.push_back( histo->GetXaxis()->GetBinLowEdge(i) );
