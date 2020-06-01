@@ -3,23 +3,48 @@
 
 RNode computeAngularCoeff::run(RNode d){
 
+  std::vector<unsigned int> coeffs = {0,1,2,3,4,9};
+
   auto prod     = [](float x, float y)->float{ return x*y; };
   auto prodErr  = [](float x, float y)->float{ return x*x*y; };
 
-  for(unsigned int c=0; c<10; c++){
+  RNode d_start = d;
+
+  if(_syst_names.size()==0){
+    for(auto c : coeffs){
+      auto d_post = d_start
+	.Define("weight_test_"+_category+"_A"+std::to_string(c),    prod,    {"test_A"+std::to_string(c), _weight} )
+	.Define("weight_testErr_"+_category+"_A"+std::to_string(c), prodErr, {"test_A"+std::to_string(c), _weight});
+      d_start = d_post;
+    }
+    for(auto c : coeffs){
+      std::string hname = (c<9 ? _category+"_A"+std::to_string(c) : _category+"_MC");
+      auto hc    =  d_start.Histo2D({ hname.c_str(),         "", int(_xbins.size()-1), _xbins.data() , int(_ybins.size()-1), _ybins.data()}, 
+				    "GenV_"+_leptonType+"_absy", "GenV_"+_leptonType+"_qt", "weight_test_"+_category+"_A"+std::to_string(c));    
+      auto hcErr =  d_start.Histo2D({ (hname+"Err").c_str(), "", int(_xbins.size()-1), _xbins.data() , int(_ybins.size()-1), _ybins.data()}, 
+				    "GenV_"+_leptonType+"_absy", "GenV_"+_leptonType+"_qt", "weight_testErr_"+_category+"_A"+std::to_string(c));    
+      _h2List.emplace_back( hc );
+      _h2List.emplace_back( hcErr );
+    }
+    return d_start;
+  }
+
+  std::vector<float> xbins;
+  for(auto b : _xbins) xbins.push_back(float(b));
+  std::vector<float> ybins;
+  for(auto b : _ybins) ybins.push_back(float(b));
+
+  for(auto c : coeffs){
     std::string hname = (c<9 ? _category+"_A"+std::to_string(c) : _category+"_MC");
-    auto d_post = d
-      .Define("weight_test_"+_category+"_A"+std::to_string(c),    prod,    {"test_A"+std::to_string(c), _weight} )
-      .Define("weight_testErr_"+_category+"_A"+std::to_string(c), prodErr, {"test_A"+std::to_string(c), _weight});
-    auto hc    =  d_post.Histo2D({ hname.c_str(),         "", int(_xbins.size()-1), _xbins.data() , int(_ybins.size()-1), _ybins.data()}, 
-			      "GenV_"+_leptonType+"_absy", "GenV_"+_leptonType+"_qt", "weight_test_"+_category+"_A"+std::to_string(c));    
-    auto hcErr =  d_post.Histo2D({ (hname+"Err").c_str(), "", int(_xbins.size()-1), _xbins.data() , int(_ybins.size()-1), _ybins.data()}, 
-			      "GenV_"+_leptonType+"_absy", "GenV_"+_leptonType+"_qt", "weight_testErr_"+_category+"_A"+std::to_string(c));    
-    _h2List.emplace_back( hc );
-    _h2List.emplace_back( hcErr );
+    std::vector<std::string> total = _syst_names;
+    if(total.size()==0) total.emplace_back("");
+    TH2weightsHelper w_helper(hname, "GenV_"+_leptonType+"_absy_GenV_"+_leptonType+"_qt", "", int(_xbins.size()-1), xbins , int(_ybins.size()-1), ybins, total);         
+    _h2Group.emplace_back(d_start.Book<float,float,float,ROOT::VecOps::RVec<float>>(std::move(w_helper), {"GenV_"+_leptonType+"_absy", "GenV_"+_leptonType+"_qt", "weight_test_"+_category+"_A"+std::to_string(c), _syst_column}) ); 
+    //TH2weightsHelper w_helperErr(hname+"Err", std::string("GenV_"+_leptonType+"_absy_GenV_"+_leptonType+"_qt"), "", int(_xbins.size()-1), xbins , int(_ybins.size()-1), ybins, total);         
+    //_h2Group.emplace_back(d_start.Book<float,float,float,ROOT::VecOps::RVec<float>>(std::move(w_helper), {"GenV_"+_leptonType+"_absy", "GenV_"+_leptonType+"_qt", "weight_testErr_"+_category+"_A"+std::to_string(c), _syst_column}) ); 
   }
   
-  return d;
+  return d_start;
 }
 
 std::vector<ROOT::RDF::RResultPtr<TH1D>> computeAngularCoeff::getTH1(){ 

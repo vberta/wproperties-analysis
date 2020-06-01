@@ -166,8 +166,8 @@
 	},
 	"output" : {
 	    "GENINCLUSIVE" : {
-		"WtoMuP"      : "WJets.root/*_WtoMuP:nominal",
-		"WtoMuN"      : "WJets.root/*_WtoMuN:nominal"
+		"WtoMuP"      : "WJets.root/*_WtoMuP:LHE",
+		"WtoMuN"      : "WJets.root/*_WtoMuN:LHE"
 	    }
 	}		
     },  	 
@@ -181,7 +181,7 @@
         "dataType" : "MC",
         "xsec" : 61526.7,
         "ncores" : 64,
- 	"categories" : "GENINCLUSIVE_WtoMuP+:nominal,GENINCLUSIVE_WtoMuN+:nominal"
+ 	"categories" : "GENINCLUSIVE_WtoMuP+:LHE,GENINCLUSIVE_WtoMuN+:LHE"
     },
 
     "WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_GENINCLUSIVE_1" : {  
@@ -193,7 +193,7 @@
         "dataType" : "MC",
         "xsec" : 61526.7,
         "ncores" : 64,
- 	"categories" : "GENINCLUSIVE_WtoMuP+:nominal,GENINCLUSIVE_WtoMuN+:nominal"
+ 	"categories" : "GENINCLUSIVE_WtoMuP+:LHE,GENINCLUSIVE_WtoMuN+:LHE"
     },
 
     "WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_GENINCLUSIVE_2" : {  
@@ -205,7 +205,7 @@
         "dataType" : "MC",
         "xsec" : 61526.7,
         "ncores" : 64,
- 	"categories" : "GENINCLUSIVE_WtoMuP+:nominal,GENINCLUSIVE_WtoMuN+:nominal"
+ 	"categories" : "GENINCLUSIVE_WtoMuP+:LHE,GENINCLUSIVE_WtoMuN+:LHE"
     }
 
 }
