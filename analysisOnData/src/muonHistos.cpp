@@ -14,11 +14,9 @@ RNode muonHistos::run(RNode d){
 
     if(total.size()==0) total.emplace_back("");
 
-    TH1weightsHelper helper(std::string("SelMuon_corrected_pt"), std::string(" ; muon p_{T} (Rochester corr.); "), 100, pTArr, total);
+    TH1weightsHelper helper(std::string("muon_pt"), std::string(" ; muon p_{T} (Rochester corr.); "), 100, pTArr, total);
 
-    auto hpT = d1.Define("SelMuon_corrected_pt", getFromIdx, {"Muon_pt", "Idx_mu1"})
-                 .Book<float,  float, ROOT::VecOps::RVec<float>>(std::move(helper), {"SelMuon_corrected_pt", "weight", _syst_name.size()>0 ? _syst_weight: "dummy"});
-    
+    auto hpT = d1.Book<float,  float, ROOT::VecOps::RVec<float>>(std::move(helper), {"muon_pt", "weight", _syst_name.size()>0 ? _syst_weight: "dummy"});
     _h1Group.emplace_back(hpT);
 
     return d1;
