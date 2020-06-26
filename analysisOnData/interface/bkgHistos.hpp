@@ -1,5 +1,5 @@
-#ifndef BASEDEFINITIONS_H
-#define BASEDEFINITIONS_H
+#ifndef BKGHISTOS_H
+#define BKGHISTOS_H
 
 #include "ROOT/RDataFrame.hxx"
 #include "ROOT/RVec.hxx"
@@ -9,11 +9,12 @@
 #include "TString.h"
 #include "TMath.h"
 #include "interface/module.hpp"
+#include "interface/TH1weightsHelper.hpp"
 #include "interface/functions.hpp"
 
 using RNode = ROOT::RDF::RNode;
 
-class baseDefinitions : public Module
+class bkgHistos : public Module
 {
 
 private:
@@ -26,9 +27,30 @@ private:
     std::vector<ROOT::RDF::RResultPtr<std::vector<TH2D>>> _h2Group;
     std::vector<ROOT::RDF::RResultPtr<std::vector<TH3D>>> _h3Group;
 
-public:
+    std::vector<std::string> _syst_name;
+    std::string _syst_weight;
 
-    ~baseDefinitions(){};
+    std::string _filter;
+    std::string _weight;
+
+public:
+    bkgHistos(std::string filter, std::string weight)
+    {
+
+        _filter = filter;
+        _weight = weight;
+    };
+
+    bkgHistos(std::string filter, std::string weight, std::vector<std::string> syst_name, std::string syst_weight)
+    {
+
+        _filter = filter;
+        _weight = weight;
+        _syst_name = syst_name;
+        _syst_weight = syst_weight;
+    };
+
+    ~bkgHistos(){};
 
     RNode run(RNode) override;
     std::vector<ROOT::RDF::RResultPtr<TH1D>> getTH1() override;

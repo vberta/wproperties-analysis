@@ -1,5 +1,5 @@
-#ifndef BASEDEFINITIONS_H
-#define BASEDEFINITIONS_H
+#ifndef WEIGHTDEFINITIONS_H
+#define WEIGHTDEFINITIONS_H
 
 #include "ROOT/RDataFrame.hxx"
 #include "ROOT/RVec.hxx"
@@ -13,7 +13,7 @@
 
 using RNode = ROOT::RDF::RNode;
 
-class baseDefinitions : public Module
+class weightDefinitions : public Module
 {
 
 private:
@@ -27,8 +27,7 @@ private:
     std::vector<ROOT::RDF::RResultPtr<std::vector<TH3D>>> _h3Group;
 
 public:
-
-    ~baseDefinitions(){};
+    ~weightDefinitions(){};
 
     RNode run(RNode) override;
     std::vector<ROOT::RDF::RResultPtr<TH1D>> getTH1() override;
