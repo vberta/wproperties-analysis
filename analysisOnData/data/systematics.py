@@ -1,0 +1,3 @@
+systematics = {
+    "puWeight"  : ["puWeightUp", "puWeightDown"],
+  }

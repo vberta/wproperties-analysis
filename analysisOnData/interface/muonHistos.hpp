@@ -38,12 +38,6 @@ class muonHistos : public Module {
 
     public:
     
-    muonHistos(std::string filter, std::string weight){
-
-        _filter = filter;
-        _weight = weight;
-    };
-
     muonHistos(std::string filter, std::string weight, std::vector<std::string> syst_name, std::string syst_weight){
         
         _filter = filter;

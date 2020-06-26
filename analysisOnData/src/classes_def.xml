@@ -1,6 +1,6 @@
 <lcgdict>
   <class name="muonHistos"/>
   <class name="fakeRate"/>
-  <class name="getSystWeight"/>
   <class name="baseDefinitions"/>
+  <class name="weightDefinitions"/>
 </lcgdict>

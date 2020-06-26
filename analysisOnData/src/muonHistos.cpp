@@ -3,19 +3,16 @@
 
 RNode muonHistos::run(RNode d){
     
-    auto d1 = d.Filter(_filter).Define("weight",_weight).Define("dummy", dummy, {"event"});
+    auto d1 = d.Filter(_filter).Define("weight",_weight);
+    
     std::vector<float> pTArr(101); 
     for(int i=0; i<101; i++) {
         pTArr[i] = 25. + i*(65.-25.)/100;
     }
 
-    std::vector<std::string> total = _syst_name;
+    TH1weightsHelper helper(std::string("Mu1_pt"), std::string(" ; muon p_{T} (Rochester corr.); "), 100, pTArr, _syst_name);
 
-    if(total.size()==0) total.emplace_back("");
-
-    TH1weightsHelper helper(std::string("muon_pt"), std::string(" ; muon p_{T} (Rochester corr.); "), 100, pTArr, total);
-
-    auto hpT = d1.Book<float,  float, ROOT::VecOps::RVec<float>>(std::move(helper), {"muon_pt", "weight", _syst_name.size()>0 ? _syst_weight: "dummy"});
+    auto hpT = d1.Book<float, float, ROOT::VecOps::RVec<float>>(std::move(helper), {"Mu1_pt", "weight", _syst_weight});
     _h1Group.emplace_back(hpT);
 
     return d1;

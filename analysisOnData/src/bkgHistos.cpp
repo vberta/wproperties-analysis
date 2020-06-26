@@ -2,9 +2,13 @@
 
 RNode bkgHistos::run(RNode d)
 {
-
+    /*
     // add here all the plots to be used for inputs for extracting the fake rates
+    TH3weightsHelper helper(std::string("muon_pt"), std::string(" ; muon p_{T} (Rochester corr.); "), 100, pTArr, _weight);
 
+    auto hpT = d1.Book<float, float, ROOT::VecOps::RVec<float>>(std::move(helper), {"muon_pt", "weight", _syst_name.size() > 0 ? _syst_weight : "dummy"});
+    _h1Group.emplace_back(hpT);
+    */
     return d;
 }
 
