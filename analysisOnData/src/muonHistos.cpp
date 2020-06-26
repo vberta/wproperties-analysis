@@ -4,7 +4,6 @@
 RNode muonHistos::run(RNode d){
     
     auto d1 = d.Filter(_filter).Define("weight",_weight).Define("dummy", dummy, {"event"});
-
     std::vector<float> pTArr(101); 
     for(int i=0; i<101; i++) {
         pTArr[i] = 25. + i*(65.-25.)/100;
@@ -20,17 +19,16 @@ RNode muonHistos::run(RNode d){
     _h1Group.emplace_back(hpT);
 
     return d1;
-
 }
 
 std::vector<ROOT::RDF::RResultPtr<TH1D>> muonHistos::getTH1(){ 
-    return _h1List;
+  return _h1List;
 }
 std::vector<ROOT::RDF::RResultPtr<TH2D>> muonHistos::getTH2(){ 
-    return _h2List;
+  return _h2List;
 }
 std::vector<ROOT::RDF::RResultPtr<TH3D>> muonHistos::getTH3(){ 
-    return _h3List;
+  return _h3List;
 }
 
 std::vector<ROOT::RDF::RResultPtr<std::vector<TH1D>>> muonHistos::getGroupTH1(){ 
@@ -44,13 +42,13 @@ std::vector<ROOT::RDF::RResultPtr<std::vector<TH3D>>> muonHistos::getGroupTH3(){
 }
 
 void muonHistos::reset(){
-    
-    _h1List.clear();
-    _h2List.clear();
-    _h3List.clear();
-
-    _h1Group.clear();
-    _h2Group.clear();
-    _h3Group.clear();
-
+  
+  _h1List.clear();
+  _h2List.clear();
+  _h3List.clear();
+  
+  _h1Group.clear();
+  _h2Group.clear();
+  _h3Group.clear();
+  
 }
