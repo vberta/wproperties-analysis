@@ -30,11 +30,12 @@ private:
     TFile *_SF;
 
 public:
-    ~weightDefinitions(TFile *SF){
+    weightDefinitions(TFile *SF){
         _SF = SF;
     };
+    ~weightDefinitions(){};
 
-    RNode run(RNode) override;
+        RNode run(RNode) override;
     std::vector<ROOT::RDF::RResultPtr<TH1D>> getTH1() override;
     std::vector<ROOT::RDF::RResultPtr<TH2D>> getTH2() override;
     std::vector<ROOT::RDF::RResultPtr<TH3D>> getTH3() override;
