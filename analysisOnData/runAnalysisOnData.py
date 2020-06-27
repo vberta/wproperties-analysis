@@ -36,16 +36,15 @@ for region,cut in regions.iteritems():
 
     nom = ROOT.vector('string')()
     nom.push_back("Nom")
-
-    p.branch(nodeToStart = 'defs', nodeToEnd = 'prefit_{}'.format(region), modules = [ROOT.muonHistos(cut, weight, nom,"Nom")])
+    #last argument refers to histo category - 0 = Nominal, 1 = corrected Pt , 2 = JME variations
+    p.branch(nodeToStart = 'defs', nodeToEnd = 'prefit_{}'.format(region), modules = [ROOT.muonHistos(cut, weight, nom,"Nom",0)])
     
     for s,variations in systematics.iteritems():
         weight.replace(s, "1.")
         vars_vec = ROOT.vector('string')()
         for var in variations[0]:
             vars_vec.push_back(var)
-
-        p.branch(nodeToStart = 'defs', nodeToEnd = 'prefit_{}_{}Vars'.format(region,s), modules = [ROOT.muonHistos(cut, weight,vars_vec,variations[1])])
+        p.branch(nodeToStart = 'defs', nodeToEnd = 'prefit_{}_{}Vars'.format(region,s), modules = [ROOT.muonHistos(cut, weight,vars_vec,variations[1], 0)])
 
 p.getOutput()
 p.saveGraph()
