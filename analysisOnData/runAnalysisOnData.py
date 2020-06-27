@@ -39,13 +39,13 @@ for region,cut in regions.iteritems():
 
     p.branch(nodeToStart = 'defs', nodeToEnd = 'prefit_{}'.format(region), modules = [ROOT.muonHistos(cut, weight, nom,"Nom")])
     
-    for s,vars in systematics.iteritems():
+    for s,variations in systematics.iteritems():
         weight.replace(s, "1.")
         vars_vec = ROOT.vector('string')()
-        for var in vars:
+        for var in variations[0]:
             vars_vec.push_back(var)
 
-        p.branch(nodeToStart = 'defs', nodeToEnd = 'prefit_{}_{}Vars'.format(region,s), modules = [ROOT.muonHistos(cut, weight,vars_vec,"PUweightVars")])
+        p.branch(nodeToStart = 'defs', nodeToEnd = 'prefit_{}_{}Vars'.format(region,s), modules = [ROOT.muonHistos(cut, weight,vars_vec,variations[1])])
 
 p.getOutput()
 p.saveGraph()

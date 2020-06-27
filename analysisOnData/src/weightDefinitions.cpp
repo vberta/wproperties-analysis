@@ -24,38 +24,38 @@ RNode weightDefinitions::run(RNode d)
     // Define SF: trigger, RECO = (ISO + ID)
     auto defineTriggerSFVars = [this](float pt, float eta, int charge) {
         ROOT::VecOps::RVec<float> TriggSF;
+        TH2D *_TriggerPlusSyst0Up = (TH2D *)_SF->Get("TriggerPlusSyst0Up");
         TH2D *_TriggerPlusSyst1Up = (TH2D *)_SF->Get("TriggerPlusSyst1Up");
         TH2D *_TriggerPlusSyst2Up = (TH2D *)_SF->Get("TriggerPlusSyst2Up");
-        TH2D *_TriggerPlusSyst3Up = (TH2D *)_SF->Get("TriggerPlusSyst3Up");
+        TH2D *_TriggerPlusSyst0Down = (TH2D *)_SF->Get("TriggerPlusSyst0Down");
         TH2D *_TriggerPlusSyst1Down = (TH2D *)_SF->Get("TriggerPlusSyst1Down");
         TH2D *_TriggerPlusSyst2Down = (TH2D *)_SF->Get("TriggerPlusSyst2Down");
-        TH2D *_TriggerPlusSyst3Down = (TH2D *)_SF->Get("TriggerPlusSyst3Down");
 
+        TH2D *_TriggerMinusSyst0Up = (TH2D *)_SF->Get("TriggerMinusSyst0Up");
         TH2D *_TriggerMinusSyst1Up = (TH2D *)_SF->Get("TriggerMinusSyst1Up");
         TH2D *_TriggerMinusSyst2Up = (TH2D *)_SF->Get("TriggerMinusSyst2Up");
-        TH2D *_TriggerMinusSyst3Up = (TH2D *)_SF->Get("TriggerMinusSyst3Up");
+        TH2D *_TriggerMinusSyst0Down = (TH2D *)_SF->Get("TriggerMinusSyst0Down");
         TH2D *_TriggerMinusSyst1Down = (TH2D *)_SF->Get("TriggerMinusSyst1Down");
         TH2D *_TriggerMinusSyst2Down = (TH2D *)_SF->Get("TriggerMinusSyst2Down");
-        TH2D *_TriggerMinusSyst3Down = (TH2D *)_SF->Get("TriggerMinusSyst3Down");
 
         int bin = _TriggerPlusSyst1Up->FindBin(eta, pt);
         if (charge > 0)
         {
+            TriggSF.emplace_back(_TriggerPlusSyst0Up->GetBinContent(bin));
             TriggSF.emplace_back(_TriggerPlusSyst1Up->GetBinContent(bin));
             TriggSF.emplace_back(_TriggerPlusSyst2Up->GetBinContent(bin));
-            TriggSF.emplace_back(_TriggerPlusSyst3Up->GetBinContent(bin));
+            TriggSF.emplace_back(_TriggerPlusSyst0Down->GetBinContent(bin));
             TriggSF.emplace_back(_TriggerPlusSyst1Down->GetBinContent(bin));
             TriggSF.emplace_back(_TriggerPlusSyst2Down->GetBinContent(bin));
-            TriggSF.emplace_back(_TriggerPlusSyst3Down->GetBinContent(bin));
         }
         else
         {
+            TriggSF.emplace_back(_TriggerMinusSyst0Up->GetBinContent(bin));
             TriggSF.emplace_back(_TriggerMinusSyst1Up->GetBinContent(bin));
             TriggSF.emplace_back(_TriggerMinusSyst2Up->GetBinContent(bin));
-            TriggSF.emplace_back(_TriggerMinusSyst3Up->GetBinContent(bin));
+            TriggSF.emplace_back(_TriggerMinusSyst0Down->GetBinContent(bin));
             TriggSF.emplace_back(_TriggerMinusSyst1Down->GetBinContent(bin));
             TriggSF.emplace_back(_TriggerMinusSyst2Down->GetBinContent(bin));
-            TriggSF.emplace_back(_TriggerMinusSyst3Down->GetBinContent(bin));
         }
 
         return TriggSF;
@@ -105,7 +105,7 @@ RNode weightDefinitions::run(RNode d)
                   .Define("TriggerSFVars", defineTriggerSFVars, {"Mu1_pt", "Mu1_eta", "Mu1_charge"})
                   .Define("RecoSF", defineRecoSF, {"Mu1_pt", "Mu1_eta"})
                   .Define("RecoSFVars", defineRecoSFVars, {"Mu1_pt", "Mu1_eta"})
-                  .Define("PUweightVars", definePUweights, {"puWeightUp", "puWeightDown"})
+                  .Define("puWeightVars", definePUweights, {"puWeightUp", "puWeightDown"})
                   .Define("Nom", defineNomweight); 
     
     return d1;
