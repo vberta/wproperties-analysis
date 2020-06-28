@@ -6,6 +6,6 @@ selections = {
 }
 
 selectionVars = { 
-  "correctedUp" : 1, "correctedDown" : 1, "jerUp" : 2, "jerDown" : 2, 
-  "jesTotalUp" : 2, "jesTotalDown" : 2, "unclustEnUp" : 2,"unclustEnDown" : 2
+  "ptScale" : { "correctedUp" : 1, "correctedDown" : 1}, 
+  "jmeVars" : { "jerUp" : 2, "jerDown" : 2 , "jesTotalUp" : 2, "jesTotalDown" : 2, "unclustEnUp" : 2,"unclustEnDown" : 2}
 }

@@ -37,13 +37,16 @@ class muonHistos : public Module {
     std::string _syst_weight;
 
     std::string _filter;
+    std::vector<std::string> _filtervec;
     std::string _weight;
     std::string _colvar;
+    std::vector<std::string> _colvarvec;
     HistoCategory _hcat;
     
     std::vector<float> _pTArr = std::vector<float>(101);
     std::vector<float> _etaArr = std::vector<float>(49);
     std::vector<float> _MTArr = std::vector<float>(101);
+    void setAxisarrays();
 
     public:
     
@@ -55,14 +58,19 @@ class muonHistos : public Module {
         _syst_weight = syst_weight;
         _hcat = hcat;
         _colvar = colvar;
+        setAxisarrays();
 
-        for(int i=0; i<101; i++) 
-          _pTArr[i] = 25. + i*(65.-25.)/100;
-        for(int i=0; i<49; i++) 
-          _etaArr[i] = -2.4 + i*(4.8)/48;//eta -2.4 to 2.4
-        for(int i=0; i<101; i++) 
-          _MTArr[i] = i;
+    };
 
+    muonHistos(std::vector<std::string>& filtervec, std::string weight, std::vector<std::string> syst_name, std::string syst_weight, HistoCategory hcat, std::vector<std::string>& colvarvec ){
+        
+        _filtervec = filtervec;
+        _weight = weight;
+        _syst_name = syst_name;
+        _syst_weight = syst_weight;
+        _hcat = hcat;
+        _colvarvec = colvarvec;
+        setAxisarrays();
     };
 
     ~muonHistos() {};

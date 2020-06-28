@@ -47,6 +47,14 @@ RNode muonHistos::bookJMEvarhistos(RNode df) {
   return df;
 }
 
+void muonHistos::setAxisarrays() {
+  for(int i=0; i<101; i++) 
+    _pTArr[i] = 25. + i*(65.-25.)/100;
+  for(int i=0; i<49; i++) 
+    _etaArr[i] = -2.4 + i*(4.8)/48;//eta -2.4 to 2.4
+  for(int i=0; i<101; i++) 
+    _MTArr[i] = i;
+}
 
 std::vector<ROOT::RDF::RResultPtr<TH1D>> muonHistos::getTH1(){ 
   return _h1List;
