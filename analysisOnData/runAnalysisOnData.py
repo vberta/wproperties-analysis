@@ -13,7 +13,7 @@ from getLumiWeight import getLumiWeight
 
 ROOT.gSystem.Load('bin/libAnalysisOnData.so')
 
-c=4
+c=64
 		
 ROOT.ROOT.EnableImplicitMT(c)
 
@@ -21,7 +21,6 @@ print "running with {} cores".format(c)
 
 inputFile = '/scratchssd/sroychow/NanoAOD2016-V2/WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/tree.root'
 
-inputFile='/home/sroychow/wmass/v6/081594F6-3B7A-0044-B7B8-D9F44C91B6E1_Skim.root'
 cutSignal = 'Vtype==0 && HLT_SingleMu24 && Mu1_pt>25. && MT>0. && MET_filters==1 && nVetoElectrons==0' 
 regions = {}
 regions['signal'] = cutSignal
