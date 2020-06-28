@@ -6,7 +6,7 @@ RNode muonHistos::run(RNode d){
     auto d1 = d.Filter(_filter).Define("weight",_weight);    
     if(_hcat == HistoCategory::Nominal)
       return bookNominalhistos(d1);
-    else if(_hcat == HistoCategory::Nominal)
+    else if(_hcat == HistoCategory::Corrected)
       return bookptCorrectedhistos(d1);
     else if(_hcat == HistoCategory::JME)
       return bookJMEvarhistos(d1);
@@ -31,49 +31,30 @@ RNode muonHistos::bookNominalhistos(RNode df) {
   
   return df;
 }
-
+//muon pt corrections affect both pt and MT
 RNode muonHistos::bookptCorrectedhistos(RNode df) {
-  TH1weightsHelper helper_Ptup(std::string("Mu1_pt_correctedUp"), std::string(" ; muon p_{T} corrected Up(Rochester corr.); "), 100, _pTArr, _syst_name);
- _h1Group.emplace_back(df.Book<float, float, ROOT::VecOps::RVec<float>>(std::move(helper_Ptup), {"Mu1_pt_correctedUp", "weight", _syst_weight}));
+  TH1weightsHelper helper_Pt(std::string("Mu1_pt_" + _colvar), std::string(" ; muon p_{T} (Rochester corr.); "), 100, _pTArr, _syst_name);
+ _h1Group.emplace_back(df.Book<float, float, ROOT::VecOps::RVec<float>>(std::move(helper_Pt), {"Mu1_pt_" + _colvar, "weight", _syst_weight}));
 
-  TH1weightsHelper helper_Ptdown(std::string("Mu1_pt_correctedDown"), std::string(" ; muon p_{T} corrected Down(Rochester corr.); "), 100, _pTArr, _syst_name);
-  _h1Group.emplace_back(df.Book<float, float, ROOT::VecOps::RVec<float>>(std::move(helper_Ptdown), {"Mu1_pt_correctedDown", "weight", _syst_weight}));
-
-
-  TH1weightsHelper helper_MTup(std::string("MT_correctedUp"), std::string(" ; M_{T} (Rochester corr./smear MET); "), 100, _MTArr, _syst_name);
-  _h1Group.emplace_back(df.Book<float, float, ROOT::VecOps::RVec<float>>(std::move(helper_MTup), {"MT_correctedUp", "weight", _syst_weight}));
-
-  TH1weightsHelper helper_MTdown(std::string("MT_correctedDown"), std::string(" ; M_{T} (Rochester corr./smear MET); "), 100, _MTArr, _syst_name);
-  _h1Group.emplace_back(df.Book<float, float, ROOT::VecOps::RVec<float>>(std::move(helper_MTdown), {"MT_correctedDown", "weight", _syst_weight}));
-  
+  TH1weightsHelper helper_MT(std::string("MT_" + _colvar), std::string(" ; M_{T} (Rochester corr./smear MET); "), 100, _MTArr, _syst_name);
+  _h1Group.emplace_back(df.Book<float, float, ROOT::VecOps::RVec<float>>(std::move(helper_MT), {"MT_" + _colvar, "weight", _syst_weight}));
   return df;
 }
-
+//jme variations affect only MT
 RNode muonHistos::bookJMEvarhistos(RNode df) {
-  //jer
-  TH1weightsHelper helper_MTjerup(std::string("MT_jerUp"), std::string(" ; M_{T} (Rochester corr./smear MET); "), 100, _MTArr, _syst_name);
-  _h1Group.emplace_back(df.Book<float, float, ROOT::VecOps::RVec<float>>(std::move(helper_MTjerup), {"MT_jerUp", "weight", _syst_weight}));
-
-  TH1weightsHelper helper_MTjerdown(std::string("MT_jerDown"), std::string(" ; M_{T} (Rochester corr./smear MET); "), 100, _MTArr, _syst_name);
-  _h1Group.emplace_back(df.Book<float, float, ROOT::VecOps::RVec<float>>(std::move(helper_MTjerdown), {"MT_jerDown", "weight", _syst_weight}));
-  
-  //jes
-  TH1weightsHelper helper_MTjesup(std::string("MT_jesTotalUp"), std::string(" ; M_{T} (Rochester corr./smear MET); "), 100, _MTArr, _syst_name);
-  _h1Group.emplace_back(df.Book<float, float, ROOT::VecOps::RVec<float>>(std::move(helper_MTjesup), {"MT_jesTotalUp", "weight", _syst_weight}));
-
-  TH1weightsHelper helper_MTjesdown(std::string("MT_jesTotalDown"), std::string(" ; M_{T} (Rochester corr./smear MET); "), 100, _MTArr, _syst_name);
-  _h1Group.emplace_back(df.Book<float, float, ROOT::VecOps::RVec<float>>(std::move(helper_MTjesdown), {"MT_jesTotalDown", "weight", _syst_weight}));
-
-  //jes
-  TH1weightsHelper helper_MTuenup(std::string("MT_unclustEnUp"), std::string(" ; M_{T} (Rochester corr./smear MET); "), 100, _MTArr, _syst_name);
-  _h1Group.emplace_back(df.Book<float, float, ROOT::VecOps::RVec<float>>(std::move(helper_MTuenup), {"MT_unclustEnUp", "weight", _syst_weight}));
-
-  TH1weightsHelper helper_MTuendown(std::string("MT_unclustEnDown"), std::string(" ; M_{T} (Rochester corr./smear MET); "), 100, _MTArr, _syst_name);
-  _h1Group.emplace_back(df.Book<float, float, ROOT::VecOps::RVec<float>>(std::move(helper_MTuendown), {"MT_unclustEnDown", "weight", _syst_weight}));
-
+  TH1weightsHelper helper_MT(std::string("MT_" + _colvar), std::string(" ; M_{T} (Rochester corr./smear MET); "), 100, _MTArr, _syst_name);
+  _h1Group.emplace_back(df.Book<float, float, ROOT::VecOps::RVec<float>>(std::move(helper_MT), {"MT_" + _colvar, "weight", _syst_weight}));
   return df;
 }
 
+void muonHistos::setAxisarrays() {
+  for(int i=0; i<101; i++) 
+    _pTArr[i] = 25. + i*(65.-25.)/100;
+  for(int i=0; i<49; i++) 
+    _etaArr[i] = -2.4 + i*(4.8)/48;//eta -2.4 to 2.4
+  for(int i=0; i<101; i++) 
+    _MTArr[i] = i;
+}
 
 std::vector<ROOT::RDF::RResultPtr<TH1D>> muonHistos::getTH1(){ 
   return _h1List;
