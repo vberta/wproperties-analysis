@@ -20,20 +20,20 @@ RNode baseDefinitions::run(RNode d)
                            .Define("MT_correctedUp", W_mt, { "Mu1_pt_correctedUp", "Mu1_phi", "MET_pt_nom", "MET_phi_nom"})
                            .Define("MT_correctedDown", W_mt, { "Mu1_pt_correctedDown", "Mu1_phi", "MET_pt_nom", "MET_phi_nom"})
                            .Define("MT_jerUp", W_mt, { "Mu1_pt", "Mu1_phi", "MET_pt_jerUp", "MET_phi_jerUp"})
-                           .Define("MT_jerDown", W_mt, { "Mu1_pt", "Mu1_phi", "MET_pt_jerUp", "MET_phi_jerUp"})
+                           .Define("MT_jerDown", W_mt, { "Mu1_pt", "Mu1_phi", "MET_pt_jerDown", "MET_phi_jerUp"})
                            .Define("MT_jesTotalUp", W_mt, { "Mu1_pt", "Mu1_phi", "MET_pt_jesTotalUp", "MET_phi_jesTotalUp"})
-                           .Define("MT_jesTotalDown", W_mt, { "Mu1_pt", "Mu1_phi", "MET_pt_jesTotalUp", "MET_phi_jesTotalUp"})
+                           .Define("MT_jesTotalDown", W_mt, { "Mu1_pt", "Mu1_phi", "MET_pt_jesTotalDown", "MET_phi_jesTotalDown"})
                            .Define("MT_unclustEnUp", W_mt, { "Mu1_pt", "Mu1_phi", "MET_pt_unclustEnUp", "MET_phi_unclustEnUp"})
-                           .Define("MT_unclustEnDown", W_mt, { "Mu1_pt", "Mu1_phi", "MET_pt_unclustEnUp", "MET_phi_unclustEnUp"})
-			               .Define("Recoil_pt", W_hpt, { "Mu1_pt", "Mu1_phi", "MET_pt_nom", "MET_phi_nom"})
+                           .Define("MT_unclustEnDown", W_mt, { "Mu1_pt", "Mu1_phi", "MET_pt_unclustEnDown", "MET_phi_unclustEnDown"})
+			   .Define("Recoil_pt", W_hpt, { "Mu1_pt", "Mu1_phi", "MET_pt_nom", "MET_phi_nom"})
                            .Define("Recoil_pt_correctedUp", W_hpt, { "Mu1_pt_correctedUp", "Mu1_phi", "MET_pt_nom", "MET_phi_nom"})
                            .Define("Recoil_pt_correctedDown", W_hpt, { "Mu1_pt_correctedDown", "Mu1_phi", "MET_pt_nom", "MET_phi_nom"})
                            .Define("Recoil_pt_jerUp", W_hpt, { "Mu1_pt", "Mu1_phi", "MET_pt_jerUp", "MET_phi_jerUp"})
-                           .Define("Recoil_pt_jerDown", W_hpt, { "Mu1_pt", "Mu1_phi", "MET_pt_jerUp", "MET_phi_jerUp"})
+                           .Define("Recoil_pt_jerDown", W_hpt, { "Mu1_pt", "Mu1_phi", "MET_pt_jerDown", "MET_phi_jerDown"})
                            .Define("Recoil_pt_jesTotalUp", W_hpt, { "Mu1_pt", "Mu1_phi", "MET_pt_jesTotalUp", "MET_phi_jesTotalUp"})
-                           .Define("Recoil_pt_jesTotalDown", W_hpt, { "Mu1_pt", "Mu1_phi", "MET_pt_jesTotalUp", "MET_phi_jesTotalUp"})
+                           .Define("Recoil_pt_jesTotalDown", W_hpt, { "Mu1_pt", "Mu1_phi", "MET_pt_jesTotalDown", "MET_phi_jesTotalDown"})
                            .Define("Recoil_pt_unclustEnUp", W_hpt, { "Mu1_pt", "Mu1_phi", "MET_pt_unclustEnUp", "MET_phi_unclustEnUp"})
-                           .Define("Recoil_pt_unclustEnDown", W_hpt, { "Mu1_pt", "Mu1_phi", "MET_pt_unclustEnUp", "MET_phi_unclustEnUp"});
+                           .Define("Recoil_pt_unclustEnDown", W_hpt, { "Mu1_pt", "Mu1_phi", "MET_pt_unclustEnDown", "MET_phi_unclustEnDown"});
 
 
     return d1withCompvar;
