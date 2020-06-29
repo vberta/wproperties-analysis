@@ -1,5 +1,5 @@
-#ifndef BKGHISTOS_H
-#define BKGHISTOS_H
+#ifndef TEMPLATES_H
+#define TEMPLATES_H
 
 #include "ROOT/RDataFrame.hxx"
 #include "ROOT/RVec.hxx"
@@ -10,11 +10,19 @@
 #include "TMath.h"
 #include "interface/module.hpp"
 #include "interface/TH1weightsHelper.hpp"
+#include "interface/TH3weightsHelper.hpp"
 #include "interface/functions.hpp"
+#include <map>
+#include <vector>
 
 using RNode = ROOT::RDF::RNode;
-
-class bkgHistos : public Module
+enum HistoCategory
+{
+    Nominal = 0,
+    Corrected,
+    JME
+};
+class templates : public Module
 {
 
 private:
@@ -31,26 +39,46 @@ private:
     std::string _syst_weight;
 
     std::string _filter;
+    std::vector<std::string> _filtervec;
     std::string _weight;
+    std::string _colvar;
+    std::vector<std::string> _colvarvec;
+    HistoCategory _hcat;
+
+    std::vector<float> _pTArr = std::vector<float>(100);
+    std::vector<float> _etaArr = std::vector<float>(48);
+    std::vector<int> _chargeArr = std::vector<float>(2);
+    void setAxisarrays();
 
 public:
-    bkgHistos(std::string filter, std::string weight)
-    {
-
-        _filter = filter;
-        _weight = weight;
-    };
-
-    bkgHistos(std::string filter, std::string weight, std::vector<std::string> syst_name, std::string syst_weight)
+    templates(std::string filter, std::string weight, std::vector<std::string> syst_name, std::string syst_weight, HistoCategory hcat, std::string colvar = "")
     {
 
         _filter = filter;
         _weight = weight;
         _syst_name = syst_name;
         _syst_weight = syst_weight;
+        _hcat = hcat;
+        _colvar = colvar;
+        setAxisarrays();
     };
 
-    ~bkgHistos(){};
+    templates(std::vector<std::string> filtervec, std::string weight, std::vector<std::string> syst_name, std::string syst_weight, HistoCategory hcat, std::vector<std::string> colvarvec)
+    {
+
+        _filtervec = filtervec;
+        _weight = weight;
+        _syst_name = syst_name;
+        _syst_weight = syst_weight;
+        _hcat = hcat;
+        _colvarvec = colvarvec;
+        setAxisarrays();
+    };
+
+    ~templates(){};
+    RNode bookNominalhistos(RNode);
+    RNode bookptCorrectedhistos(RNode);
+    RNode bookJMEvarhistos(RNode);
 
     RNode run(RNode) override;
     std::vector<ROOT::RDF::RResultPtr<TH1D>> getTH1() override;
