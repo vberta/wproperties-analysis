@@ -16,7 +16,9 @@ cd wproperties-analysis/RDFprocessor/framework
 
 #To run on 2016 MC samples
 
+```
 cd wproperties-analysis/analysisOnData/
 make
 mkdir output
 python runAnalysisOnMC.py
+```
