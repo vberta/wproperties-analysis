@@ -4,7 +4,7 @@ RNode weightDefinitions::run(RNode d)
 {
 
     // Define SF: trigger, RECO = (ISO + ID)
-    auto defineTriggerSF = [this](float pt, float eta, int charge){
+    auto defineTriggerSF = [this](float pt, float eta, float charge){
 
         TH2D *_TriggerPlus = (TH2D *)_SF->Get("TriggerPlus");
         TH2D *_TriggerMinus = (TH2D *)_SF->Get("TriggerMinus");
@@ -22,7 +22,7 @@ RNode weightDefinitions::run(RNode d)
     };
 
     // Define SF: trigger, RECO = (ISO + ID)
-    auto defineTriggerSFVars = [this](float pt, float eta, int charge) {
+    auto defineTriggerSFVars = [this](float pt, float eta, float charge) {
         ROOT::VecOps::RVec<float> TriggSF;
         TH2D *_TriggerPlusSyst0Up = (TH2D *)_SF->Get("TriggerPlusSyst0Up");
         TH2D *_TriggerPlusSyst1Up = (TH2D *)_SF->Get("TriggerPlusSyst1Up");

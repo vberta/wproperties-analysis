@@ -1,6 +1,9 @@
 selections = {
-  "SignalPlus": "Vtype==0 && HLT_SingleMu24 && Mu1_pt>26.0 && Mu1_pt<55.0 && MT>=40.0 && MET_filters==1 && nVetoElectrons==0 && 1 && Mu1_charge>0", 
-  "SignalMinus": "Vtype==0 && HLT_SingleMu24 && Mu1_pt>26.0 && Mu1_pt<55.0 && MT>=40.0 && MET_filters==1 && nVetoElectrons==0 && 1 && Mu1_charge<0", 
+  "Signal": "Vtype==0 && HLT_SingleMu24 && Mu1_pt>26.0 && Mu1_pt<55.0 && MT>=40.0 && MET_filters==1 && nVetoElectrons==0 && 1", 
+  }
+
+selections_bkg = {
+  
 }
 
 selectionVars = { 
