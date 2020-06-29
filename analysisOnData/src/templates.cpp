@@ -1,4 +1,5 @@
 #include "interface/templates.hpp"
+#include "interface/functions.hpp"
 
 RNode templates::run(RNode d)
 {
@@ -17,7 +18,7 @@ RNode templates::run(RNode d)
 
 RNode templates::bookNominalhistos(RNode df)
 {
-    TH3weightsHelper helperPt(std::string("template"), std::string(" ; muon #{eta}; muon p_{T} (Rochester corr.); muon charge"), _etaArr.size() + 1, _etaArr, _pTArr.size() + 1, _pTArr, _chargeArr.size() + 1, _chargeArr, _syst_name);
+    TH3weightsHelper helperPt(std::string("template"), std::string(" ; muon #{eta}; muon p_{T} (Rochester corr.); muon charge"), _etaArr.size() - 1, _etaArr, _pTArr.size() - 1, _pTArr, _chargeArr.size() - 1, _chargeArr, _syst_name);
     auto hpT = df.Filter(_filter).Book<float, float, float, float, ROOT::VecOps::RVec<float>>(std::move(helperPt), {"Mu1_eta", "Mu1_pt", "Mu1_charge", "weight", _syst_weight});
     _h3Group.emplace_back(hpT);
 
@@ -28,7 +29,7 @@ RNode templates::bookptCorrectedhistos(RNode df)
 {
     for (unsigned int i = 0; i < _colvarvec.size(); i++)
     {
-        TH3weightsHelper helper_Pt(std::string("template_" + _colvarvec[i]), std::string(" ; muon #{eta}; muon p_{T} (Rochester corr.); muon charge"), _etaArr.size() + 1, _etaArr, _pTArr.size() + 1, _pTArr, _chargeArr.size() + 1, _chargeArr, _syst_name);
+        TH3weightsHelper helper_Pt(std::string("template_" + _colvarvec[i]), std::string(" ; muon #{eta}; muon p_{T} (Rochester corr.); muon charge"), _etaArr.size() - 1, _etaArr, _pTArr.size() - 1, _pTArr, _chargeArr.size() - 1, _chargeArr, _syst_name);
         _h3Group.emplace_back(df.Filter(_filtervec[i]).Book<float, float, float, float, ROOT::VecOps::RVec<float>>(std::move(helper_Pt), {"Mu1_eta", "Mu1_pt_" + _colvarvec[i], "Mu1_charge", "weight", "Nom"}));
     }
     return df;
@@ -39,7 +40,7 @@ RNode templates::bookJMEvarhistos(RNode df)
 {
     for (unsigned int i = 0; i < _colvarvec.size(); i++)
     {
-        TH3weightsHelper helper_MT(std::string("template_" + _colvarvec[i]), std::string(" ; muon #{eta}; muon p_{T} (Rochester corr.); muon charge"), _etaArr.size() + 1, _etaArr, _pTArr.size() + 1, _pTArr, _chargeArr.size() + 1, _chargeArr, _syst_name);
+        TH3weightsHelper helper_MT(std::string("template_" + _colvarvec[i]), std::string(" ; muon #{eta}; muon p_{T} (Rochester corr.); muon charge"), _etaArr.size() - 1, _etaArr, _pTArr.size() - 1, _pTArr, _chargeArr.size() - 1, _chargeArr, _syst_name);
         _h3Group.emplace_back(df.Filter(_filtervec[i]).Book<float, float, float, float, ROOT::VecOps::RVec<float>>(std::move(helper_MT), {"Mu1_eta", "Mu1_pt", "Mu1_charge", "weight", "Nom"}));
     }
     return df;
@@ -53,6 +54,7 @@ void templates::setAxisarrays()
         _etaArr[i] = -2.4 + i * (4.8) / 48; //eta -2.4 to 2.4
     _chargeArr.push_back(0);
     _chargeArr.push_back(1);
+    _chargeArr.push_back(2);
 }
 
 std::vector<ROOT::RDF::RResultPtr<TH1D>> templates::getTH1()
