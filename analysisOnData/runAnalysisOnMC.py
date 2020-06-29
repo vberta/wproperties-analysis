@@ -40,7 +40,9 @@ for sample in samples:
         #last argument refers to histo category - 0 = Nominal, 1 = Pt scale , 2 = MET scale
         print "branching nominal"
 
-        p.branch(nodeToStart = 'defs', nodeToEnd = 'prefit_{}_Nominal'.format(region), modules = [ROOT.muonHistos(cut, weight, nom,"Nom",0)])    
+        p.branch(nodeToStart = 'defs', nodeToEnd = 'prefit_{}_Nominal'.format(region), modules = [ROOT.muonHistos(cut, weight, nom,"Nom",0)])  
+        p.branch(nodeToStart = 'defs', nodeToEnd = 'templates_{}_Nominal'.format(region), modules = [ROOT.templates(cut, weight, nom,"Nom",0)])    
+  
         #weight variations
         for s,variations in systematics.iteritems():
             weight.replace(s, "1.")
@@ -49,8 +51,8 @@ for sample in samples:
                 vars_vec.push_back(var)
             print "branching weight variations", region, s
             p.branch(nodeToStart = 'defs'.format(region), nodeToEnd = 'prefit_{}_{}Vars'.format(region,s), modules = [ROOT.muonHistos(cut, weight,vars_vec,variations[1], 0)])
+            p.branch(nodeToStart = 'defs'.format(region), nodeToEnd = 'templates_{}_{}Vars'.format(region,s), modules = [ROOT.templates(cut, weight,vars_vec,variations[1], 0)])
         #column variations#weight will be nominal, cut will vary
-
         for vartype, vardict in selectionVars.iteritems():
             cut_vec = ROOT.vector('string')()
             var_vec = ROOT.vector('string')()
@@ -64,6 +66,7 @@ for sample in samples:
                 var_vec.push_back(selvar)
 
             p.branch(nodeToStart = 'defs', nodeToEnd = 'prefit_{}_{}Vars'.format(region,vartype), modules = [ROOT.muonHistos(cut_vec, weight, nom,"Nom",hcat,var_vec)])  
+            p.branch(nodeToStart = 'defs', nodeToEnd = 'templates{}_{}Vars'.format(region,vartype), modules = [ROOT.templates(cut_vec, weight, nom,"Nom",hcat,var_vec)])  
 
 
     p.getOutput()
