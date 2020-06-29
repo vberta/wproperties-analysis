@@ -6,7 +6,7 @@ float getFromIdx(ROOT::VecOps::RVec<float> vec, int index){
 	return vec[index];
 }
 
-float getCharge(ROOT::VecOps::RVec<int> vec, int idx, float pt) {
+float getCharge(ROOT::VecOps::RVec<int> vec, int idx) {
   return float(vec[idx]);
 }
 
