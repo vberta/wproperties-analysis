@@ -17,17 +17,17 @@ RNode muonHistos::run(RNode d)
 
 RNode muonHistos::bookNominalhistos(RNode df)
 {
-  TH1weightsHelper helperPt(std::string("Mu1_pt"), std::string(" ; muon p_{T} (Rochester corr.); "), 100, _pTArr, _syst_name);
-  auto hpT = df.Filter(_filter).Book<float, float, ROOT::VecOps::RVec<float>>(std::move(helperPt), {"Mu1_pt", "weight", _syst_weight});
-  _h1Group.emplace_back(hpT);
+  TH2weightsHelper helperPt(std::string("Mu1_pt"), std::string(" ; muon p_{T} (Rochester corr.); muon charge"), 100, _pTArr, _chargeArr.size() - 1, _chargeArr, _syst_name);
+  auto hpT = df.Filter(_filter).Book<float, float, float, ROOT::VecOps::RVec<float>>(std::move(helperPt), {"Mu1_pt", "Mu1_charge", "weight", _syst_weight});
+  _h2Group.emplace_back(hpT);
 
-  TH1weightsHelper helperEta(std::string("Mu1_eta"), std::string(" ; muon #{eta}; "), 48, _etaArr, _syst_name);
-  auto heta = df.Filter(_filter).Book<float, float, ROOT::VecOps::RVec<float>>(std::move(helperEta), {"Mu1_eta", "weight", _syst_weight});
-  _h1Group.emplace_back(heta);
+  TH2weightsHelper helperEta(std::string("Mu1_eta"), std::string(" ; muon #{eta}; muon charge "), 48, _etaArr, _chargeArr.size() - 1, _chargeArr, _syst_name);
+  auto heta = df.Filter(_filter).Book<float, float, float, ROOT::VecOps::RVec<float>>(std::move(helperEta), {"Mu1_eta", "Mu1_charge", "weight", _syst_weight});
+  _h2Group.emplace_back(heta);
 
-  TH1weightsHelper helperMT(std::string("MT"), std::string(" ; M_{T} (Rochester corr./smear MET); "), 100, _MTArr, _syst_name);
-  auto hMt = df.Filter(_filter).Book<float, float, ROOT::VecOps::RVec<float>>(std::move(helperMT), {"MT", "weight", _syst_weight});
-  _h1Group.emplace_back(hMt);
+  TH2weightsHelper helperMT(std::string("MT"), std::string(" ; M_{T} (Rochester corr./smear MET); muon charge "), 100, _MTArr, _chargeArr.size() - 1, _chargeArr, _syst_name);
+  auto hMt = df.Filter(_filter).Book<float, float, float, ROOT::VecOps::RVec<float>>(std::move(helperMT), {"MT", "Mu1_charge", "weight", _syst_weight});
+  _h2Group.emplace_back(hMt);
 
   return df;
 }
@@ -36,11 +36,11 @@ RNode muonHistos::bookptCorrectedhistos(RNode df)
 {
   for (unsigned int i = 0; i < _colvarvec.size(); i++)
   {
-    TH1weightsHelper helper_Pt(std::string("Mu1_pt_" + _colvarvec[i]), std::string(" ; muon p_{T} (Rochester corr.); "), 100, _pTArr, _syst_name);
-    _h1Group.emplace_back(df.Filter(_filtervec[i]).Book<float, float, ROOT::VecOps::RVec<float>>(std::move(helper_Pt), {"Mu1_pt_" + _colvarvec[i], "weight", "Nom"}));
+    TH2weightsHelper helper_Pt(std::string("Mu1_pt_" + _colvarvec[i]), std::string(" ; muon p_{T} (Rochester corr.); muon charge "), 100, _pTArr, _chargeArr.size() - 1, _chargeArr, _syst_name);
+    _h2Group.emplace_back(df.Filter(_filtervec[i]).Book<float, float, float, ROOT::VecOps::RVec<float>>(std::move(helper_Pt), {"Mu1_pt_" + _colvarvec[i], "Mu1_charge", "weight", "Nom"}));
 
-    TH1weightsHelper helper_MT(std::string("MT_" + _colvarvec[i]), std::string(" ; M_{T} (Rochester corr./smear MET); "), 100, _MTArr, _syst_name);
-    _h1Group.emplace_back(df.Filter(_filtervec[i]).Book<float, float, ROOT::VecOps::RVec<float>>(std::move(helper_MT), {"MT_" + _colvarvec[i], "weight", "Nom"}));
+    TH2weightsHelper helper_MT(std::string("MT_" + _colvarvec[i]), std::string(" ; M_{T} (Rochester corr./smear MET); muon charge "), 100, _MTArr, _chargeArr.size() - 1, _chargeArr, _syst_name);
+    _h2Group.emplace_back(df.Filter(_filtervec[i]).Book<float, float, float, ROOT::VecOps::RVec<float>>(std::move(helper_MT), {"MT_" + _colvarvec[i], "Mu1_charge", "weight", "Nom"}));
   }
   return df;
 }
@@ -50,8 +50,8 @@ RNode muonHistos::bookJMEvarhistos(RNode df)
 {
   for (unsigned int i = 0; i < _colvarvec.size(); i++)
   {
-    TH1weightsHelper helper_MT(std::string("MT_" + _colvarvec[i]), std::string(" ; M_{T} (Rochester corr./smear MET); "), 100, _MTArr, _syst_name);
-    _h1Group.emplace_back(df.Filter(_filtervec[i]).Book<float, float, ROOT::VecOps::RVec<float>>(std::move(helper_MT), {"MT_" + _colvarvec[i], "weight", "Nom"}));
+    TH2weightsHelper helper_MT(std::string("MT_" + _colvarvec[i]), std::string(" ; M_{T} (Rochester corr./smear MET); muon charge "), 100, _MTArr, _chargeArr.size() - 1, _chargeArr, _syst_name);
+    _h2Group.emplace_back(df.Filter(_filtervec[i]).Book<float, float, float, ROOT::VecOps::RVec<float>>(std::move(helper_MT), {"MT_" + _colvarvec[i], "Mu1_charge", "weight", "Nom"}));
   }
   return df;
 }
@@ -64,6 +64,9 @@ void muonHistos::setAxisarrays()
     _etaArr[i] = -2.4 + i * (4.8) / 48; //eta -2.4 to 2.4
   for (int i = 0; i < 101; i++)
     _MTArr[i] = i;
+  _chargeArr.push_back(0);
+  _chargeArr.push_back(1);
+  _chargeArr.push_back(2);
 }
 
 std::vector<ROOT::RDF::RResultPtr<TH1D>> muonHistos::getTH1()

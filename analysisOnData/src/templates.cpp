@@ -18,9 +18,9 @@ RNode templates::run(RNode d)
 
 RNode templates::bookNominalhistos(RNode df)
 {
-    TH3weightsHelper helperPt(std::string("template"), std::string(" ; muon #{eta}; muon p_{T} (Rochester corr.); muon charge"), _etaArr.size() - 1, _etaArr, _pTArr.size() - 1, _pTArr, _chargeArr.size() - 1, _chargeArr, _syst_name);
-    auto hpT = df.Filter(_filter).Book<float, float, float, float, ROOT::VecOps::RVec<float>>(std::move(helperPt), {"Mu1_eta", "Mu1_pt", "Mu1_charge", "weight", _syst_weight});
-    _h3Group.emplace_back(hpT);
+    TH3weightsHelper helper(std::string("template"), std::string(" ; muon #{eta}; muon p_{T} (Rochester corr.); muon charge"), _etaArr.size() - 1, _etaArr, _pTArr.size() - 1, _pTArr, _chargeArr.size() - 1, _chargeArr, _syst_name);
+    auto h = df.Filter(_filter).Book<float, float, float, float, ROOT::VecOps::RVec<float>>(std::move(helper), {"Mu1_eta", "Mu1_pt", "Mu1_charge", "weight", _syst_weight});
+    _h3Group.emplace_back(h);
 
     return df;
 }
@@ -40,8 +40,8 @@ RNode templates::bookJMEvarhistos(RNode df)
 {
     for (unsigned int i = 0; i < _colvarvec.size(); i++)
     {
-        TH3weightsHelper helper_MT(std::string("template_" + _colvarvec[i]), std::string(" ; muon #{eta}; muon p_{T} (Rochester corr.); muon charge"), _etaArr.size() - 1, _etaArr, _pTArr.size() - 1, _pTArr, _chargeArr.size() - 1, _chargeArr, _syst_name);
-        _h3Group.emplace_back(df.Filter(_filtervec[i]).Book<float, float, float, float, ROOT::VecOps::RVec<float>>(std::move(helper_MT), {"Mu1_eta", "Mu1_pt", "Mu1_charge", "weight", "Nom"}));
+        TH3weightsHelper helper_JME(std::string("template_" + _colvarvec[i]), std::string(" ; muon #{eta}; muon p_{T} (Rochester corr.); muon charge"), _etaArr.size() - 1, _etaArr, _pTArr.size() - 1, _pTArr, _chargeArr.size() - 1, _chargeArr, _syst_name);
+        _h3Group.emplace_back(df.Filter(_filtervec[i]).Book<float, float, float, float, ROOT::VecOps::RVec<float>>(std::move(helper_JME), {"Mu1_eta", "Mu1_pt", "Mu1_charge", "weight", "Nom"}));
     }
     return df;
 }
@@ -49,7 +49,7 @@ RNode templates::bookJMEvarhistos(RNode df)
 void templates::setAxisarrays()
 {
     for (unsigned int i = 0; i < _pTArr.size() + 1; i++)
-        _pTArr[i] = 25. + i * (65. - 25.) / 100;
+        _pTArr[i] = 25. + i * (65. - 25.) / 40;
     for (unsigned int i = 0; i < _etaArr.size() + 1; i++)
         _etaArr[i] = -2.4 + i * (4.8) / 48; //eta -2.4 to 2.4
     _chargeArr.push_back(0);

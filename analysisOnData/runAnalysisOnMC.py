@@ -38,16 +38,25 @@ for sample in samples:
             continue
         fvec.push_back(inputFile)
         print inputFile
+        WJets = False
+        if "WJetsToLNu" in inputFile: WJets = True
     if fvec.empty():
         print "No files found for directory:", samples[sample], " SKIPPING processing"
         continue
 
-    weight = 'float(puWeight*lumiweight*TriggerSF*RecoSF)'
+    weight = 'float(puWeight*lumiweight*TriggerSF*RecoSF'
+    if WJets: weight+="*weightPt*weightY"
+    weight+=")"
 
     fileSF = ROOT.TFile.Open("data/ScaleFactors.root")
 
     p = RDFtree(outputDir = './output/', inputFile = inputFile, outputFile="{}_plots.root".format(sample), pretend=True)
-    p.branch(nodeToStart = 'input', nodeToEnd = 'defs', modules = [ROOT.baseDefinitions(),ROOT.weightDefinitions(fileSF),getLumiWeight(xsec=xsec, inputFile=inputFile)])
+    if WJets:
+        filePt = ROOT.TFile.Open("data/histoUnfoldingSystPt_nsel2_dy3_rebin1_default.root")
+        fileY = ROOT.TFile.Open("data/histoUnfoldingSystRap_nsel2_dy3_rebin1_default.root")
+        p.branch(nodeToStart = 'input', nodeToEnd = 'defs', modules = [ROOT.reweightFromZ(filePt,fileY),ROOT.baseDefinitions(),ROOT.weightDefinitions(fileSF),getLumiWeight(xsec=xsec, inputFile=inputFile)])
+    else:
+        p.branch(nodeToStart = 'input', nodeToEnd = 'defs', modules = [ROOT.baseDefinitions(),ROOT.weightDefinitions(fileSF),getLumiWeight(xsec=xsec, inputFile=inputFile)])
 
     for region,cut in selections.iteritems():
         nom = ROOT.vector('string')()
@@ -60,7 +69,8 @@ for sample in samples:
   
         #weight variations
         for s,variations in systematics.iteritems():
-            weight.replace(s, "1.")
+            if not "LHEScaleWeight" in s:
+                weight.replace(s, "1.")
             vars_vec = ROOT.vector('string')()
             for var in variations[0]:
                 vars_vec.push_back(var)
@@ -83,10 +93,11 @@ for sample in samples:
                 var_vec.push_back(selvar)
 
             p.branch(nodeToStart = 'defs', nodeToEnd = 'prefit_{}/{}Vars'.format(region,vartype), modules = [ROOT.muonHistos(cut_vec, weight, nom,"Nom",hcat,var_vec)])  
-            p.branch(nodeToStart = 'defs', nodeToEnd = 'templates{}/{}Vars'.format(region,vartype), modules = [ROOT.templates(cut_vec, weight, nom,"Nom",hcat,var_vec)])  
+            p.branch(nodeToStart = 'defs', nodeToEnd = 'templates_{}/{}Vars'.format(region,vartype), modules = [ROOT.templates(cut_vec, weight, nom,"Nom",hcat,var_vec)])  
 
     p.getOutput()
-    #p.saveGraph()
+    p.saveGraph()
+    assert(0)
 
 
 

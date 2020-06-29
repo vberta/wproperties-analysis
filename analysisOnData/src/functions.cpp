@@ -2,12 +2,11 @@
 #include "TMath.h"
 
 float getFromIdx(ROOT::VecOps::RVec<float> vec, int index){
-
 	return vec[index];
 }
-
-float getCharge(ROOT::VecOps::RVec<int> vec, int idx) {
-  return float(vec[idx]);
+float getCharge(ROOT::VecOps::RVec<int> vec, int index)
+{
+  return float(vec[index]);
 }
 
 float W_mt(float mu_pt, float mu_phi, float met_pt, float met_phi){

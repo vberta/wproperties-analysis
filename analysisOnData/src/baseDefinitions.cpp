@@ -4,18 +4,16 @@
 RNode baseDefinitions::run(RNode d)
 {
     //define everything conerning muons
-       auto d1 = d.Define("Mu1_eta", getFromIdx,{ "Muon_eta","Idx_mu1"})
-                  .Define("Mu1_phi", getFromIdx,{ "Muon_phi","Idx_mu1"})
-	          .Define("Mu1_charge", "Muon_charge[dx_mu1]")
-                  .Define("Mu1_relIso", getFromIdx,{ "Muon_pfRelIso04_all","Idx_mu1"})
-                  .Define("Mu1_dz", getFromIdx,{ "Muon_dz","Idx_mu1"})
-                  .Define("Mu1_pt", getFromIdx,{ "Muon_corrected_pt","Idx_mu1"})
-                  .Define("Mu1_sip3d", getFromIdx,{ "Muon_sip3d","Idx_mu1"})
-                  .Define("Mu1_dxy", getFromIdx,{ "Muon_dxy","Idx_mu1"})
-                  .Define("Mu1_pt_correctedDown", getFromIdx,{ "Muon_correctedDown_pt","Idx_mu1"})
-                  .Define("Mu1_pt_correctedUp", getFromIdx,{ "Muon_correctedUp_pt","Idx_mu1"});
-    //what didn't work here?
-    //.Define("Mu1_charge", [&](int ch){ return float(ch); }, {"Mu1_chtemp"})
+    auto d1 = d.Define("Mu1_eta", getFromIdx, {"Muon_eta", "Idx_mu1"})
+                  .Define("Mu1_phi", getFromIdx, {"Muon_phi", "Idx_mu1"})
+                  .Define("Mu1_charge", getCharge , {"Muon_charge","Idx_mu1"})
+                  .Define("Mu1_relIso", getFromIdx, {"Muon_pfRelIso04_all", "Idx_mu1"})
+                  .Define("Mu1_dz", getFromIdx, {"Muon_dz", "Idx_mu1"})
+                  .Define("Mu1_pt", getFromIdx, {"Muon_corrected_pt", "Idx_mu1"})
+                  .Define("Mu1_sip3d", getFromIdx, {"Muon_sip3d", "Idx_mu1"})
+                  .Define("Mu1_dxy", getFromIdx, {"Muon_dxy", "Idx_mu1"})
+                  .Define("Mu1_pt_correctedDown", getFromIdx, {"Muon_correctedDown_pt", "Idx_mu1"})
+                  .Define("Mu1_pt_correctedUp", getFromIdx, {"Muon_correctedUp_pt", "Idx_mu1"});
 
     //now get composite variables
     auto d1withCompvar = d1.Define("MT", W_mt, { "Mu1_pt", "Mu1_phi", "MET_pt_nom", "MET_phi_nom"})
