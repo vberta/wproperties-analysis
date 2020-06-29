@@ -17,9 +17,7 @@
 #include<vector>
 
 using RNode = ROOT::RDF::RNode;
-enum HistoCategory {
-    Nominal=0, Corrected, JME
-};
+
 class muonHistos : public Module {
 
     private:

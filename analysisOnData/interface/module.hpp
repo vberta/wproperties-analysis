@@ -7,8 +7,13 @@
 
 using namespace ROOT::VecOps;
 using RNode = ROOT::RDF::RNode;
-using rvec_f = const RVec<float> &;
-using rvec_i = const RVec<int> &;
+
+enum HistoCategory
+{
+  Nominal = 0,
+  Corrected,
+  JME
+};
 
 class Module {
   
