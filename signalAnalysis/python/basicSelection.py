@@ -16,10 +16,20 @@ class basicSelection(module):
 
         self.d = d
 
-        self.d = self.d.Define("Wrap_preFSR_abs", "fabs(Wrap_preFSR)")\
-        .Filter("GenPart_pdgId[GenPart_preFSRMuonIdx]<0")\
-        .Define("Mupt_preFSR", "GenPart_pt[GenPart_preFSRMuonIdx]")\
-        .Define("Mueta_preFSR", "GenPart_eta[GenPart_preFSRMuonIdx]")
+        # self.d = self.d.Define("Wrap_preFSR_abs", "fabs(Wrap_preFSR)")\
+        # .Filter("GenPart_pdgId[GenPart_preFSRMuonIdx]<0")\
+        # .Define("Mupt_preFSR", "GenPart_pt[GenPart_preFSRMuonIdx]")\
+        # .Define("Mueta_preFSR", "GenPart_eta[GenPart_preFSRMuonIdx]")
+        
+        self.d = self.d.Define("Wrap_preFSR_abs", "fabs(GenV_preFSR_y)")\
+        .Filter("GenPart_pdgId[Idx_preFSR_mu1]<0")\
+        .Define("Mupt_preFSR", "GenPart_pt[Idx_preFSR_mu1]")\
+        .Define("Mueta_preFSR", "GenPart_eta[Idx_preFSR_mu1]")
+        # Muon_genPartIdx
+        
+        self.d = self.d.Define("Wpt_preFSR","GenV_preFSR_qt")
+        
+        
         
         return self.d
 

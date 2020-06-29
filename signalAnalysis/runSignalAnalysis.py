@@ -12,21 +12,35 @@ from basicSelection import *
 
 
 ROOT.gSystem.Load('bin/libSignalAnalysis.so')
+# ROOT.gSystem.Load("../analysisOnData/bin/libAnalysisOnData.so")
 
-c=64
-		
+# c=64
+c=32		
 ROOT.ROOT.EnableImplicitMT(c)
 
 print "running with {} cores".format(c)
 
 
-inputFile = '/scratchssd/emanca/wproperties-analysis/data/test_*.root'
+# inputFile = '/scratchssd/emanca/wproperties-analysis/data/test_*.root'
+inputFile = ROOT.std.vector("std::string")()
+# inputFile = '/home/users/bertacch/Wfit/signalAnalysis/TEST_data/smallTree_100k_test3.root'
+# inputFile = '/home/users/bertacch/Wfit/signalAnalysis/TEST_data/ntupleV2_Wjet_tree_10.root'
+# inputFile = '/home/users/bertacch/Wfit/signalAnalysis/TEST_data/smallTree_100k_ntupleV1.root'
+# inputFile =['/home/users/bertacch/Wfit/signalAnalysis/TEST_data/smallTree_100k_test3.root', '/home/users/bertacch/Wfit/signalAnalysis/TEST_data/smallTree_100k_ntupleV1.root']
+inputFile.push_back('/scratchssd/sroychow/NanoAOD2016-V1MCFinal/WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/tree.root')
+inputFile.push_back('/scratchssd/sroychow/NanoAOD2016-V1MCFinal/WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_ext2/tree.root')
+print "INPUT SAMPLE:", inputFile
 
-p = RDFtree(outputDir = 'TEST', inputFile = inputFile, outputFile="test3.root")
+# run_DIMUON = False
+# Idx_mu2 = "Idx_mu2" if run_DIMUON else ""
+# vec_s   = ROOT.vector('string')
+
+p = RDFtree(outputDir = 'TEST', inputFile = inputFile, outputFile="test_WJet_V1_all.root")
 p.branch(nodeToStart = 'input', nodeToEnd = 'basicSelection', modules = [getLumiWeight(xsec=61526.7, inputFile=inputFile), ROOT.defineHarmonics(), basicSelection()])
+# p.branch(nodeToStart = 'input', nodeToEnd = 'basicSelection', modules = [getLumiWeight(xsec=61526.7, inputFile=inputFile), ROOT.defineHarmonics(), ROOT.getCompVars("Idx_mu1", Idx_mu2, vec_s(), vec_s()),basicSelection()])
 p.branch(nodeToStart = 'basicSelection', nodeToEnd = 'AngCoeff', modules = [ROOT.AngCoeff()])
 
-"""
+#"""
 pdf = ROOT.vector('string')()
 for i in range(1,102):
 	pdf.push_back('replica{}'.format(i))
@@ -48,7 +62,7 @@ p.branch(nodeToStart = 'accMap', nodeToEnd = 'dataObs', modules =[ROOT.dataObs()
 
 p.getOutput()
 #p.saveGraph()
-"""		
+#		
 
 
 
