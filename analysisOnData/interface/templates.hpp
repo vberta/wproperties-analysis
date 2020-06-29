@@ -11,7 +11,6 @@
 #include "interface/module.hpp"
 #include "interface/TH1weightsHelper.hpp"
 #include "interface/TH3weightsHelper.hpp"
-#include "interface/functions.hpp"
 #include <map>
 #include <vector>
 

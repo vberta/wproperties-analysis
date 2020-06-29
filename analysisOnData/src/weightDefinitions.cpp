@@ -1,5 +1,5 @@
 #include "interface/weightDefinitions.hpp"
-
+#include "interface/functions.hpp"
 RNode weightDefinitions::run(RNode d)
 {
 

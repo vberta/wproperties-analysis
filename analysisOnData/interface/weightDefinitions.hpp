@@ -10,7 +10,6 @@
 #include "TMath.h"
 #include "TFile.h"
 #include "interface/module.hpp"
-#include "interface/functions.hpp"
 
 using RNode = ROOT::RDF::RNode;
 
