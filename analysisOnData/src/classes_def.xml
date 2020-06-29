@@ -3,4 +3,5 @@
   <class name="fakeRate"/>
   <class name="baseDefinitions"/>
   <class name="weightDefinitions"/>
+  <class name="templates"/>
 </lcgdict>

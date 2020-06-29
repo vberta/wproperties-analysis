@@ -8,7 +8,6 @@ sys.path.append('python/')
 sys.path.append('data/')
 from systematics import systematics
 from selections import selections, selectionVars
-#from samples_2016 import samples
 
 from getLumiWeight import getLumiWeight
 

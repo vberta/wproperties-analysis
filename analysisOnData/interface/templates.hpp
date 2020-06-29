@@ -16,12 +16,7 @@
 #include <vector>
 
 using RNode = ROOT::RDF::RNode;
-enum HistoCategory
-{
-    Nominal = 0,
-    Corrected,
-    JME
-};
+
 class templates : public Module
 {
 
@@ -47,7 +42,7 @@ private:
 
     std::vector<float> _pTArr = std::vector<float>(100);
     std::vector<float> _etaArr = std::vector<float>(48);
-    std::vector<int> _chargeArr = std::vector<float>(2);
+    std::vector<float> _chargeArr = std::vector<float>(2);
     void setAxisarrays();
 
 public:

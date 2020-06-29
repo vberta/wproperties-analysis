@@ -3,4 +3,5 @@
 #include "interface/fakeRate.hpp"
 #include "interface/baseDefinitions.hpp"
 #include "interface/weightDefinitions.hpp"
+#include "interface/templates.hpp"
 //#include "interface/selectionDefs.hpp"
