@@ -69,7 +69,8 @@ for sample in samples:
   
         #weight variations
         for s,variations in systematics.iteritems():
-            weight.replace(s, "1.")
+            if not "LHEScaleWeight" in s:
+                weight.replace(s, "1.")
             vars_vec = ROOT.vector('string')()
             for var in variations[0]:
                 vars_vec.push_back(var)
@@ -92,11 +93,11 @@ for sample in samples:
                 var_vec.push_back(selvar)
 
             p.branch(nodeToStart = 'defs', nodeToEnd = 'prefit_{}/{}Vars'.format(region,vartype), modules = [ROOT.muonHistos(cut_vec, weight, nom,"Nom",hcat,var_vec)])  
-            p.branch(nodeToStart = 'defs', nodeToEnd = 'templates{}/{}Vars'.format(region,vartype), modules = [ROOT.templates(cut_vec, weight, nom,"Nom",hcat,var_vec)])  
+            p.branch(nodeToStart = 'defs', nodeToEnd = 'templates_{}/{}Vars'.format(region,vartype), modules = [ROOT.templates(cut_vec, weight, nom,"Nom",hcat,var_vec)])  
 
     p.getOutput()
+    p.saveGraph()
     assert(0)
-    #p.saveGraph()
 
 
 
