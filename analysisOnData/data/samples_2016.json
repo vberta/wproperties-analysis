@@ -164,7 +164,7 @@
     }, 
     "ST_t-channel_antitop_4f_inclusiveDecays_13TeV-powhegV2-madspin-pythia8_TuneCUETP8M1": {
         "datatype": "MC", 
-        "systematics": 1, 
+        "systematics": 2, 
         "subsel": {
             "none": ""
         }, 
@@ -254,7 +254,7 @@
     }, 
     "ST_s-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1": {
         "datatype": "MC", 
-        "systematics": 1, 
+        "systematics": 2, 
         "subsel": {
             "none": ""
         }, 

@@ -17,15 +17,12 @@ samples={}
 with open('data/samples_2016.json') as f:
   samples = json.load(f)
 for sample in samples:
-
     if not samples[sample]['datatype']=='MC': continue
     print sample
     direc = samples[sample]['dir']
     xsec = samples[sample]['xsec']
-
     c = 64		
     ROOT.ROOT.EnableImplicitMT(c)
-
     print "running with {} cores".format(c)
 
     fvec=ROOT.vector('string')()
@@ -43,20 +40,20 @@ for sample in samples:
     if fvec.empty():
         print "No files found for directory:", samples[sample], " SKIPPING processing"
         continue
-
+    print fvec 
     weight = 'float(puWeight*lumiweight*TriggerSF*RecoSF'
     if WJets: weight+="*weightPt*weightY"
     weight+=")"
 
     fileSF = ROOT.TFile.Open("data/ScaleFactors.root")
 
-    p = RDFtree(outputDir = './output/', inputFile = inputFile, outputFile="{}_plots.root".format(sample), pretend=True)
+    p = RDFtree(outputDir = './output/', inputFile = fvec, outputFile="{}_plots.root".format(sample), pretend=True)
     if WJets:
         filePt = ROOT.TFile.Open("data/histoUnfoldingSystPt_nsel2_dy3_rebin1_default.root")
         fileY = ROOT.TFile.Open("data/histoUnfoldingSystRap_nsel2_dy3_rebin1_default.root")
-        p.branch(nodeToStart = 'input', nodeToEnd = 'defs', modules = [ROOT.reweightFromZ(filePt,fileY),ROOT.baseDefinitions(),ROOT.weightDefinitions(fileSF),getLumiWeight(xsec=xsec, inputFile=inputFile)])
+        p.branch(nodeToStart = 'input', nodeToEnd = 'defs', modules = [ROOT.reweightFromZ(filePt,fileY),ROOT.baseDefinitions(),ROOT.weightDefinitions(fileSF),getLumiWeight(xsec=xsec, inputFile=fvec)])
     else:
-        p.branch(nodeToStart = 'input', nodeToEnd = 'defs', modules = [ROOT.baseDefinitions(),ROOT.weightDefinitions(fileSF),getLumiWeight(xsec=xsec, inputFile=inputFile)])
+        p.branch(nodeToStart = 'input', nodeToEnd = 'defs', modules = [ROOT.baseDefinitions(),ROOT.weightDefinitions(fileSF),getLumiWeight(xsec=xsec, inputFile=fvec)])
 
     for region,cut in selections.iteritems():
         nom = ROOT.vector('string')()
@@ -71,10 +68,12 @@ for sample in samples:
         for s,variations in systematics.iteritems():
             if not "LHEScaleWeight" in s:
                 weight.replace(s, "1.")
+            if "LHEScaleWeight" in s and samples[sample]['systematics'] != 2 :  continue
             vars_vec = ROOT.vector('string')()
             for var in variations[0]:
                 vars_vec.push_back(var)
             print "branching weight variations", region, s
+            print vars_vec
 
             p.branch(nodeToStart = 'defs'.format(region), nodeToEnd = 'prefit_{}/{}Vars'.format(region,s), modules = [ROOT.muonHistos(cut, weight,vars_vec,variations[1], 0)])
             p.branch(nodeToStart = 'defs'.format(region), nodeToEnd = 'templates_{}/{}Vars'.format(region,s), modules = [ROOT.templates(cut, weight,vars_vec,variations[1], 0)])
@@ -98,7 +97,3 @@ for sample in samples:
     p.getOutput()
     p.saveGraph()
     assert(0)
-
-
-
-

@@ -3,6 +3,12 @@
 
 RNode baseDefinitions::run(RNode d)
 {
+    auto defineNomweight = []() {
+      ROOT::VecOps::RVec<float> One;
+      One.emplace_back(1.);
+      return One;
+    };
+
     //define all nominal quantities // true for data and MC 
     auto d1 = d.Define("Mu1_eta", getFromIdx, {"Muon_eta", "Idx_mu1"})
                   .Define("Mu1_phi", getFromIdx, {"Muon_phi", "Idx_mu1"})
@@ -13,19 +19,11 @@ RNode baseDefinitions::run(RNode d)
                   .Define("Mu1_sip3d", getFromIdx, {"Muon_sip3d", "Idx_mu1"})
                   .Define("Mu1_dxy", getFromIdx, {"Muon_dxy", "Idx_mu1"})
                   .Define("MT", W_mt, { "Mu1_pt", "Mu1_phi", "MET_pt_nom", "MET_phi_nom"})
-                  .Define("Recoil_pt", W_hpt, { "Mu1_pt", "Mu1_phi", "MET_pt_nom", "MET_phi_nom"});
+                  .Define("Recoil_pt", W_hpt, { "Mu1_pt", "Mu1_phi", "MET_pt_nom", "MET_phi_nom"})
+                  .Define("Nom", defineNomweight);
 
     //at this point return the node in case of data
-    if(!_isMC)   {
-      auto defineNomweight = []() {
-	ROOT::VecOps::RVec<float> One;
-        One.emplace_back(1.);
-        return One;
-      };
-      
-      auto d2 = d1.Define("Nom", defineNomweight); 
-      return d2;
-    }
+    if(!_isMC)   return d1;
      
     //now get variations // true only for MC
     auto d1withCompvar = d1.Define("Mu1_pt_correctedDown", getFromIdx, {"Muon_correctedDown_pt", "Idx_mu1"})
