@@ -3,7 +3,7 @@
 
 RNode baseDefinitions::run(RNode d)
 {
-    //define everything conerning muons
+    //define all nominal quantities // true for data and MC 
     auto d1 = d.Define("Mu1_eta", getFromIdx, {"Muon_eta", "Idx_mu1"})
                   .Define("Mu1_phi", getFromIdx, {"Muon_phi", "Idx_mu1"})
                   .Define("Mu1_charge", getCharge , {"Muon_charge","Idx_mu1"})
@@ -12,11 +12,24 @@ RNode baseDefinitions::run(RNode d)
                   .Define("Mu1_pt", getFromIdx, {"Muon_corrected_pt", "Idx_mu1"})
                   .Define("Mu1_sip3d", getFromIdx, {"Muon_sip3d", "Idx_mu1"})
                   .Define("Mu1_dxy", getFromIdx, {"Muon_dxy", "Idx_mu1"})
-                  .Define("Mu1_pt_correctedDown", getFromIdx, {"Muon_correctedDown_pt", "Idx_mu1"})
-                  .Define("Mu1_pt_correctedUp", getFromIdx, {"Muon_correctedUp_pt", "Idx_mu1"});
+                  .Define("MT", W_mt, { "Mu1_pt", "Mu1_phi", "MET_pt_nom", "MET_phi_nom"})
+                  .Define("Recoil_pt", W_hpt, { "Mu1_pt", "Mu1_phi", "MET_pt_nom", "MET_phi_nom"});
 
-    //now get composite variables
-    auto d1withCompvar = d1.Define("MT", W_mt, { "Mu1_pt", "Mu1_phi", "MET_pt_nom", "MET_phi_nom"})
+    //at this point return the node in case of data
+    if(!_isMC)   {
+      auto defineNomweight = []() {
+	ROOT::VecOps::RVec<float> One;
+        One.emplace_back(1.);
+        return One;
+      };
+      
+      auto d2 = d1.Define("Nom", defineNomweight); 
+      return d2;
+    }
+     
+    //now get variations // true only for MC
+    auto d1withCompvar = d1.Define("Mu1_pt_correctedDown", getFromIdx, {"Muon_correctedDown_pt", "Idx_mu1"})
+                           .Define("Mu1_pt_correctedUp", getFromIdx, {"Muon_correctedUp_pt", "Idx_mu1"})
                            .Define("MT_correctedUp", W_mt, { "Mu1_pt_correctedUp", "Mu1_phi", "MET_pt_nom", "MET_phi_nom"})
                            .Define("MT_correctedDown", W_mt, { "Mu1_pt_correctedDown", "Mu1_phi", "MET_pt_nom", "MET_phi_nom"})
                            .Define("MT_jerUp", W_mt, { "Mu1_pt", "Mu1_phi", "MET_pt_jerUp", "MET_phi_jerUp"})
@@ -25,7 +38,6 @@ RNode baseDefinitions::run(RNode d)
                            .Define("MT_jesTotalDown", W_mt, { "Mu1_pt", "Mu1_phi", "MET_pt_jesTotalDown", "MET_phi_jesTotalDown"})
                            .Define("MT_unclustEnUp", W_mt, { "Mu1_pt", "Mu1_phi", "MET_pt_unclustEnUp", "MET_phi_unclustEnUp"})
                            .Define("MT_unclustEnDown", W_mt, { "Mu1_pt", "Mu1_phi", "MET_pt_unclustEnDown", "MET_phi_unclustEnDown"})
-			   .Define("Recoil_pt", W_hpt, { "Mu1_pt", "Mu1_phi", "MET_pt_nom", "MET_phi_nom"})
                            .Define("Recoil_pt_correctedUp", W_hpt, { "Mu1_pt_correctedUp", "Mu1_phi", "MET_pt_nom", "MET_phi_nom"})
                            .Define("Recoil_pt_correctedDown", W_hpt, { "Mu1_pt_correctedDown", "Mu1_phi", "MET_pt_nom", "MET_phi_nom"})
                            .Define("Recoil_pt_jerUp", W_hpt, { "Mu1_pt", "Mu1_phi", "MET_pt_jerUp", "MET_phi_jerUp"})
@@ -33,8 +45,7 @@ RNode baseDefinitions::run(RNode d)
                            .Define("Recoil_pt_jesTotalUp", W_hpt, { "Mu1_pt", "Mu1_phi", "MET_pt_jesTotalUp", "MET_phi_jesTotalUp"})
                            .Define("Recoil_pt_jesTotalDown", W_hpt, { "Mu1_pt", "Mu1_phi", "MET_pt_jesTotalDown", "MET_phi_jesTotalDown"})
                            .Define("Recoil_pt_unclustEnUp", W_hpt, { "Mu1_pt", "Mu1_phi", "MET_pt_unclustEnUp", "MET_phi_unclustEnUp"})
-                           .Define("Recoil_pt_unclustEnDown", W_hpt, { "Mu1_pt", "Mu1_phi", "MET_pt_unclustEnDown", "MET_phi_unclustEnDown"});
-
+                           .Define("Recoil_pt_unclustEnDown", W_hpt, { "Mu1_pt", "Mu1_phi", "MET_pt_unclustEnDown", "MET_phi_unclustEnDown"}); 
 
     return d1withCompvar;
 }
