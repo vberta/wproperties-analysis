@@ -60,7 +60,7 @@ class muonHistos : public Module {
 
     };
 
-    muonHistos(std::vector<std::string> filtervec, std::string weight, std::vector<std::string> syst_name, std::string syst_weight, HistoCategory hcat, std::vector<std::string> colvarvec ){
+    muonHistos(std::vector<std::string> filtervec, std::string weight, std::vector<std::string> syst_name, std::string syst_weight, HistoCategory hcat, std::vector<std::string> colvarvec){
         
         _filtervec = filtervec;
         _weight = weight;
