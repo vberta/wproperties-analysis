@@ -94,20 +94,13 @@ RNode weightDefinitions::run(RNode d)
         return PUVars;
     };
 
-    auto defineNomweight = []() {
-        ROOT::VecOps::RVec<float> One;
-        One.emplace_back(1.);
-
-        return One;
-    };
-
+ 
     auto d1 = d.Define("TriggerSF", defineTriggerSF, {"Mu1_pt", "Mu1_eta", "Mu1_charge"})
                   .Define("TriggerSFVars", defineTriggerSFVars, {"Mu1_pt", "Mu1_eta", "Mu1_charge"})
                   .Define("RecoSF", defineRecoSF, {"Mu1_pt", "Mu1_eta"})
                   .Define("RecoSFVars", defineRecoSFVars, {"Mu1_pt", "Mu1_eta"})
-                  .Define("puWeightVars", definePUweights, {"puWeightUp", "puWeightDown"})
-                  .Define("Nom", defineNomweight); 
-    
+                  .Define("puWeightVars", definePUweights, {"puWeightUp", "puWeightDown"});
+     
     return d1;
 }
 
