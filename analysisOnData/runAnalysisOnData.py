@@ -61,7 +61,7 @@ p.branch(nodeToStart = 'input', nodeToEnd = 'defs', modules = [ROOT.baseDefiniti
 for region,cut in selections.iteritems():    
     print region       
     nom = ROOT.vector('string')()
-    nom.push_back("_nominal")
+    nom.push_back("")
     #last argument refers to histo category - 0 = Nominal, 1 = Pt scale , 2 = MET scale
     print "branching nominal"
     p.branch(nodeToStart = 'defs', nodeToEnd = 'prefit_{}/Nominal'.format(region), modules = [ROOT.muonHistos(cut, weight, nom,"Nom",0)]) 
