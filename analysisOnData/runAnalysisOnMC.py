@@ -13,9 +13,21 @@ from getLumiWeight import getLumiWeight
 
 ROOT.gSystem.Load('bin/libAnalysisOnData.so')
 
-runBKG = True ###please make this an option
+pretendJob = True if int(sys.argv[2]) == 1 else False
+if pretendJob:
+    print "Running a test job over a few events"
+else:
+    print "Running on full dataset"
+
+runBKG = True if int(sys.argv[1]) == 1 else False 
 if runBKG:
     selections = selections_bkg
+    print "Running job for preparing inputs of background study"
+
+outFtag=""
+if runBKG:
+    selections = selections_bkg
+    outFtag="_bkgselections"
 
 samples={}
 with open('data/samples_2016.json') as f:
@@ -28,7 +40,7 @@ for sample in samples:
     c = 64		
     ROOT.ROOT.EnableImplicitMT(c)
     print "running with {} cores".format(c)
-
+  
     fvec=ROOT.vector('string')()
     for dirname,fname in direc.iteritems():
         ##check if file exists or not
@@ -51,7 +63,7 @@ for sample in samples:
 
     fileSF = ROOT.TFile.Open("data/ScaleFactors.root")
 
-    p = RDFtree(outputDir = './output/', inputFile = fvec, outputFile="{}_plots.root".format(sample), pretend=False)
+    p = RDFtree(outputDir = './output/', inputFile = fvec, outputFile="{}{}_plots.root".format(sample, outFtag), pretend=pretendJob)
     if WJets:
         filePt = ROOT.TFile.Open("data/histoUnfoldingSystPt_nsel2_dy3_rebin1_default.root")
         fileY = ROOT.TFile.Open("data/histoUnfoldingSystRap_nsel2_dy3_rebin1_default.root")
