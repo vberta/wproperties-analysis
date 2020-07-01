@@ -6,7 +6,7 @@ import sys
 import ROOT
 
 import bkg_utils
-import bkg_analyzer
+import bkg_fakerateAnalyzer
 
 ROOT.gROOT.Reset()
 ROOT.gROOT.SetBatch(True)
@@ -42,7 +42,7 @@ def fakerate_analysis(systKind, systName,correlatedFit,statAna, template, ptBinn
     outdirBkg = outdir+'/bkg_'+systName+extrapSuff        
     if not os.path.isdir(outdirBkg): os.system('mkdir '+outdirBkg)
     
-    fake = bkg_analyzer.bkg_analyzer(systKind=systKind,systName=systName,correlatedFit=correlatedFit,statAna=statAna, ptBinning=ptBinning, etaBinning=etaBinning, outdir=outdirBkg, inputDir=indir)
+    fake = bkg_fakerateAnalyzer.bkg_analyzer(systKind=systKind,systName=systName,correlatedFit=correlatedFit,statAna=statAna, ptBinning=ptBinning, etaBinning=etaBinning, outdir=outdirBkg, inputDir=indir)
     fake.main_analysis(correlatedFit=correlatedFit,template=template,output4Plots=template,produce_ext_output=True,extrapSuff=extrapSuff)
     if template :
         fake.bkg_plots()
@@ -62,7 +62,7 @@ if mainAna :
     if EXTRAP:
         for lcut, lbin in bkg_utils.looseCutDict.iteritems() :    
             fakerate_analysis(systKind=NOM[0] systName=NOM[1], correlatedFit=False, statAna=False, template = TEMPLATE, extrapSuff=lcut)
-        fakeExtrap = bkg_analyzer.bkg_analyzer(systKind=NOM[0],systName=NOM[1],correlatedFit=CORRFITFINAL,statAna=False, ptBinning=bkg_utils.ptBinning, etaBinning=bkg_utils.etaBinning, outdir=outDir+'/bkg_', inputDir=inputDir)
+        fakeExtrap = bkg_fakerateAnalyzer.bkg_analyzer(systKind=NOM[0],systName=NOM[1],correlatedFit=CORRFITFINAL,statAna=False, ptBinning=bkg_utils.ptBinning, etaBinning=bkg_utils.etaBinning, outdir=outDir+'/bkg_', inputDir=inputDir)
         if not os.path.isdir(outDir+'/extrapolation_plots'): os.system('mkdir '+outDir+'/extrapolation_plots')
         fakeExtrap.extrapolationSyst(extrapDict=bkg_utils.looseCutDict,linearFit=True)
         fakeExtrap.extrapolationSyst(extrapDict=bkg_utils.looseCutDict,linearFit=False)
@@ -81,7 +81,7 @@ if correlatedFitAna :
 
 if comparisonAna :
     print "--> Syst comparison plots..."
-    fakeFinal = bkg_analyzer.bkg_analyzer(systKind=NOM[0],systName=NOM[1],correlatedFit=CORRFITFINAL,statAna=False, ptBinning=bkg_utils.ptBinning, etaBinning=bkg_utils.etaBinning, outdir=outDir+'/bkg_'+NOM[1], inputDir=inputDir)
+    fakeFinal = bkg_fakerateAnalyzer.bkg_analyzer(systKind=NOM[0],systName=NOM[1],correlatedFit=CORRFITFINAL,statAna=False, ptBinning=bkg_utils.ptBinning, etaBinning=bkg_utils.etaBinning, outdir=outDir+'/bkg_'+NOM[1], inputDir=inputDir)
     fakeFinal.syst_comparison(systDict=bkg_utils.bkg_systematics, SymBands=True, outDir=outDir, noratio=False, statAna=STATANA)
 
 
