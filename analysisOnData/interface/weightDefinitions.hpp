@@ -26,11 +26,59 @@ private:
     std::vector<ROOT::RDF::RResultPtr<std::vector<TH2D>>> _h2Group;
     std::vector<ROOT::RDF::RResultPtr<std::vector<TH3D>>> _h3Group;
 
-    TFile *_SF;
+    TFile* _SF;
+
+    TH2D* _TriggerPlus;
+    TH2D* _TriggerMinus;
+
+    TH2D* _TriggerPlusSyst0Up;
+    TH2D* _TriggerPlusSyst1Up;
+    TH2D* _TriggerPlusSyst2Up;
+    TH2D* _TriggerPlusSyst0Down;
+    TH2D* _TriggerPlusSyst1Down;
+    TH2D* _TriggerPlusSyst2Down;
+
+    TH2D* _TriggerMinusSyst0Up;
+    TH2D* _TriggerMinusSyst1Up;
+    TH2D* _TriggerMinusSyst2Up;
+    TH2D* _TriggerMinusSyst0Down;
+    TH2D* _TriggerMinusSyst1Down;
+    TH2D* _TriggerMinusSyst2Down;
+
+    TH2D* _Reco;
+
+    TH2D* _RecoStatUp;
+    TH2D* _RecoSystUp;
+    TH2D* _RecoStatDown;
+    TH2D* _RecoSystDown;
 
 public:
     weightDefinitions(TFile *SF){
         _SF = SF;
+
+        _TriggerPlus = (TH2D *)_SF->Get("TriggerPlus");
+        _TriggerMinus = (TH2D *)_SF->Get("TriggerMinus");
+
+        _TriggerPlusSyst0Up = (TH2D *)_SF->Get("TriggerPlusSyst0Up");
+        _TriggerPlusSyst1Up = (TH2D *)_SF->Get("TriggerPlusSyst1Up");
+        _TriggerPlusSyst2Up = (TH2D *)_SF->Get("TriggerPlusSyst2Up");
+        _TriggerPlusSyst0Down = (TH2D *)_SF->Get("TriggerPlusSyst0Down");
+        _TriggerPlusSyst1Down = (TH2D *)_SF->Get("TriggerPlusSyst1Down");
+        _TriggerPlusSyst2Down = (TH2D *)_SF->Get("TriggerPlusSyst2Down");
+
+        _TriggerMinusSyst0Up = (TH2D *)_SF->Get("TriggerMinusSyst0Up");
+        _TriggerMinusSyst1Up = (TH2D *)_SF->Get("TriggerMinusSyst1Up");
+        _TriggerMinusSyst2Up = (TH2D *)_SF->Get("TriggerMinusSyst2Up");
+        _TriggerMinusSyst0Down = (TH2D *)_SF->Get("TriggerMinusSyst0Down");
+        _TriggerMinusSyst1Down = (TH2D *)_SF->Get("TriggerMinusSyst1Down");
+        _TriggerMinusSyst2Down = (TH2D *)_SF->Get("TriggerMinusSyst2Down");
+
+        _Reco = (TH2D *)_SF->Get("Reco");
+
+        _RecoStatUp = (TH2D *)_SF->Get("RecoStatUp");
+        _RecoSystUp = (TH2D *)_SF->Get("RecoSystUp");
+        _RecoStatDown = (TH2D *)_SF->Get("RecoStatDown");
+        _RecoSystDown = (TH2D *)_SF->Get("RecoSystDown");
     };
     ~weightDefinitions(){};
 
