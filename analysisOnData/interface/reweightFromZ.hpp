@@ -39,9 +39,9 @@ public:
         _Pt = Pt;
         _Y = Y;
 
-        TH1F *_hPt = (TH1F *)_Pt->Get("unfold");
+        _hPt = (TH1F *)_Pt->Get("unfold");
         TH1F *hPtMC = (TH1F *)_Pt->Get("hDDilPtLL");
-        TH1F *_hY = (TH1F *)_Y->Get("unfold");
+        _hY = (TH1F *)_Y->Get("unfold");
         TH1F *hYMC = (TH1F *)_Y->Get("hDDilRapLL");
 
         _hPt->Divide(hPtMC);

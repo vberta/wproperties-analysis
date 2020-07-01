@@ -10,7 +10,7 @@ TH1weightsHelper::TH1weightsHelper(std::string name, std::string title,
    _xbins = xbins;
    _weightNames = weightNames;
 
-   const auto nSlots = ROOT::IsImplicitMTEnabled() ? ROOT::GetImplicitMTPoolSize() : 1;
+   const auto nSlots = ROOT::IsImplicitMTEnabled() ? ROOT::GetThreadPoolSize() : 1;
    for (auto slot : ROOT::TSeqU(nSlots))
    {
       fHistos.emplace_back(std::make_shared<std::vector<TH1D>>());
@@ -25,8 +25,8 @@ TH1weightsHelper::TH1weightsHelper(std::string name, std::string title,
       for (unsigned int i = 0; i < n_histos; ++i)
       {
 
-         histos.emplace_back(TH1D(std::string(_name + "_" + _weightNames[i] + slotnum).c_str(),
-                                  std::string(_name + "_" + _weightNames[i] + slotnum).c_str(),
+         histos.emplace_back(TH1D(std::string(_name + _weightNames[i] + slotnum).c_str(),
+                                  std::string(_name + _weightNames[i] + slotnum).c_str(),
                                   _nbinsX, _xbins.data()));
          histos.back().SetDirectory(nullptr);
       }

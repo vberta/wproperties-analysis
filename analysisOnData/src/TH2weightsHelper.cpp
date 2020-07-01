@@ -14,7 +14,7 @@
       _ybins = ybins;
       _weightNames = weightNames;
 
-      const auto nSlots = ROOT::IsImplicitMTEnabled() ? ROOT::GetImplicitMTPoolSize() : 1;
+      const auto nSlots = ROOT::IsImplicitMTEnabled() ? ROOT::GetThreadPoolSize() : 1;
       for (auto slot : ROOT::TSeqU(nSlots)) {
          fHistos.emplace_back(std::make_shared<std::vector<TH2D>>());
          (void)slot;
@@ -27,8 +27,8 @@
 
          for (unsigned int i = 0; i < n_histos; ++i){
 
-            histos.emplace_back(TH2D(std::string(_name + "_" + _weightNames[i] + slotnum).c_str(),
-                                     std::string(_name + "_" + _weightNames[i] + slotnum).c_str(),
+            histos.emplace_back(TH2D(std::string(_name + _weightNames[i] + slotnum).c_str(),
+                                     std::string(_name + _weightNames[i] + slotnum).c_str(),
                                      _nbinsX, _xbins.data(),
                                      _nbinsY, _ybins.data()));
 
