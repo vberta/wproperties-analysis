@@ -52,9 +52,8 @@ void templates::setAxisarrays()
         _pTArr[i] = 25. + i * (65. - 25.) / 40;
     for (unsigned int i = 0; i < _etaArr.size() + 1; i++)
         _etaArr[i] = -2.4 + i * (4.8) / 48; //eta -2.4 to 2.4
-    _chargeArr.push_back(0);
-    _chargeArr.push_back(1);
-    _chargeArr.push_back(2);
+    for (int i = 0; i < 4; i++)
+      _chargeArr[i] = -1.5 +  i*1. ;
 }
 
 std::vector<ROOT::RDF::RResultPtr<TH1D>> templates::getTH1()

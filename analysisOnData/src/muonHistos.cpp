@@ -64,9 +64,8 @@ void muonHistos::setAxisarrays()
     _etaArr[i] = -2.4 + i * (4.8) / 48; //eta -2.4 to 2.4
   for (int i = 0; i < 101; i++)
     _MTArr[i] = i;
-  _chargeArr.push_back(0);
-  _chargeArr.push_back(1);
-  _chargeArr.push_back(2);
+  for (int i = 0; i < 4; i++)
+    _chargeArr[i] = -1.5 +  i*1. ; //eta -1.5 to 1.5
 }
 
 std::vector<ROOT::RDF::RResultPtr<TH1D>> muonHistos::getTH1()

@@ -41,7 +41,7 @@ private:
 
     std::vector<float> _pTArr = std::vector<float>(40);
     std::vector<float> _etaArr = std::vector<float>(48);
-    std::vector<float> _chargeArr = std::vector<float>(2);
+    std::vector<float> _chargeArr = std::vector<float>(4);
     void setAxisarrays();
 
 public:
