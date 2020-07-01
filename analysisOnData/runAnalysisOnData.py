@@ -7,16 +7,22 @@ from RDFtree import RDFtree
 sys.path.append('python/')
 sys.path.append('data/')
 from systematics import systematics
-from selections import selections, selectionVars
+
+from selections import selections, selections_bkg, selectionVars
+
+from getLumiWeight import getLumiWeight
 
 ROOT.gSystem.Load('bin/libAnalysisOnData.so')
 
+runBKG = False ###please make this an option
 
 fvec=ROOT.vector('string')()
+
 samples={}
 with open('data/samples_2016.json') as f:
   samples = json.load(f)
 for sample in samples:
+
     if not samples[sample]['datatype']=='DATA': continue
     print sample
     c = 64		
@@ -24,6 +30,7 @@ for sample in samples:
 
     print "running with {} cores".format(c)
     direc = samples[sample]['dir']
+
     for dirname,fname in direc.iteritems():
         ##check if file exists or not
         inputFile = '/scratchssd/sroychow/NanoAOD2016-V2/{}/tree.root'.format(dirname)
@@ -51,5 +58,6 @@ for region,cut in selections.iteritems():
     p.branch(nodeToStart = 'defs', nodeToEnd = 'prefit_{}/Nominal'.format(region), modules = [ROOT.muonHistos(cut, weight, nom,"Nom",0)])    
     p.getOutput()
     #p.saveGraph()
+
 
 
