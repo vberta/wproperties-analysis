@@ -7,11 +7,15 @@ from RDFtree import RDFtree
 sys.path.append('python/')
 sys.path.append('data/')
 from systematics import systematics
-from selections import selections, selectionVars
+from selections import selections, selectionVars, selections_bkg
 
 from getLumiWeight import getLumiWeight
 
 ROOT.gSystem.Load('bin/libAnalysisOnData.so')
+
+runBKG = True ###please make this an option
+if runBKG:
+    selections = selections_bkg
 
 samples={}
 with open('data/samples_2016.json') as f:
@@ -47,7 +51,7 @@ for sample in samples:
 
     fileSF = ROOT.TFile.Open("data/ScaleFactors.root")
 
-    p = RDFtree(outputDir = './output/', inputFile = fvec, outputFile="{}_plots.root".format(sample), pretend=True)
+    p = RDFtree(outputDir = './output/', inputFile = fvec, outputFile="{}_plots.root".format(sample), pretend=False)
     if WJets:
         filePt = ROOT.TFile.Open("data/histoUnfoldingSystPt_nsel2_dy3_rebin1_default.root")
         fileY = ROOT.TFile.Open("data/histoUnfoldingSystRap_nsel2_dy3_rebin1_default.root")
@@ -61,7 +65,7 @@ for sample in samples:
         #last argument refers to histo category - 0 = Nominal, 1 = Pt scale , 2 = MET scale
         print "branching nominal"
 
-        p.branch(nodeToStart = 'defs', nodeToEnd = 'prefit_{}/Nominal'.format(region), modules = [ROOT.muonHistos(cut, weight, nom,"Nom",0)])  
+        if not runBKG: p.branch(nodeToStart = 'defs', nodeToEnd = 'prefit_{}/Nominal'.format(region), modules = [ROOT.muonHistos(cut, weight, nom,"Nom",0)])  
         p.branch(nodeToStart = 'defs', nodeToEnd = 'templates_{}/Nominal'.format(region), modules = [ROOT.templates(cut, weight, nom,"Nom",0)])    
   
         #weight variations
@@ -75,7 +79,7 @@ for sample in samples:
             print "branching weight variations", region, s
             print vars_vec
 
-            p.branch(nodeToStart = 'defs'.format(region), nodeToEnd = 'prefit_{}/{}Vars'.format(region,s), modules = [ROOT.muonHistos(cut, weight,vars_vec,variations[1], 0)])
+            if not runBKG: p.branch(nodeToStart = 'defs'.format(region), nodeToEnd = 'prefit_{}/{}Vars'.format(region,s), modules = [ROOT.muonHistos(cut, weight,vars_vec,variations[1], 0)])
             p.branch(nodeToStart = 'defs'.format(region), nodeToEnd = 'templates_{}/{}Vars'.format(region,s), modules = [ROOT.templates(cut, weight,vars_vec,variations[1], 0)])
 
         #column variations#weight will be nominal, cut will vary
@@ -91,9 +95,8 @@ for sample in samples:
                 cut_vec.push_back(newcut)
                 var_vec.push_back(selvar)
 
-            p.branch(nodeToStart = 'defs', nodeToEnd = 'prefit_{}/{}Vars'.format(region,vartype), modules = [ROOT.muonHistos(cut_vec, weight, nom,"Nom",hcat,var_vec)])  
+            if not runBKG: p.branch(nodeToStart = 'defs', nodeToEnd = 'prefit_{}/{}Vars'.format(region,vartype), modules = [ROOT.muonHistos(cut_vec, weight, nom,"Nom",hcat,var_vec)])  
             p.branch(nodeToStart = 'defs', nodeToEnd = 'templates_{}/{}Vars'.format(region,vartype), modules = [ROOT.templates(cut_vec, weight, nom,"Nom",hcat,var_vec)])  
 
     p.getOutput()
     p.saveGraph()
-    assert(0)

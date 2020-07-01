@@ -17,7 +17,7 @@
       _zbins = zbins;
       _weightNames = weightNames;
 
-      const auto nSlots = ROOT::IsImplicitMTEnabled() ? ROOT::GetImplicitMTPoolSize() : 1;
+      const auto nSlots = ROOT::IsImplicitMTEnabled() ? ROOT::GetThreadPoolSize() : 1;
       for (auto slot : ROOT::TSeqU(nSlots)) {
          fHistos.emplace_back(std::make_shared<std::vector<TH3D>>());
          (void)slot;

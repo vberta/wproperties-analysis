@@ -9,12 +9,14 @@ sys.path.append('data/')
 from systematics import systematics
 
 from selections import selections, selections_bkg, selectionVars
-
 from getLumiWeight import getLumiWeight
 
 ROOT.gSystem.Load('bin/libAnalysisOnData.so')
 
-runBKG = False ###please make this an option
+runBKG = True ###please make this an option
+
+if runBKG:
+    selections = selections_bkg
 
 fvec=ROOT.vector('string')()
 
@@ -47,17 +49,19 @@ if fvec.empty():
     
 print fvec
 weight = 'float(1)'
-p = RDFtree(outputDir = './output/', inputFile = fvec, outputFile="SingleMuonData_plots.root".format(sample), pretend=True)
+p = RDFtree(outputDir = './output/', inputFile = fvec, outputFile="SingleMuonData_plots.root".format(sample), pretend=False)
 p.branch(nodeToStart = 'input', nodeToEnd = 'defs', modules = [ROOT.baseDefinitions(0)])
-for region,cut in selections.iteritems():
+
+for region,cut in selections.iteritems():    
     print region       
     nom = ROOT.vector('string')()
-    nom.push_back("")
+    nom.push_back("nominal")
     #last argument refers to histo category - 0 = Nominal, 1 = Pt scale , 2 = MET scale
     print "branching nominal"
-    p.branch(nodeToStart = 'defs', nodeToEnd = 'prefit_{}/Nominal'.format(region), modules = [ROOT.muonHistos(cut, weight, nom,"Nom",0)])    
-    p.getOutput()
-    #p.saveGraph()
+    p.branch(nodeToStart = 'defs', nodeToEnd = 'prefit_{}/Nominal'.format(region), modules = [ROOT.muonHistos(cut, weight, nom,"Nom",0)]) 
+    p.branch(nodeToStart = 'defs', nodeToEnd = 'templates_{}/Nominal'.format(region), modules = [ROOT.templates(cut, weight, nom,"Nom",0)])       
+p.getOutput()
+#p.saveGraph()
 
 
 
