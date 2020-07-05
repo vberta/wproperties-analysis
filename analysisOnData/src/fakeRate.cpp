@@ -3,17 +3,27 @@
 
 RNode fakeRate::run(RNode d){
 
-  auto applyFakeRate = [this](float pt, float eta)->float { 
-    int binIdx = _hmap->FindBin(eta,pt);
-    return _hmap->GetBinContent(binIdx);
-  };   
-  
-  auto d1 = d.Define("SelMuon_corrected_pt", getFromIdx, {"Muon_corrected_pt", "Idx_mu1"})
-    .Define("SelMuon_eta", getFromIdx, {"Muon_eta", "Idx_mu1"})
-    .Define("FakeRate", applyFakeRate, {"SelMuon_corrected_pt", "SelMuon_eta"});
- 
-  return d1;
+  auto defineFakeRate = [this](float pt, float eta, float charge, int vtype) {
+    
+    int binX = charge > 0. ? 1 : 2;
+    int binY = _hfake_offset->GetYaxis()->FindBin(eta);
+    
+    float f_offset = _hfake_offset->GetBinContent(binX, binY);
+    float f_slope = _hfake_slope->GetBinContent(binX, binY);
+    float p_offset = _hprompt_offset->GetBinContent(binX, binY);
+    float p_slope = _hprompt_slope->GetBinContent(binX, binY);
+    float p_2deg = _hprompt_2deg->GetBinContent(binX, binY);
+    float f = f_offset + (pt - 25.0) * f_slope;
+    float p = p_offset * TMath::Erf(p_slope * pt + p_2deg);
+    float res = vtype == 1 ? p * f / (p - f) : -(1 - p) * f / (p - f);
+    
+    return res;
 
+  };
+
+  auto d1 = d.Define("fakeRate", defineFakeRate, {"Mu1_pt", "Mu1_eta", "Mu1_charge", "Vtype"});
+
+  return d1;
 }
 
 std::vector<ROOT::RDF::RResultPtr<TH1D>> fakeRate::getTH1(){ 
