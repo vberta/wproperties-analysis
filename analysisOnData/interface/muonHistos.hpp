@@ -42,7 +42,7 @@ class muonHistos : public Module {
     
     std::vector<float> _pTArr = std::vector<float>(31);
     std::vector<float> _etaArr = std::vector<float>(49);
-    std::vector<float> _MTArr = std::vector<float>(101);
+    std::vector<float> _MTArr = std::vector<float>(31);
     std::vector<float> _chargeArr = std::vector<float>(3);
     void setAxisarrays();
 

@@ -36,10 +36,10 @@ RNode muonHistos::bookptCorrectedhistos(RNode df)
 {
   for (unsigned int i = 0; i < _colvarvec.size(); i++)
   {
-    TH2weightsHelper helper_Pt(std::string("Mu1_pt_" + _colvarvec[i]), std::string(" ; muon p_{T} (Rochester corr.); muon charge "), 100, _pTArr, _chargeArr.size() - 1, _chargeArr, _syst_name);
+    TH2weightsHelper helper_Pt(std::string("Mu1_pt_" + _colvarvec[i]), std::string(" ; muon p_{T} (Rochester corr.); muon charge "), _pTArr.size() -1, _pTArr, _chargeArr.size() - 1, _chargeArr, _syst_name);
     _h2Group.emplace_back(df.Filter(_filtervec[i]).Book<float, float, float, ROOT::VecOps::RVec<float>>(std::move(helper_Pt), {"Mu1_pt_" + _colvarvec[i], "Mu1_charge", "weight", "Nom"}));
 
-    TH2weightsHelper helper_MT(std::string("MT_" + _colvarvec[i]), std::string(" ; M_{T} (Rochester corr./smear MET); muon charge "), 100, _MTArr, _chargeArr.size() - 1, _chargeArr, _syst_name);
+    TH2weightsHelper helper_MT(std::string("MT_" + _colvarvec[i]), std::string(" ; M_{T} (Rochester corr./smear MET); muon charge "), _MTArr.size() -1, _MTArr, _chargeArr.size() - 1, _chargeArr, _syst_name);
     _h2Group.emplace_back(df.Filter(_filtervec[i]).Book<float, float, float, ROOT::VecOps::RVec<float>>(std::move(helper_MT), {"MT_" + _colvarvec[i], "Mu1_charge", "weight", "Nom"}));
   }
   return df;
@@ -50,7 +50,7 @@ RNode muonHistos::bookJMEvarhistos(RNode df)
 {
   for (unsigned int i = 0; i < _colvarvec.size(); i++)
   {
-    TH2weightsHelper helper_MT(std::string("MT_" + _colvarvec[i]), std::string(" ; M_{T} (Rochester corr./smear MET); muon charge "), 100, _MTArr, _chargeArr.size() - 1, _chargeArr, _syst_name);
+    TH2weightsHelper helper_MT(std::string("MT_" + _colvarvec[i]), std::string(" ; M_{T} (Rochester corr./smear MET); muon charge "), _MTArr.size() -1, _MTArr, _chargeArr.size() - 1, _chargeArr, _syst_name);
     _h2Group.emplace_back(df.Filter(_filtervec[i]).Book<float, float, float, ROOT::VecOps::RVec<float>>(std::move(helper_MT), {"MT_" + _colvarvec[i], "Mu1_charge", "weight", "Nom"}));
   }
   return df;
@@ -62,8 +62,8 @@ void muonHistos::setAxisarrays()
     _pTArr[i] = 25. + i;
   for (int i = 0; i < 49; i++)
     _etaArr[i] = -2.4 + i * (4.8) / 48; //eta -2.4 to 2.4
-  for (int i = 0; i < 101; i++)
-    _MTArr[i] = i;
+  for (int i = 0; i < 31; i++)
+    _MTArr[i] = 0. + i*(150.-0.)/30;
   for (int i = 0; i < 3; i++)
     _chargeArr[i] = -2. +  i*2. ; //eta -1.5 to 1.5
 }
