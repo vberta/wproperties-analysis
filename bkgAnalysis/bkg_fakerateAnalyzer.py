@@ -32,18 +32,12 @@ class bkg_analyzer:
         self.signList = ['Plus','Minus']
         self.sampleList =  ['WToMuNu','Data'] #WToMuNu= All EWK samples
         self.maxPt_linearFit = 55
-        print "WARNING: FIT RANGE 26-55"
+        print "WARNING: FIT RANGE 25-55"
         self.rootFiles = []
-        for f in sampleList : 
+        for f in self.sampleList : 
              self.rootFiles.append(ROOT.TFile.Open(self.inputDir+'/'+f+'.root'))
-
-        self.varList = []
-        for var in bkg_variables_standalone['D2variables'] : self.varList.append(var)
-        # self.varList = ["pfRelIso04_all_VS_corrected_MET_nom_mt","pfRelIso04_all_TIMES_corrected_pt_VS_corrected_MET_nom_mt","pfRelIso04_all_VS_MET_pt","pfRelIso04_all_TIMES_corrected_pt_VS_MET_pt"]
-        # self.varName = ["relIso_vs_Mt", "absIso_vs_Mt","relIso_vs_MET", "absIso_vs_MET"]
-        # self.varName = ["relIso_vs_Mt", "absIso_vs_Mt"]
-        self.varName = ["relIso_vs_Mt"]
-
+        self.rootFiles.append(ROOT.TFile.Open('./data/ScaleFactors.root'))
+    
 
         self.ptBinningS = ['{:.2g}'.format(x) for x in self.ptBinning[:-1]]
         self.etaBinningS = ['{:.2g}'.format(x) for x in self.etaBinning[:-1]]
@@ -84,9 +78,9 @@ class bkg_analyzer:
         # print "INITIAL VALUE=", q0,p0
 
         def linearChi2(npar, gin, f, par, istatus ):
-            vec = yy-(par[0]+par[1]*(xx-26))#SLOPEOFFSETUNCORR
+            vec = yy-(par[0]+par[1]*(xx-25))#SLOPEOFFSETUNCORR
             chi2 = np.linalg.multi_dot( [vec.T, invCov, vec] )
-            f[0] = chi2
+            f.value = chi2
             return
 
         # minuit = ROOT.TVirtualFitter.Fitter(0, 2)
@@ -94,7 +88,7 @@ class bkg_analyzer:
         # minuit.SetFCN(linearChi2)
         # minuit.SetParameter(0, 'offset',q0,0.001,-2,2)
         # minuit.SetParameter(1, 'slope',p0,0.001,-0.1,0.1)
-        # arglist = array.array('d',2*[0])
+        # arglist = array('d',2*[0])
         # arglist[0] = 50000 #call limit
         # arglist[1] = 0.01 #tolerance
         # minuit.ExecuteCommand("MIGRAD", arglist, 2)
@@ -107,15 +101,16 @@ class bkg_analyzer:
         minuit = ROOT.TMinuit(2)#.Fitter(0, 2)
         minuit.SetFCN(linearChi2)
         arglist = array('d',2*[0])
+        # arglist = (ctypes.c_double * 2)()
         arglist[0] =1.0
-        ierflg = ROOT.Long(0)
+        ierflg = ctypes.c_int(0)
         # ierflag=0
         # q0 = 0.5
         # p0=0
         minuit.SetPrintLevel(-1)
         minuit.mnexcm("SET ERR",arglist,1,ierflg)
         minuit.mnparm(0, 'offset',q0,p0Err,-1,1,ierflg)
-        minuit.mnparm(1, 'slope',p0,q0Err,-0.3,0.3,ierflg)
+        minuit.mnparm(1, 'slope',p0,q0Err,-0.3,0.3,ierflg)          
         # minuit.mnparm(0, 'offset',q0,0.001,-40,40,ierflg)
         # minuit.mnparm(1, 'slope',p0,0.001,-10,10,ierflg)
         arglist[0] = 500000 #call limit
@@ -126,21 +121,23 @@ class bkg_analyzer:
 
         out_cov = ROOT.TMatrixDSym(2)
         minuit.mnemat(out_cov.GetMatrixArray(),2)
+        # minuit.GetCovarianceMatrix(out_cov.GetMatrixArray(),2)
+
         # out_cov = ROOT.TMatrixD(2,2)
         # minuit.mnemat(out_cov,2)
-        val0 = ROOT.Double(0.)
-        err0 = ROOT.Double(0.)
-        val1 = ROOT.Double(0.)
-        err1 = ROOT.Double(0.)
+        val0 = ctypes.c_double(0.)
+        err0 = ctypes.c_double(0.)
+        val1 = ctypes.c_double(0.)
+        err1 = ctypes.c_double(0.)
         minuit.GetParameter(0,val0,err0)
         minuit.GetParameter(1,val1,err1)
 
 
         outdict = {}
-        outdict[s+e+'offset'+'Minuit'] = val0
-        outdict[s+e+'slope'+'Minuit'] = val1
-        outdict[s+e+'offset'+'Minuit'+'Err'] = err0
-        outdict[s+e+'slope'+'Minuit'+'Err'] = err1
+        outdict[s+e+'offset'+'Minuit'] = val0.value
+        outdict[s+e+'slope'+'Minuit'] = val1.value
+        outdict[s+e+'offset'+'Minuit'+'Err'] = err0.value
+        outdict[s+e+'slope'+'Minuit'+'Err'] = err1.value
 
         outdict[s+e+'offset*slope'+'Minuit'] = ROOT.TMatrixDRow(out_cov,0)(1)
         # print "DEBUGGG>>>>", outdict
@@ -166,6 +163,7 @@ class bkg_analyzer:
         # bin4corFit = [26,28,30,32,34,36,38,40,42,44,47,50,53,56,59,62,65] #standard
         # bin4corFit = [25,29,33,37,41,45,49,53,57,61,65] #largEtaPt bins
         bin4corFit =  [26,28,30,32,34,36,38,40,42,44,46,48,50,52,55] #LoreHistos
+        bin4corFit =  [25,27,29,31,33,35,37,39,41,43,45,47,49,51,53,55] #LoreHistos
         
         if DONT_REBIN : 
             bin4corFit = ptBinning
@@ -173,6 +171,7 @@ class bkg_analyzer:
         binChange = 7 # bin 1-8: merge 2 pt bins, bin 8-end: merge 3 bins.
         binChange = 9 #standard
         binChange = 13 #LoreHistos
+        binChange = 17 #LoreHistos
 
         bin4corFitS = ['{:.2g}'.format(x) for x in bin4corFit[:-1]]
 
@@ -441,7 +440,7 @@ class bkg_analyzer:
         return sigmavec
 
 
-    def dict2histConverter(self,fakedict,promptdict,hdict, ,correlatedFit=True) :
+    def dict2histConverter(self,fakedict,promptdict,hdict ,correlatedFit=True) :
 
         outdict = {}
         
@@ -501,7 +500,7 @@ class bkg_analyzer:
                     for e in self.etaBinningS :
                         outdict[s+e+par] = histotemp.GetBinContent(self.signList.index(s)+1,self.etaBinningS.index(e)+1)
                         if par == 'offset' or par=='slope' or par=='2deg' :
-                        outdict[s+e+par+'Err'] = histotemp.GetBinError(self.signList.index(s)+1,self.etaBinningS.index(e)+1)
+                            outdict[s+e+par+'Err'] = histotemp.GetBinError(self.signList.index(s)+1,self.etaBinningS.index(e)+1)
 
             if kind=='prompt':
                 histotemp = inputfile.Get(kind+'_'+'sigmaERFvec')
@@ -1320,17 +1319,22 @@ class bkg_analyzer:
         
         print "> getting histograms..."
         regionList = ['A','B','C','D']
-        # regionList_Lore = ['SIDEBAND','AISO','QCD','SIGNAL']
         regionList_name = ['Sideband_aiso','Signal_aiso','Sideband','Signal']
-        var_inside_histo = 'template_'+self.systName
+        var_inside_histo = 'template'
         histo3DDict = {}
+        sName = self.systName
+        if self.systName !='' : 
+            sName = '_'+sName
         for f in self.sampleList :
-            for r, rl in map(None,regionList,regionList_Lore) :
+            for r, rl in map(None,regionList,regionList_name) :
                 if rl=='Sideband' or rl=='Sideband_aiso' : #add extrapolation suffix (mapped in looseCutDict)
                     rl = rl+extrapSuff
-                histo3DDict[f+r] = self.rootFiles[self.sampleList.index(f)].Get(rl+'_'+self.systKind+'/'+rl+var_inside_histo)
+                if f=='Data' :
+                    histo3DDict[f+r] = self.rootFiles[self.sampleList.index(f)].Get('templates_'+rl+'/Nominal/'+var_inside_histo)
+                else :
+                    histo3DDict[f+r] = self.rootFiles[self.sampleList.index(f)].Get('templates_'+rl+'/'+self.systKind+'/'+var_inside_histo+sName)
         
-        histo3DDict['IsoSF'] = IsoSFHarvester(self.systKind,self.systName,histo3DDict[f+r])
+        histo3DDict['IsoSF'] = self.IsoSFHarvester(self.systKind,self.systName,histo3DDict)
         
         print "> evaluating fakerate..."
         hfakes = self.differential_fakerate(kind='fake',histo3D=histo3DDict)
@@ -1377,20 +1381,20 @@ class bkg_analyzer:
             external_output.Close()   
     
     
-    def IsoSFHarvester(systKind,systName,histo3D) :
+    def IsoSFHarvester(self,systKind,systName,histo3D) :
         
-        SFfile = ROOT.TFile.Open('data/ScaleFactors.root')
+        # SFfile = ROOT.TFile.Open('data/ScaleFactors.root')
         if systKind!='RecoSF' :
-            hSF = SFfile.Get("Reco")
+            hSF = self.rootFiles[-1].Get("Corr_Iso/Corr_Iso")
         else :
-            hSF = SFfile.Get(systName)
-        
+            hSF = self.rootFiles[-1].Get("Corr_Iso/Corr_Iso"+systName.replace('RecoSF',''))
         h3SF = histo3D['WToMuNu'+'A'].Clone("IsoSF")
         for xx in range(1,h3SF.GetXaxis().GetNbins()+1) :
             for yy in range(1,h3SF.GetYaxis().GetNbins()+1) :
                 for zz in range(1,h3SF.GetZaxis().GetNbins()+1) :
                     h3SF.SetBinContent(xx,yy,zz,hSF.GetBinContent(xx,yy))
                     h3SF.SetBinError(xx,yy,zz,0)
+                    
         return h3SF
     
       
@@ -1437,17 +1441,18 @@ class bkg_analyzer:
                 etaBinN= self.binNumb_calculator(fake3D,'X',self.etaBinning[self.etaBinningS.index(e)])
                 # h1Dict[s+e] = fake3D.ProjectionY('hFakes_pt_'+kind+'_'+s+'_'+e,self.etaBinningS.index(e)+1,self.etaBinningS.index(e)+1,binS,binS,"e")
                 h1Dict[s+e] = fake3D.ProjectionY('hFakes_pt_'+kind+'_'+s+'_'+e,etaBinN,etaBinN,binS,binS,"e")
+                    
                 #do the fit
                 if kind == 'prompt' :
                     fitFake = ROOT.TF1("fitFake", "[0]*erf([1]*(x)+[2])",0,100,3)
                     fitFake.SetParameters(1,0.1,-3)
                     fitFake.SetParNames("offset","slope",'2deg')              
                 if kind == 'fake' :
-                    fitFake = ROOT.TF1("fitFake", '[0]+[1]*(x-26)',0,100,2) 
+                    fitFake = ROOT.TF1("fitFake", '[0]+[1]*(x-25)',0,100,2) 
                     fitFake.SetParameters(0.5,0.1)
                     fitFake.SetParNames("offset","slope")
                 
-                fit_result = h1Dict[s+e].Fit(fitFake,"QS","",26,self.maxPt_linearFit)
+                fit_result = h1Dict[s+e].Fit(fitFake,"QS","",25,self.maxPt_linearFit)
                 
                 #assign the fit results
                 cov = fit_result.GetCovarianceMatrix()
@@ -1490,7 +1495,7 @@ class bkg_analyzer:
             'fake' : 'Data',
             'prompt' : 'WToMuNu',
         }
-        shiftX=26
+        shiftX=25
         
         htempl = {}
         h1Dict = {}
@@ -1607,7 +1612,7 @@ class bkg_analyzer:
             discrepancyMapDict[s+'Err'].GetYaxis().SetTitle("p_{T} [GeV]")
             discrepancyMapDict[s+'Err'].GetZaxis().SetTitle("#sigma (extrap-nom)/nom")
            
-           if s=='Plus' :
+            if s=='Plus' :
                 chi2_extrap = ROOT.TH2F("chi2_extrap","chi2_extrap",len(self.etaBinning)-1, array('f',self.etaBinning), len(self.signList), array('f',[0,1,2]))
                 chi2_extrap.GetXaxis().SetTitle("#eta")
                 chi2_extrap.GetYaxis().SetTitle("sign (1st=plus,2nd=minus)")
@@ -1633,9 +1638,9 @@ class bkg_analyzer:
                         histoDict[s+e].SetBinContent( histoDict[s+e].FindBin(lbin[0]),self.ptBinningS.index(p)+1,val)
                         histoDict[s+e].SetBinError( histoDict[s+e].FindBin(lbin[0]),self.ptBinningS.index(p)+1,err)
                 if linearFit :
-                    fitFunc = ROOT.TF2("fitFunc", "[0]+[1]*x+[2]*y+[3]*x*y",0.,40.,26,55) 
+                    fitFunc = ROOT.TF2("fitFunc", "[0]+[1]*x+[2]*y+[3]*x*y",0.,40.,25,55) 
                 else :
-                    fitFunc = fitFunc = ROOT.TF2("fitFunc", "[0]+[1]*y",0.,40.,26,55) 
+                    fitFunc = fitFunc = ROOT.TF2("fitFunc", "[0]+[1]*y",0.,40.,25,55) 
                     
                 fitRes = histoDict[s+e].Fit(fitFunc,"QSR","")#,0,40,26,55)
                 

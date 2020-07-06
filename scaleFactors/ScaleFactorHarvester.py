@@ -24,7 +24,7 @@ def SFHarvester_nom(fileDict) :
     return outDict
 
 
-def SFHarvester_triggerSyst(fileDict, SFhisto, RATIO=True) :
+def SFHarvester_triggerSyst(fileDict, SFhisto, ratio=True) :
     outDict = {}
     signList = ['Plus', 'Minus']
     parList = ['0','1','2']
@@ -43,13 +43,13 @@ def SFHarvester_triggerSyst(fileDict, SFhisto, RATIO=True) :
                     valDown = outDict['Trigger'+s+'Syst'+par+'Down'].GetBinContent(eta,pt)*(1-systDict['Trigger'+s+'Syst'+par+'Ratio'].GetBinContent(eta,pt))
                     outDict['Trigger'+s+'Syst'+par+'Up'].SetBinContent(eta,pt,valUp)
                     outDict['Trigger'+s+'Syst'+par+'Down'].SetBinContent(eta,pt,valDown)
-    if RATIO :
+    if ratio :
        outDict.update(systDict)
                 
     return outDict
 
            
-def SFHarvester_recoSyst(fileDict, SFhisto, RATIO=True) :
+def SFHarvester_recoSyst(fileDict, SFhisto, ratio=True) :
     outDict = {}
     era_ratios = [0.548,0.452]
     print "WARNING: era ratios hardcoded [BCDEF, GH]=", era_ratios
@@ -64,7 +64,7 @@ def SFHarvester_recoSyst(fileDict, SFhisto, RATIO=True) :
         nEtaBins = outDict['Reco'+par+'Up'].GetXaxis().GetNbins()
         nPtBins = outDict['Reco'+par+'Up'].GetYaxis().GetNbins()
         
-        if RATIO :
+        if ratio :
            systDict['Reco'+par+'Ratio'] =  SFhisto['Reco'].Clone('Reco'+par+'Ratio') #dummy clone to build the binning
            systDict['Reco'+par+'Ratio'].GetZaxis().SetRangeUser(-0.01,0.01)
            
@@ -80,10 +80,89 @@ def SFHarvester_recoSyst(fileDict, SFhisto, RATIO=True) :
                 if RATIO :
                     systDict['Reco'+par+'Ratio'].SetBinContent(eta,pt,val/SFhisto['Reco'].GetBinContent(eta,pt))
                     systDict['Reco'+par+'Ratio'].SetBinError(eta,pt,0)              
-    if RATIO :
+    if ratio :
        outDict.update(systDict)
                 
-    return outDict        
+    return outDict
+
+def SFHarvester_IDCorr(fileDict,SFhisto,syst=True) : 
+    
+    # This function produce the Iso SF alone, with the assumpion ISO*ID=(ISO*ID)_Wheilicy=(RECO)_WHelicity, ISO/ID=(ISO/ID)_POG
+    # To do that: 
+    # -build ISO/ID from POG
+    # -rebin in WHelicity
+    # -build the histo of s=sqrt((RECO)_WHelicity/(ISO/ID)_POG), solution of the assumpion system for ISO
+    # - repeat all the previous steps for all the variation of ISO-POG
+    
+        
+    outDict = {}
+    era_ratios = [0.548,0.452]
+    print "WARNING: era ratios hardcoded [BCDEF, GH]=", era_ratios
+    
+    #build nom id/reco, pog binning
+    h_reco_BCDEF=fileDict['Reco'+'syst'+'BCDEF'].Get('NUM_TightRelIso_DEN_MediumID_eta_pt')
+    h_reco_GH=fileDict['Reco'+'syst'+'GH'].Get('NUM_TightRelIso_DEN_MediumID_eta_pt')
+    h_id_BCDEF=fileDict['Id'+'BCDEF'].Get('NUM_MediumID_DEN_genTracks_eta_pt')
+    h_id_GH=fileDict['Id'+'GH'].Get('NUM_MediumID_DEN_genTracks_eta_pt')
+    h_reco_pog = h_reco_BCDEF.Clone("h_reco_pog")
+    h_reco_pog.Add(h_reco_BCDEF,h_reco_GH,era_ratios[0],era_ratios[1])
+    h_id_pog = h_id_BCDEF.Clone("h_id_pog")
+    h_id_pog.Add(h_id_BCDEF,h_id_GH,era_ratios[0],era_ratios[1])
+    IdReco_ratio = h_id_pog.Clone('IdReco_ratio')
+    IdReco_ratio.Divide(h_reco_pog)
+    
+    #build nom iso, whelicity binning
+    outDict['Corr_Iso'] = SFhisto['Reco'].Clone('Corr_Iso')
+    nEtaBins = outDict['Corr_Iso'].GetXaxis().GetNbins()
+    nPtBins = outDict['Corr_Iso'].GetYaxis().GetNbins()
+    for eta in range(1,nEtaBins+1) :
+        for pt in range(1,nPtBins+1) :
+            etaBin = IdReco_ratio.GetXaxis().FindBin(outDict['Corr_Iso'].GetXaxis().GetBinCenter(eta))
+            ptBin = IdReco_ratio.GetYaxis().FindBin(outDict['Corr_Iso'].GetYaxis().GetBinCenter(pt))
+            IdReco_ratio_val = IdReco_ratio.GetBinContent(etaBin,ptBin)
+            val = math.sqrt(SFhisto['Reco'].GetBinContent(eta,pt)/IdReco_ratio_val)
+            outDict['Corr_Iso'].SetBinContent(eta,pt,val)
+            # outDict['IdReco_ratioCorr'].SetBinContent(eta,pt,IdReco_ratio_val)
+    
+    # outDict['Corr_Iso'] = SFhisto['Reco'].Clone('IdReco_ratioCorr')
+    # for eta in range(1,nEtaBins+1) :
+    #     for pt in range(1,nPtBins+1) :
+    #         val = math.sqrt(SFhisto['Reco'].GetBinContent(eta,pt)/outDict['IdReco_ratioCorr'].GetBinContent(eta,pt))
+    #         outDict['Corr_Iso'].SetBinContent(eta,pt,val)
+    
+    if syst :
+        parList = ['Syst','Stat']
+        direcList = ['Up','Down']
+        for par in parList :
+            hBCDEF=fileDict['Reco'+'syst'+'BCDEF'].Get('NUM_TightRelIso_DEN_MediumID_eta_pt_'+par.lower())
+            hGH=fileDict['Reco'+'syst'+'GH'].Get('NUM_TightRelIso_DEN_MediumID_eta_pt_'+par.lower())
+            for direc in direcList :
+                outDict['Corr_Iso'+par+direc] = SFhisto['Reco'].Clone('Corr_Iso'+par+direc)
+                for eta in range(1,nEtaBins+1) :
+                    for pt in range(1,nPtBins+1) :
+                        etaBin = h_id_pog.GetXaxis().FindBin(outDict['Corr_Iso'+par+direc].GetXaxis().GetBinCenter(eta))
+                        ptBin = h_id_pog.GetYaxis().FindBin(outDict['Corr_Iso'+par+direc].GetYaxis().GetBinCenter(pt))
+                        valVar = hBCDEF.GetBinError(etaBin,ptBin)*era_ratios[0]+hGH.GetBinError(etaBin,ptBin)*era_ratios[1]
+                        valNom = hBCDEF.GetBinContent(etaBin,ptBin)*era_ratios[0]+hGH.GetBinContent(etaBin,ptBin)*era_ratios[1]
+                        if direc == 'Up' :
+                            val = valNom+valVar
+                        if direc == 'Down' :
+                            val = valNom-valVar                        
+                        IdReco_ratio_val = val/SFhisto['Reco'+par+direc].GetBinContent(eta,pt)
+                        val = math.sqrt(SFhisto['Reco'].GetBinContent(eta,pt)/IdReco_ratio_val)
+                        outDict['Corr_Iso'+par+direc].SetBinContent(eta,pt,val)
+                        # outDict['IdReco_ratioCorr'+par+direc].SetBinContent(eta,pt,val)
+        
+            
+    
+
+    
+    
+    return outDict 
+    
+    
+    
+            
     
 
 #####################################################################################################################
@@ -99,6 +178,7 @@ def SFHarvester_recoSyst(fileDict, SFhisto, RATIO=True) :
 #   OUTPUT STRUCTURE: 
 #   main dir: eta vs pt SF and their Up/Down variation
 #   "ratios" dir: eta vs pt (variedSF-nominalSF)/nominalSF
+#   "correction" dir: eta vs pt sqrt((RECO)_WHelicity/(ISO/ID)_POG) = ISO SF
 #   
 #   OUTPUT NAMING CONVENTION: Kind+(Sign)+Syst+("ratio")
 #   Kind = "Trigger", "Reco"
@@ -122,11 +202,13 @@ parser = argparse.ArgumentParser("")
 parser.add_argument('-o','--output_name', type=str, default='ScaleFactors',help="name of the output root file")
 parser.add_argument('-saveRatio', '--saveRatio',type=int, default=True, help="1=Save also sf variation ratios")
 parser.add_argument('-syst', '--syst',type=int, default=True, help="1=run the syst. variation")
+parser.add_argument('-id', '--id',type=int, default=True, help="1=run the syst. variation")
 
 args = parser.parse_args()
 RATIO = args.saveRatio  # ratio = (variedSF-nominalSF)/nominalSF
 OUTPUT = args.output_name
 SYST = args.syst
+ID = args.id
 
 #input files
 fileDict = {}
@@ -136,27 +218,45 @@ fileDict['Reco'] = ROOT.TFile.Open('data/SF_WHelicity_Reco.root')
 if SYST: 
     fileDict['Trigger'+'Plus'+'syst'] = ROOT.TFile.Open('data/SF_WHelicity_Trigger_Plus_syst.root')
     fileDict['Trigger'+'Minus'+'syst'] = ROOT.TFile.Open('data/SF_WHelicity_Trigger_Minus_syst.root')
-    fileDict['Reco'+'syst'+'BCDEF'] = ROOT.TFile.Open('data/SF_POG_iso_BCDEF.root')
-    fileDict['Reco'+'syst'+'GH'] = ROOT.TFile.Open('data/SF_POG_iso_GH.root')
+if SYST or ID :
+    fileDict['Reco'+'syst'+'BCDEF'] = ROOT.TFile.Open('data/SF_POG_Iso_BCDEF.root')
+    fileDict['Reco'+'syst'+'GH'] = ROOT.TFile.Open('data/SF_POG_Iso_GH.root')
+if ID :
+    fileDict['Id'+'BCDEF'] = ROOT.TFile.Open('data/SF_POG_Id_BCDEF.root')
+    fileDict['Id'+'GH'] = ROOT.TFile.Open('data/SF_POG_Id_GH.root')
+    
+        
+    
 
 #nominal SF
-SFhisto = SFHarvester_nom(fileDict)
+SFhisto = SFHarvester_nom(fileDict=fileDict)
 
 if SYST : #variation
-    SFhisto.update(SFHarvester_triggerSyst(fileDict, SFhisto,RATIO))
-    SFhisto.update(SFHarvester_recoSyst(fileDict, SFhisto,RATIO))
+    SFhisto.update(SFHarvester_triggerSyst(fileDict=fileDict, SFhisto=SFhisto,ratio=RATIO))
+    SFhisto.update(SFHarvester_recoSyst(fileDict=fileDict, SFhisto=SFhisto,ratio=RATIO))
+
+if ID :
+   SFhisto.update(SFHarvester_IDCorr(fileDict=fileDict, SFhisto=SFhisto,syst=SYST)) 
 
 #output saving
 output = ROOT.TFile(OUTPUT+".root", "recreate")
 output.cd()
 for ind, histo in SFhisto.iteritems() :
     histo.SetName(ind)
-    if 'Ratio' in ind : continue
+    if 'Ratio' in ind or 'Corr' in ind : continue
     histo.Write()
     
 if RATIO :
-    direc = output.mkdir('ratios')
-    direc.cd()
+    direcRATIO = output.mkdir('ratios')
+    direcRATIO.cd()
     for ind, histo in SFhisto.iteritems() :
         if not 'Ratio' in ind : continue
         histo.Write()
+
+if ID :
+    direcID = output.mkdir('Corr_Iso')
+    direcID.cd()
+    for ind, histo in SFhisto.iteritems() :
+        if not 'Corr' in ind : continue
+        histo.Write()
+ 

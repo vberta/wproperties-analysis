@@ -23,10 +23,10 @@ parser.add_argument('-outputDir', '--outputDir',type=str, default='./bkg_V2/', h
 
 args = parser.parse_args()
 mainAna = args.mainAna
-comparisonAna = args.comparisonAna
-correlatedFitAna = args.correlatedFitAna
+comparisonAna = args.compAna
+correlatedFitAna = args.CFAna
 strategySyst = args.straSyst
-systAna = args.systAna
+systAna = args.syst
 inputDir = args.inputDir
 outputDir = args.outputDir
 
@@ -49,42 +49,42 @@ def fakerate_analysis(systKind, systName,correlatedFit,statAna, template, ptBinn
 
 
 print "----> Background analyzer:"
-if not os.path.isdir(outDir): os.system('mkdir '+outDir)
+if not os.path.isdir(outputDir): os.system('mkdir '+outputDir)
 
 if mainAna :
     print "--> Not correlated analysis path:"
-    fakerate_analysis(systKind=NOM[0] systName=NOM[1], correlatedFit=False, statAna=False, template = TEMPLATE)
+    fakerate_analysis(systKind=NOM[0], systName=NOM[1], correlatedFit=False, statAna=False, template = TEMPLATE)
     if systAna :
         for sKind, sList in bkg_utils.bkg_systematics.iteritems():
             for sName in sList :
-                print "-> systematatic:", sKind,sName
-                fakerate_analysis(systKind=sKind systName=sName, correlatedFit=False, statAna=False, template = TEMPLATE)
+                print "-> systematic:", sKind,sName
+                fakerate_analysis(systKind=sKind, systName=sName, correlatedFit=False, statAna=False, template = TEMPLATE)
     if EXTRAP:
         for lcut, lbin in bkg_utils.looseCutDict.iteritems() :    
-            fakerate_analysis(systKind=NOM[0] systName=NOM[1], correlatedFit=False, statAna=False, template = TEMPLATE, extrapSuff=lcut)
-        fakeExtrap = bkg_fakerateAnalyzer.bkg_analyzer(systKind=NOM[0],systName=NOM[1],correlatedFit=CORRFITFINAL,statAna=False, ptBinning=bkg_utils.ptBinning, etaBinning=bkg_utils.etaBinning, outdir=outDir+'/bkg_', inputDir=inputDir)
-        if not os.path.isdir(outDir+'/extrapolation_plots'): os.system('mkdir '+outDir+'/extrapolation_plots')
+            fakerate_analysis(systKind=NOM[0], systName=NOM[1], correlatedFit=False, statAna=False, template = TEMPLATE, extrapSuff=lcut)
+        fakeExtrap = bkg_fakerateAnalyzer.bkg_analyzer(systKind=NOM[0],systName=NOM[1],correlatedFit=CORRFITFINAL,statAna=False, ptBinning=bkg_utils.ptBinning, etaBinning=bkg_utils.etaBinning, outdir=outputDir+'/bkg_', inputDir=inputDir)
+        if not os.path.isdir(outputDir+'/extrapolation_plots'): os.system('mkdir '+outputDir+'/extrapolation_plots')
         fakeExtrap.extrapolationSyst(extrapDict=bkg_utils.looseCutDict,linearFit=True)
         fakeExtrap.extrapolationSyst(extrapDict=bkg_utils.looseCutDict,linearFit=False)
     
 if correlatedFitAna :
     print "--> Correlated analysis path:"
-    fakerate_analysis(systKind=NOM[0] systName=NOM[1], correlatedFit=True, statAna=False, template = TEMPLATE)
+    fakerate_analysis(systKind=NOM[0], systName=NOM[1], correlatedFit=True, statAna=False, template = TEMPLATE)
     if STATANA :
         print "-> statistical uncertainity analysis:"
-        fakerate_analysis(systKind=NOM[0] systName=NOM[1], correlatedFit=True, statAna=STATANA, template = TEMPLATE)
-    for sKind, sList in bkg_utils.bkg_systematics.iteritems():
-        for sName in sList :
-            print "-> systematatic:", sKind,sName
-            if systAna :
-                fakerate_analysis(systKind=sKind systName=sName, correlatedFit=True, statAna=False, template = TEMPLATE)
+        fakerate_analysis(systKind=NOM[0], systName=NOM[1], correlatedFit=True, statAna=STATANA, template = TEMPLATE)
+    if systAna :
+        for sKind, sList in bkg_utils.bkg_systematics.iteritems():
+            for sName in sList : 
+                print "-> systematatic:", sKind,sName
+                fakerate_analysis(systKind=sKind, systName=sName, correlatedFit=True, statAna=False, template = TEMPLATE)
 
 if comparisonAna :
     print "--> Syst comparison plots..."
-    fakeFinal = bkg_fakerateAnalyzer.bkg_analyzer(systKind=NOM[0],systName=NOM[1],correlatedFit=CORRFITFINAL,statAna=False, ptBinning=bkg_utils.ptBinning, etaBinning=bkg_utils.etaBinning, outdir=outDir+'/bkg_'+NOM[1], inputDir=inputDir)
-    fakeFinal.syst_comparison(systDict=bkg_utils.bkg_systematics, SymBands=True, outDir=outDir, noratio=False, statAna=STATANA)
+    fakeFinal = bkg_fakerateAnalyzer.bkg_analyzer(systKind=NOM[0],systName=NOM[1],correlatedFit=CORRFITFINAL,statAna=False, ptBinning=bkg_utils.ptBinning, etaBinning=bkg_utils.etaBinning, outdir=outputDir+'/bkg_'+NOM[1], inputDir=inputDir)
+    fakeFinal.syst_comparison(systDict=bkg_utils.bkg_systematics, SymBands=True, outDir=outputDir, noratio=False, statAna=STATANA)
 
 
 # if strategySyst :
 #     print "--> Strategy syst plots..."
-#     fakeFinal.strategy_syst(preOutDir=outDir)
+#     fakeFinal.strategy_syst(preOutDir=outputDir)
