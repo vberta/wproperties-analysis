@@ -235,7 +235,7 @@ class bkg_analyzer:
                 histo_fake_dict[sName+s+e+'reb'] = temp_histREB.Clone()
         file_dict[sName].Close()
 
-        #prepare the fit
+        #prepare the fit        
         correlatedFitterDict = {}
         for s in self.signList :
             for e in self.etaBinningS :
@@ -406,7 +406,7 @@ class bkg_analyzer:
                     minuitDict[s+e+'offset'+'Minuit'+'Err'] = histoToy.GetStdDev(1)
                     minuitDict[s+e+'slope'+'Minuit'+'Err'] = histoToy.GetStdDev(2)
                     minuitDict[s+e+'offset*slope'+'Minuit'] = histoToy.GetCovariance()    
-                correlatedFitterDict.update(minuitDict)
+                correlatedFitterDict.update(minuitDict)            
         return correlatedFitterDict
     
     
@@ -670,10 +670,7 @@ class bkg_analyzer:
 
         for sKind, sList in systDict.iteritems():
             for sName in sList :
-                if correlatedFit :
-                    suff_4corrFitNomOnly = ''
-                else :
-                    suff_4corrFitNomOnly = self.corrFitSuff
+                suff_4corrFitNomOnly = self.corrFitSuff
                 finalPlotFileDict[sName]=ROOT.TFile.Open(outDir+"/bkg_"+sName+"/bkg_plots"+suff_4corrFitNomOnly+self.nameSuff+".root")
                 for s in self.signList :
                     for e in self.etaBinningS :
@@ -755,7 +752,8 @@ class bkg_analyzer:
                             finalHistoDict['nom'+canvas+histo+s+e+'error'].SetLineWidth(1)
 
                             finalHistoDict['nom'+canvas+histo+s+e+'error'].Draw("SAME 0P5")
-                            if(correlatedFit and canvas=='comparison' and histo=='fake' and 0) : #DISABLED (see if with the same boolean )
+                            # if(correlatedFit and canvas=='comparison' and histo=='fake' and 0) : #DISABLED (see if with the same boolean )
+                            if(0) : #DISABLED (see if with the same boolean )
                                 keyList = ['def','offsePlus','offsetMinus','slopePlus','slopeMinus']
                                 for key in keyList :
                                     finalHistoDict['nom'+canvas+s+e+'functionG'+key].Draw("SAME")
@@ -1112,10 +1110,7 @@ class bkg_analyzer:
         for sKind, sList in systDict.iteritems():
             for sName in sList :
                 suffPar = ''
-                if correlatedFit :
-                    suff_4corrFitNomOnly = ''
-                else :
-                    suff_4corrFitNomOnly = self.corrFitSuff
+                suff_4corrFitNomOnly = self.corrFitSuff
                 finalPlotFileDict[sName+'parameters'] = ROOT.TFile.Open(outDir+"/bkg_"+sName+"/bkg_parameters_file"+suff_4corrFitNomOnly+self.nameSuff+".root")
                 for s in self.signList :
                     for kind in ParnameDict :

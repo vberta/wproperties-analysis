@@ -4,6 +4,8 @@ import math
 import argparse
 import sys
 import ROOT
+import multiprocessing
+
 
 import bkg_utils
 import bkg_fakerateAnalyzer
@@ -36,6 +38,11 @@ CORRFITFINAL= True #correlated fit in the final plots
 TEMPLATE = True
 NOM = ['Nominal','']
 EXTRAP = False #extrapolation syst
+NCORES=30
+if NCORES>1 :
+    MULTICORE=True
+else :
+    MULTICORE=False
 
 
 def fakerate_analysis(systKind, systName,correlatedFit,statAna, template, ptBinning=bkg_utils.ptBinning, etaBinning=bkg_utils.etaBinning, outdir=outputDir, indir=inputDir, extrapSuff='') :
@@ -47,6 +54,9 @@ def fakerate_analysis(systKind, systName,correlatedFit,statAna, template, ptBinn
     if template :
         fake.bkg_plots()
 
+def runSingleAna(par) :
+    fakerate_analysis_call = fakerate_analysis(systKind=par[0], systName=par[1], correlatedFit=par[2], statAna=par[3], template = par[4])
+
 
 print "----> Background analyzer:"
 if not os.path.isdir(outputDir): os.system('mkdir '+outputDir)
@@ -55,10 +65,17 @@ if mainAna :
     print "--> Not correlated analysis path:"
     fakerate_analysis(systKind=NOM[0], systName=NOM[1], correlatedFit=False, statAna=False, template = TEMPLATE)
     if systAna :
+        processesMain = []
         for sKind, sList in bkg_utils.bkg_systematics.iteritems():
             for sName in sList :
                 print "-> systematic:", sKind,sName
-                fakerate_analysis(systKind=sKind, systName=sName, correlatedFit=False, statAna=False, template = TEMPLATE)
+                if MULTICORE :
+                    processesMain.append((sKind,sName,False,False,TEMPLATE))
+                else :
+                    fakerate_analysis(systKind=sKind, systName=sName, correlatedFit=False, statAna=False, template = TEMPLATE)
+            if MULTICORE :
+                poolMain = multiprocessing.Pool(NCORES)
+                poolMain.map(runSingleAna,processesMain)
     if EXTRAP:
         for lcut, lbin in bkg_utils.looseCutDict.iteritems() :    
             fakerate_analysis(systKind=NOM[0], systName=NOM[1], correlatedFit=False, statAna=False, template = TEMPLATE, extrapSuff=lcut)
@@ -74,11 +91,18 @@ if correlatedFitAna :
         print "-> statistical uncertainity analysis:"
         fakerate_analysis(systKind=NOM[0], systName=NOM[1], correlatedFit=True, statAna=STATANA, template = TEMPLATE)
     if systAna :
+        processesCF = []
         for sKind, sList in bkg_utils.bkg_systematics.iteritems():
             for sName in sList : 
                 print "-> systematatic:", sKind,sName
-                fakerate_analysis(systKind=sKind, systName=sName, correlatedFit=True, statAna=False, template = TEMPLATE)
-
+                if MULTICORE :
+                    processesCF.append((sKind,sName,True,False,TEMPLATE))
+                else :
+                    fakerate_analysis(systKind=sKind, systName=sName, correlatedFit=True, statAna=False, template = TEMPLATE)
+        if MULTICORE :
+            poolCF = multiprocessing.Pool(NCORES)
+            poolCF.map(runSingleAna,processesCF)
+            
 if comparisonAna :
     print "--> Syst comparison plots..."
     fakeFinal = bkg_fakerateAnalyzer.bkg_analyzer(systKind=NOM[0],systName=NOM[1],correlatedFit=CORRFITFINAL,statAna=False, ptBinning=bkg_utils.ptBinning, etaBinning=bkg_utils.etaBinning, outdir=outputDir+'/bkg_'+NOM[1], inputDir=inputDir)
