@@ -147,7 +147,7 @@
     }, 
     "DYJetsToLL_M-10to50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8": {
         "datatype": "MC", 
-        "systematics": 1, 
+        "systematics": 2, 
         "subsel": {
             "none": ""
         }, 
@@ -212,7 +212,7 @@
     }, 
     "ST_t-channel_top_4f_inclusiveDecays_13TeV-powhegV2-madspin-pythia8_TuneCUETP8M1": {
         "datatype": "MC", 
-        "systematics": 1, 
+        "systematics": 2, 
         "subsel": {
             "none": ""
         }, 
@@ -240,7 +240,7 @@
     }, 
     "DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8": {
         "datatype": "MC", 
-        "systematics": 1, 
+        "systematics": 2, 
         "subsel": {
             "none": ""
         }, 
@@ -248,6 +248,9 @@
         "multiprocessing": false, 
         "dir": {
             "DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_ext2": [
+                "tree.root"
+            ],
+            "DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8": [
                 "tree.root"
             ]
         }

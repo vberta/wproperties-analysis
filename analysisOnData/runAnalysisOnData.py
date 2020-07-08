@@ -8,7 +8,7 @@ sys.path.append('python/')
 sys.path.append('data/')
 from systematics import systematics
 
-from selections import selections, selections_bkg, selectionVars
+from selections import selections, selections_bkg, selections_fakes, selectionVars
 from getLumiWeight import getLumiWeight
 
 ROOT.gSystem.Load('bin/libAnalysisOnData.so')
@@ -66,8 +66,21 @@ for region,cut in selections.iteritems():
     print "branching nominal"
     p.branch(nodeToStart = 'defs', nodeToEnd = 'prefit_{}/Nominal'.format(region), modules = [ROOT.muonHistos(cut, weight, nom,"Nom",0)]) 
     p.branch(nodeToStart = 'defs', nodeToEnd = 'templates_{}/Nominal'.format(region), modules = [ROOT.templates(cut, weight, nom,"Nom",0)])       
+
+if not runBKG:
+    FR = ROOT.TFile.Open("/scratch/bertacch/wmass/wproperties-analysis/bkgAnalysis/TEST_nosyst_noSFsub/bkg_/bkg_parameters_file.root")
+    for region,cut in selections_fakes.iteritems():    
+        print region       
+        nom = ROOT.vector('string')()
+        nom.push_back("")
+        weight = "float(fakeRate)"
+        #last argument refers to histo category - 0 = Nominal, 1 = Pt scale , 2 = MET scale
+        print "branching nominal"
+        p.branch(nodeToStart = 'defs', nodeToEnd = 'prefit_{}/Nominal'.format(region), modules = [ROOT.fakeRate(FR),ROOT.muonHistos(cut, weight, nom,"Nom",0)]) 
+        p.branch(nodeToStart = 'defs', nodeToEnd = 'templates_{}/Nominal'.format(region), modules = [ROOT.fakeRate(FR),ROOT.templates(cut, weight, nom,"Nom",0)])       
+
 p.getOutput()
-#p.saveGraph()
+p.saveGraph()
 
 
 
