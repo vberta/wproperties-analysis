@@ -34,6 +34,7 @@ with open('data/samples_2016.json') as f:
   samples = json.load(f)
 for sample in samples:
     if not samples[sample]['datatype']=='MC': continue
+    #if 'WJets' not in sample : continue
     print sample
     direc = samples[sample]['dir']
     xsec = samples[sample]['xsec']
@@ -77,7 +78,17 @@ for sample in samples:
         #last argument refers to histo category - 0 = Nominal, 1 = Pt scale , 2 = MET scale
         print "branching nominal"
 
-        if not runBKG: p.branch(nodeToStart = 'defs', nodeToEnd = 'prefit_{}/Nominal'.format(region), modules = [ROOT.muonHistos(cut, weight, nom,"Nom",0)])  
+        if not runBKG: 
+            if WJets:
+                rwtau = region + 'WToTau'
+                cut_wtau = cut + ' && (abs(genVtype) == 12 || abs(genVtype) == 16)'
+                p.branch(nodeToStart = 'defs', nodeToEnd = 'prefit_{}/Nominal'.format(rwtau), modules = [ROOT.muonHistos(cut_wtau, weight, nom,"Nom",0)])     
+                rwmu = region + 'WToMu'
+                cut_wmu = cut + ' && (abs(genVtype) == 14)'
+                p.branch(nodeToStart = 'defs', nodeToEnd = 'prefit_{}/Nominal'.format(rwmu), modules = [ROOT.muonHistos(cut_wmu, weight, nom,"Nom",0)])     
+            else: 
+                p.branch(nodeToStart = 'defs', nodeToEnd = 'prefit_{}/Nominal'.format(region), modules = [ROOT.muonHistos(cut, weight, nom,"Nom",0)])  
+
         p.branch(nodeToStart = 'defs', nodeToEnd = 'templates_{}/Nominal'.format(region), modules = [ROOT.templates(cut, weight, nom,"Nom",0)])    
   
         #weight variations
