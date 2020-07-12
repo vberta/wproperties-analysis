@@ -240,13 +240,13 @@ parser = argparse.ArgumentParser("")
 parser.add_argument('-hadd','--hadd', type=int, default=True,help="hadd of the output of RDF")
 parser.add_argument('-o','--output', type=str, default='TEST',help="name of the output directory")
 parser.add_argument('-i','--input', type=str, default='TEST',help="name of the input direcory root file")
-parser.add_argument('-s','--skypSyst', type=str, default='',nargs='*', help="list of skipped syst class as in bkgAnalysis/bkg_utils.py, separated by space")
+parser.add_argument('-s','--skipSyst', type=str, default='',nargs='*', help="list of skipped syst class as in bkgAnalysis/bkg_utils.py, separated by space")
 
 args = parser.parse_args()
 HADD = args.hadd
 OUTPUT = args.output
 INPUT = args.input
-skippedSyst =args.skypSyst
+skippedSyst =args.skipSyst
 
 if HADD :
     prepareHistos(inDir=INPUT,outDir=OUTPUT)
