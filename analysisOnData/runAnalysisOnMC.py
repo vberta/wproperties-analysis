@@ -59,7 +59,8 @@ for sample in samples:
         print "No files found for directory:", samples[sample], " SKIPPING processing"
         continue
     print fvec 
-    weight = 'float(puWeight*lumiweight*TriggerSF*RecoSF)'
+    weightIso = 'float(puWeight*lumiweight*WHSF)'
+    weightAiso = 'float(puWeight*lumiweight)'
 
     fileSF = ROOT.TFile.Open("data/ScaleFactors.root")
 
@@ -67,6 +68,12 @@ for sample in samples:
     p.branch(nodeToStart = 'input', nodeToEnd = 'defs', modules = [ROOT.baseDefinitions(),ROOT.weightDefinitions(fileSF),getLumiWeight(xsec=xsec, inputFile=fvec)])
 
     for region,cut in selections.iteritems():
+        
+        if '_aiso' in region :
+            weight = weightAiso
+        else :
+            weight = weightIso
+        
         nom = ROOT.vector('string')()
         nom.push_back("")
         #last argument refers to histo category - 0 = Nominal, 1 = Pt scale , 2 = MET scale

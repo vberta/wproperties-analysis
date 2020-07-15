@@ -1329,7 +1329,7 @@ class bkg_analyzer:
                 else :
                     histo3DDict[f+r] = self.rootFiles[self.sampleList.index(f)].Get('templates_'+rl+'/'+self.systKind+'/'+var_inside_histo+sName)
         
-        histo3DDict['IsoSF'] = self.IsoSFHarvester(self.systKind,self.systName,histo3DDict)
+        # histo3DDict['IsoSF'] = self.IsoSFHarvester(self.systKind,self.systName,histo3DDict)
         
         print "> evaluating fakerate..."
         hfakes = self.differential_fakerate(kind='fake',histo3D=histo3DDict)
@@ -1379,16 +1379,35 @@ class bkg_analyzer:
     def IsoSFHarvester(self,systKind,systName,histo3D) :
         
         # SFfile = ROOT.TFile.Open('data/ScaleFactors.root')
-        if systKind!='RecoSF' :
+        
+        #Iso SF alone
+        if systKind!='RecoSFVars' :
             hSF = self.rootFiles[-1].Get("Corr_Iso/Corr_Iso")
         else :
             hSF = self.rootFiles[-1].Get("Corr_Iso/Corr_Iso"+systName.replace('RecoSF',''))
+        
+        #all SF:
+        if systKind!='RecoSFVars' :
+            hSFReco = self.rootFiles[-1].Get("Reco")
+        else :
+            hSFReco = self.rootFiles[-1].Get(systName.replace('SF',''))
+        if systKind!='TriggerSFVars' :
+            hSFTriggerPlus = self.rootFiles[-1].Get("TriggerPlus")
+            hSFTriggerMinus = self.rootFiles[-1].Get("TriggerMinus")
+        else :
+            hSFTriggerPlus = self.rootFiles[-1].Get(systName.replace('Trigger','TriggerPlus'))
+            hSFTriggerMinus = self.rootFiles[-1].Get(systName.replace('Trigger','TriggerMinus'))
+            
+
         h3SF = histo3D['WToMuNu'+'A'].Clone("IsoSF")
         for xx in range(1,h3SF.GetXaxis().GetNbins()+1) :
             for yy in range(1,h3SF.GetYaxis().GetNbins()+1) :
                 for zz in range(1,h3SF.GetZaxis().GetNbins()+1) :
-                    h3SF.SetBinContent(xx,yy,zz,hSF.GetBinContent(xx,yy))
+                    # h3SF.SetBinContent(xx,yy,zz,hSF.GetBinContent(xx,yy)) #IsoSFAlone
                     h3SF.SetBinError(xx,yy,zz,0)
+                h3SF.SetBinContent(xx,yy,1,hSFReco.GetBinContent(xx,yy)*hSFTriggerMinus.GetBinContent(xx,yy))#all SF:
+                h3SF.SetBinContent(xx,yy,2,hSFReco.GetBinContent(xx,yy)*hSFTriggerPlus.GetBinContent(xx,yy))#all SF:
+                    
                     
         return h3SF
     
@@ -1405,18 +1424,30 @@ class bkg_analyzer:
         # h3Fakes = ROOT.TH3F("h3Fakes_{kind}".format(kind=kind),"h3Fakes_{kind}".format(kind=kind),len(self.etaBinning)-1, array('f',self.etaBinning), len(self.ptBinning)-1, array('f',self.ptBinning),2,array('f',signBinning))
         if kind =='prompt' :
             h3Num =  histo3D[kindDict[kind]+'D'].Clone(kind+'Num') #D
+            # h3Num.Divide(histo3D['IsoSF'])
             h3Den = histo3D[kindDict[kind]+'D'].Clone(kind+'Den') #D
             h3Den.Add(histo3D[kindDict[kind]+'B']) #D+B
-            h3Den.Divide(histo3D['IsoSF']) #(D+B)/s
+            # h3Den.Divide(histo3D['IsoSF']) #(D+B)/s
+
+            # h3DenB = histo3D[kindDict[kind]+'B'].Clone(kind+'denB')
+            # h3DenB.Divide(histo3D['IsoSF'])
+            # h3Den.Add(h3DenB) #D+B
+            
         if kind == 'fake' :
             h3Num =  histo3D[kindDict[kind]+'C'].Clone(kind+'Num') #C
             h3NumW = histo3D['WToMuNu'+'C'].Clone('WToMuNu_diff_Num') #C_w
+            # h3NumW.Divide(histo3D['IsoSF'])
             h3Num.Add(h3NumW,-1) #C-C_w
             h3Den = histo3D[kindDict[kind]+'C'].Clone(kind+'Den') #C
             h3Den.Add(histo3D[kindDict[kind]+'A']) #C+A
             h3DenW = histo3D['WToMuNu'+'C'].Clone('WToMuNu_diff_Den') #C_w
             h3DenW.Add(histo3D['WToMuNu'+'A']) #(C+A)_w
-            h3DenW.Divide(histo3D['IsoSF']) #(C+A)_w/s
+            # h3DenW.Divide(histo3D['IsoSF']) #(C+A)_w/s
+            
+            # h3DenWA = histo3D['WToMuNu'+'A'].Clone(kind+'denWA')
+            # h3DenWA.Divide(histo3D['IsoSF'])
+            # h3DenW.Add(h3DenWA)
+            
             h3Den.Add(h3DenW,-1) #C+A-(C+A)_w/s
         h3Fakes = h3Num.Clone("h3Fakes_{kind}") 
         h3Fakes.Divide(h3Num,h3Den,1,1,'B') #num/den
@@ -1715,7 +1746,6 @@ class bkg_analyzer:
 
 
 
-
     def strategy_syst(self, preOutDir) :
         # self.preOutDir = preOutDir
 
@@ -1795,3 +1825,34 @@ class bkg_analyzer:
         outputraSyst= ROOT.TFile(preOutDir+"/bkg_mT_fit/strategy_syst"+self.nameSuff+".root","recreate")
         for s in self.signList :
             straSystDict_canvas[s].Write()
+
+    
+    def buildOutput(self,outputDir,statAna=True) :
+        
+        CFsuff=''
+        StatAnaSuff=''
+        if self.correlatedFit :
+            CFsuff = '_CF'
+        if statAna :
+            statAnaSuff='statAna'
+        
+        output = ROOT.TFile(outputDir+"/bkg_parameters"+CFsuff+statAnaSuff+self.nameSuff+".root","recreate")
+        
+        fileDict = {}
+        dirDict = {}
+        
+        systDict = copy.deepcopy(bkg_utils.bkg_systematics)
+        systDict['Nominal'] = ['']
+        
+        for sKind, sList in systDict.iteritems():
+            if sKind =='Nominal' : 
+                SAsuff = StatAnaSuff
+            else :
+                SAsuff = ''
+            for sName in sList :
+                dirDict[sKind+'_'+sName] = output.mkdir(sKind+'_'+sName)
+                fileDict[sKind+'_'+sName] = ROOT.TFile.Open(outputDir+"/bkg_"+sName+"/bkg_parameters_file"+CFsuff+SAsuff+self.nameSuff+".root")
+                for key in fileDict[sKind+'_'+sName].GetListOfKeys():
+                    histo = fileDict[sKind+'_'+sName].Get(key.GetName())
+                    dirDict[sKind+'_'+sName].cd()
+                    histo.Write()
