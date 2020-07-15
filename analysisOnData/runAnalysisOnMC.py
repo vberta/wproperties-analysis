@@ -34,7 +34,8 @@ with open('data/samples_2016.json') as f:
   samples = json.load(f)
 for sample in samples:
     if not samples[sample]['datatype']=='MC': continue
-    #if 'WJets' not in sample : continue
+    #WJets to be run by a separate config
+    if 'WJets' in sample : continue
     print sample
     direc = samples[sample]['dir']
     xsec = samples[sample]['xsec']
@@ -58,19 +59,12 @@ for sample in samples:
         print "No files found for directory:", samples[sample], " SKIPPING processing"
         continue
     print fvec 
-    weight = 'float(puWeight*lumiweight*TriggerSF*RecoSF'
-    if WJets: weight+="*weightPt*weightY"
-    weight+=")"
+    weight = 'float(puWeight*lumiweight*TriggerSF*RecoSF)'
 
     fileSF = ROOT.TFile.Open("data/ScaleFactors.root")
 
     p = RDFtree(outputDir = './output/', inputFile = fvec, outputFile="{}{}_plots.root".format(sample, outFtag), pretend=pretendJob)
-    if WJets:
-        filePt = ROOT.TFile.Open("data/histoUnfoldingSystPt_nsel2_dy3_rebin1_default.root")
-        fileY = ROOT.TFile.Open("data/histoUnfoldingSystRap_nsel2_dy3_rebin1_default.root")
-        p.branch(nodeToStart = 'input', nodeToEnd = 'defs', modules = [ROOT.reweightFromZ(filePt,fileY),ROOT.baseDefinitions(),ROOT.weightDefinitions(fileSF),getLumiWeight(xsec=xsec, inputFile=fvec)])
-    else:
-        p.branch(nodeToStart = 'input', nodeToEnd = 'defs', modules = [ROOT.baseDefinitions(),ROOT.weightDefinitions(fileSF),getLumiWeight(xsec=xsec, inputFile=fvec)])
+    p.branch(nodeToStart = 'input', nodeToEnd = 'defs', modules = [ROOT.baseDefinitions(),ROOT.weightDefinitions(fileSF),getLumiWeight(xsec=xsec, inputFile=fvec)])
 
     for region,cut in selections.iteritems():
         nom = ROOT.vector('string')()
@@ -79,15 +73,7 @@ for sample in samples:
         print "branching nominal"
 
         if not runBKG: 
-            if WJets:
-                rwtau = region + 'WToTau'
-                cut_wtau = cut + ' && (abs(genVtype) == 12 || abs(genVtype) == 16)'
-                p.branch(nodeToStart = 'defs', nodeToEnd = 'prefit_{}/Nominal'.format(rwtau), modules = [ROOT.muonHistos(cut_wtau, weight, nom,"Nom",0)])     
-                rwmu = region + 'WToMu'
-                cut_wmu = cut + ' && (abs(genVtype) == 14)'
-                p.branch(nodeToStart = 'defs', nodeToEnd = 'prefit_{}/Nominal'.format(rwmu), modules = [ROOT.muonHistos(cut_wmu, weight, nom,"Nom",0)])     
-            else: 
-                p.branch(nodeToStart = 'defs', nodeToEnd = 'prefit_{}/Nominal'.format(region), modules = [ROOT.muonHistos(cut, weight, nom,"Nom",0)])  
+            p.branch(nodeToStart = 'defs', nodeToEnd = 'prefit_{}/Nominal'.format(region), modules = [ROOT.muonHistos(cut, weight, nom,"Nom",0)])  
 
         p.branch(nodeToStart = 'defs', nodeToEnd = 'templates_{}/Nominal'.format(region), modules = [ROOT.templates(cut, weight, nom,"Nom",0)])    
   
@@ -111,7 +97,6 @@ for sample in samples:
             var_vec = ROOT.vector('string')()
             for selvar, hcat in vardict.iteritems() :
                 newcut = cut.replace('MT', 'MT_'+selvar)
-
                 if 'corrected' in selvar:
                     newcut = newcut.replace('Mu1_pt', 'Mu1_pt_'+selvar)
 
