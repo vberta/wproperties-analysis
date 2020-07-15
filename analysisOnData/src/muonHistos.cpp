@@ -31,7 +31,7 @@ RNode muonHistos::bookNominalhistos(RNode df)
 
   return df;
 }
-//muon pt corrections affect both pt and MT
+//muon pt corrections affect both pt and MT in the filters, hence shape of all observables will vary
 RNode muonHistos::bookptCorrectedhistos(RNode df)
 {
   for (unsigned int i = 0; i < _colvarvec.size(); i++)
@@ -39,17 +39,28 @@ RNode muonHistos::bookptCorrectedhistos(RNode df)
     TH2weightsHelper helper_Pt(std::string("Mu1_pt_" + _colvarvec[i]), std::string(" ; muon p_{T} (Rochester corr.); muon charge "), _pTArr.size() -1, _pTArr, _chargeArr.size() - 1, _chargeArr, _syst_name);
     _h2Group.emplace_back(df.Filter(_filtervec[i]).Book<float, float, float, ROOT::VecOps::RVec<float>>(std::move(helper_Pt), {"Mu1_pt_" + _colvarvec[i], "Mu1_charge", "weight", "Nom"}));
 
+    //Only this is not affected//Name of the histo will change, but the nominal column will be plotted
+  TH2weightsHelper helper_Eta(std::string("Mu1_eta_" + _colvarvec[i]), std::string(" ; muon #{eta}; muon charge "), _etaArr.size() - 1, _etaArr, _chargeArr.size() - 1, _chargeArr, _syst_name);
+  _h2Group.emplace_back( df.Filter(_filtervec[i]).Book<float, float, float, ROOT::VecOps::RVec<float>>(std::move(helper_Eta), {"Mu1_eta", "Mu1_charge", "weight", "Nom"}) );
+
     TH2weightsHelper helper_MT(std::string("MT_" + _colvarvec[i]), std::string(" ; M_{T} (Rochester corr./smear MET); muon charge "), _MTArr.size() -1, _MTArr, _chargeArr.size() - 1, _chargeArr, _syst_name);
     _h2Group.emplace_back(df.Filter(_filtervec[i]).Book<float, float, float, ROOT::VecOps::RVec<float>>(std::move(helper_MT), {"MT_" + _colvarvec[i], "Mu1_charge", "weight", "Nom"}));
   }
   return df;
 }
 
-//jme variations affect only MT
+//jme variations affect only MT in the filters, hence shape of all observables will vary
 RNode muonHistos::bookJMEvarhistos(RNode df)
 {
   for (unsigned int i = 0; i < _colvarvec.size(); i++)
   {
+    TH2weightsHelper helper_Pt(std::string("Mu1_pt_" + _colvarvec[i]), std::string(" ; muon p_{T} (Rochester corr.); muon charge "), _pTArr.size() -1, _pTArr, _chargeArr.size() - 1, _chargeArr, _syst_name);
+    _h2Group.emplace_back(df.Filter(_filtervec[i]).Book<float, float, float, ROOT::VecOps::RVec<float>>(std::move(helper_Pt), {"Mu1_pt", "Mu1_charge", "weight", "Nom"}));
+
+  TH2weightsHelper helper_Eta(std::string("Mu1_eta_" + _colvarvec[i]), std::string(" ; muon #{eta}; muon charge "), _etaArr.size() - 1, _etaArr, _chargeArr.size() - 1, _chargeArr, _syst_name);
+  _h2Group.emplace_back( df.Filter(_filtervec[i]).Book<float, float, float, ROOT::VecOps::RVec<float>>(std::move(helper_Eta), {"Mu1_eta", "Mu1_charge", "weight", "Nom"}) );
+
+  //Only this column is affected
     TH2weightsHelper helper_MT(std::string("MT_" + _colvarvec[i]), std::string(" ; M_{T} (Rochester corr./smear MET); muon charge "), _MTArr.size() -1, _MTArr, _chargeArr.size() - 1, _chargeArr, _syst_name);
     _h2Group.emplace_back(df.Filter(_filtervec[i]).Book<float, float, float, ROOT::VecOps::RVec<float>>(std::move(helper_MT), {"MT_" + _colvarvec[i], "Mu1_charge", "weight", "Nom"}));
   }
@@ -58,10 +69,12 @@ RNode muonHistos::bookJMEvarhistos(RNode df)
 
 void muonHistos::setAxisarrays()
 {
+  /*
   for (int i = 0; i < 31; i++)
     _pTArr[i] = 25. + i;
   for (int i = 0; i < 49; i++)
     _etaArr[i] = -2.4 + i * (4.8) / 48; //eta -2.4 to 2.4
+  */
   for (int i = 0; i < 31; i++)
     _MTArr[i] = 0. + i*(150.-0.)/30;
   for (int i = 0; i < 3; i++)
