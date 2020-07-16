@@ -61,7 +61,7 @@ weight = 'float(puWeight*lumiweight*TriggerSF*RecoSF*weightPt*weightY)'
 
 fileSF = ROOT.TFile.Open("data/ScaleFactors.root")
 
-wdecayselections = { 'WToTau' : ' && (abs(genVtype) == 12 || abs(genVtype) == 16)',
+wdecayselections = { 'WToTau' : ' && (abs(genVtype) == 16)',
                      'WToMu'  : ' && (abs(genVtype) == 14)'
                     }
 
