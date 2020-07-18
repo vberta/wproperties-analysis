@@ -59,10 +59,13 @@ if fvec.empty():
 print fvec 
 weight = 'float(puWeight*lumiweight*TriggerSF*RecoSF*weightPt*weightY)'
 
+print weight, "NOMINAL WEIGHT"
+
 fileSF = ROOT.TFile.Open("data/ScaleFactors.root")
 
-wdecayselections = { 'WToTau' : ' && (abs(genVtype) == 16)',
-                     'WToMu'  : ' && (abs(genVtype) == 14)'
+wdecayselections = { 
+                     'WToMu'  : ' && (abs(genVtype) == 14)',
+                     'WToTau' : ' && (abs(genVtype) == 16)'
                     }
 
 for wdecay, decaycut in wdecayselections.iteritems() :
@@ -85,18 +88,21 @@ for wdecay, decaycut in wdecayselections.iteritems() :
    
         #weight variations
         for s,variations in systematics.iteritems():
+            print "branching weight variations", s
             if not "LHEScaleWeight" in s:
-                weight.replace(s, "1.")
-            if "LHEScaleWeight" in s and samples[sample]['systematics'] != 2 :  continue
+                var_weight = weight.replace(s, "1.")
+            else: 
+                var_weight = weight
+
             vars_vec = ROOT.vector('string')()
             for var in variations[0]:
                 vars_vec.push_back(var)
-                print "branching weight variations", s
-                print vars_vec
+                
+            print weight,var_weight, "MODIFIED WEIGHT"
                 
             if not runBKG: 
-                p.branch(nodeToStart = 'defs'.format(region), nodeToEnd = 'prefit_{}/{}Vars'.format(region,s), modules = [ROOT.muonHistos(cut, weight,vars_vec,variations[1], 0)])
-            p.branch(nodeToStart = 'defs'.format(region), nodeToEnd = 'templates_{}/{}Vars'.format(region,s), modules = [ROOT.templates(cut, weight,vars_vec,variations[1], 0)])
+                p.branch(nodeToStart = 'defs'.format(region), nodeToEnd = 'prefit_{}/{}Vars'.format(region,s), modules = [ROOT.muonHistos(cut, var_weight,vars_vec,variations[1], 0)])
+            p.branch(nodeToStart = 'defs'.format(region), nodeToEnd = 'templates_{}/{}Vars'.format(region,s), modules = [ROOT.templates(cut, var_weight,vars_vec,variations[1], 0)])
                     
 
         #column variations#weight will be nominal, cut will vary
