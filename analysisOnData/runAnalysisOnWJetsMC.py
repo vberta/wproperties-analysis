@@ -80,7 +80,7 @@ for wdecay, decaycut in wdecayselections.iteritems() :
         nom = ROOT.vector('string')()
         nom.push_back("")
         #last argument refers to histo category - 0 = Nominal, 1 = Pt scale , 2 = MET scale
-        print "branching nominal"
+        print "branching nominal for region:", region 
         cut += decaycut
         if not runBKG:             
             p.branch(nodeToStart = 'defs', nodeToEnd = 'prefit_{}/Nominal'.format(region), modules = [ROOT.muonHistos(cut, weight, nom,"Nom",0)])     
@@ -88,7 +88,7 @@ for wdecay, decaycut in wdecayselections.iteritems() :
    
         #weight variations
         for s,variations in systematics.iteritems():
-            print "branching weight variations", s
+            print "branching weight variations", s, " for region:", region
             if not "LHEScaleWeight" in s:
                 var_weight = weight.replace(s, "1.")
             else: 
@@ -117,7 +117,7 @@ for wdecay, decaycut in wdecayselections.iteritems() :
                     
                 cut_vec.push_back(newcut)
                 var_vec.push_back(selvar)
-            print "branching column variations:", vartype, "\tvariations:", var_vec
+            print "branching column variations:", vartype, " for region:", region, "\tvariations:", var_vec
             if not runBKG: 
                 p.branch(nodeToStart = 'defs', nodeToEnd = 'prefit_{}/{}Vars'.format(region,vartype), modules = [ROOT.muonHistos(cut_vec, weight, nom,"Nom",hcat,var_vec)])  
             p.branch(nodeToStart = 'defs', nodeToEnd = 'templates_{}/{}Vars'.format(region,vartype), modules = [ROOT.templates(cut_vec, weight, nom,"Nom",hcat,var_vec)])  
