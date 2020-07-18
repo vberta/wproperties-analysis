@@ -51,6 +51,11 @@ class plotter:
         
         self.extSyst = copy.deepcopy(bkg_utils.bkg_systematics)
         self.extSyst['Nominal'] = ['']
+        
+        self.LHEdict = {
+            'Down' : ["LHEScaleWeight_muR0p5_muF0p5", "LHEScaleWeight_muR0p5_muF1p0", "LHEScaleWeight_muR1p0_muF0p5"],
+            'Up' : ["LHEScaleWeight_muR2p0_muF2p0", "LHEScaleWeight_muR2p0_muF1p0","LHEScaleWeight_muR1p0_muF2p0"]   
+        }
 
 
         if not os.path.exists(self.outdir):
@@ -143,8 +148,19 @@ class plotter:
                 delta = 0
                 for syst, hsyst in hRatioDict.iteritems() :
                     if 'Down' in syst : continue
-                    delta += (hsyst.GetBinContent(i)-hRatioDict[syst.replace('Up','Down')].GetBinContent(i))**2
+                    if sName in self.LHEdict['Down']: continue
+                    if 'Up' in sName :
+                        sNameDown =  sName.replace("Up","Down")
+                    else :
+                        for i in range(len(self.LHedict['Up'])) :
+                            if sName == self.LHedict['Up'][i] :
+                                sNameDown = self.LHedict['Down'][i] 
+                    
+                    delta += (hsyst.GetBinContent(i)-hRatioDict[sNameDown].GetBinContent(i))**2
                     # delta + = (hsyst.GetBinContent(i)-hRatio.GetBinContent(i))**2
+                    if (hRatioDict[sNameDown].GetBinContent(i)<1 and hRatioDict[syst].GetBinContent(i)<1) or (hRatioDict[sNameDown].GetBinContent(i)>1 and hRatioDict[syst].GetBinContent(i)>1) : #nominal not in between systs
+                        print "WARNING: systematic", syst," up/down not around nominal in bin", i
+                    
                 delta = 0.5*math.sqrt(delta)
                 hRatioBand.SetBinError(i, delta)
     

@@ -32,7 +32,7 @@ class bkg_analyzer:
         self.signList = ['Plus','Minus']
         self.sampleList =  ['WToMuNu','Data'] #WToMuNu= All EWK samples
         self.maxPt_linearFit = 55
-        print "WARNING: FIT RANGE 25-55"
+        print "WARNING: pt fit range 25-55 GeV"
         self.rootFiles = []
         for f in self.sampleList : 
              self.rootFiles.append(ROOT.TFile.Open(self.inputDir+'/'+f+'.root'))
@@ -41,6 +41,14 @@ class bkg_analyzer:
 
         self.ptBinningS = ['{:.2g}'.format(x) for x in self.ptBinning[:-1]]
         self.etaBinningS = ['{:.2g}'.format(x) for x in self.etaBinning[:-1]]
+        
+        print "WARNING: hardcoded LHE dict"
+        self.LHEdict = {
+            'Down' : ["LHEScaleWeight_muR0p5_muF0p5", "LHEScaleWeight_muR0p5_muF1p0", "LHEScaleWeight_muR1p0_muF0p5"],
+            'Up' : ["LHEScaleWeight_muR2p0_muF2p0", "LHEScaleWeight_muR2p0_muF1p0","LHEScaleWeight_muR1p0_muF2p0"]   
+        }
+        
+        
     
 
 
@@ -156,8 +164,8 @@ class bkg_analyzer:
         histo_fake_dict = {}
         systList = []
         systDict = bkg_utils.bkg_systematics
-        LHEDownList =  ["LHEScaleWeight_muR0p5_muF0p5", "LHEScaleWeight_muR0p5_muF1p0", "LHEScaleWeight_muR1p0_muF0p5"]
-        LHEUpList = ["LHEScaleWeight_muR2p0_muF2p0", "LHEScaleWeight_muR2p0_muF1p0","LHEScaleWeight_muR1p0_muF2p0"]
+        # LHEDownList =  ["LHEScaleWeight_muR0p5_muF0p5", "LHEScaleWeight_muR0p5_muF1p0", "LHEScaleWeight_muR1p0_muF0p5"]
+        # LHEUpList = ["LHEScaleWeight_muR2p0_muF2p0", "LHEScaleWeight_muR2p0_muF1p0","LHEScaleWeight_muR1p0_muF2p0"]
         #    bin4corFit = [30,33,35,37,39,41,43,45,47,50,53,56,59,62,65]
         # bin4corFit = [30,32,34,36,38,40,42,44,47,50,53,56,59,62,65] #old
         # bin4corFit = [26,28,30,32,34,36,38,40,42,44,47,50,53,56,59,62,65] #standard
@@ -316,16 +324,18 @@ class bkg_analyzer:
                                 cov_[syst][pp][p2] = erv
                                 covdict['nom'][pp][p2] = erv
                             elif syst<len(systList):
-                                if 'Up' in systList[syst] or '2p0' in  systList[syst]:#do not use down syst, will be symmetrized with up later
+                                if 'Up' in systList[syst] or  systList[syst] in self.LHEdict['Up']:#do not use down syst, will be symmetrized with up later
                                     # if 'puWeight' in systList[syst]:
                                         systUp =systList[syst]
                                         if 'Up' in systUp :
                                             systDown =  systUp.replace("Up","Down")
                                         else :
-                                            for i in range(len(LHEUpList)) :
-                                                if systUp == LHEUpList[i] :  
-                                                    systDown = LHEDownList[i]
-                                                    
+                                            # for i in range(len(LHEUpList)) :
+                                            #     if systUp == LHEUpList[i] :  
+                                            #         systDown = LHEDownList[i]
+                                            for i in range(len(self.LHEdict['Up'])) :
+                                                if systUp == self.LHEdict['Up'][i] :
+                                                        systDown = self.LHEdict['Down'][i]   
                                         # if systUp == self.systName :
                                         #     continue
 
@@ -642,9 +652,9 @@ class bkg_analyzer:
             statAnaSuff = 'statAna'
         else :
             statAnaSuff = ''
-            
-        LHEDownList =  ["LHEScaleWeight_muR0p5_muF0p5", "LHEScaleWeight_muR0p5_muF1p0", "LHEScaleWeight_muR1p0_muF0p5"]
-        LHEUpList = ["LHEScaleWeight_muR2p0_muF2p0", "LHEScaleWeight_muR2p0_muF1p0","LHEScaleWeight_muR1p0_muF2p0"]
+        
+        # LHEDownList =  ["LHEScaleWeight_muR0p5_muF0p5", "LHEScaleWeight_muR0p5_muF1p0", "LHEScaleWeight_muR1p0_muF0p5"]
+        # LHEUpList = ["LHEScaleWeight_muR2p0_muF2p0", "LHEScaleWeight_muR2p0_muF1p0","LHEScaleWeight_muR1p0_muF2p0"]
 
 
         #DESCRIPTION OF ARGUMENTS:::
@@ -704,24 +714,56 @@ class bkg_analyzer:
                                 varErrSum2Up = 0
                                 varErrSum2Down = 0.
                                 
-                                if SymBands : #symmetric bands sum2 of the largest scarto between nom e syst(up,down)
+                                #--------------------------OLD METHOD STARTS HERE---------------------------#
+                                # if SymBands : #symmetric bands sum2 of the largest scarto between nom e syst(up,down)
+                                #     for sKind, sList in systDict.iteritems():
+                                #         for sName in sList :
+                                #             if 'Up' in sName or sName in self.LHEdict['Up']:
+                                #                 deltaSystNomUp = (finalHistoDict[sName+canvas+histo+s+e].GetBinContent(self.ptBinning.index(float(p))+1)-finalHistoDict['nom'+canvas+histo+s+e].GetBinContent(self.ptBinning.index(float(p))+1))**2
+                                #                 if 'Up' in sName :
+                                #                      sNameDown =  sName.replace("Up","Down")
+                                #                 else :
+                                #                     # for i in range(len(LHEUpList)) :
+                                #                     #     if sName == LHEUpList[i] :         
+                                #                     #         sNameDown = LHEDownList[i]
+                                #                     for i in range(len(self.LHEdict['Up'])) :
+                                #                         if sName == self.LHEdict['Up'][i] :
+                                #                             sNameDown = self.LHEdict['Down'][i] 
+                                #                 deltaSystNomDown = (finalHistoDict[sNameDown+canvas+histo+s+e].GetBinContent(self.ptBinning.index(float(p))+1)-finalHistoDict['nom'+canvas+histo+s+e].GetBinContent(self.ptBinning.index(float(p))+1))**2
+                                #                 if deltaSystNomUp>deltaSystNomDown :
+                                #                     deltaSystNom = deltaSystNomUp
+                                #                 else :
+                                #                     deltaSystNom = deltaSystNomDown
+                                #                 varErrSum2Down = varErrSum2Down+deltaSystNom
+                                #                 varErrSum2Up = varErrSum2Up+deltaSystNom
+                                #       errHigh = math.sqrt(varErrSum2Up)
+                                #       errLow = math.sqrt(varErrSum2Down)
+                                #--------------------------OLD METHOD FINISHES HERE---------------------------#
+                                
+                                if SymBands :
+                                    deltaSyst = 0 
                                     for sKind, sList in systDict.iteritems():
                                         for sName in sList :
-                                            if 'Up' in sName or '2p0' in sName:
-                                                deltaSystNomUp = (finalHistoDict[sName+canvas+histo+s+e].GetBinContent(self.ptBinning.index(float(p))+1)-finalHistoDict['nom'+canvas+histo+s+e].GetBinContent(self.ptBinning.index(float(p))+1))**2
-                                                if 'Up' in sName :
-                                                     sNameDown =  sName.replace("Up","Down")
-                                                else :
-                                                    for i in range(len(LHEUpList)) :
-                                                        if sName == LHEUpList[i] :         
-                                                            sNameDown = LHEDownList[i]
-                                                deltaSystNomDown = (finalHistoDict[sNameDown+canvas+histo+s+e].GetBinContent(self.ptBinning.index(float(p))+1)-finalHistoDict['nom'+canvas+histo+s+e].GetBinContent(self.ptBinning.index(float(p))+1))**2
-                                                if deltaSystNomUp>deltaSystNomDown :
-                                                    deltaSystNom = deltaSystNomUp
-                                                else :
-                                                    deltaSystNom = deltaSystNomDown
-                                                varErrSum2Down = varErrSum2Down+deltaSystNom
-                                                varErrSum2Up = varErrSum2Up+deltaSystNom
+                                            if 'Down' in sName : continue
+                                            if sName in self.LHEdict['Down']: continue
+                                            if 'Up' in sName :
+                                                sNameDown =  sName.replace("Up","Down")
+                                            else :
+                                                for i in range(len(self.LHEdict['Up'])) :
+                                                    if sName == self.LHEdict['Up'][i] :
+                                                        sNameDown = self.LHEdict['Down'][i]
+                                            deltaSyst += (finalHistoDict[sName+canvas+histo+s+e].GetBinContent(self.ptBinning.index(float(p))+1)-finalHistoDict[sNameDown+canvas+histo+s+e].GetBinContent(self.ptBinning.index(float(p))+1))**2
+                                            nomVal = finalHistoDict['nom'+canvas+histo+s+e].GetBinContent(self.ptBinning.index(float(p))+1)
+                                            if (finalHistoDict[sNameDown+canvas+histo+s+e].GetBinContent(self.ptBinning.index(float(p))+1)<nomVal and finalHistoDict[sName+canvas+histo+s+e].GetBinContent(self.ptBinning.index(float(p))+1)<nomVal) or (finalHistoDict[sNameDown+canvas+histo+s+e].GetBinContent(self.ptBinning.index(float(p))+1)>nomVal and finalHistoDict[sName+canvas+histo+s+e].GetBinContent(self.ptBinning.index(float(p))+1)>nomVal) : #nominal not in between systs
+                                                # if 'Fit' in histo :
+                                                    # diffUp = abs(finalHistoDict[sName+canvas+histo+s+e].GetBinContent(self.ptBinning.index(float(p))+1)-finalHistoDict['nom'+canvas+histo+s+e].GetBinContent(self.ptBinning.index(float(p))+1))
+                                                    # diffDown = abs(finalHistoDict[sNameDown+canvas+histo+s+e].GetBinContent(self.ptBinning.index(float(p))+1)-finalHistoDict['nom'+canvas+histo+s+e].GetBinContent(self.ptBinning.index(float(p))+1))
+                                                    # if finalHistoDict['nom'+canvas+histo+s+e].GetBinError(self.ptBinning.index(float(p))+1) < diffUp or finalHistoDict['nom'+canvas+histo+s+e].GetBinError(self.ptBinning.index(float(p))+1) < diffDown :
+                                                        print "WARNING: systematic", sName, canvas,histo," up/down not around nominal in bin", p,e,s, ">>> down,nom,up=",finalHistoDict[sNameDown+canvas+histo+s+e].GetBinContent(self.ptBinning.index(float(p))+1),nomVal,finalHistoDict[sName+canvas+histo+s+e].GetBinContent(self.ptBinning.index(float(p))+1), 'statErr=', finalHistoDict['nom'+canvas+histo+s+e].GetBinError(self.ptBinning.index(float(p))+1)
+                                    deltaSyst = 0.5*math.sqrt(deltaSyst) 
+                                    errHigh = deltaSyst
+                                    errLow = deltaSyst                                          
+                                            
                                 
                                 else : #asymmetric bands                                
                                     for sKind, sList in systDict.iteritems():
@@ -736,8 +778,8 @@ class bkg_analyzer:
                                             else : #syst>nom
                                                 varErrSum2Up = varErrSum2Up+deltaSystNom**2
                                                 
-                                errHigh = math.sqrt(varErrSum2Up)
-                                errLow = math.sqrt(varErrSum2Down)
+                                    errHigh = math.sqrt(varErrSum2Up)
+                                    errLow = math.sqrt(varErrSum2Down)
                             
                                 finalHistoDict['nom'+canvas+histo+s+e+'error'].SetPoint(self.ptBinning.index(float(p)),finalHistoDict['nom'+canvas+histo+s+e].GetBinCenter(self.ptBinning.index(float(p))+1),finalHistoDict['nom'+canvas+histo+s+e].GetBinContent(self.ptBinning.index(float(p))+1))
                                 finalHistoDict['nom'+canvas+histo+s+e+'error'].SetPointEYhigh(self.ptBinning.index(float(p)),errHigh)
@@ -838,7 +880,7 @@ class bkg_analyzer:
 
 
                             #sum2 errorband in the ratios (DISABLED, set=1 se vuoi vedere la banda dei sum2 sui ratio)
-                            sum2Flag = 1
+                            sum2Flag = False
                             if sum2Flag :
                                 finalHistoDict['nom'+canvas+histo+s+e+'ratio_sum2'] = ROOT.TGraphAsymmErrors()
                                 finalHistoDict['nom'+canvas+histo+s+e+'ratio_sum2'].SetName(canvas+'_'+finalHistoDict['nom'+canvas+histo+s+e].GetName()+'_'+'nom'+'_ratio_sum2')
@@ -861,7 +903,7 @@ class bkg_analyzer:
                             finalLegDict[e+s+canvas+histo+"ratioSyst"].Draw("SAME")
                             finalCanvasDict['ratio'+canvas+histo+s+e] = c_ratioSyst
 
-        #sum2 errorband in the ratios
+        #total error comparison
         for s in self.signList :
             for e in self.etaBinningS :
                 c_errCompare = ROOT.TCanvas("c_errCompare_{sign}_{eta}".format(sign=s,eta=e),"c_errCompare_{sign}_{eta}".format(sign=s,eta=e),800,600)
@@ -1035,7 +1077,7 @@ class bkg_analyzer:
                         finalLegDict[s+canvas+histo+"ratioSyst_unrolled"].AddEntry(finalHistoDict['nom'+s+canvas+histo+'ratio_unrolled'], 'Nominal')
 
                         #sum2 errorband in the ratios (DISABLED!)
-                        sum2Flag_unr = 1
+                        sum2Flag_unr = False
                         if sum2Flag_unr :
                             finalHistoDict[s+canvas+histo+'unrolled'+'ratio_sum2'] = ROOT.TGraphAsymmErrors()
                             finalHistoDict[s+canvas+histo+'unrolled'+'ratio_sum2'].SetName(finalHistoDict[s+canvas+histo+'unrolled'].GetName()+'_ratio_sum2')
@@ -1146,19 +1188,48 @@ class bkg_analyzer:
                         varErrSum2Up = 0
                         varErrSum2Down = 0.
                         
-                        if SymBands : #symmetric bands sum2 of the largest scarto between nom e syst(up,down)
+                        #--------------------------OLD METHOD STARTS HERE---------------------------#
+                        # if SymBands : #symmetric bands sum2 of the largest scarto between nom e syst(up,down)
+                        #     for sKind, sList in systDict.iteritems():
+                        #         for sName in sList :
+                        #             if 'Up' in sName :
+                        #                 deltaSystNomUp = (finalHistoDict[sName+kind+par+s].GetBinContent(self.etaBinning.index(float(e))+1)-finalHistoDict['nom'+kind+par+s].GetBinContent(self.etaBinning.index(float(e))+1))**2
+                        #                 sNameDown = sName.replace('Up','Down')
+                        #                 deltaSystNomDown = (finalHistoDict[sNameDown+kind+par+s].GetBinContent(self.etaBinning.index(float(e))+1)-finalHistoDict['nom'+kind+par+s].GetBinContent(self.etaBinning.index(float(e))+1))**2
+                        #                 if deltaSystNomUp>deltaSystNomDown :
+                        #                     deltaSystNom = deltaSystNomUp
+                        #                 else :
+                        #                     deltaSystNom = deltaSystNomDown
+                        #                 varErrSum2Down = varErrSum2Down+deltaSystNom
+                        #                 varErrSum2Up = varErrSum2Up+deltaSystNom
+                        #     errHigh = math.sqrt(varErrSum2Up)
+                        #     errLow = math.sqrt(varErrSum2Down)
+                        #--------------------------OLD METHOD FINISHES HERE---------------------------#
+
+                        
+                        if SymBands :
+                            deltaSyst = 0 
                             for sKind, sList in systDict.iteritems():
                                 for sName in sList :
+                                    if 'Down' in sName : continue
+                                    if sName in self.LHEdict['Down']: continue
                                     if 'Up' in sName :
-                                        deltaSystNomUp = (finalHistoDict[sName+kind+par+s].GetBinContent(self.etaBinning.index(float(e))+1)-finalHistoDict['nom'+kind+par+s].GetBinContent(self.etaBinning.index(float(e))+1))**2
-                                        sNameDown = sName.replace('Up','Down')
-                                        deltaSystNomDown = (finalHistoDict[sNameDown+kind+par+s].GetBinContent(self.etaBinning.index(float(e))+1)-finalHistoDict['nom'+kind+par+s].GetBinContent(self.etaBinning.index(float(e))+1))**2
-                                        if deltaSystNomUp>deltaSystNomDown :
-                                            deltaSystNom = deltaSystNomUp
-                                        else :
-                                            deltaSystNom = deltaSystNomDown
-                                        varErrSum2Down = varErrSum2Down+deltaSystNom
-                                        varErrSum2Up = varErrSum2Up+deltaSystNom
+                                        sNameDown =  sName.replace("Up","Down")
+                                    else :
+                                        for i in range(len(self.LHEdict['Up'])) :
+                                            if sName == self.LHEdict['Up'][i] :
+                                                sNameDown = self.LHEdict['Down'][i]
+                                    deltaSyst += (finalHistoDict[sName+kind+par+s].GetBinContent(self.etaBinning.index(float(e))+1)-finalHistoDict[sNameDown+kind+par+s].GetBinContent(self.etaBinning.index(float(e))+1))**2
+                                    nomVal = finalHistoDict['nom'+kind+par+s].GetBinContent(self.etaBinning.index(float(e))+1)
+                                    if (finalHistoDict[sNameDown+kind+par+s].GetBinContent(self.etaBinning.index(float(e))+1)<nomVal and finalHistoDict[sName+kind+par+s].GetBinContent(self.etaBinning.index(float(e))+1)<nomVal) or (finalHistoDict[sNameDown+kind+par+s].GetBinContent(self.etaBinning.index(float(e))+1)>nomVal and finalHistoDict[sName+kind+par+s].GetBinContent(self.etaBinning.index(float(e))+1)>nomVal) : #nominal not in between systs
+                                        # if par in ['offset','slope','2deg'] :
+                                            # diffUp = abs(finalHistoDict[sName+kind+par+s].GetBinContent(self.etaBinning.index(float(e))+1)-finalHistoDict['nom'+kind+par+s].GetBinContent(self.etaBinning.index(float(e))+1))
+                                            # diffDown = abs(finalHistoDict[sNameDown+kind+par+s].GetBinContent(self.etaBinning.index(float(e))+1)-finalHistoDict['nom'+kind+par+s].GetBinContent(self.etaBinning.index(float(e))+1))
+                                            # if finalHistoDict['nom'+kind+par+s].GetBinError(self.etaBinning.index(float(e))+1) < diffUp or finalHistoDict['nom'+kind+par+s].GetBinError(self.etaBinning.index(float(e))+1) < diffDown :
+                                                print "WARNING: systematic (parameters)", sName," up/down not around nominal in bin", p,e,s, ">>> down,nom,up=", finalHistoDict[sNameDown+kind+par+s].GetBinContent(self.etaBinning.index(float(e))+1), nomVal, finalHistoDict[sName+kind+par+s].GetBinContent(self.etaBinning.index(float(e))+1)
+                            deltaSyst = 0.5*math.sqrt(deltaSyst) 
+                            errHigh = deltaSyst
+                            errLow = deltaSyst
                                                 
                         else : #asymmetric bands 
                             for sKind, sList in systDict.iteritems():
@@ -1173,8 +1244,8 @@ class bkg_analyzer:
                                     else : #syst>nom
                                         varErrSum2Up = varErrSum2Up+deltaSystNom**2
                             
-                        errHigh = math.sqrt(varErrSum2Up)
-                        errLow = math.sqrt(varErrSum2Down)
+                            errHigh = math.sqrt(varErrSum2Up)
+                            errLow = math.sqrt(varErrSum2Down)
                         finalHistoDict['nom'+kind+par+s+'error'].SetPoint(self.etaBinning.index(float(e)),finalHistoDict['nom'+kind+par+s].GetBinCenter(self.etaBinning.index(float(e))+1),finalHistoDict['nom'+kind+par+s].GetBinContent(self.etaBinning.index(float(e))+1))
                         finalHistoDict['nom'+kind+par+s+'error'].SetPointEYhigh(self.etaBinning.index(float(e)),errHigh)
                         finalHistoDict['nom'+kind+par+s+'error'].SetPointEYlow(self.etaBinning.index(float(e)),errLow)
@@ -1830,7 +1901,7 @@ class bkg_analyzer:
     def buildOutput(self,outputDir,statAna=True) :
         
         CFsuff=''
-        StatAnaSuff=''
+        statAnaSuff=''
         if self.correlatedFit :
             CFsuff = '_CF'
         if statAna :
@@ -1846,7 +1917,7 @@ class bkg_analyzer:
         
         for sKind, sList in systDict.iteritems():
             if sKind =='Nominal' : 
-                SAsuff = StatAnaSuff
+                SAsuff = statAnaSuff
             else :
                 SAsuff = ''
             for sName in sList :
