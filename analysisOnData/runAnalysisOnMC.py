@@ -60,6 +60,7 @@ for sample in samples:
         continue
     print fvec 
     weight = 'float(puWeight*lumiweight*TriggerSF*RecoSF)'
+    print weight, "NOMINAL WEIGHT"
 
     fileSF = ROOT.TFile.Open("data/ScaleFactors.root")
 
@@ -77,16 +78,20 @@ for sample in samples:
 
         p.branch(nodeToStart = 'defs', nodeToEnd = 'templates_{}/Nominal'.format(region), modules = [ROOT.templates(cut, weight, nom,"Nom",0)])    
   
-        #weight variations
+       #weight variations
         for s,variations in systematics.iteritems():
-            if not "LHEScaleWeight" in s:
-                weight.replace(s, "1.")
+            print "branching weight variations", s
             if "LHEScaleWeight" in s and samples[sample]['systematics'] != 2 :  continue
+            if not "LHEScaleWeight" in s:
+                var_weight = weight.replace(s, "1.")
+            else: 
+                var_weight = weight
+
             vars_vec = ROOT.vector('string')()
             for var in variations[0]:
                 vars_vec.push_back(var)
-            print "branching weight variations", region, s
-            print vars_vec
+                
+            print weight,var_weight, "MODIFIED WEIGHT"
 
             if not runBKG: p.branch(nodeToStart = 'defs'.format(region), nodeToEnd = 'prefit_{}/{}Vars'.format(region,s), modules = [ROOT.muonHistos(cut, weight,vars_vec,variations[1], 0)])
             p.branch(nodeToStart = 'defs'.format(region), nodeToEnd = 'templates_{}/{}Vars'.format(region,s), modules = [ROOT.templates(cut, weight,vars_vec,variations[1], 0)])
