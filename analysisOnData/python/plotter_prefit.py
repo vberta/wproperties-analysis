@@ -21,15 +21,17 @@ class plotter:
         self.norm = norm
                 
         self.sampleDict = {
-            "WToMu"      :  ['WJets_plots.root',       'prefit_SignalWToMu',    ROOT.kRed+2,       "W^{+}#rightarrow #mu^{+}#nu_{#mu}"],         
+            "WToMu"      :  ['WToMu_plots.root',       'prefit_Signal',         ROOT.kRed+2,       "W^{+}#rightarrow #mu^{+}#nu_{#mu}"],         
             "DYJets"      : ['DYJets_plots.root',      'prefit_Signal',         ROOT.kAzure+2,     "DYJets"],              
-            "WtoTau"      : ['WJets_plots.root',       'prefit_SignalWToTau',   ROOT.kSpring+9,    "W^{#pm}#rightarrow #tau^{#pm}#nu_{#tau}"],   
+            "WtoTau"      : ['WToTau_plots.root',      'prefit_Signal',         ROOT.kSpring+9,    "W^{#pm}#rightarrow #tau^{#pm}#nu_{#tau}"],   
             "TW"          : ['TW_plots.root',          'prefit_Signal',         ROOT.kGreen+3,     "Top"],    
             "TTbar"       : ['TTJets_plots.root',      'prefit_Signal',         ROOT.kGreen+3,     "Top"],    
             "ST"          : ['SingleTop_plots.root',   'prefit_Signal',         ROOT.kGreen+3,     "Top"],    
             "DiBoson"     : ['Diboson_plots.root',     'prefit_Signal',         ROOT.kViolet+2,    "di-boson"],     
             "SIGNAL_Fake" : ['Data_plots.root',        'prefit_fakes',          ROOT.kGray,        "QCD"],     
-            "Data"        : ['Data_plots.root',        'prefit_Signal',         1,                 "Data"]      
+            "Data"        : ['Data_plots.root',        'prefit_Signal',         1,                 "Data"]
+            # "WToMu"      :  ['WJets_plots.root',       'prefit_SignalWToMu',    ROOT.kRed+2,       "W^{+}#rightarrow #mu^{+}#nu_{#mu}"],         
+            # "WtoTau"      : ['WJets_plots.root',       'prefit_SignalWToTau',   ROOT.kSpring+9,    "W^{#pm}#rightarrow #tau^{#pm}#nu_{#tau}"],         
             }   
         
         self.variableDict = {
@@ -37,8 +39,8 @@ class plotter:
             "Mu1_pt_minus"  :  ["Mu1_pt",   "p_{T} (#mu^{-})",    "Events /binWidth"],
             "Mu1_eta_plus"  :  ["Mu1_eta",  "#eta (#mu^{+})",     "Events /binWidth"],
             "Mu1_eta_minus" :  ["Mu1_eta",  "#eta (#mu^{-})",     "Events /binWidth"],
-            "MT_plus"       :  ["MT",       "M_{T} (#mu^{+})",  "Events /binWidth"],      
-            "MT_minus"      :  ["MT",       "M_{T} (#mu^{-})",  "Events /binWidth"],      
+            "MT_plus"       :  ["MT",       "M_{T} (#mu^{+})",    "Events /binWidth"],      
+            "MT_minus"      :  ["MT",       "M_{T} (#mu^{-})",    "Events /binWidth"],      
         }
         
         self.signDict = {
@@ -89,10 +91,10 @@ class plotter:
                 for sName in sList :
                     for var, varInfo in self.variableDict.iteritems() :
                         inFile.cd()
-                        if ROOT.gDirectory.Get(fileInfo[1]+'/'+sKind+'/'+varInfo[0]+'_'+sName)==None :
-                            print "missing syst:", sName, " for file", f
+                        if ROOT.gDirectory.Get(fileInfo[1]+'/'+sKind+'/'+varInfo[0]+'_'+sName)==None : #this syst is missing --> take the nominal
+                            if sName!='' or f!='Data': print "missing syst:", sName, " for file", f
                             h2 = inFile.Get(fileInfo[1]+'/Nominal/'+varInfo[0])
-                        else :
+                        else : 
                             h2 = inFile.Get(fileInfo[1]+'/'+sKind+'/'+varInfo[0]+'_'+sName)
                         for s,sInfo in self.signDict.iteritems() :
                             self.histoDict[f+s+var+sName] = h2.ProjectionX(h2.GetName() + s, sInfo[0],sInfo[0])
@@ -131,35 +133,35 @@ class plotter:
             legend.AddEntry(hData, 'Data', "PE1")
             
             #build ratio plot Data/pred
-            hRatio = hData.Clone('hRatio')
-            hRatio.Divide(hSum)
-            hRatioDict = {}
+            hRatio = hData.Clone('hRatio_'+var)
+            hRatio.Divide(hSum) #nominal ratio
+            hRatioDict = {} #syst ratio
             for sKind, sList in bkg_utils.bkg_systematics.iteritems():
                 if sKind in skipSyst : continue #skipped systs
                 for sName in sList :
                     hSumSyst= self.CloneEmpty(self.histoDict[self.sampleOrder[0]+s+var],'hsum_'+var+'_'+sName)
                     for sample in self.sampleOrder :
                         hSumSyst.Add(self.histoDict[sample+s+var+sName])
-                    hRatioDict[sName] = hData.Clone('hRatio_'+sName)
+                    hRatioDict[sName] = hData.Clone('hRatio_'+var+'_'+sName)
                     hRatioDict[sName].Divide(hSumSyst)
                     
-            hRatioBand = hRatio.Clone('hRatioBand')
+            hRatioBand = hRatio.Clone('hRatioBand') #systband
             for i in range(1,hRatioBand.GetNbinsX()+1) :
                 delta = 0
                 for syst, hsyst in hRatioDict.iteritems() :
                     if 'Down' in syst : continue
-                    if sName in self.LHEdict['Down']: continue
-                    if 'Up' in sName :
-                        sNameDown =  sName.replace("Up","Down")
+                    if syst in self.LHEdict['Down']: continue
+                    if 'Up' in syst :
+                        systDown =  syst.replace("Up","Down")
                     else :
-                        for i in range(len(self.LHedict['Up'])) :
-                            if sName == self.LHedict['Up'][i] :
-                                sNameDown = self.LHedict['Down'][i] 
+                        for jj in range(len(self.LHEdict['Up'])) :
+                            if syst == self.LHEdict['Up'][jj] :
+                                systDown = self.LHEdict['Down'][jj] 
                     
-                    delta += (hsyst.GetBinContent(i)-hRatioDict[sNameDown].GetBinContent(i))**2
+                    delta += (hsyst.GetBinContent(i)-hRatioDict[systDown].GetBinContent(i))**2
                     # delta + = (hsyst.GetBinContent(i)-hRatio.GetBinContent(i))**2
-                    if (hRatioDict[sNameDown].GetBinContent(i)<1 and hRatioDict[syst].GetBinContent(i)<1) or (hRatioDict[sNameDown].GetBinContent(i)>1 and hRatioDict[syst].GetBinContent(i)>1) : #nominal not in between systs
-                        print "WARNING: systematic", syst," up/down not around nominal in bin", i
+                    if (hRatioDict[systDown].GetBinContent(i)<hRatio.GetBinContent(i) and hRatioDict[syst].GetBinContent(i)<hRatio.GetBinContent(i)) or (hRatioDict[systDown].GetBinContent(i)>hRatio.GetBinContent(i) and hRatioDict[syst].GetBinContent(i)>hRatio.GetBinContent(i)) : #nominal not in between systs
+                        print var,"WARNING: systematic", syst," up/down not around nominal in bin", i, hRatioDict[systDown].GetBinContent(i), hRatio.GetBinContent(i), hRatioDict[syst].GetBinContent(i)
                     
                 delta = 0.5*math.sqrt(delta)
                 hRatioBand.SetBinError(i, delta)
@@ -189,6 +191,7 @@ class plotter:
             hRatio.Draw("PE1SAME")
             
             #aesthetic features
+            legend.AddEntry(hRatioBand, "Tot. Syst. Unc.")
             legend.SetFillStyle(0)
             legend.SetBorderSize(0)
             legend.SetNColumns(2)
@@ -230,6 +233,12 @@ class plotter:
 
             outFile.cd()
             can.Write()
+            
+            #debug:
+            hRatio.Write()
+            for syst, hsyst in hRatioDict.iteritems() :
+                hsyst.Write()
+            
         outFile.Close()
 
 
@@ -240,8 +249,9 @@ def prepareHistos(inDir,outDir) :
         
     # cmdList.append('cp  '+inDir+'SingleMuonData_plots.root '+outDir+'/hadded/Data_plots.root')
     # cmdList.append('cp  '+inDir+'WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_plots.root '+outDir+'/hadded/WJets_plots.root')
-    cmdList.append('cp  '+inDir+'Data_plots.root '+outDir+'/hadded/Data_plots.root')
-    cmdList.append('cp  '+inDir+'WJets_plots.root '+outDir+'/hadded/WJets_plots.root')
+    cmdList.append('cp  '+inDir+'SingleMuonData_plots.root '+outDir+'/hadded/Data_plots.root')
+    cmdList.append('cp  '+inDir+'WToMu_plots.root '+outDir+'/hadded/WToMu_plots.root')
+    cmdList.append('cp  '+inDir+'WToTau_plots.root '+outDir+'/hadded/WToTau_plots.root')
     cmdList.append('hadd -f '+outDir+'/hadded/DYJets_plots.root '+inDir+'DYJetsToLL_M-*')
     cmdList.append('hadd -f '+outDir+'/hadded/TTJets_plots.root '+inDir+'TTJets*')
     cmdList.append('hadd -f '+outDir+'/hadded/SingleTop_plots.root  '+inDir+'ST_t-channel_* '+inDir+'ST_s-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1_plots.root ')

@@ -174,7 +174,7 @@ class bkg_analyzer:
         bin4corFit =  [25,27,29,31,33,35,37,39,41,43,45,47,49,51,53,55] #LoreHistos
         
         if DONT_REBIN : 
-            bin4corFit = ptBinning
+            bin4corFit = self.ptBinning
 
         binChange = 7 # bin 1-8: merge 2 pt bins, bin 8-end: merge 3 bins.
         binChange = 9 #standard
@@ -1371,15 +1371,15 @@ class bkg_analyzer:
         
         ''' 
         workflow:
-        - get the histogram 3D in a dictionary  [sample+region]  sample=(WToMuNu,Data)  Region=(A,B,D)
-        - get the Iso SF
+        - get the histogram 3D in a dictionary  [sample+region]  sample=(WToMuNu,Data)  Region=(A,B,C,D)
+        - COMMENTED: get the Iso SF
         - differential_fakerate doing C/(C+A) or D/(B+D) for fake and prompt. EWKSF=1. 
         - fakerateFitter :
             - slicing to have TH1 to fit
             - prompt: fit erf and error prop. with toys
             - fake: linear fit 
             - if correlated: additional correlatedFitter
-        - template produce the template
+        - template produce the template (required only for validation and intermediate plots)
         - output using dict2histConverter 
         '''
         

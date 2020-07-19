@@ -76,7 +76,7 @@ for wdecay, decaycut in wdecayselections.iteritems() :
 
     for region,cut in selections.iteritems():
         
-        if 'aiso' in region:
+        if 'aisoNO' in region:
             weight = 'float(puWeight*lumiweight)'
         else:
             weight = 'float(puWeight*lumiweight*WHSF)'
@@ -96,6 +96,7 @@ for wdecay, decaycut in wdecayselections.iteritems() :
         for s,variations in systematics.iteritems():
             print "branching weight variations", s
             if not "LHEScaleWeight" in s:
+                if 'aisoNO' in region: continue
                 var_weight = weight.replace(s, "1.")
             else: 
                 var_weight = weight

@@ -6,13 +6,16 @@ import sys
 import ROOT
 import multiprocessing
 
-
 import bkg_utils
 import bkg_fakerateAnalyzer
 
 ROOT.gROOT.Reset()
 ROOT.gROOT.SetBatch(True)
 
+#######################################################################################
+# usage: python bkg_config.py --mainAna 1 --CFAna 1  --syst 1 --compAna 1 --inputDir NAME/hadded/ --outputDir OUTNAME/
+#
+#
 
 parser = argparse.ArgumentParser("")
 parser.add_argument('-systAna', '--syst',type=int, default=False, help="enable systemtatics analysis")

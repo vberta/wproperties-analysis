@@ -69,7 +69,7 @@ for sample in samples:
 
         print "running in region {}".format(region)
 
-        if 'aiso' in region:
+        if 'aisoNO' in region:
             weight = 'float(puWeight*lumiweight)'
         else:
             weight = 'float(puWeight*lumiweight*WHSF)'
@@ -90,7 +90,7 @@ for sample in samples:
             print "branching weight variations", s
             if "LHEScaleWeight" in s and samples[sample]['systematics'] != 2 :  continue
             if not "LHEScaleWeight" in s:
-                if 'aiso' in region: continue
+                if 'aisoNO' in region: continue
                 var_weight = weight.replace(s, "1.")
             else: 
                 var_weight = weight
@@ -121,4 +121,3 @@ for sample in samples:
 
     p.getOutput()
     p.saveGraph()
-    assert(0)
