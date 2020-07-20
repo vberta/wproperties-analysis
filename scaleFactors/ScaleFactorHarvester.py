@@ -39,12 +39,14 @@ def SFHarvester_triggerSyst(fileDict, SFhisto, ratio=True, WHelicity=False) :
             nPtBins = outDict['Trigger'+s+'Syst'+par+'Up'].GetYaxis().GetNbins()
             for eta in range(1,nEtaBins+1) :
                 for pt in range(1,nPtBins+1) :
+                    etaBin = systDict['Trigger'+s+'Syst'+par+'Ratio'].GetXaxis().FindBin(outDict['Trigger'+s+'Syst'+par+'Up'].GetXaxis().GetBinCenter(eta))
+                    ptBin = systDict['Trigger'+s+'Syst'+par+'Ratio'].GetYaxis().FindBin(outDict['Trigger'+s+'Syst'+par+'Up'].GetYaxis().GetBinCenter(pt))
                     if not WHelicity :
-                        valUp = outDict['Trigger'+s+'Syst'+par+'Up'].GetBinContent(eta,pt)*(1+systDict['Trigger'+s+'Syst'+par+'Ratio'].GetBinContent(eta,pt))
-                        valDown = outDict['Trigger'+s+'Syst'+par+'Down'].GetBinContent(eta,pt)*(1-systDict['Trigger'+s+'Syst'+par+'Ratio'].GetBinContent(eta,pt))
+                        valUp = outDict['Trigger'+s+'Syst'+par+'Up'].GetBinContent(eta,pt)*(1+systDict['Trigger'+s+'Syst'+par+'Ratio'].GetBinContent(etaBin,ptBin))
+                        valDown = outDict['Trigger'+s+'Syst'+par+'Down'].GetBinContent(eta,pt)*(1-systDict['Trigger'+s+'Syst'+par+'Ratio'].GetBinContent(etaBin,ptBin))
                     else :
-                        valUp = outDict['Trigger'+s+'Syst'+par+'Up'].GetBinContent(eta,pt)*(1+math.sqrt(2)*systDict['Trigger'+s+'Syst'+par+'Ratio'].GetBinContent(eta,pt))
-                        valDown = outDict['Trigger'+s+'Syst'+par+'Down'].GetBinContent(eta,pt)*(1-math.sqrt(2)*systDict['Trigger'+s+'Syst'+par+'Ratio'].GetBinContent(eta,pt))
+                        valUp = outDict['Trigger'+s+'Syst'+par+'Up'].GetBinContent(eta,pt)*(1+math.sqrt(2)*systDict['Trigger'+s+'Syst'+par+'Ratio'].GetBinContent(etaBin,ptBin))
+                        valDown = outDict['Trigger'+s+'Syst'+par+'Down'].GetBinContent(eta,pt)*(1-math.sqrt(2)*systDict['Trigger'+s+'Syst'+par+'Ratio'].GetBinContent(etaBin,ptBin))
                     outDict['Trigger'+s+'Syst'+par+'Up'].SetBinContent(eta,pt,valUp)
                     outDict['Trigger'+s+'Syst'+par+'Down'].SetBinContent(eta,pt,valDown)
     if ratio :

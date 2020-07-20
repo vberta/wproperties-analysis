@@ -120,7 +120,7 @@ class plotter:
             #build stacked plot
             for sample in self.sampleOrder :
                 self.histoDict[sample+s+var].SetFillStyle(1001)
-                self.histoDict[sample+s+var].SetLineWidth(0)
+                self.histoDict[sample+s+var].SetLineWidth(1)
                 self.histoDict[sample+s+var].SetFillColor(self.sampleDict[sample][2])
                 hStack.Add(self.histoDict[sample+s+var])
                 hSum.Add(self.histoDict[sample+s+var])
