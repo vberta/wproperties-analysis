@@ -58,7 +58,6 @@ if fvec.empty():
     sys.exit(1)
 print fvec 
 
-
 fileSF = ROOT.TFile.Open("data/ScaleFactors.root")
 
 wdecayselections = { 
@@ -95,6 +94,7 @@ for wdecay, decaycut in wdecayselections.iteritems() :
         #weight variations
         for s,variations in systematics.iteritems():
             print "branching weight variations", s
+            if "LHEScaleWeight" in s and samples[sample]['systematics'] != 2 :  continue
             if not "LHEScaleWeight" in s:
                 if 'aiso' in region: continue
                 var_weight = weight.replace(s, "1.")
