@@ -121,4 +121,4 @@ for sample in samples:
 
     p.getOutput()
     p.saveGraph()
-    assert(0)
+
