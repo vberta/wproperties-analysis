@@ -6,13 +6,16 @@ import sys
 import ROOT
 import multiprocessing
 
-
 import bkg_utils
 import bkg_fakerateAnalyzer
 
 ROOT.gROOT.Reset()
 ROOT.gROOT.SetBatch(True)
 
+#######################################################################################
+# usage: python bkg_config.py --mainAna 1 --CFAna 1  --syst 1 --compAna 1 --inputDir NAME/hadded/ --outputDir OUTNAME/
+#
+#
 
 parser = argparse.ArgumentParser("")
 parser.add_argument('-systAna', '--syst',type=int, default=False, help="enable systemtatics analysis")
@@ -107,6 +110,7 @@ if comparisonAna :
     print "--> Syst comparison plots..."
     fakeFinal = bkg_fakerateAnalyzer.bkg_analyzer(systKind=NOM[0],systName=NOM[1],correlatedFit=CORRFITFINAL,statAna=False, ptBinning=bkg_utils.ptBinning, etaBinning=bkg_utils.etaBinning, outdir=outputDir+'/bkg_'+NOM[1], inputDir=inputDir)
     fakeFinal.syst_comparison(systDict=bkg_utils.bkg_systematics, SymBands=True, outDir=outputDir, noratio=False, statAna=STATANA)
+    fakeFinal.buildOutput(outputDir=outputDir,statAna=STATANA)
 
 
 # if strategySyst :

@@ -1,9 +1,17 @@
 
+# bkg_systematics = {
+#      #"puWeightVars"  : ["puWeightUp", "puWeightDown"],
+#     "RecoSFVars"  : ["RecoSFStatUp", "RecoSFSystUp","RecoSFStatDown","RecoSFSystDown"],
+#     "TriggerSFVars"  : ["TriggerSyst0Up", "TriggerSyst1Up","TriggerSyst2Up","TriggerSyst0Down", "TriggerSyst1Down","TriggerSyst2Down"],
+#     "LHEScaleWeightVars" : ["LHEScaleWeight_muR0p5_muF0p5", "LHEScaleWeight_muR0p5_muF1p0", "LHEScaleWeight_muR0p5_muF2p0","LHEScaleWeight_muR1p0_muF0p5","LHEScaleWeight_muR1p0_muF1p0","LHEScaleWeight_muR1p0_muF2p0","LHEScaleWeight_muR2p0_muF0p5","LHEScaleWeight_muR2p0_muF1p0","LHEScaleWeight_muR2p0_muF2p0"],
+#     "ptScaleVars" : [ "correctedUp", "correctedDown"], 
+#     "jmeVars" : [ "jerUp", "jerDown" , "jesTotalUp", "jesTotalDown", "unclustEnUp","unclustEnDown"]
+#   }
+  
 bkg_systematics = {
      #"puWeightVars"  : ["puWeightUp", "puWeightDown"],
-    "RecoSFVars"  : ["RecoSFStatUp", "RecoSFSystUp","RecoSFStatDown","RecoSFSystDown"],
-    "TriggerSFVars"  : ["TriggerSyst0Up", "TriggerSyst1Up","TriggerSyst2Up","TriggerSyst0Down", "TriggerSyst1Down","TriggerSyst2Down"],
-    "LHEScaleWeightVars" : ["LHEScaleWeight_muR0p5_muF0p5", "LHEScaleWeight_muR0p5_muF1p0", "LHEScaleWeight_muR0p5_muF2p0","LHEScaleWeight_muR1p0_muF0p5","LHEScaleWeight_muR1p0_muF1p0","LHEScaleWeight_muR1p0_muF2p0","LHEScaleWeight_muR2p0_muF0p5","LHEScaleWeight_muR2p0_muF1p0","LHEScaleWeight_muR2p0_muF2p0"],
+    "WHSFVars"  : ["WHSFSyst0Up", "WHSFSyst1Up","WHSFSyst2Up","WHSFSystFlatUp","WHSFSyst0Down", "WHSFSyst1Down","WHSFSyst2Down","WHSFSystFlatDown"],
+    "LHEScaleWeightVars" : ["LHEScaleWeight_muR0p5_muF0p5", "LHEScaleWeight_muR0p5_muF1p0","LHEScaleWeight_muR1p0_muF0p5","LHEScaleWeight_muR1p0_muF2p0","LHEScaleWeight_muR2p0_muF1p0","LHEScaleWeight_muR2p0_muF2p0"],
     "ptScaleVars" : [ "correctedUp", "correctedDown"], 
     "jmeVars" : [ "jerUp", "jerDown" , "jesTotalUp", "jesTotalDown", "unclustEnUp","unclustEnDown"]
   }

@@ -24,10 +24,12 @@ class bkg_prepareHistos:
         with open('../analysisOnData/data/samples_2016.json') as f:
             samples = json.load(f)
         for sample in samples :
-            if samples[sample]['datatype']=='DATA': 
-                continue
-            else :
-                self.fileList.append(sample)
+            if samples[sample]['datatype']=='DATA':  continue
+            if sample.startswith('WJetsToLNu') : continue 
+            self.fileList.append(sample)
+        self.fileList.append('WToMu')#not in the json list
+        self.fileList.append('WToTau')#not in the json list
+        print self.fileList
         
         
     def prepare(self) :
@@ -40,20 +42,14 @@ class bkg_prepareHistos:
                 regList.append('Sideband'+lcut)
                 regList.append('Sideband_aiso'+lcut)
                 
-        dirDict = {}
-
         for f in self.fileList : 
-            # print "./"+self.inputDir+f+suffString+".root"
             inFile =  ROOT.TFile.Open("./"+self.inputDir+f+suffString+".root")
             outFile =  ROOT.TFile("./"+self.outDir+f+".root", "recreate")
             for r in regList :
                 regExtrapFlag = self.isExtrapReg(r)
-                # dirDict[f+r] =    outFile.mkdir('templates_'+r)
                 for sKind, sList in self.systDict.iteritems():  
                     if sKind!='Nominal' and regExtrapFlag : #extrap region only for nominal
                         continue
-                    # dirDict[f+r+sKind] = ROOT.gDirectory.mkdir(sKind)                          
-                    # dirDict[f+r+sKind] =    outFile.mkdir('templates_'+r+'/'+sKind,'templates_'+r+'/'+sKind)
                     if not outFile.GetDirectory('templates_'+r+'/'+sKind):                           
                         outFile.mkdir('templates_'+r+'/'+sKind)
                     for sName in sList : 
@@ -62,27 +58,21 @@ class bkg_prepareHistos:
                             systName = '_'+sName
                         else :
                             systName = sName
-                        # print 'templates_'+r+'/'+sKind+'/'+varName+systName
                         if ROOT.gDirectory.Get('templates_'+r+'/'+sKind+'/'+varName+systName)==None : #this syst is not present
                             print "no syst in:", f, r, sKind, systName
                             h = inFile.Get('templates_'+r+'/'+self.sKindNom+'/'+varName+self.sNameNom)
                             h.SetName(varName+systName)
                         else :
                             h = inFile.Get('templates_'+r+'/'+sKind+'/'+varName+systName)
-                        # outFile.cd()
-                        # dirDict[f+r].cd()
-                        # dirDict[f+r+sKind].cd()
                         outFile.cd('templates_'+r+'/'+sKind)
-                        # print  dirDict[f+r+sKind]
                         h.Write()
-                # ROOT.gDirectory.cd('templates_'+r)
                         
     def h_add(self) :
         cmdList = []
         if not os.path.isdir(self.outDir+'/hadded'): os.system('mkdir '+self.outDir+'/hadded')
         
         cmdList.append('hadd ./'+self.outDir+'hadded/WToMuNu.root ./'+self.outDir+'*.root')
-        cmdList.append('cp  ./'+self.inputDir+'SingleMuonData_bkgselections_plots.root ./'+self.outDir+'hadded/Data.root')
+        cmdList.append('cp  ./'+self.inputDir+'SingleMuonData_bkginput_plots.root ./'+self.outDir+'hadded/Data.root')
                 
         for i in cmdList :
             os.system(i)

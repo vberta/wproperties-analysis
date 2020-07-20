@@ -68,7 +68,9 @@ for region,cut in selections.iteritems():
     p.branch(nodeToStart = 'defs', nodeToEnd = 'templates_{}/Nominal'.format(region), modules = [ROOT.templates(cut, weight, nom,"Nom",0)])       
 
 if not runBKG:
-    FR = ROOT.TFile.Open("/scratch/bertacch/wmass/wproperties-analysis/bkgAnalysis/TEST_nosyst_noSFsub/bkg_/bkg_parameters_file.root")
+    # FR = ROOT.TFile.Open("/scratch/bertacch/wmass/wproperties-analysis/bkgAnalysis/BKG_syst_WHSF_SFisoOnly/bkg_/bkg_parameters_file.root")
+    FR = ROOT.TFile.Open("/scratch/bertacch/wmass/wproperties-analysis/bkgAnalysis/BKG_syst_WHSF_20July/bkg_/bkg_parameters_file.root")
+    # FR = ROOT.TFile.Open("/scratch/bertacch/wmass/wproperties-analysis/bkgAnalysis/BKG_syst_WHSF_20July/bkg_parameters_CFstatAna.root")
     for region,cut in selections_fakes.iteritems():    
         print region       
         nom = ROOT.vector('string')()
