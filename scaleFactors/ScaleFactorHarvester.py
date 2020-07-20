@@ -277,6 +277,20 @@ def SFHarvester_WHelicty(fileDict, SFhisto, ratio=True) :
     
     return outDict
 
+def SFHarvester_OTF(fileDict) :
+    outDict = {}
+    signList = ['Plus', 'Minus']
+    parList = ['0','1','2']
+    
+    outDict['Trigger'+'Plus'] = fileDict['Trigger'+'Plus'].Get('scaleFactor')
+    outDict['Trigger'+'Minus'] = fileDict['Trigger'+'Minus'].Get('scaleFactor')
+    outDict['Reco'] = fileDict['Reco'].Get('scaleFactor_etaInterpolated')
+    for s in signList :
+        for par in parList :
+            outDict['Trigger'+s+'Syst'+par]= fileDict['Trigger'+s+'syst'].Get('p'+par)
+    
+    return outDict
+
 #####################################################################################################################
 #
 #   AUTHOR: V. Bertacchi (06/2020)
@@ -317,6 +331,8 @@ parser.add_argument('-syst', '--syst',type=int, default=True, help="1=run the sy
 parser.add_argument('-id', '--id',type=int, default=True, help="1=evaluate ID correction")
 parser.add_argument('-pog', '--pog',type=int, default=True, help="1= evaluate the POG SF")
 parser.add_argument('-whel', '--whelicity',type=int, default=False, help="1= evaluate the WHelicity SF")
+parser.add_argument('-OTF', '--OnTheFly',type=int, default=False, help="1= The SF will be evaluated on the fly in RDF, here only the packer in a single file")
+
 
 
 args = parser.parse_args()
@@ -326,6 +342,7 @@ SYST = args.syst
 ID = args.id
 POG = args.pog
 WHEL = args.whelicity
+OTF = args.OnTheFly
 
 era_ratios = [0.548,0.452]
 
@@ -341,66 +358,74 @@ fileDict['Reco'] = ROOT.TFile.Open('data/SF_WHelicity_Reco.root')
 fileDict['Trigger'+'Plus'+'syst'] = ROOT.TFile.Open('data/SF_WHelicity_Trigger_Plus_syst.root')
 fileDict['Trigger'+'Minus'+'syst'] = ROOT.TFile.Open('data/SF_WHelicity_Trigger_Minus_syst.root')
 
-#POG
-fileDict['Iso'+'BCDEF'] = ROOT.TFile.Open('data/SF_POG_Iso_BCDEF.root')
-fileDict['Iso'+'GH'] = ROOT.TFile.Open('data/SF_POG_Iso_GH.root')
-fileDict['Id'+'BCDEF'] = ROOT.TFile.Open('data/SF_POG_Id_BCDEF.root')
-fileDict['Id'+'GH'] = ROOT.TFile.Open('data/SF_POG_Id_GH.root')
-fileDict['Trigger'+'BCDEF'] = ROOT.TFile.Open('data/SF_POG_Trigger_BCDEF.root')
-fileDict['Trigger'+'GH'] = ROOT.TFile.Open('data/SF_POG_Trigger_GH.root')
-
-    
-#nominal SF
-SFhisto = SFHarvester_nom(fileDict=fileDict)
-
-if SYST : #variation
-    SFhisto.update(SFHarvester_triggerSyst(fileDict=fileDict, SFhisto=SFhisto,ratio=RATIO,WHelicity=WHEL))
-    SFhisto.update(SFHarvester_recoSyst(fileDict=fileDict, SFhisto=SFhisto,era_ratios=era_ratios,ratio=RATIO))
-
-if ID :
-    SFhisto.update(SFHarvester_IDCorr(fileDict=fileDict, SFhisto=SFhisto,era_ratios=era_ratios,syst=SYST)) 
-
-if POG :    
-    SFhisto.update(SFHarvester_POG(fileDict=fileDict,SFhisto=SFhisto,era_ratios=era_ratios))
-
-if WHEL :
-    print "WHelicity mode active: sqrt(2) factor on trigger syst!"
-    SFhisto.update(SFHarvester_WHelicty(fileDict=fileDict, SFhisto=SFhisto,ratio=RATIO))
-    
-    
-#output saving
-output = ROOT.TFile(OUTPUT+".root", "recreate")
-output.cd()
-for ind, histo in SFhisto.iteritems() :
-    histo.SetName(ind)
-    if 'Ratio' in ind or 'Corr' in ind or 'POG' in ind or 'WHelicity' in ind: continue
-    histo.Write()
-    
-if RATIO :
-    direcRATIO = output.mkdir('ratios')
-    direcRATIO.cd()
+if OTF :
+    SFhisto = SFHarvester_OTF(fileDict=fileDict)
+    output = ROOT.TFile(OUTPUT+".root", "recreate")
+    output.cd()
     for ind, histo in SFhisto.iteritems() :
-        if not 'Ratio' in ind : continue
+        histo.SetName(ind)
         histo.Write()
+    
+else :
+    #POG
+    fileDict['Iso'+'BCDEF'] = ROOT.TFile.Open('data/SF_POG_Iso_BCDEF.root')
+    fileDict['Iso'+'GH'] = ROOT.TFile.Open('data/SF_POG_Iso_GH.root')
+    fileDict['Id'+'BCDEF'] = ROOT.TFile.Open('data/SF_POG_Id_BCDEF.root')
+    fileDict['Id'+'GH'] = ROOT.TFile.Open('data/SF_POG_Id_GH.root')
+    fileDict['Trigger'+'BCDEF'] = ROOT.TFile.Open('data/SF_POG_Trigger_BCDEF.root')
+    fileDict['Trigger'+'GH'] = ROOT.TFile.Open('data/SF_POG_Trigger_GH.root')
 
-if ID :
-    direcID = output.mkdir('Corr_Iso')
-    direcID.cd()
+
+    #nominal SF
+    SFhisto = SFHarvester_nom(fileDict=fileDict)
+
+    if SYST : #variation
+        SFhisto.update(SFHarvester_triggerSyst(fileDict=fileDict, SFhisto=SFhisto,ratio=RATIO,WHelicity=WHEL))
+        SFhisto.update(SFHarvester_recoSyst(fileDict=fileDict, SFhisto=SFhisto,era_ratios=era_ratios,ratio=RATIO))
+
+    if ID :
+        SFhisto.update(SFHarvester_IDCorr(fileDict=fileDict, SFhisto=SFhisto,era_ratios=era_ratios,syst=SYST)) 
+
+    if POG :    
+        SFhisto.update(SFHarvester_POG(fileDict=fileDict,SFhisto=SFhisto,era_ratios=era_ratios))
+
+    if WHEL :
+        print "WHelicity mode active: sqrt(2) factor on trigger syst!"
+        SFhisto.update(SFHarvester_WHelicty(fileDict=fileDict, SFhisto=SFhisto,ratio=RATIO))
+        
+    #output saving
+    output = ROOT.TFile(OUTPUT+".root", "recreate")
+    output.cd()
     for ind, histo in SFhisto.iteritems() :
-        if not 'Corr' in ind : continue
-        histo.Write()
- 
-if POG :
-    direcPOG = output.mkdir('POG')
-    direcPOG.cd()
-    for ind, histo in SFhisto.iteritems() :
-        if not 'POG' in ind : continue
+        histo.SetName(ind)
+        if 'Ratio' in ind or 'Corr' in ind or 'POG' in ind or 'WHelicity' in ind: continue
         histo.Write()
         
-if WHEL :
-    direcWHelicity = output.mkdir('WHelicity')
-    direcWHelicity.cd()
-    for ind, histo in SFhisto.iteritems() :
-        if not 'WHelicity' in ind : continue
-        if 'Ratio' in ind : continue
-        histo.Write()
+    if RATIO :
+        direcRATIO = output.mkdir('ratios')
+        direcRATIO.cd()
+        for ind, histo in SFhisto.iteritems() :
+            if not 'Ratio' in ind : continue
+            histo.Write()
+
+    if ID :
+        direcID = output.mkdir('Corr_Iso')
+        direcID.cd()
+        for ind, histo in SFhisto.iteritems() :
+            if not 'Corr' in ind : continue
+            histo.Write()
+    
+    if POG :
+        direcPOG = output.mkdir('POG')
+        direcPOG.cd()
+        for ind, histo in SFhisto.iteritems() :
+            if not 'POG' in ind : continue
+            histo.Write()
+            
+    if WHEL :
+        direcWHelicity = output.mkdir('WHelicity')
+        direcWHelicity.cd()
+        for ind, histo in SFhisto.iteritems() :
+            if not 'WHelicity' in ind : continue
+            if 'Ratio' in ind : continue
+            histo.Write()

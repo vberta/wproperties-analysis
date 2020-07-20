@@ -58,7 +58,7 @@ if fvec.empty():
     sys.exit(1)
 print fvec 
 
-fileSF = ROOT.TFile.Open("data/ScaleFactors.root")
+fileSF = ROOT.TFile.Open("data/ScaleFactors_OnTheFly.root")
 
 wdecayselections = { 
                      'WToMu'  : ' && (abs(genVtype) == 14)',

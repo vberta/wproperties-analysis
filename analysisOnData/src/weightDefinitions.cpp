@@ -3,66 +3,6 @@
 RNode weightDefinitions::run(RNode d)
 {
 
-    // // Define SF: trigger, RECO = (ISO + ID)
-    // auto defineTriggerSF = [this](float pt, float eta, float charge){
-
-    //     int bin = _TriggerPlus->FindBin(eta,pt);
-    //     if(charge>0)
-    //     {
-    //         return _TriggerPlus->GetBinContent(bin);
-    //     }
-    //     else
-    //     {
-    //         return _TriggerMinus->GetBinContent(bin);
-    //     }
-
-    // };
-
-    // // Define SF: trigger, RECO = (ISO + ID)
-    // auto defineTriggerSFVars = [this](float pt, float eta, float charge) {
-    //     ROOT::VecOps::RVec<float> TriggSF;
-
-    //     int bin = _TriggerPlusSyst1Up->FindBin(eta, pt);
-    //     if (charge > 0)
-    //     {
-    //         TriggSF.emplace_back(_TriggerPlusSyst0Up->GetBinContent(bin));
-    //         TriggSF.emplace_back(_TriggerPlusSyst1Up->GetBinContent(bin));
-    //         TriggSF.emplace_back(_TriggerPlusSyst2Up->GetBinContent(bin));
-    //         TriggSF.emplace_back(_TriggerPlusSyst0Down->GetBinContent(bin));
-    //         TriggSF.emplace_back(_TriggerPlusSyst1Down->GetBinContent(bin));
-    //         TriggSF.emplace_back(_TriggerPlusSyst2Down->GetBinContent(bin));
-    //     }
-    //     else
-    //     {
-    //         TriggSF.emplace_back(_TriggerMinusSyst0Up->GetBinContent(bin));
-    //         TriggSF.emplace_back(_TriggerMinusSyst1Up->GetBinContent(bin));
-    //         TriggSF.emplace_back(_TriggerMinusSyst2Up->GetBinContent(bin));
-    //         TriggSF.emplace_back(_TriggerMinusSyst0Down->GetBinContent(bin));
-    //         TriggSF.emplace_back(_TriggerMinusSyst1Down->GetBinContent(bin));
-    //         TriggSF.emplace_back(_TriggerMinusSyst2Down->GetBinContent(bin));
-    //     }
-
-    //     return TriggSF;
-    // };
-
-    // auto defineRecoSF = [this](float pt, float eta) {
-
-    //     int bin = _Reco->FindBin(eta, pt);
-    //     return _Reco->GetBinContent(bin);
-
-    // };
-
-    // auto defineRecoSFVars = [this](float pt, float eta) {
-    //     ROOT::VecOps::RVec<float> RecoSF;
-
-    //     int bin = _RecoStatUp->FindBin(eta, pt);
-    //     RecoSF.emplace_back(_RecoStatUp->GetBinContent(bin));
-    //     RecoSF.emplace_back(_RecoSystUp->GetBinContent(bin));
-    //     RecoSF.emplace_back(_RecoStatDown->GetBinContent(bin));
-    //     RecoSF.emplace_back(_RecoSystDown->GetBinContent(bin));
-
-    //     return RecoSF;
-    // };
 
     auto definePUweights = [](float weightUp, float weightDown) {
         ROOT::VecOps::RVec<float> PUVars;
@@ -75,14 +15,15 @@ RNode weightDefinitions::run(RNode d)
     
     auto defineWHSF = [this](float pt, float eta, float charge){
 
-        int bin = _WHSFPlus->FindBin(eta,pt);
+        int binReco = _Reco->FindBin(eta,pt);
+        int binTrigger= _TriggerPlus->FindBin(eta,pt);
         if(charge>0)
         {
-            return _WHSFPlus->GetBinContent(bin);
+            return _Reco->GetBinContent(binReco)*_TriggerPlus->GetBinContent(binTrigger);
         }
         else
         {
-            return _WHSFMinus->GetBinContent(bin);
+            return _Reco->GetBinContent(binReco)*_TriggerMinus->GetBinContent(binTrigger);
         }
 
     };
@@ -91,39 +32,43 @@ RNode weightDefinitions::run(RNode d)
     auto defineWHSFVars = [this](float pt, float eta, float charge) {
         ROOT::VecOps::RVec<float> WHSF;
 
-        int bin = _WHSFPlusSyst1Up->FindBin(eta, pt);
+        int binReco = _Reco->FindBin(eta,pt);
+        int binTrigger= _TriggerPlus->FindBin(eta,pt);
+        int binSyst = _TriggerPlusSyst0->FindBin(eta, pt);
+        
+        float flatVar = 0;
+        if(fabs(eta)<1) flatVar=0.002;
+        else if(abs(eta)<1.5) flatVar=0.004;
+        else flatVar=0.014;
+        
         if (charge > 0)
         {
-            WHSF.emplace_back(_WHSFPlusSyst0Up->GetBinContent(bin));
-            WHSF.emplace_back(_WHSFPlusSyst1Up->GetBinContent(bin));
-            WHSF.emplace_back(_WHSFPlusSyst2Up->GetBinContent(bin));
-            WHSF.emplace_back(_WHSFPlusSystFlatUp->GetBinContent(bin));
-            WHSF.emplace_back(_WHSFPlusSyst0Down->GetBinContent(bin));
-            WHSF.emplace_back(_WHSFPlusSyst1Down->GetBinContent(bin));
-            WHSF.emplace_back(_WHSFPlusSyst2Down->GetBinContent(bin));
-            WHSF.emplace_back(_WHSFPlusSystFlatDown->GetBinContent(bin));
+            float nomSF = _Reco->GetBinContent(binReco)*_TriggerPlus->GetBinContent(binTrigger);
+            WHSF.emplace_back(nomSF*(1+_TriggerPlusSyst0->GetBinContent(binSyst)));
+            WHSF.emplace_back(nomSF*(1+_TriggerPlusSyst1->GetBinContent(binSyst)));
+            WHSF.emplace_back(nomSF*(1+_TriggerPlusSyst2->GetBinContent(binSyst)));
+            WHSF.emplace_back(nomSF*(1+flatVar));
+            WHSF.emplace_back(nomSF*(1-_TriggerPlusSyst0->GetBinContent(binSyst)));
+            WHSF.emplace_back(nomSF*(1-_TriggerPlusSyst1->GetBinContent(binSyst)));
+            WHSF.emplace_back(nomSF*(1-_TriggerPlusSyst2->GetBinContent(binSyst)));
+            WHSF.emplace_back(nomSF*(1-flatVar));
         }
         else
         {
-            WHSF.emplace_back(_WHSFMinusSyst0Up->GetBinContent(bin));
-            WHSF.emplace_back(_WHSFMinusSyst1Up->GetBinContent(bin));
-            WHSF.emplace_back(_WHSFMinusSyst2Up->GetBinContent(bin));
-            WHSF.emplace_back(_WHSFMinusSystFlatUp->GetBinContent(bin));
-            WHSF.emplace_back(_WHSFMinusSyst0Down->GetBinContent(bin));
-            WHSF.emplace_back(_WHSFMinusSyst1Down->GetBinContent(bin));
-            WHSF.emplace_back(_WHSFMinusSyst2Down->GetBinContent(bin));
-            WHSF.emplace_back(_WHSFMinusSystFlatDown->GetBinContent(bin));
+            float nomSF = _Reco->GetBinContent(binReco)*_TriggerMinus->GetBinContent(binTrigger);
+            WHSF.emplace_back(nomSF*(1+_TriggerMinusSyst0->GetBinContent(binSyst)));
+            WHSF.emplace_back(nomSF*(1+_TriggerMinusSyst1->GetBinContent(binSyst)));
+            WHSF.emplace_back(nomSF*(1+_TriggerMinusSyst2->GetBinContent(binSyst)));
+            WHSF.emplace_back(nomSF*(1+flatVar));
+            WHSF.emplace_back(nomSF*(1-_TriggerMinusSyst0->GetBinContent(binSyst)));
+            WHSF.emplace_back(nomSF*(1-_TriggerMinusSyst1->GetBinContent(binSyst)));
+            WHSF.emplace_back(nomSF*(1-_TriggerMinusSyst2->GetBinContent(binSyst)));
+            WHSF.emplace_back(nomSF*(1-flatVar));
         }
 
         return WHSF;
     };
 
- 
-    // auto d1 = d.Define("TriggerSF", defineTriggerSF, {"Mu1_pt", "Mu1_eta", "Mu1_charge"})
-    //               .Define("TriggerSFVars", defineTriggerSFVars, {"Mu1_pt", "Mu1_eta", "Mu1_charge"})
-    //               .Define("RecoSF", defineRecoSF, {"Mu1_pt", "Mu1_eta"})
-    //               .Define("RecoSFVars", defineRecoSFVars, {"Mu1_pt", "Mu1_eta"})
-    //               .Define("puWeightVars", definePUweights, {"puWeightUp", "puWeightDown"});
     
     auto d1 = d.Define("WHSF", defineWHSF, {"Mu1_pt", "Mu1_eta", "Mu1_charge"})
                   .Define("WHSFVars", defineWHSFVars, {"Mu1_pt", "Mu1_eta", "Mu1_charge"})

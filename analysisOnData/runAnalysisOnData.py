@@ -50,7 +50,7 @@ if fvec.empty():
     sys.exit(1)
     
 print fvec
-c = 64		
+c = 64
 ROOT.ROOT.EnableImplicitMT(c)
 print "running with {} cores".format(c)
 
@@ -69,7 +69,7 @@ for region,cut in selections.iteritems():
 
 if not runBKG:
     # FR = ROOT.TFile.Open("/scratch/bertacch/wmass/wproperties-analysis/bkgAnalysis/BKG_syst_WHSF_SFisoOnly/bkg_/bkg_parameters_file.root")
-    FR = ROOT.TFile.Open("/scratch/bertacch/wmass/wproperties-analysis/bkgAnalysis/BKG_syst_WHSF_20July/bkg_/bkg_parameters_file.root")
+    FR = ROOT.TFile.Open("/scratch/bertacch/wmass/wproperties-analysis/bkgAnalysis/BKG_syst_20July_SFrebin/bkg_/bkg_parameters_file.root")
     # FR = ROOT.TFile.Open("/scratch/bertacch/wmass/wproperties-analysis/bkgAnalysis/BKG_syst_WHSF_20July/bkg_parameters_CFstatAna.root")
     for region,cut in selections_fakes.iteritems():    
         print region       
