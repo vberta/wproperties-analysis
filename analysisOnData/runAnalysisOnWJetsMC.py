@@ -57,9 +57,6 @@ if fvec.empty():
     print "No files found for directory:", samples[sample], " SKIPPING processing"
     sys.exit(1)
 print fvec 
-weight = 'float(puWeight*lumiweight*TriggerSF*RecoSF*weightPt*weightY)'
-
-print weight, "NOMINAL WEIGHT"
 
 fileSF = ROOT.TFile.Open("data/ScaleFactors.root")
 
@@ -77,6 +74,14 @@ for wdecay, decaycut in wdecayselections.iteritems() :
     p.branch(nodeToStart = 'input', nodeToEnd = 'defs', modules = [ROOT.reweightFromZ(filePt,fileY),ROOT.baseDefinitions(),ROOT.weightDefinitions(fileSF),getLumiWeight(xsec=xsec, inputFile=fvec)])
 
     for region,cut in selections.iteritems():
+        
+        if 'aiso' in region:
+            weight = 'float(puWeight*lumiweight*TriggerSF*RecoSF*weightPt*weightY)'
+        else:
+            weight = 'float(puWeight*lumiweight*weightPt*weightY)'
+        
+        print weight, "NOMINAL WEIGHT"
+            
         nom = ROOT.vector('string')()
         nom.push_back("")
         #last argument refers to histo category - 0 = Nominal, 1 = Pt scale , 2 = MET scale
@@ -88,8 +93,10 @@ for wdecay, decaycut in wdecayselections.iteritems() :
    
         #weight variations
         for s,variations in systematics.iteritems():
-            print "branching weight variations", s, " for region:", region
+            print "branching weight variations", s
+            if "LHEScaleWeight" in s and samples[sample]['systematics'] != 2 :  continue
             if not "LHEScaleWeight" in s:
+                if 'aiso' in region: continue
                 var_weight = weight.replace(s, "1.")
             else: 
                 var_weight = weight
