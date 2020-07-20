@@ -44,25 +44,25 @@ RNode weightDefinitions::run(RNode d)
         if (charge > 0)
         {
             float nomSF = _Reco->GetBinContent(binReco)*_TriggerPlus->GetBinContent(binTrigger);
-            WHSF.emplace_back(nomSF*(1+_TriggerPlusSyst0->GetBinContent(binSyst)));
-            WHSF.emplace_back(nomSF*(1+_TriggerPlusSyst1->GetBinContent(binSyst)));
-            WHSF.emplace_back(nomSF*(1+_TriggerPlusSyst2->GetBinContent(binSyst)));
+            WHSF.emplace_back(nomSF*(1+TMath::Sqrt(2)*_TriggerPlusSyst0->GetBinContent(binSyst)));
+            WHSF.emplace_back(nomSF*(1+TMath::Sqrt(2)*_TriggerPlusSyst1->GetBinContent(binSyst)));
+            WHSF.emplace_back(nomSF*(1+TMath::Sqrt(2)*_TriggerPlusSyst2->GetBinContent(binSyst)));
             WHSF.emplace_back(nomSF*(1+flatVar));
-            WHSF.emplace_back(nomSF*(1-_TriggerPlusSyst0->GetBinContent(binSyst)));
-            WHSF.emplace_back(nomSF*(1-_TriggerPlusSyst1->GetBinContent(binSyst)));
-            WHSF.emplace_back(nomSF*(1-_TriggerPlusSyst2->GetBinContent(binSyst)));
+            WHSF.emplace_back(nomSF*(1-TMath::Sqrt(2)*_TriggerPlusSyst0->GetBinContent(binSyst)));
+            WHSF.emplace_back(nomSF*(1-TMath::Sqrt(2)*_TriggerPlusSyst1->GetBinContent(binSyst)));
+            WHSF.emplace_back(nomSF*(1-TMath::Sqrt(2)*_TriggerPlusSyst2->GetBinContent(binSyst)));
             WHSF.emplace_back(nomSF*(1-flatVar));
         }
         else
         {
             float nomSF = _Reco->GetBinContent(binReco)*_TriggerMinus->GetBinContent(binTrigger);
-            WHSF.emplace_back(nomSF*(1+_TriggerMinusSyst0->GetBinContent(binSyst)));
-            WHSF.emplace_back(nomSF*(1+_TriggerMinusSyst1->GetBinContent(binSyst)));
-            WHSF.emplace_back(nomSF*(1+_TriggerMinusSyst2->GetBinContent(binSyst)));
+            WHSF.emplace_back(nomSF*(1+TMath::Sqrt(2)*_TriggerMinusSyst0->GetBinContent(binSyst)));
+            WHSF.emplace_back(nomSF*(1+TMath::Sqrt(2)*_TriggerMinusSyst1->GetBinContent(binSyst)));
+            WHSF.emplace_back(nomSF*(1+TMath::Sqrt(2)*_TriggerMinusSyst2->GetBinContent(binSyst)));
             WHSF.emplace_back(nomSF*(1+flatVar));
-            WHSF.emplace_back(nomSF*(1-_TriggerMinusSyst0->GetBinContent(binSyst)));
-            WHSF.emplace_back(nomSF*(1-_TriggerMinusSyst1->GetBinContent(binSyst)));
-            WHSF.emplace_back(nomSF*(1-_TriggerMinusSyst2->GetBinContent(binSyst)));
+            WHSF.emplace_back(nomSF*(1-TMath::Sqrt(2)*_TriggerMinusSyst0->GetBinContent(binSyst)));
+            WHSF.emplace_back(nomSF*(1-TMath::Sqrt(2)*_TriggerMinusSyst1->GetBinContent(binSyst)));
+            WHSF.emplace_back(nomSF*(1-TMath::Sqrt(2)*_TriggerMinusSyst2->GetBinContent(binSyst)));
             WHSF.emplace_back(nomSF*(1-flatVar));
         }
 
