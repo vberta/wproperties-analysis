@@ -76,9 +76,9 @@ for wdecay, decaycut in wdecayselections.iteritems() :
     for region,cut in selections.iteritems():
         
         if 'aiso' in region:
-            weight = 'float(puWeight*lumiweight*TriggerSF*RecoSF*weightPt*weightY)'
-        else:
             weight = 'float(puWeight*lumiweight*weightPt*weightY)'
+        else:
+            weight = 'float(puWeight*lumiweight*TriggerSF*RecoSF*weightPt*weightY)'
         
         print weight, "NOMINAL WEIGHT"
             

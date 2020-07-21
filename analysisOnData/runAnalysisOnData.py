@@ -68,7 +68,7 @@ for region,cut in selections.iteritems():
     p.branch(nodeToStart = 'defs', nodeToEnd = 'templates_{}/Nominal'.format(region), modules = [ROOT.templates(cut, weight, nom,"Nom",0)])       
 
 if not runBKG:
-    FR = ROOT.TFile.Open("/scratch/bertacch/wmass/wproperties-analysis/bkgAnalysis/old_try/TEST_nosyst_noSFsub/bkg_/bkg_parameters_file.root")
+    FR = ROOT.TFile.Open("/scratch/bertacch/wmass/wproperties-analysis/bkgAnalysis/BKG_syst_WHSF_20July/bkg_parameters_CFstatAna.root")
     for region,cut in selections_fakes.iteritems():    
         print region       
         nom = ROOT.vector('string')()
@@ -78,6 +78,35 @@ if not runBKG:
         print "branching nominal"
         p.branch(nodeToStart = 'defs', nodeToEnd = 'prefit_{}/Nominal'.format(region), modules = [ROOT.fakeRate(FR),ROOT.muonHistos(cut, weight, nom,"Nom",0)]) 
         p.branch(nodeToStart = 'defs', nodeToEnd = 'templates_{}/Nominal'.format(region), modules = [ROOT.fakeRate(FR),ROOT.templates(cut, weight, nom,"Nom",0)])       
+
+        #now add fake variations
+        for s,variations in systematics.iteritems():
+            print "branching weight variations", s
+            weight = 'float(1)'
+
+            vars_vec = ROOT.vector('string')()
+            for var in variations[0]:
+                vars_vec.push_back(var)
+
+            if not runBKG: p.branch(nodeToStart = 'defs'.format(region), nodeToEnd = 'prefit_{}/{}Vars'.format(region,s), modules = [ROOT.muonHistos(cut,weight,vars_vec,"fakeRate_"+variations[1], 0)])
+            p.branch(nodeToStart = 'defs'.format(region), nodeToEnd = 'templates_{}/{}Vars'.format(region,s), modules = [ROOT.templates(cut,weight,vars_vec,"fakeRate_"+variations[1], 0)])
+        
+        #column variations#weight will be nominal, cut will vary
+        for vartype, vardict in selectionVars.iteritems():
+            cut_vec = ROOT.vector('string')()
+            var_vec = ROOT.vector('string')()
+            for selvar, hcat in vardict.iteritems() :
+                newcut = cut.replace('MT', 'MT_'+selvar)
+                if 'corrected' in selvar:
+                    newcut = newcut.replace('Mu1_pt', 'Mu1_pt_'+selvar)
+                
+                weight = "float(fakeRate"+"_{})".format(selvar)
+
+                cut_vec.push_back(newcut)
+                var_vec.push_back(selvar)
+
+            if not runBKG: p.branch(nodeToStart = 'defs', nodeToEnd = 'prefit_{}/{}Vars'.format(region,vartype), modules = [ROOT.muonHistos(cut_vec, weight, nom,"Nom",hcat,var_vec)])  
+            p.branch(nodeToStart = 'defs', nodeToEnd = 'templates_{}/{}Vars'.format(region,vartype), modules = [ROOT.templates(cut_vec, weight, nom,"Nom",hcat,var_vec)])  
 
 p.getOutput()
 p.saveGraph()
