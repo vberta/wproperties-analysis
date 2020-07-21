@@ -5,6 +5,15 @@ import copy
 import argparse
 from contextlib import contextmanager
 
+#########################################################################################################################
+#
+#  usage: python runTheMatrix --bkgInput BKGIN --bkgOutput BKGOUT --bkgPrep 1 --bkgAna 1 --prefit 1 --plotter 1
+#
+#  each parameters is described below in the argparse
+#
+#  NB: the name of the BKGOUT/bkg_parameters_CFstatAna.root should be written by yourself inside runAnalysisOnData.py
+#
+#########################################################################################################################
 
 # @contextmanager
 # def cd(newdir):
@@ -32,6 +41,7 @@ step4 = args.plotter
 
 if step1 :
     #bkg input preparation 
+    os.chdir('/analysisOnData')
     if not os.path.isdir('output'): os.system('mkdir output')
     os.system('python runAnalysisOnMC.py 1 0')
     os.system('python runAnalysisOnWJetsMC.py 1 0')
