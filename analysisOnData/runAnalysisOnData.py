@@ -50,7 +50,7 @@ if fvec.empty():
     sys.exit(1)
     
 print fvec
-c = 64		
+c = 64
 ROOT.ROOT.EnableImplicitMT(c)
 print "running with {} cores".format(c)
 
@@ -68,7 +68,8 @@ for region,cut in selections.iteritems():
     p.branch(nodeToStart = 'defs', nodeToEnd = 'templates_{}/Nominal'.format(region), modules = [ROOT.templates(cut, weight, nom,"Nom",0)])       
 
 if not runBKG:
-    FR = ROOT.TFile.Open("/scratch/bertacch/wmass/wproperties-analysis/bkgAnalysis/old_try/TEST_nosyst_noSFsub/bkg_/bkg_parameters_file.root")
+    FR = ROOT.TFile.Open("/scratch/bertacch/wmass/wproperties-analysis/bkgAnalysis/BKG_syst_20July_SFrebin/bkg_/bkg_parameters_file.root")
+    # FR = ROOT.TFile.Open("/scratch/bertacch/wmass/wproperties-analysis/bkgAnalysis/BKG_syst_20July_SFrebin/bkg_parameters_CFstatAna.root")
     for region,cut in selections_fakes.iteritems():    
         print region       
         nom = ROOT.vector('string')()
