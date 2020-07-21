@@ -70,7 +70,7 @@ for region,cut in selections_whelicity.iteritems():
     p.branch(nodeToStart = 'defs', nodeToEnd = 'templates_{}/Nominal'.format(region), modules = [ROOT.templates(cut, weight, nom,"Nom",0)])       
 
 if not runBKG:
-    for region,cut in selections_fakes.iteritems():    
+    for region,cut in selections_fakes_whelicity.iteritems():    
         print region       
         nom = ROOT.vector('string')()
         nom.push_back("")
