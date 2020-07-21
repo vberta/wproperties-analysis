@@ -114,10 +114,10 @@ for wdecay, decaycut in wdecayselections.iteritems() :
             cut_vec = ROOT.vector('string')()
             var_vec = ROOT.vector('string')()
             for selvar, hcat in vardict.iteritems() :
-                newcut = cut.replace('MT', 'MT_'+selvar)
+                newcut = cut.replace('MT', 'MT'+selvar)
                     
                 if 'corrected' in selvar:
-                    newcut = newcut.replace('Mu1_pt', 'Mu1_pt_'+selvar)
+                    newcut = newcut.replace('Mu1_pt', 'Mu1_pt'+selvar)
                     
                 cut_vec.push_back(newcut)
                 var_vec.push_back(selvar)
