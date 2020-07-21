@@ -43,9 +43,20 @@ RNode baseDefinitions::run(RNode d)
                            .Define("Recoil_pt_jesTotalUp", W_hpt, { "Mu1_pt", "Mu1_phi", "MET_pt_jesTotalUp", "MET_phi_jesTotalUp"})
                            .Define("Recoil_pt_jesTotalDown", W_hpt, { "Mu1_pt", "Mu1_phi", "MET_pt_jesTotalDown", "MET_phi_jesTotalDown"})
                            .Define("Recoil_pt_unclustEnUp", W_hpt, { "Mu1_pt", "Mu1_phi", "MET_pt_unclustEnUp", "MET_phi_unclustEnUp"})
-                           .Define("Recoil_pt_unclustEnDown", W_hpt, { "Mu1_pt", "Mu1_phi", "MET_pt_unclustEnDown", "MET_phi_unclustEnDown"}); 
+                           .Define("Recoil_pt_unclustEnDown", W_hpt, { "Mu1_pt", "Mu1_phi", "MET_pt_unclustEnDown", "MET_phi_unclustEnDown"});
 
-    return d1withCompvar;
+    auto reduceVec = [](ROOT::VecOps::RVec<float> LHE) {
+        ROOT::VecOps::RVec<float> red;
+        red.emplace_back(LHE[0]);
+        red.emplace_back(LHE[1]);
+        red.emplace_back(LHE[3]);
+        red.emplace_back(LHE[5]);
+        red.emplace_back(LHE[7]);
+    return red;
+    };
+
+    auto dLHE = d1withCompvar.Define("LHEScaleWeightred", reduceVec, {"LHEScaleWeight"});
+    return dLHE;
 }
 
 std::vector<ROOT::RDF::RResultPtr<TH1D>> baseDefinitions::getTH1()

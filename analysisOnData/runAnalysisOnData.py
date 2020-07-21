@@ -55,8 +55,10 @@ ROOT.ROOT.EnableImplicitMT(c)
 print "running with {} cores".format(c)
 
 weight = 'float(1)'
+FR = ROOT.TFile.Open("/scratch/bertacch/wmass/wproperties-analysis/bkgAnalysis/TEST_runTheMatrix/bkg_parameters_CFstatAna.root")
+
 p = RDFtree(outputDir = './output/', inputFile = fvec, outputFile=outF, pretend=pretendJob)
-p.branch(nodeToStart = 'input', nodeToEnd = 'defs', modules = [ROOT.baseDefinitions(0)])
+p.branch(nodeToStart = 'input', nodeToEnd = 'defs', modules = [ROOT.baseDefinitions(0),ROOT.fakeRate(FR)])
 
 for region,cut in selections.iteritems():    
     print region       
@@ -68,17 +70,42 @@ for region,cut in selections.iteritems():
     p.branch(nodeToStart = 'defs', nodeToEnd = 'templates_{}/Nominal'.format(region), modules = [ROOT.templates(cut, weight, nom,"Nom",0)])       
 
 if not runBKG:
-    FR = ROOT.TFile.Open("/scratch/bertacch/wmass/wproperties-analysis/bkgAnalysis/BKG_syst_20July_SFrebin/bkg_/bkg_parameters_file.root")
-    # FR = ROOT.TFile.Open("/scratch/bertacch/wmass/wproperties-analysis/bkgAnalysis/BKG_syst_20July_SFrebin/bkg_parameters_CFstatAna.root")
     for region,cut in selections_fakes.iteritems():    
         print region       
         nom = ROOT.vector('string')()
         nom.push_back("")
-        weight = "float(fakeRate)"
+        weight = "float(fakeRate_Nominal_)"
         #last argument refers to histo category - 0 = Nominal, 1 = Pt scale , 2 = MET scale
         print "branching nominal"
-        p.branch(nodeToStart = 'defs', nodeToEnd = 'prefit_{}/Nominal'.format(region), modules = [ROOT.fakeRate(FR),ROOT.muonHistos(cut, weight, nom,"Nom",0)]) 
-        p.branch(nodeToStart = 'defs', nodeToEnd = 'templates_{}/Nominal'.format(region), modules = [ROOT.fakeRate(FR),ROOT.templates(cut, weight, nom,"Nom",0)])       
+        p.branch(nodeToStart = 'defs', nodeToEnd = 'prefit_{}/Nominal'.format(region), modules = [ROOT.muonHistos(cut, weight, nom,"Nom",0)]) 
+        p.branch(nodeToStart = 'defs', nodeToEnd = 'templates_{}/Nominal'.format(region), modules = [ROOT.templates(cut, weight, nom,"Nom",0)])       
+
+        #now add fake variations
+        for s,variations in systematics.iteritems():
+            print "branching weight variations", s
+            
+            vars_vec = ROOT.vector('string')()
+            for var in variations[0]:
+                vars_vec.push_back(var)
+                weight="float(1)"
+                
+            print "fakeRate_"+variations[1]
+            print vars_vec
+
+            p.branch(nodeToStart = 'defs'.format(region), nodeToEnd = 'prefit_{}/{}Vars'.format(region,s), modules = [ROOT.muonHistos(cut,weight,vars_vec,"fakeRate_"+variations[1], 0)])
+            p.branch(nodeToStart = 'defs'.format(region), nodeToEnd = 'templates_{}/{}Vars'.format(region,s), modules = [ROOT.templates(cut,weight,vars_vec,"fakeRate_"+variations[1], 0)])
+        
+        #fake column variations since the cut won't change in data
+        for vartype, vardict in selectionVars.iteritems():
+            
+            vars_vec = ROOT.vector('string')()
+            for selvar, hcat in vardict.iteritems() :
+                vars_vec.push_back(selvar)
+
+            print "branching fake column variations", vartype
+            
+            p.branch(nodeToStart = 'defs'.format(region), nodeToEnd = 'prefit_{}/{}Vars'.format(region,vartype), modules = [ROOT.muonHistos(cut,weight,vars_vec,"fakeRate_"+vartype, 0)])
+            p.branch(nodeToStart = 'defs'.format(region), nodeToEnd = 'templates_{}/{}Vars'.format(region,vartype), modules = [ROOT.templates(cut,weight,vars_vec,"fakeRate_"+vartype, 0)])
 
 p.getOutput()
 p.saveGraph()
