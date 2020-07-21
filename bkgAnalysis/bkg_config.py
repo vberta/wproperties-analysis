@@ -12,17 +12,41 @@ import bkg_fakerateAnalyzer
 ROOT.gROOT.Reset()
 ROOT.gROOT.SetBatch(True)
 
-#######################################################################################
-# usage: python bkg_config.py --mainAna 1 --CFAna 1  --syst 1 --compAna 1 --inputDir NAME/hadded/ --outputDir OUTNAME/
+
+#############################################################################################################################################
 #
+#  usage: python bkg_config.py --mainAna 1 --CFAna 1  --syst 1 --compAna 1 --inputDir NAME/hadded/ --outputDir OUTNAME/
 #
+#  the full path of this config is the following
+#  1) run the nominal analysis (mainAna)
+#  2) run the analysis for each systematic variation (from bkg_utils dictionary)
+#  3) run again the nominal analysis but wiht the correlatedFit to fit in pt the fakerate_analysis
+#  4) run each systematic variation with the correlatedFit enabled
+#  5) run the comparison plots between the various syst. This step is not needed to produce the bkg output, but is a validation step only
+#  6) build the output file using the output from step 1-4
+#
+#  Internal parameters:
+#  - STATANA: if true run a proper estimation of the statistical uncertainity, if the correlatedFit is used
+#  - CORRFITFINAL: if true make the comparison of the step 5) using the correlatedFit results
+#  - TEMPLATE: if true plots also the QCD templates and not only the fakerate and propmptrate
+#  - NOM: nominal name in the input
+#  - EXTRAP: 3 additional runs of the nominal analysis to estimate the extrapolation uncertainity
+#  - NCORES: number of cores used, if >1 activate multiprocessing
+#
+#  Code structure: 
+#   - bkg_config.py use bkg_utils.py to load some common dictionaries and lists
+#   - bkg_fakerateAnalyzer.py is the class which is used to perform each step of the analysis. 
+#     Each time the main analysis is run is a different class object 
+#     (nom + one for each syst, for main and correlatedFit analyses + one final for comparison)
+#  - several class-object calls are realized with an helper function: fakerate_analysis, which configure the object and run some methods
+#
+#############################################################################################################################################
 
 parser = argparse.ArgumentParser("")
-parser.add_argument('-systAna', '--syst',type=int, default=False, help="enable systemtatics analysis")
+parser.add_argument('-systAna', '--syst',type=int, default=False, help="enable systematics analysis")
 parser.add_argument('-mainAna', '--mainAna',type=int, default=False, help="main bkg analysis")
 parser.add_argument('-correlatedFitAna', '--CFAna',type=int, default=False, help="second run of main ana, with correlated Fit")
 parser.add_argument('-comparisonAna', '--compAna',type=int, default=False, help="comparison plots of systematic analysis")
-parser.add_argument('-strategySyst', '--straSyst',type=int, default=False, help="strategy systemtatics analysis")
 parser.add_argument('-inputDir', '--inputDir',type=str, default='./data/', help="input dir name")
 parser.add_argument('-outputDir', '--outputDir',type=str, default='./bkg_V2/', help="output dir name")
 
@@ -30,7 +54,6 @@ args = parser.parse_args()
 mainAna = args.mainAna
 comparisonAna = args.compAna
 correlatedFitAna = args.CFAna
-strategySyst = args.straSyst
 systAna = args.syst
 inputDir = args.inputDir
 outputDir = args.outputDir
@@ -111,8 +134,3 @@ if comparisonAna :
     fakeFinal = bkg_fakerateAnalyzer.bkg_analyzer(systKind=NOM[0],systName=NOM[1],correlatedFit=CORRFITFINAL,statAna=False, ptBinning=bkg_utils.ptBinning, etaBinning=bkg_utils.etaBinning, outdir=outputDir+'/bkg_'+NOM[1], inputDir=inputDir)
     fakeFinal.syst_comparison(systDict=bkg_utils.bkg_systematics, SymBands=True, outDir=outputDir, noratio=False, statAna=STATANA)
     fakeFinal.buildOutput(outputDir=outputDir,statAna=STATANA)
-
-
-# if strategySyst :
-#     print "--> Strategy syst plots..."
-#     fakeFinal.strategy_syst(preOutDir=outputDir)
