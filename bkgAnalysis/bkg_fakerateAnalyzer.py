@@ -118,13 +118,13 @@ class bkg_analyzer:
         histo_fake_dict = {}
         systList = []
         systDict = bkg_utils.bkg_systematics
-         bin4corFit =  [26,28,30,32,34,36,38,40,42,44,46,48,50,52,55] #LoreHistos
+        bin4corFit =  [26,28,30,32,34,36,38,40,42,44,46,48,50,52,55] #LoreHistos
         #bin4corFit =  [25,27,29,31,33,35,37,39,41,43,45,47,49,51,53,55] #redesign
         
         if DONT_REBIN : 
             bin4corFit = self.ptBinning
 
-         binChange = 13 #LoreHistos
+        binChange = 13 #LoreHistos
         #binChange = 17 #redesign
 
         bin4corFitS = ['{:.2g}'.format(x) for x in bin4corFit[:-1]]
