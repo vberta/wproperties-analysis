@@ -41,7 +41,7 @@ step4 = args.plotter
 
 if step1 :
     #bkg input preparation 
-    os.chdir('/analysisOnData')
+    os.chdir('./analysisOnData')
     if not os.path.isdir('output'): os.system('mkdir output')
     os.system('python runAnalysisOnMC.py 1 0')
     os.system('python runAnalysisOnWJetsMC.py 1 0')
@@ -50,10 +50,10 @@ if step1 :
 if step2 :
     # bkg analysis
     if not os.path.isdir('../bkgAnalysis/'+bkgInput): os.system('mkdir ../bkgAnalysis/'+bkgInput)
-    os.system('cp -r output ../bkgAnalysis/+'bkgInput+'/raw)
+    os.system('cp -r output ../bkgAnalysis/'+bkgInput+'/raw')
     os.chdir('../bkgAnalysis')
     os.system('python bkg_prepareHistos.py --inputDir '+bkgInput+'/raw --outputDir '+bkgInput)
-    os.system('python bkg_config.py --mainAna 1 --CFAna 1 --inputDir '+bkgInput+'/hadded/ --outputDir '+bkgOutput+' --syst 1 --compAna 1)
+    os.system('python bkg_config.py --mainAna 1 --CFAna 1 --inputDir '+bkgInput+'/hadded/ --outputDir '+bkgOutput+' --syst 1 --compAna 1')
 
 if step3 :
     #prefit plots
@@ -64,6 +64,6 @@ if step3 :
 
 if step4 :
     #plotter
-    os.chdir('python')
-    os,.system('python prefit_plotter.py --hadd 1 --output ../plotter_output --input ../output/')
+    os.chdir('./python')
+    os.system('python plotter_prefit.py --hadd 1 --output ../plotter_output --input ../output/')
 
