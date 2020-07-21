@@ -58,7 +58,7 @@ if fvec.empty():
     sys.exit(1)
 print fvec 
 
-fileSF = ROOT.TFile.Open("data/ScaleFactors.root")
+fileSF = ROOT.TFile.Open("data/ScaleFactors_OnTheFly.root")
 
 wdecayselections = { 
                      'WToMu'  : ' && (abs(genVtype) == 14)',
@@ -78,10 +78,10 @@ for wdecay, decaycut in wdecayselections.iteritems() :
         if 'aiso' in region:
             weight = 'float(puWeight*lumiweight*weightPt*weightY)'
         else:
-            weight = 'float(puWeight*lumiweight*TriggerSF*RecoSF*weightPt*weightY)'
+            weight = 'float(puWeight*lumiweight*WHSF*weightPt*weightY)'
         
         print weight, "NOMINAL WEIGHT"
-            
+        
         nom = ROOT.vector('string')()
         nom.push_back("")
         #last argument refers to histo category - 0 = Nominal, 1 = Pt scale , 2 = MET scale
@@ -117,10 +117,10 @@ for wdecay, decaycut in wdecayselections.iteritems() :
             cut_vec = ROOT.vector('string')()
             var_vec = ROOT.vector('string')()
             for selvar, hcat in vardict.iteritems() :
-                newcut = cut.replace('MT', 'MT_'+selvar)
+                newcut = cut.replace('MT', 'MT'+selvar)
                     
                 if 'corrected' in selvar:
-                    newcut = newcut.replace('Mu1_pt', 'Mu1_pt_'+selvar)
+                    newcut = newcut.replace('Mu1_pt', 'Mu1_pt'+selvar)
                     
                 cut_vec.push_back(newcut)
                 var_vec.push_back(selvar)

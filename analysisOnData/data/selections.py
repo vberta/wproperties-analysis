@@ -24,6 +24,6 @@ selections_fakes = {
   }
 
 selectionVars = { 
-  "ptScale" : { "correctedUp" : 1, "correctedDown" : 1}, 
-  "jme" : { "jerUp" : 2, "jerDown" : 2 , "jesTotalUp" : 2, "jesTotalDown" : 2, "unclustEnUp" : 2,"unclustEnDown" : 2}
+  "ptScale" : { "_correctedUp" : 1, "_correctedDown" : 1}, 
+  "jme" : { "_jerUp" : 2, "_jerDown" : 2 , "_jesTotalUp" : 2, "_jesTotalDown" : 2, "_unclustEnUp" : 2,"_unclustEnDown" : 2}
 }

@@ -28,7 +28,7 @@ private:
 
   TFile *_SF;
 
-  std::map<std::string, std::vector<TH2D *>> _FR;
+  std::map<std::string, TH2D *> _FR;
 
   std::vector<std::string> _variations = {"Nominal_", "WHSFVars_WHSFSyst0Up", "WHSFVars_WHSFSyst1Up",
                                          "WHSFVars_WHSFSyst2Up", "WHSFVars_WHSFSystFlatUp", "WHSFVars_WHSFSyst0Down", "WHSFVars_WHSFSyst1Down",
@@ -44,11 +44,11 @@ public:
     _SF = SF;
     for (auto s : _variations)
     {
-      _FR.insert(std::pair<std::string, TH2D *>("fake_offset_" + s, (TH2D *)_file->Get(Form("%s/fake_offset",s)));
-      _FR.insert(std::pair<std::string, TH2D *>("fake_slope_" + s, (TH2D *)_file->Get(Form("%s/fake_slope",s)));
-      _FR.insert(std::pair<std::string, TH2D *>("prompt_offset_" + s, (TH2D *)_file->Get(Form("%s/prompt_offset",s)));
-      _FR.insert(std::pair<std::string, TH2D *>("prompt_slope_" + s, (TH2D *)_file->Get(Form("%s/prompt_slope",s)));
-      _FR.insert(std::pair<std::string, TH2D *>("prompt_2deg_" + s, (TH2D *)_file->Get(Form("%s/prompt_2deg",s)));
+      _FR.insert(std::pair<std::string, TH2D *>("fake_offset_" + s, (TH2D *)_SF->Get(Form("%s/fake_offset",s.c_str()))));
+      _FR.insert(std::pair<std::string, TH2D *>("fake_slope_" + s, (TH2D *)_SF->Get(Form("%s/fake_slope",s.c_str()))));
+      _FR.insert(std::pair<std::string, TH2D *>("prompt_offset_" + s, (TH2D *)_SF->Get(Form("%s/prompt_offset",s.c_str()))));
+      _FR.insert(std::pair<std::string, TH2D *>("prompt_slope_" + s, (TH2D *)_SF->Get(Form("%s/prompt_slope",s.c_str()))));
+      _FR.insert(std::pair<std::string, TH2D *>("prompt_2deg_" + s, (TH2D *)_SF->Get(Form("%s/prompt_2deg",s.c_str()))));
     }
   }
 
