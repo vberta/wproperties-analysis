@@ -261,6 +261,16 @@ def prepareHistos(inDir,outDir) :
     for i in cmdList :
         os.system(i)
 
+#########################################################################
+#
+#  usage: python plotter_prefit.py --hadd 1 --output OUT --input output
+#
+#  - the --input should be the output of runAnalysisOn*.py 0 0
+#  - the --hadd 1 is needed only the first time the input is processed
+#    and it prepare the input for the stacked plots
+#  - skipSyst allow to skip some syst category in the band plotting
+#########################################################################
+
     
 parser = argparse.ArgumentParser("")
 parser.add_argument('-hadd','--hadd', type=int, default=True,help="hadd of the output of RDF")
