@@ -60,7 +60,7 @@ for sample in samples:
         continue
     print fvec 
 
-    fileSF = ROOT.TFile.Open("data/ScaleFactors.root")
+    fileSF = ROOT.TFile.Open("data/ScaleFactors_OnTheFly.root")
 
     p = RDFtree(outputDir = './output/', inputFile = fvec, outputFile="{}{}_plots.root".format(sample, outFtag), pretend=pretendJob)
     p.branch(nodeToStart = 'input', nodeToEnd = 'defs', modules = [ROOT.baseDefinitions(),ROOT.weightDefinitions(fileSF),getLumiWeight(xsec=xsec, inputFile=fvec)])
@@ -72,7 +72,7 @@ for sample in samples:
         if 'aiso' in region:
             weight = 'float(puWeight*lumiweight)'
         else:
-            weight = 'float(puWeight*lumiweight*TriggerSF*RecoSF)'
+            weight = 'float(puWeight*lumiweight*WHSF)'
         
         print weight, "NOMINAL WEIGHT"
 
@@ -121,4 +121,3 @@ for sample in samples:
 
     p.getOutput()
     p.saveGraph()
-
