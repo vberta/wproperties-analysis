@@ -26,12 +26,22 @@ class getAccMap : public Module {
     std::vector<ROOT::RDF::RResultPtr<std::vector<TH1D>>> _h1Group;
     std::vector<ROOT::RDF::RResultPtr<std::vector<TH2D>>> _h2Group;
     std::vector<ROOT::RDF::RResultPtr<std::vector<TH3D>>> _h3Group;
-    
-    public:
-    
-    getAccMap(std::vector<ROOT::RDF::RResultPtr<TH2D>> histos){
 
-        _h2List = histos;
+    TFile *_maps;
+    TH2D* _mapAccEta;
+    TH2D* _mapAcc;
+    TH2D* _mapTot;
+
+  public:
+    getAccMap(TFile *maps)
+    {
+      _maps = maps;
+      _mapAccEta = (TH2D *)_maps->Get("AngCoeff/mapAccEta");
+      _mapAcc = (TH2D *)_maps->Get("AngCoeff/mapAcc");
+      _mapTot = (TH2D *)_maps->Get("AngCoeff/mapTot");
+
+      _mapAccEta->Divide(_mapTot);
+      _mapAcc->Divide(_mapTot);
 
     };
 

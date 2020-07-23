@@ -22,7 +22,6 @@ class getLumiWeight(module):
 
         RDF = ROOT.ROOT.RDataFrame
         runs = RDF('Runs', self.inputFile)
-
          
         genEventSumw = runs.Sum("genEventSumw").GetValue()
 

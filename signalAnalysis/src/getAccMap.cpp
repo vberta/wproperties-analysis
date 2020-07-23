@@ -2,40 +2,21 @@
 
 RNode getAccMap::run(RNode d){
 
-    TH2D mapAccEta;
-    TH2D mapAcc;
-    TH2D mapTot;
+    auto fillAccMapEta = [this](float y, float pt)mutable->float{
 
-    for(auto &h : _h2List){
-        
-        if(strcmp(h->GetName(),"mapAccEta")==0){ mapAccEta = h.GetValue();} 
-        else if(strcmp(h->GetName(),"mapAcc")==0){ mapAcc = h.GetValue();} 
-        else if(strcmp(h->GetName(),"mapTot")==0){ mapTot = h.GetValue();} 
-
-    }
-
-    mapAccEta.Divide(&mapTot);
-
-    auto fillAccMapEta = [mapTot, mapAccEta](float y, float pt)mutable->float{
-
-        int bin = mapAccEta.FindBin(y, pt);
-        return mapAccEta.GetBinContent(bin);
+        int bin = _mapAccEta->FindBin(y, pt);
+        return _mapAccEta->GetBinContent(bin);
 
     };
 
-    mapAcc.Divide(&mapTot);
-    auto fillAccMap = [mapTot, mapAcc](float y, float pt)mutable->float{
-
-        int bin = mapAcc.FindBin(y, pt);
-        return mapAcc.GetBinContent(bin);
-
+    auto fillAccMap = [this](float y, float pt) mutable -> float {
+        int bin = _mapAcc->FindBin(y, pt);
+        return _mapAcc->GetBinContent(bin);
     };
 
-    auto fillTotMap = [mapTot](float y, float pt)mutable->float{
-
-        int bin = mapTot.FindBin(y, pt);
-        return mapTot.GetBinContent(bin);
-
+    auto fillTotMap = [this](float y, float pt) mutable -> float {
+        int bin = _mapTot->FindBin(y, pt);
+        return _mapTot->GetBinContent(bin);
     };
 
     auto d1 = d.Define("accMapEta", fillAccMapEta, {"Wrap_preFSR_abs", "Wpt_preFSR"}).Define("accMap", fillAccMap, {"Wrap_preFSR_abs", "Wpt_preFSR"}).Define("totMap", fillTotMap, {"Wrap_preFSR_abs", "Wpt_preFSR"});
