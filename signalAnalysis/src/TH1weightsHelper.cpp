@@ -18,6 +18,10 @@ TH1weightsHelper::TH1weightsHelper(std::string name, std::string title,
 
       std::vector<TH1D> &histos = *fHistos[slot];
       auto n_histos = _weightNames.size();
+      const auto nSlots = ROOT::IsImplicitMTEnabled() ? ROOT::GetThreadPoolSize() : 1;
+      for (auto slot : ROOT::TSeqU(nSlots)) {
+         fHistos.emplace_back(std::make_shared<std::vector<TH1D>>());
+         (void)slot;
 
       std::string slotnum = "";
       slotnum = slot > 0 ? std::to_string(slot) : "";
