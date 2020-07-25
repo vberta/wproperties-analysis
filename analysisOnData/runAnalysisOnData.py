@@ -2,6 +2,7 @@ import os
 import sys
 import ROOT
 import json
+import argparse
 
 from RDFtree import RDFtree
 sys.path.append('python/')
@@ -13,13 +14,25 @@ from getLumiWeight import getLumiWeight
 
 ROOT.gSystem.Load('bin/libAnalysisOnData.so')
 
-pretendJob = True if int(sys.argv[2]) == 1 else False
+parser = argparse.ArgumentParser("")
+parser.add_argument('-pretend', '--pretend',type=int, default=False, help="run over a small number of event")
+parser.add_argument('-runBKG', '--runBKG',type=int, default=False, help="prepare the input of the bkg analysis, if =false run the prefit Plots")
+parser.add_argument('-ncores', '--ncores',type=int, default=64, help="number of cores used")
+parser.add_argument('-outputDir', '--outputDir',type=str, default='./output/', help="output dir name")
+parser.add_argument('-bkgFile', '--bkgFile',type=str, default='/scratch/bertacch/wmass/wproperties-analysis/bkgAnalysis/TEST_runTheMatrix/bkg_parameters_CFstatAna.root', help="bkg parameters file path/name.root")
+
+args = parser.parse_args()
+pretendJob = args.pretend
+runBKG = args.runBKG
+ncores = args.ncores
+outputDir = args.outputDir
+bkgFile = args.bkgFile
+
 if pretendJob:
     print "Running a test job over a few events"
 else:
     print "Running on full dataset"
 
-runBKG = True if int(sys.argv[1]) == 1 else False 
 outF="SingleMuonData_plots.root"
 if runBKG:
     selections_whelicity = selections_bkg_whelicity
@@ -50,16 +63,17 @@ if fvec.empty():
     sys.exit(1)
     
 print fvec
-c = 64
+c = ncores
 ROOT.ROOT.EnableImplicitMT(c)
 print "running with {} cores".format(c)
 
 weight = 'float(1)'
-#FR = ROOT.TFile.Open("/scratch/bertacch/wmass/wproperties-analysis/bkgAnalysis/TEST_runTheMatrix/bkg_parameters_CFstatAna.root")
-FR = ROOT.TFile.Open("/scratchssd/sroychow/wproperties-sroychow/bkgAnalysis/whelicityLike/bkg_parameters_CFstatAna.root")
-
-p = RDFtree(outputDir = './output/', inputFile = fvec, outputFile=outF, pretend=pretendJob)
-p.branch(nodeToStart = 'input', nodeToEnd = 'defs', modules = [ROOT.baseDefinitions(0),ROOT.fakeRate(FR)])
+p = RDFtree(outputDir = outputDir, inputFile = fvec, outputFile=outF, pretend=pretendJob)
+if not runBKG :
+    FR=ROOT.TFile.Open(bkgFile)
+    p.branch(nodeToStart = 'input', nodeToEnd = 'defs', modules = [ROOT.baseDefinitions(0),ROOT.fakeRate(FR)])
+else :
+    p.branch(nodeToStart = 'input', nodeToEnd = 'defs', modules = [ROOT.baseDefinitions(0)])
 
 for region,cut in selections_whelicity.iteritems():    
     print region       

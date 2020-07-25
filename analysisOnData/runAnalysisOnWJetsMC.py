@@ -2,6 +2,8 @@ import os
 import sys
 import ROOT
 import json
+import argparse
+
 
 from RDFtree import RDFtree
 sys.path.append('python/')
@@ -13,13 +15,26 @@ from getLumiWeight import getLumiWeight
 
 ROOT.gSystem.Load('bin/libAnalysisOnData.so')
 
-pretendJob = True if int(sys.argv[2]) == 1 else False
+parser = argparse.ArgumentParser("")
+parser.add_argument('-pretend', '--pretend',type=int, default=False, help="run over a small number of event")
+parser.add_argument('-runBKG', '--runBKG',type=int, default=False, help="prepare the input of the bkg analysis, if =false run the prefit Plots")
+parser.add_argument('-ncores', '--ncores',type=int, default=64, help="number of cores used")
+parser.add_argument('-outputDir', '--outputDir',type=str, default='./output/', help="output dir name")
+
+args = parser.parse_args()
+pretendJob = args.pretend
+runBKG = args.runBKG
+ncores = args.ncores
+outputDir = args.outputDir
+
 if pretendJob:
     print "Running a test job over a few events"
 else:
     print "Running on full dataset"
 
-runBKG = True if int(sys.argv[1]) == 1 else False 
+if runBKG:
+    selections = selections_bkg
+    print "Running job for preparing inputs of background study"
 outFtag=""
 if runBKG:
     selections_whelicity = selections_bkg_whelicity
@@ -34,7 +49,7 @@ sample='WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8'
 print sample
 direc = samples[sample]['dir']
 xsec = samples[sample]['xsec']
-c = 64		
+c = ncores		
 ROOT.ROOT.EnableImplicitMT(c)
 print "running with {} cores".format(c)
   
@@ -65,7 +80,7 @@ wdecayselections = {
 for wdecay, decaycut in wdecayselections.iteritems() :
     print "Running for Wdecay:", wdecay
 
-    p = RDFtree(outputDir = './output/', inputFile = fvec, outputFile="{}{}_plots.root".format(wdecay, outFtag), pretend=pretendJob)
+    p = RDFtree(outputDir = outputDir, inputFile = fvec, outputFile="{}{}_plots.root".format(wdecay, outFtag), pretend=pretendJob)
     filePt = ROOT.TFile.Open("data/histoUnfoldingSystPt_nsel2_dy3_rebin1_default.root")
     fileY = ROOT.TFile.Open("data/histoUnfoldingSystRap_nsel2_dy3_rebin1_default.root")
     p.branch(nodeToStart = 'input', nodeToEnd = 'defs', modules = [ROOT.reweightFromZ(filePt,fileY),ROOT.baseDefinitions(),ROOT.weightDefinitions(fileSF),getLumiWeight(xsec=xsec, inputFile=fvec)])

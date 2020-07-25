@@ -249,14 +249,14 @@ def prepareHistos(inDir,outDir) :
         
     # cmdList.append('cp  '+inDir+'SingleMuonData_plots.root '+outDir+'/hadded/Data_plots.root')
     # cmdList.append('cp  '+inDir+'WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_plots.root '+outDir+'/hadded/WJets_plots.root')
-    cmdList.append('cp  '+inDir+'SingleMuonData_plots.root '+outDir+'/hadded/Data_plots.root')
-    cmdList.append('cp  '+inDir+'WToMu_plots.root '+outDir+'/hadded/WToMu_plots.root')
-    cmdList.append('cp  '+inDir+'WToTau_plots.root '+outDir+'/hadded/WToTau_plots.root')
-    cmdList.append('hadd -f '+outDir+'/hadded/DYJets_plots.root '+inDir+'DYJetsToLL_M-*')
-    cmdList.append('hadd -f '+outDir+'/hadded/TTJets_plots.root '+inDir+'TTJets*')
-    cmdList.append('hadd -f '+outDir+'/hadded/SingleTop_plots.root  '+inDir+'ST_t-channel_* '+inDir+'ST_s-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1_plots.root ')
-    cmdList.append('hadd -f '+outDir+'/hadded/TW_plots.root  '+inDir+'ST_tW_*')
-    cmdList.append('hadd -f '+outDir+'/hadded/Diboson_plots.root '+inDir+'WW_TuneCUETP8M1_13TeV-pythia8_plots.root '+inDir+'WZ_TuneCUETP8M1_13TeV-pythia8_plots.root '+inDir+'ZZ_TuneCUETP8M1_13TeV-pythia8_plots.root')
+    cmdList.append('cp  '+inDir+'/SingleMuonData_plots.root '+outDir+'/hadded/Data_plots.root')
+    cmdList.append('cp  '+inDir+'/WToMu_plots.root '+outDir+'/hadded/WToMu_plots.root')
+    cmdList.append('cp  '+inDir+'/WToTau_plots.root '+outDir+'/hadded/WToTau_plots.root')
+    cmdList.append('hadd -f '+outDir+'/hadded/DYJets_plots.root '+inDir+'/DYJetsToLL_M-*')
+    cmdList.append('hadd -f '+outDir+'/hadded/TTJets_plots.root '+inDir+'/TTJets*')
+    cmdList.append('hadd -f '+outDir+'/hadded/SingleTop_plots.root  '+inDir+'/ST_t-channel_* '+inDir+'/ST_s-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1_plots.root ')
+    cmdList.append('hadd -f '+outDir+'/hadded/TW_plots.root  '+inDir+'/ST_tW_*')
+    cmdList.append('hadd -f '+outDir+'/hadded/Diboson_plots.root '+inDir+'/WW_TuneCUETP8M1_13TeV-pythia8_plots.root '+inDir+'/WZ_TuneCUETP8M1_13TeV-pythia8_plots.root '+inDir+'/ZZ_TuneCUETP8M1_13TeV-pythia8_plots.root')
             
     for i in cmdList :
         os.system(i)
