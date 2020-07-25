@@ -35,17 +35,17 @@ class plotter:
             }   
         
         self.variableDict = {
-            "Mu1_pt_plus"   :  ["Mu1_pt",   "p_{T} (#mu^{+})",    "Events /binWidth"],
-            "Mu1_pt_minus"  :  ["Mu1_pt",   "p_{T} (#mu^{-})",    "Events /binWidth"],
-            "Mu1_eta_plus"  :  ["Mu1_eta",  "#eta (#mu^{+})",     "Events /binWidth"],
-            "Mu1_eta_minus" :  ["Mu1_eta",  "#eta (#mu^{-})",     "Events /binWidth"],
-            "MT_plus"       :  ["MT",       "M_{T} (#mu^{+})",    "Events /binWidth"],      
-            "MT_minus"      :  ["MT",       "M_{T} (#mu^{-})",    "Events /binWidth"],      
+            "Mu1_pt_plus"   :  ["Mu1_pt",   "p_{T} (#mu^{+})",    "Events /binWidth", " [GeV]"],
+            "Mu1_pt_minus"  :  ["Mu1_pt",   "p_{T} (#mu^{-})",    "Events /binWidth", " [GeV]"],
+            "Mu1_eta_plus"  :  ["Mu1_eta",  "#eta (#mu^{+})",     "Events /binWidth", ""],
+            "Mu1_eta_minus" :  ["Mu1_eta",  "#eta (#mu^{-})",     "Events /binWidth", ""],
+            "MT_plus"       :  ["MT",       "M_{T} (#mu^{+})",    "Events /binWidth", " [GeV]"],      
+            "MT_minus"      :  ["MT",       "M_{T} (#mu^{-})",    "Events /binWidth", " [GeV]"],      
         }
         
         self.signDict = {
-            'minus' : [1, ROOT.kRed+2, "W^{-}#rightarrow #mu^{-}#bar{#nu}_{#mu}"],
-            'plus' :  [2, ROOT.kRed+1, "W^{+}#rightarrow #mu^{+}#nu_{#mu}"]
+            'minus' : [1, ROOT.kRed+1, "W^{-}#rightarrow #mu^{-}#bar{#nu}_{#mu}"],
+            'plus' :  [2, ROOT.kRed+2, "W^{+}#rightarrow #mu^{+}#nu_{#mu}"]
         }
         
         self.sampleOrder = ['DiBoson','WtoTau','ST','TTbar','TW','DYJets','SIGNAL_Fake','WToMu']
@@ -104,7 +104,7 @@ class plotter:
     def plotStack(self,skipSyst=[]):
 
         self.getHistos()
-        fname = "{dir}/stackplots.root".format(dir=self.outdir)
+        fname = "{dir}/stackPlots.root".format(dir=self.outdir)
         outFile =  ROOT.TFile(fname, "RECREATE")
         
         for var,varInfo in self.variableDict.iteritems() :
@@ -112,7 +112,7 @@ class plotter:
             if var.endswith('minus') : s='minus'  
             else : s='plus'  
             
-            legend = ROOT.TLegend(0.5, 0.6, 0.90, 0.85)            
+            legend = ROOT.TLegend(0.5, 0.5, 0.90, 0.85)            
             hStack = ROOT.THStack('stack_'+var,varInfo[1])
             hSum = self.CloneEmpty(self.histoDict[self.sampleOrder[0]+s+var],'hsum_'+var) #sum of MC for ratio evaluation
             hData = self.histoDict['Data'+s+var].Clone('hData_'+var)
@@ -199,14 +199,14 @@ class plotter:
             hStack.SetMaximum(1.5*max(hData.GetMaximum(),hStack.GetMaximum())) 
             hStack.GetYaxis().SetTitle(varInfo[2])
             hStack.GetYaxis().SetTitleOffset(1.3)
-            hStack.GetXaxis().SetTitle(varInfo[1])
+            hStack.GetXaxis().SetTitle(varInfo[1]+varInfo[3])
             hStack.GetXaxis().SetTitleOffset(3)
             hStack.GetXaxis().SetLabelOffset(3)
             
             hData.SetMarkerStyle(20)
             hData.SetMarkerColor(self.sampleDict['Data'][2])
            
-            hRatio.SetMarkerStyle(1)
+            hRatio.SetMarkerStyle(1)#20
             hRatio.SetLineColor(1)
             hRatio.SetLineWidth(2)
             
@@ -220,7 +220,7 @@ class plotter:
             hRatioBand.GetYaxis().SetNdivisions(506)
             hRatioBand.SetTitleSize(0.15,'y')
             hRatioBand.SetLabelSize(0.12,'y')
-            hRatioBand.GetXaxis().SetTitle(varInfo[1])
+            hRatioBand.GetXaxis().SetTitle(varInfo[1]+varInfo[3])
             hRatioBand.GetXaxis().SetTitleOffset(0.6)
             hRatioBand.SetTitleSize(0.18,'x')
             hRatioBand.SetLabelSize(0.15,'x')
@@ -235,12 +235,172 @@ class plotter:
             can.Write()
             
             #debug:
-            hRatio.Write()
-            for syst, hsyst in hRatioDict.iteritems() :
-                hsyst.Write()
+            # hRatio.Write()
+            # for syst, hsyst in hRatioDict.iteritems() :
+            #     hsyst.Write()
             
         outFile.Close()
 
+    def plotSyst(self,skipSyst=[]) :
+        fname = "{dir}/systPlots.root".format(dir=self.outdir)
+        outFile =  ROOT.TFile(fname, "RECREATE")
+        
+        for var,varInfo in self.variableDict.iteritems() :
+            if var.endswith('minus') : s='minus'  
+            else : s='plus' 
+            
+            hdict = {}
+            
+            #completely broken syst 
+            legend = ROOT.TLegend(0.15, 0.6, 0.85, 0.85) 
+            hData = self.histoDict['Data'+s+var].Clone('hData_'+var) 
+            for sKind, sList in self.extSyst.iteritems(): #summing MCs
+                for sName in sList :    
+                    hdict[sName] = self.CloneEmpty(self.histoDict[self.sampleOrder[0]+s+var+sName],'hsum_'+var+'_'+sName)
+                    for sample in self.sampleOrder :
+                        hdict[sName].Add(self.histoDict[sample+s+var+sName])
+            
+            hSumNOM =hdict[''].Clone("sumNom"+var)          
+            for sKind, sList in self.extSyst.iteritems(): #ratios
+                for sName in sList :    
+                    hdict[sName].Divide(hSumNOM)
+                    
+            for x in range(1,hdict[''].GetNbinsX()+1) : #stat error using data
+                if hdict[''].GetBinContent(x)==0 :
+                    hdict[''].SetBinError(x,0)
+                else :
+                    hdict[''].SetBinError(x,hData.GetBinError(x)/ hSumNOM.GetBinContent(x))
+            
+            #build the canvas
+            can = ROOT.TCanvas(var+'_systBreakdown',var+'_systBreakdown',800,600)
+            can.cd()
+            can.SetGridx()
+            can.SetGridy()
+            
+            hdict[''].SetLineWidth(0)
+            hdict[''].SetLineColor(1)
+            hdict[''].SetFillColor(1)
+            hdict[''].SetFillStyle(3001)
+            hdict[''].Draw()
+            hdict[''].Draw("same E2")# same 0P5
+            hdict[''].SetTitle(varInfo[1]+', systematic breakdown')
+            hdict[''].GetYaxis().SetTitle('Syst/Nom')
+            hdict[''].GetXaxis().SetTitle(varInfo[1]+varInfo[3])
+            if 'MT' in var :
+                hdict[''].GetYaxis().SetRangeUser(0.8,1.3)
+            else :
+                 hdict[''].GetYaxis().SetRangeUser(0.95,1.1)
+            legend.AddEntry(hdict[''], 'Stat. from Data')
+            # legend.SetFillStyle(0)
+            # legend.SetBorderSize(0)
+            legend.SetNColumns(3)
+            
+            colorList = [600,616,416,632,432,800,900]
+            colorNumber = 1
+            colorCounter = 0
+            for sKind, sList in bkg_utils.bkg_systematics.iteritems():
+                colorNumber = colorList[colorCounter]
+                colorCounter = colorCounter+1
+                for sName in sList : 
+                    colorNumber = colorNumber-2
+                    if colorNumber < colorList[colorCounter-1]-10 :
+                        colorNumber = colorList[colorCounter]+2
+                        
+                    if sKind in skipSyst : continue #skipped systs
+    
+                    hdict[sName].SetLineWidth(3)
+                    hdict[sName].SetLineColor(1)  
+                    hdict[sName].SetLineColor(colorNumber)
+                    hdict[sName].Draw("hist SAME")
+    
+                    legend.AddEntry(hdict[sName], sName.replace('LHEScaleWeight','Scale'))
+            legend.Draw("SAME")
+        
+            can.SaveAs("{dir}/{c}.pdf".format(dir=self.outdir,c=can.GetName()))
+            can.SaveAs("{dir}/{c}.png".format(dir=self.outdir,c=can.GetName()))
+            
+            outFile.cd()
+            can.Write()  
+            
+            
+            
+            #grouped syst
+            legend2 = ROOT.TLegend(0.15, 0.7, 0.5, 0.85) 
+            for sKind, sList in self.extSyst.iteritems(): #ratios
+                hdict[sKind] = self.CloneEmpty(self.histoDict[self.sampleOrder[0]+s+var],'hsum_'+var+'_'+sKind)
+                for i in range(1,hdict[sKind].GetNbinsX()+1) :
+                    delta = 0
+                    for sName in sList :
+                        if 'Down' in sName : continue
+                        if sName in self.LHEdict['Down']: continue
+                        if sName=='' : continue
+                        if 'Up' in sName :
+                            systDown =  sName.replace("Up","Down")
+                        else :
+                            for jj in range(len(self.LHEdict['Up'])) :
+                                if sName == self.LHEdict['Up'][jj] :
+                                    systDown = self.LHEdict['Down'][jj] 
+                        
+                        delta += (hdict[sName].GetBinContent(i)-hdict[systDown].GetBinContent(i))**2    
+                    delta = 0.5*math.sqrt(delta)
+                    if sKind=='Nominal' :
+                        delta = hdict[''].GetBinError(i)
+                    hdict[sKind].SetBinContent(i, delta) 
+                hdict[sKind].SetFillStyle(0)
+                hdict[sKind].SetFillColor(0)
+            
+            #build the canvas
+            can2 = ROOT.TCanvas(var+'_systComparison',var+'_systComparison',800,600)
+            can2.cd()
+            can2.SetGridx()
+            can2.SetGridy()
+            can2.SetLogy()
+            
+            hdict['Nominal'].SetLineWidth(3)
+            hdict['Nominal'].SetLineColor(1)
+            hdict['Nominal'].Draw()
+            hdict['Nominal'].Draw()# same 0P5
+            hdict['Nominal'].SetTitle(varInfo[1]+', systematic comparison')
+            hdict['Nominal'].GetYaxis().SetTitle('Syst/Nom')
+            hdict['Nominal'].GetXaxis().SetTitle(varInfo[1]+varInfo[3])
+            # if 'MT' in var :
+            hdict['Nominal'].GetYaxis().SetRangeUser(0.0001,1)
+            # else :
+            #      hdict['Nominal'].GetYaxis().SetRangeUser(0.95,1.1)
+            legend2.AddEntry(hdict['Nominal'], 'Stat. from Data')
+            legend2.SetFillStyle(0)
+            legend2.SetBorderSize(0)
+            legend2.SetNColumns(2)
+            
+            colorNumber=2
+            for sKind, sList in bkg_utils.bkg_systematics.iteritems():
+                    if colorNumber==5 : colorNumber+=1
+
+                    if sKind in skipSyst : continue #skipped systs
+                    
+                    hdict[sKind].SetLineWidth(3)
+                    hdict[sKind].SetLineColor(colorNumber)
+                    hdict[sKind].Draw("hist SAME")
+                    colorNumber+=1
+                    legend2.AddEntry(hdict[sKind], sKind.replace('Vars',''))
+                    
+            legend2.Draw("SAME")
+        
+            can2.SaveAs("{dir}/{c}.pdf".format(dir=self.outdir,c=can2.GetName()))
+            can2.SaveAs("{dir}/{c}.png".format(dir=self.outdir,c=can2.GetName()))
+            
+            outFile.cd()
+            can2.Write()  
+                    
+        outFile.Close()
+
+                    
+                    
+                    
+                    
+        
+        
+        
 
 def prepareHistos(inDir,outDir) :
     cmdList = []
@@ -269,6 +429,7 @@ def prepareHistos(inDir,outDir) :
 #  - the --hadd 1 is needed only the first time the input is processed
 #    and it prepare the input for the stacked plots
 #  - skipSyst allow to skip some syst category in the band plotting
+#  - systComp do the comparsion between various syst
 #########################################################################
 
     
@@ -277,14 +438,18 @@ parser.add_argument('-hadd','--hadd', type=int, default=True,help="hadd of the o
 parser.add_argument('-o','--output', type=str, default='TEST',help="name of the output directory")
 parser.add_argument('-i','--input', type=str, default='TEST',help="name of the input direcory root file")
 parser.add_argument('-s','--skipSyst', type=str, default='',nargs='*', help="list of skipped syst class as in bkgAnalysis/bkg_utils.py, separated by space")
+parser.add_argument('-comp','--systComp', type=int, default=True,help="systematic uncertainity comparison plots")
 
 args = parser.parse_args()
 HADD = args.hadd
 OUTPUT = args.output
 INPUT = args.input
 skippedSyst =args.skipSyst
+SYSTCOMP = args.systComp
 
 if HADD :
     prepareHistos(inDir=INPUT,outDir=OUTPUT)
 p=plotter(outDir=OUTPUT, inDir = INPUT)
 p.plotStack(skipSyst=skippedSyst)
+if SYSTCOMP :
+    p.plotSyst(skipSyst=skippedSyst)

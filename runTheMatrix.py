@@ -3,7 +3,7 @@ import ROOT
 import os
 import copy
 import argparse
-from contextlib import contextmanager
+# from contextlib import contextmanager
 
 ################################################################################################################################################
 #
@@ -79,5 +79,15 @@ if step3 :
 if step4 :
     print "step4: plotter..."
     os.chdir('analysisOnData/python')
-    os.system('python plotter_prefit.py --hadd 1 --output ../'+outputDir+'/plot/ --input ../'+outputDir)
-
+    if not os.path.isdir('../'+outputDir): os.system('mkdir ../'+outputDir)
+    os.system('python plotter_prefit.py --hadd 1 --output ../'+outputDir+'/plot/ --input ../'+outputDir+' --systComp 1')
+    
+    sys.path.append('../../bkgAnalysis')
+    import bkg_utils
+    for sKind,sList in bkg_utils.bkg_systematics.iteritems() : 
+        skipList = ""
+        for sKindInt,sListInt in bkg_utils.bkg_systematics.iteritems() :
+            if sKindInt==sKind : continue
+            else : skipList+= ' '+str(sKindInt)
+        print "Skipped systematics:", skipList 
+        os.system('python plotter_prefit.py --hadd 1 --output ../'+outputDir+'/plot_only_'+str(sKind)+' --input ../'+outputDir+' --systComp 1 --skipSyst '+skipList)
