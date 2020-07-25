@@ -43,8 +43,8 @@ class bkg_prepareHistos:
                 regList.append('Sideband_aiso'+lcut)
                 
         for f in self.fileList : 
-            inFile =  ROOT.TFile.Open("./"+self.inputDir+f+suffString+".root")
-            outFile =  ROOT.TFile("./"+self.outDir+f+".root", "recreate")
+            inFile =  ROOT.TFile.Open(self.inputDir+f+suffString+".root")
+            outFile =  ROOT.TFile(self.outDir+f+".root", "recreate")
             for r in regList :
                 regExtrapFlag = self.isExtrapReg(r)
                 for sKind, sList in self.systDict.iteritems():  
@@ -89,7 +89,7 @@ class bkg_prepareHistos:
 
 parser = argparse.ArgumentParser("")
 parser.add_argument('-inputDir', '--inputDir',type=str, default='./data/', help="input dir name")
-parser.add_argument('-outputDir', '--outputDir',type=str, default='./bkg_V2/', help="output dir name")
+parser.add_argument('-outputDir', '--outputDir',type=str, default='./bkg/', help="output dir name")
 
 args = parser.parse_args()
 inputDir = args.inputDir
