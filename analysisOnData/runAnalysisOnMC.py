@@ -8,7 +8,7 @@ from RDFtree import RDFtree
 sys.path.append('python/')
 sys.path.append('data/')
 from systematics import systematics
-from selections import selections, selectionVars, selections_bkg
+from selections import selections_whelicity, selectionVars, selections_bkg_whelicity
 
 from getLumiWeight import getLumiWeight
 
@@ -37,7 +37,8 @@ if runBKG:
 
 outFtag=""
 if runBKG:
-    selections = selections_bkg
+    selections_whelicity = selections_bkg_whelicity
+    print "Running job for preparing inputs of background study"
     outFtag="_bkgselections"
 
 samples={}
@@ -76,7 +77,7 @@ for sample in samples:
     p = RDFtree(outputDir = outputDir, inputFile = fvec, outputFile="{}{}_plots.root".format(sample, outFtag), pretend=pretendJob)
     p.branch(nodeToStart = 'input', nodeToEnd = 'defs', modules = [ROOT.baseDefinitions(),ROOT.weightDefinitions(fileSF),getLumiWeight(xsec=xsec, inputFile=fvec)])
 
-    for region,cut in selections.iteritems():
+    for region,cut in selections_whelicity.iteritems():
 
         print "running in region {}".format(region)
 

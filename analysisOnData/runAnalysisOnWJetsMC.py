@@ -9,7 +9,7 @@ from RDFtree import RDFtree
 sys.path.append('python/')
 sys.path.append('data/')
 from systematics import systematics
-from selections import selections, selectionVars, selections_bkg
+from selections import selections_whelicity, selectionVars, selections_bkg_whelicity
 
 from getLumiWeight import getLumiWeight
 
@@ -35,10 +35,10 @@ else:
 if runBKG:
     selections = selections_bkg
     print "Running job for preparing inputs of background study"
-
 outFtag=""
 if runBKG:
-    selections = selections_bkg
+    selections_whelicity = selections_bkg_whelicity
+    print "Running job for preparing inputs of background study"
     outFtag="_bkgselections"
 
 samples={}
@@ -85,7 +85,7 @@ for wdecay, decaycut in wdecayselections.iteritems() :
     fileY = ROOT.TFile.Open("data/histoUnfoldingSystRap_nsel2_dy3_rebin1_default.root")
     p.branch(nodeToStart = 'input', nodeToEnd = 'defs', modules = [ROOT.reweightFromZ(filePt,fileY),ROOT.baseDefinitions(),ROOT.weightDefinitions(fileSF),getLumiWeight(xsec=xsec, inputFile=fvec)])
 
-    for region,cut in selections.iteritems():
+    for region,cut in selections_whelicity.iteritems():
         
         if 'aiso' in region:
             weight = 'float(puWeight*lumiweight*weightPt*weightY)'
