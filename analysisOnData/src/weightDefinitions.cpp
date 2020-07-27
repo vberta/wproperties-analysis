@@ -19,11 +19,17 @@ RNode weightDefinitions::run(RNode d)
         int binTrigger= _TriggerPlus->FindBin(eta,pt);
         if(charge>0)
         {
-            return _Reco->GetBinContent(binReco)*_TriggerPlus->GetBinContent(binTrigger);
+	  auto sf = _Reco->GetBinContent(binReco)*_TriggerPlus->GetBinContent(binTrigger);
+          if (sf < 0.001) sf = 1.;
+            return sf;
+            //return _Reco->GetBinContent(binReco)*_TriggerPlus->GetBinContent(binTrigger);
         }
         else
-        {
-            return _Reco->GetBinContent(binReco)*_TriggerMinus->GetBinContent(binTrigger);
+        {	  
+	  auto sf = _Reco->GetBinContent(binReco)*_TriggerMinus->GetBinContent(binTrigger);
+          if (sf < 0.001) sf = 1.;
+            return sf;
+	  //return _Reco->GetBinContent(binReco)*_TriggerMinus->GetBinContent(binTrigger);
         }
 
     };
@@ -44,6 +50,7 @@ RNode weightDefinitions::run(RNode d)
         if (charge > 0)
         {
             float nomSF = _Reco->GetBinContent(binReco)*_TriggerPlus->GetBinContent(binTrigger);
+            if(nomSF < 0.001)  nomSF = 1.;
             WHSF.emplace_back(nomSF*(1+TMath::Sqrt(2)*_TriggerPlusSyst0->GetBinContent(binSyst)));
             WHSF.emplace_back(nomSF*(1+TMath::Sqrt(2)*_TriggerPlusSyst1->GetBinContent(binSyst)));
             WHSF.emplace_back(nomSF*(1+TMath::Sqrt(2)*_TriggerPlusSyst2->GetBinContent(binSyst)));
@@ -56,6 +63,8 @@ RNode weightDefinitions::run(RNode d)
         else
         {
             float nomSF = _Reco->GetBinContent(binReco)*_TriggerMinus->GetBinContent(binTrigger);
+            if(nomSF < 0.001) nomSF = 1.;
+
             WHSF.emplace_back(nomSF*(1+TMath::Sqrt(2)*_TriggerMinusSyst0->GetBinContent(binSyst)));
             WHSF.emplace_back(nomSF*(1+TMath::Sqrt(2)*_TriggerMinusSyst1->GetBinContent(binSyst)));
             WHSF.emplace_back(nomSF*(1+TMath::Sqrt(2)*_TriggerMinusSyst2->GetBinContent(binSyst)));
