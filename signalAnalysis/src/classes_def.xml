@@ -7,4 +7,5 @@
   <class name="getAccMap"/>
   <class name="getWeights"/>
   <class name="templateBuilder"/>
+  <class name="baseDefinitions"/>
 </lcgdict>

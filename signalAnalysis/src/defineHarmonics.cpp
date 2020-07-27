@@ -33,12 +33,12 @@ RNode defineHarmonics::run(RNode d){
 
   };
 
-  auto multByWeight = [](float a, const ROOT::VecOps::RVec<float> &w){ return a*w;};
-  auto multSqByWeight = [](float a, const ROOT::VecOps::RVec<float> &w)-> ROOT::VecOps::RVec<float>{ return a*w*w;};
+  auto multByWeight = [](float a, const ROOT::VecOps::RVec<float> &w) { return a * w; };
+  auto multSqByWeight = [](float a, const ROOT::VecOps::RVec<float> &w) -> ROOT::VecOps::RVec<float> { return a * w * w; };
 
   auto d1 = d.Define("harmonicsVec", getHarmonicsVec, {"CStheta_preFSR", "CSphi_preFSR"})
-            .Define("harmonicsVecWeighted", multByWeight, {"lumiweight", "harmonicsVec"})
-            .Define("harmonicsVecSqWeighted", multSqByWeight, {"lumiweight", "harmonicsVec"});
+                .Define("harmonicsVecWeighted", multByWeight, {"lumiweight", "harmonicsVec"})
+                .Define("harmonicsVecSqWeighted", multSqByWeight, {"lumiweight", "harmonicsVec"});
 
   return d1;
   
