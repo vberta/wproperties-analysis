@@ -16,7 +16,7 @@ ROOT.ROOT.EnableImplicitMT(c)
 print "running with {} cores".format(c)
 
 
-inputFile = '/scratchssd/emanca/wproperties-analysis/signalAnalysis/nanowmass_1.root'
+inputFile = '/scratchssd/sroychow/NanoAOD2016-V2/WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_GEN/test_tree_*.root'
 
 p = RDFtree(outputDir = 'TEST', inputFile = inputFile, outputFile="AC.root")
 p.branch(nodeToStart = 'input', nodeToEnd = 'basicSelection', modules = [getLumiWeight(xsec=61526.7, inputFile=inputFile), ROOT.baseDefinitions(),ROOT.defineHarmonics()])

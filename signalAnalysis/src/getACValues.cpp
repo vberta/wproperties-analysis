@@ -1,58 +1,34 @@
 #include "interface/getACValues.hpp"
 
-void getACValues::getAngCoeff(std::vector<TH2D*> histos)
+void getACValues::getAngCoeff()
 {
 
-    for (auto &h : histos)
+    _hA0->Divide(_mapTot);
+    _hA1->Divide(_mapTot);
+    _hA2->Divide(_mapTot);
+    _hA3->Divide(_mapTot);
+    _hA4->Divide(_mapTot);
+    _hA5->Divide(_mapTot);
+    _hA6->Divide(_mapTot);
+    _hA7->Divide(_mapTot);
+
+    for (int xbin = 1; xbin < _hA0->GetNbinsX() + 1; xbin++)
     {
-
-        std::string s = h->GetName();
-        std::string delimiter = "_";
-        std::string token = s.substr(0, s.find(delimiter));
-
-        std::string token2 = "";
-        if (s.find(delimiter) != std::string::npos)
+        for (int ybin = 1; ybin < _hA0->GetNbinsY() + 1; ybin++)
         {
 
-            token2 = s.substr(s.find(delimiter) + delimiter.length(), std::string::npos);
-            token2 = delimiter + token2;
+            auto content = _hA0->GetBinContent(xbin, ybin);
+            _hA0->SetBinContent(xbin, ybin, 20. / 3. * (content + 1. / 10.));
         }
-        for (auto &h2 : histos)
-        {
-
-            if (h2->GetName() == "harmonicsAUL" + token2)
-                h->Divide(h2);
-        }
-
-        if (token == "harmonicsA0")
-        {
-
-            for (int xbin = 1; xbin < h->GetNbinsX() + 1; xbin++)
-            {
-                for (int ybin = 1; ybin < h->GetNbinsY() + 1; ybin++)
-                {
-
-                    auto content = h->GetBinContent(xbin, ybin);
-                    h->SetBinContent(xbin, ybin, 20. / 3. * (content + 1. / 10.));
-                }
-            }
-        }
-        else if (token == "harmonicsA2")
-        {
-            h->Scale(20.);
-        }
-        else if (token == "harmonicsA1")
-            h->Scale(5.);
-
-        else if (token == "harmonicsA5")
-            h->Scale(5.);
-
-        else if (token == "harmonicsA6")
-            h->Scale(5.);
-
-        else
-            h->Scale(4.);
     }
+    _hA2->Scale(20.);
+    _hA1->Scale(5.);
+    _hA5->Scale(5.);
+    _hA6->Scale(5.);
+    _hA3->Scale(4.);
+    _hA4->Scale(4.);
+    _hA7->Scale(4.);
+
 }
 
 RNode getACValues::run(RNode d)
@@ -62,12 +38,16 @@ RNode getACValues::run(RNode d)
         
         ROOT::VecOps::RVec<float> AngCoeff;
 
-        for (auto &h : _histos)
-        {
-
-            int bin = h->FindBin(y, pt);
-            AngCoeff.push_back(h->GetBinContent(bin));
-        }
+        int bin = _hA0->FindBin(y, pt);
+        AngCoeff.push_back(_hA0->GetBinContent(bin));
+        AngCoeff.push_back(_hA1->GetBinContent(bin));
+        AngCoeff.push_back(_hA2->GetBinContent(bin));
+        AngCoeff.push_back(_hA3->GetBinContent(bin));
+        AngCoeff.push_back(_hA4->GetBinContent(bin));
+        AngCoeff.push_back(_hA5->GetBinContent(bin));
+        AngCoeff.push_back(_hA6->GetBinContent(bin));
+        AngCoeff.push_back(_hA7->GetBinContent(bin));
+        AngCoeff.push_back(_hAUL->GetBinContent(bin));
 
         return AngCoeff;
     };

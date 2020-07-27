@@ -27,37 +27,47 @@ private:
   std::vector<ROOT::RDF::RResultPtr<std::vector<TH3D>>> _h3Group;
 
   TFile *_AChistos;
-  std::vector<TH2D *> _histos;
+  TH2D* _hA0;
+  TH2D *_hA1;
+  TH2D *_hA2;
+  TH2D *_hA3;
+  TH2D *_hA4;
+  TH2D *_hA5;
+  TH2D *_hA6;
+  TH2D *_hA7;
+  TH2D *_hAUL;
+  TH2D *_mapTot;
   TFile *_fout;
 
 public:
   getACValues(TFile *AChistos)
   {
     _AChistos = AChistos;
-    TH2D *hA0 = (TH2D *)_AChistos->Get("AngCoeff/harmonicsA0");
-    _histos.push_back(hA0);
-    TH2D *hA1 = (TH2D *)_AChistos->Get("AngCoeff/harmonicsA1");
-    _histos.push_back(hA1);
-    TH2D *hA2 = (TH2D *)_AChistos->Get("AngCoeff/harmonicsA2");
-    _histos.push_back(hA2);
-    TH2D *hA3 = (TH2D *)_AChistos->Get("AngCoeff/harmonicsA3");
-    _histos.push_back(hA3);
-    TH2D *hA4 = (TH2D *)_AChistos->Get("AngCoeff/harmonicsA4");
-    _histos.push_back(hA4);
-    TH2D *hA5 = (TH2D *)_AChistos->Get("AngCoeff/harmonicsA5");
-    _histos.push_back(hA5);
-    TH2D *hA6 = (TH2D *)_AChistos->Get("AngCoeff/harmonicsA6");
-    _histos.push_back(hA6);
-    TH2D *hA7 = (TH2D *)_AChistos->Get("AngCoeff/harmonicsA7");
-    _histos.push_back(hA7);
-    TH2D *hAUL = (TH2D *)_AChistos->Get("AngCoeff/harmonicsAUL");
-    _histos.push_back(hAUL);
+    _hA0 = (TH2D *)_AChistos->Get("AngCoeff/harmonicsA0");
+    _hA1 = (TH2D *)_AChistos->Get("AngCoeff/harmonicsA1");
+    _hA2 = (TH2D *)_AChistos->Get("AngCoeff/harmonicsA2");
+    _hA3 = (TH2D *)_AChistos->Get("AngCoeff/harmonicsA3");
+    _hA4 = (TH2D *)_AChistos->Get("AngCoeff/harmonicsA4");
+    _hA5 = (TH2D *)_AChistos->Get("AngCoeff/harmonicsA5");
+    _hA6 = (TH2D *)_AChistos->Get("AngCoeff/harmonicsA6");
+    _hA7 = (TH2D *)_AChistos->Get("AngCoeff/harmonicsA7");
+    _hAUL = (TH2D *)_AChistos->Get("AngCoeff/harmonicsAUL");
+    _mapTot = (TH2D *)_AChistos->Get("AngCoeff/mapTot");
 
-    getAngCoeff(_histos);
+    getAngCoeff();
 
     _fout = new TFile("ACvalues.root", "recreate");
     _fout->cd();
-    for (auto &h : _histos) h->Write();
+    _hA0->Write();
+    _hA1->Write();
+    _hA2->Write();
+    _hA3->Write();
+    _hA4->Write();
+    _hA5->Write();
+    _hA6->Write();
+    _hA7->Write();
+    _hAUL->Write();
+    _mapTot->Write();
   };
   ~getACValues(){
     _fout->Close();
@@ -72,7 +82,7 @@ public:
   std::vector<ROOT::RDF::RResultPtr<std::vector<TH2D>>> getGroupTH2() override;
   std::vector<ROOT::RDF::RResultPtr<std::vector<TH3D>>> getGroupTH3() override;
 
-  void getAngCoeff(std::vector<TH2D*>);
+  void getAngCoeff();
 
   void reset() override;
 };
