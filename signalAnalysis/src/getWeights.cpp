@@ -29,14 +29,13 @@ RNode getWeights::run(RNode d){
 
     };
 
-    auto getWeights = [](float norm, const ROOT::VecOps::RVec<float>& harmonicsVec, float w){
+    auto getWeights = [](float norm, const ROOT::VecOps::RVec<float>& harmonicsVec){
 
-        return (harmonicsVec/norm)*w;
+        return (harmonicsVec/norm);
 
     };
-
     auto d1 = d.Define("norm", getNorm, {"Wpt_preFSR", "Wrap_preFSR_abs", "AngCoeffVec", "harmonicsVec", "totMap"})
-    .Define("harmonicsWeights", getWeights, {"norm", "harmonicsVec", "lumiweight"});    
+                  .Define("harmonicsWeights", getWeights, {"norm", "harmonicsVec"});
 
     return d1;
     

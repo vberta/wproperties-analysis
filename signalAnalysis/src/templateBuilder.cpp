@@ -2,7 +2,6 @@
 
 
 RNode templateBuilder::run(RNode d){
-	
 
 	TH3::SetDefaultSumw2(true);
   TH2::SetDefaultSumw2(true);
@@ -33,21 +32,18 @@ RNode templateBuilder::run(RNode d){
 
   }
 
-
   auto dFit = d.Filter("accMapEta>0.4");
-  /*
-  auto cut1 = [](float map){ return map > 0.4;};
-  auto cut2 = [](float map){ return map < 0.4;};
+  // auto cut1 = [](float map){ return map > 0.4;};
+  // auto cut2 = [](float map){ return map < 0.4;};
   
-  auto dFit = d.Filter("fabs(Mueta_preFSR)<2.4 && Mupt_preFSR>25. && Mupt_preFSR<65.").Filter(cut1, {"accMapEta"}, "accMapEta fit");
-  auto cutReport1 = dFit.Report();
+  // auto dFit = d.Filter("fabs(Mueta_preFSR)<2.4 && Mupt_preFSR>25. && Mupt_preFSR<65.").Filter(cut1, {"accMapEta"}, "accMapEta fit");
+  // auto cutReport1 = dFit.Report();
 
-  auto dFix = d.Filter("fabs(Mueta_preFSR)<2.4 && Mupt_preFSR>25. && Mupt_preFSR<65.").Filter(cut2, {"accMapEta"}, "accMapEta fix");
-  auto cutReport2 = dFix.Report();
+  // auto dFix = d.Filter("fabs(Mueta_preFSR)<2.4 && Mupt_preFSR>25. && Mupt_preFSR<65.").Filter(cut2, {"accMapEta"}, "accMapEta fix");
+  // auto cutReport2 = dFix.Report();
 
-  cutReport1->Print();
-  cutReport2->Print();
-  */
+  // cutReport1->Print();
+  // cutReport2->Print();
  
   std::vector<std::string> helXsecs = {"L", "I", "T", "A", "P", "7", "8", "9", "UL"};
 
@@ -61,9 +57,8 @@ RNode templateBuilder::run(RNode d){
 
     auto sel = [lowEdgePt, upEdgePt](float pt) { return (pt >lowEdgePt && pt<upEdgePt);};
 
-
-    TH3weightsHelper helperHelXsecs(std::string("pt_")+std::to_string(j)+std::string("_helXsecs"), std::string("pt_")+std::to_string(j)+std::string("_helXsecs"), nBinsEta, etaArr, nBinsPt, ptArr, nBinsY, yArr, helXsecs);
-    auto htmp = dFit.Filter(sel, {"Wpt_preFSR"}).Book<float, float,  float, ROOT::VecOps::RVec<float>>(std::move(helperHelXsecs), { "Mueta_preFSR" ,"Mupt_preFSR", "Wrap_preFSR_abs", "harmonicsWeights"});
+    TH3weightsHelper helperHelXsecs(std::string("pt_")+std::to_string(j)+std::string("_helXsecs_"), std::string("pt_")+std::to_string(j)+std::string("_helXsecs_"), nBinsEta, etaArr, nBinsPt, ptArr, nBinsY, yArr, helXsecs);
+    auto htmp = dFit.Filter(sel, {"Wpt_preFSR"}).Book<float, float, float, float, ROOT::VecOps::RVec<float>>(std::move(helperHelXsecs), {"Mueta_preFSR", "Mupt_preFSR", "Wrap_preFSR_abs", "lumiweight", "harmonicsWeights"});
     _h3Group.push_back(htmp);
 
   }
