@@ -573,10 +573,10 @@ class bkg_analyzer:
                                             if sName in self.LHEdict['Down']: continue
                                             if 'Up' in sName :
                                                 sNameDown =  sName.replace("Up","Down")
-                                            else :
-                                                for i in range(len(self.LHEdict['Up'])) :
-                                                    if sName == self.LHEdict['Up'][i] :
-                                                        sNameDown = self.LHEdict['Down'][i]
+                                            # else :
+                                            #     for i in range(len(self.LHEdict['Up'])) :
+                                            #         if sName == self.LHEdict['Up'][i] :
+                                            #             sNameDown = self.LHEdict['Down'][i]
                                             deltaSyst += (finalHistoDict[sName+canvas+histo+s+e].GetBinContent(self.ptBinning.index(float(p))+1)-finalHistoDict[sNameDown+canvas+histo+s+e].GetBinContent(self.ptBinning.index(float(p))+1))**2
                                             nomVal = finalHistoDict['nom'+canvas+histo+s+e].GetBinContent(self.ptBinning.index(float(p))+1)
                                             if (finalHistoDict[sNameDown+canvas+histo+s+e].GetBinContent(self.ptBinning.index(float(p))+1)<nomVal and finalHistoDict[sName+canvas+histo+s+e].GetBinContent(self.ptBinning.index(float(p))+1)<nomVal) or (finalHistoDict[sNameDown+canvas+histo+s+e].GetBinContent(self.ptBinning.index(float(p))+1)>nomVal and finalHistoDict[sName+canvas+histo+s+e].GetBinContent(self.ptBinning.index(float(p))+1)>nomVal) : #nominal not in between systs
@@ -586,6 +586,15 @@ class bkg_analyzer:
                                                     # if finalHistoDict['nom'+canvas+histo+s+e].GetBinError(self.ptBinning.index(float(p))+1) < diffUp or finalHistoDict['nom'+canvas+histo+s+e].GetBinError(self.ptBinning.index(float(p))+1) < diffDown :
                                                         print "WARNING: systematic", sName, canvas,histo," up/down not around nominal in bin", p,e,s, ">>> down,nom,up=",finalHistoDict[sNameDown+canvas+histo+s+e].GetBinContent(self.ptBinning.index(float(p))+1),nomVal,finalHistoDict[sName+canvas+histo+s+e].GetBinContent(self.ptBinning.index(float(p))+1), 'statErr=', finalHistoDict['nom'+canvas+histo+s+e].GetBinError(self.ptBinning.index(float(p))+1)
                                     deltaSyst = 0.5*math.sqrt(deltaSyst) 
+                                    
+                                    deltaLHE=0 #LHEScale variations
+                                    for sKind, sList in systDict.iteritems():
+                                        for sName in sList :
+                                            if not 'LHEScale' in sName: continue 
+                                            deltaLHE += (finalHistoDict[sName+canvas+histo+s+e].GetBinContent(self.ptBinning.index(float(p))+1)-finalHistoDict['nom'+canvas+histo+s+e].GetBinContent(self.ptBinning.index(float(p))+1))**2
+                                    deltaLHE = math.sqrt(deltaLHE)
+                                    deltaSyst= deltaSyst+deltaLHE
+                                    
                                     errHigh = deltaSyst
                                     errLow = deltaSyst                                          
                                             
@@ -1050,7 +1059,17 @@ class bkg_analyzer:
                                             # diffDown = abs(finalHistoDict[sNameDown+kind+par+s].GetBinContent(self.etaBinning.index(float(e))+1)-finalHistoDict['nom'+kind+par+s].GetBinContent(self.etaBinning.index(float(e))+1))
                                             # if finalHistoDict['nom'+kind+par+s].GetBinError(self.etaBinning.index(float(e))+1) < diffUp or finalHistoDict['nom'+kind+par+s].GetBinError(self.etaBinning.index(float(e))+1) < diffDown :
                                                 print "WARNING: systematic (parameters)", sName," up/down not around nominal in bin", p,e,s, ">>> down,nom,up=", finalHistoDict[sNameDown+kind+par+s].GetBinContent(self.etaBinning.index(float(e))+1), nomVal, finalHistoDict[sName+kind+par+s].GetBinContent(self.etaBinning.index(float(e))+1)
-                            deltaSyst = 0.5*math.sqrt(deltaSyst) 
+                            deltaSyst = 0.5*math.sqrt(deltaSyst)
+                            
+                            deltaLHE=0 #LHEScale variations
+                            for sKind, sList in systDict.iteritems():
+                                for sName in sList :
+                                    if not 'LHEScale' in sName: continue 
+                                    deltaLHE += (finalHistoDict[sName+kind+par+s].GetBinContent(self.etaBinning.index(float(e))+1)-finalHistoDict['nom'+kind+par+s].GetBinContent(self.etaBinning.index(float(e))+1))**2
+                            deltaLHE = math.sqrt(deltaLHE)
+                            deltaSyst= deltaSyst+deltaLHE
+                            
+                             
                             errHigh = deltaSyst
                             errLow = deltaSyst
                                                 
