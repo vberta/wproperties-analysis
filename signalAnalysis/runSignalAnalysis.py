@@ -1,30 +1,39 @@
 import os
 import sys
 import ROOT
-from math import *
 
-from RDFtree import *
-
+from RDFtree import RDFtree
 sys.path.append('python/')
 
-from getLumiWeight import *
-from basicSelection import *
-
+from getLumiWeight import getLumiWeight
 
 ROOT.gSystem.Load('bin/libSignalAnalysis.so')
 
 c=64
-		
+
 ROOT.ROOT.EnableImplicitMT(c)
 
 print "running with {} cores".format(c)
 
 
-inputFile = '/scratchssd/emanca/wproperties-analysis/data/test_*.root'
+inputFile = '/scratchssd/sroychow/NanoAOD2016-V2/WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_GEN/test_tree_*.root'
 
-p = RDFtree(outputDir = 'TEST', inputFile = inputFile, outputFile="test3.root")
-p.branch(nodeToStart = 'input', nodeToEnd = 'basicSelection', modules = [getLumiWeight(xsec=61526.7, inputFile=inputFile), ROOT.defineHarmonics(), basicSelection()])
+p = RDFtree(outputDir = 'TEST', inputFile = inputFile, outputFile="AC.root")
+p.branch(nodeToStart = 'input', nodeToEnd = 'basicSelection', modules = [getLumiWeight(xsec=61526.7, inputFile=inputFile), ROOT.baseDefinitions(),ROOT.defineHarmonics()])
 p.branch(nodeToStart = 'basicSelection', nodeToEnd = 'AngCoeff', modules = [ROOT.AngCoeff()])
+p.getOutput()
+
+p = RDFtree(outputDir = 'TEST', inputFile = inputFile, outputFile="templates.root")
+p.branch(nodeToStart = 'input', nodeToEnd = 'basicSelection', modules = [getLumiWeight(xsec=61526.7, inputFile=inputFile), ROOT.baseDefinitions(),ROOT.defineHarmonics()])
+fileAC = ROOT.TFile.Open("TEST/AC.root")
+p.branch(nodeToStart = 'basicSelection', nodeToEnd = 'AngCoeff2',modules = [ROOT.getACValues(fileAC)])
+p.branch(nodeToStart = 'AngCoeff2', nodeToEnd = 'accMap', modules =[ROOT.getAccMap(fileAC)])
+p.branch(nodeToStart = 'accMap', nodeToEnd = 'templates', modules =[ROOT.getWeights(), ROOT.templateBuilder()])
+p.branch(nodeToStart = 'accMap', nodeToEnd = 'dataObs', modules =[ROOT.dataObs()])
+
+p.getOutput()
+p.saveGraph()
+
 
 """
 pdf = ROOT.vector('string')()
@@ -35,7 +44,7 @@ p.branch(nodeToStart = 'basicSelection', nodeToEnd = 'AngCoeffPDF', modules = [R
 
 p.getOutput()
 
-p.branch(nodeToStart = 'AngCoeff', nodeToEnd = 'AngCoeff2',modules = [ROOT.getACValues([h for h in p.getObjects('AngCoeff') if 'vector' in h.__cppname__][0])])
+
 #p.branch(nodeToStart = 'AngCoeffPDF', nodeToEnd = 'AngCoeffPDF2',modules = [ROOT.getACValues([h for h in p.getObjects('AngCoeff') if 'vector' in h.__cppname__][0])])
 
 maps = ROOT.vector(ROOT.RDF.RResultPtr('TH2D'))()
