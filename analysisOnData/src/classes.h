@@ -5,4 +5,4 @@
 #include "interface/weightDefinitions.hpp"
 #include "interface/templates.hpp"
 #include "interface/reweightFromZ.hpp"
-//#include "interface/selectionDefs.hpp"
+#include "interface/lhepdfDefinitions.hpp"

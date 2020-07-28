@@ -5,4 +5,5 @@
   <class name="weightDefinitions"/>
   <class name="templates"/>
   <class name="reweightFromZ"/>
+  <class name="lhepdfDefinitions"/>
 </lcgdict>

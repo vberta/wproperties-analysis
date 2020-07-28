@@ -49,30 +49,30 @@ RNode baseDefinitions::run(RNode d)
     auto colNames = d.GetColumnNames();
     bool LHE = false;
     for (auto &&colName : colNames)
-    {
+      {
         // std::cout << colName << std::endl;
         if (colName == "LHEScaleWeight")
-            LHE = true;
-    }
+	  LHE = true;
+      }
 
     if (!LHE)
-        return d1withCompvar;
+      return d1withCompvar;
     else
-    {
+      {
         auto reduceVec = [](ROOT::VecOps::RVec<float> LHE) {
-            ROOT::VecOps::RVec<float> red;
-            red.emplace_back(LHE[0]);
-            red.emplace_back(LHE[1]);
-            red.emplace_back(LHE[3]);
-            red.emplace_back(LHE[5]);
-            red.emplace_back(LHE[7]);
-            red.emplace_back(LHE[8]);
-            return red;
+	  ROOT::VecOps::RVec<float> red;
+	  red.emplace_back(LHE[0]);
+	  red.emplace_back(LHE[1]);
+	  red.emplace_back(LHE[3]);
+	  red.emplace_back(LHE[5]);
+	  red.emplace_back(LHE[7]);
+	  red.emplace_back(LHE[8]);
+	  return red;
         };
 
         auto dLHE = d1withCompvar.Define("LHEScaleWeightred", reduceVec, {"LHEScaleWeight"});
         return dLHE;
-    }
+      }
 }
 
 std::vector<ROOT::RDF::RResultPtr<TH1D>> baseDefinitions::getTH1()

@@ -16,13 +16,11 @@ ROOT.gSystem.Load('bin/libAnalysisOnData.so')
 
 parser = argparse.ArgumentParser("")
 parser.add_argument('-pretend', '--pretend',type=int, default=False, help="run over a small number of event")
-parser.add_argument('-runBKG', '--runBKG',type=int, default=False, help="prepare the input of the bkg analysis, if =false run the prefit Plots")
 parser.add_argument('-ncores', '--ncores',type=int, default=64, help="number of cores used")
 parser.add_argument('-outputDir', '--outputDir',type=str, default='./output/', help="output dir name")
 
 args = parser.parse_args()
 pretendJob = args.pretend
-runBKG = args.runBKG
 ncores = args.ncores
 outputDir = args.outputDir
 
@@ -31,23 +29,17 @@ if pretendJob:
 else:
     print "Running on full dataset"
 
-if runBKG:
-    selections = selections_bkg
-    print "Running job for preparing inputs of background study"
-
-outFtag=""
-if runBKG:
-    selections_whelicity = selections_bkg_whelicity
-    print "Running job for preparing inputs of background study"
-    outFtag="_bkgselections"
-
+selections_whelicity = selections_bkg_whelicity
+flog=open("samplesFinished.txt", "w")
 samples={}
 with open('data/samples_2016.json') as f:
   samples = json.load(f)
 for sample in samples:
     if not samples[sample]['datatype']=='MC': continue
+    flog.write(sample + " STARTED\n")
     #WJets to be run by a separate config
     if 'WJets' in sample : continue
+    #if 'ST' not in sample : continue
     print sample
     direc = samples[sample]['dir']
     xsec = samples[sample]['xsec']
@@ -65,8 +57,7 @@ for sample in samples:
             continue
         fvec.push_back(inputFile)
         print inputFile
-        WJets = False
-        if "WJetsToLNu" in inputFile: WJets = True
+
     if fvec.empty():
         print "No files found for directory:", samples[sample], " SKIPPING processing"
         continue
@@ -74,8 +65,11 @@ for sample in samples:
 
     fileSF = ROOT.TFile.Open("data/ScaleFactors_OnTheFly.root")
 
-    p = RDFtree(outputDir = outputDir, inputFile = fvec, outputFile="{}{}_plots.root".format(sample, outFtag), pretend=pretendJob)
-    p.branch(nodeToStart = 'input', nodeToEnd = 'defs', modules = [ROOT.baseDefinitions(),ROOT.weightDefinitions(fileSF),getLumiWeight(xsec=xsec, inputFile=fvec)])
+    p = RDFtree(outputDir = outputDir, inputFile = fvec, outputFile="{}_plots.root".format(sample), pretend=pretendJob)
+    if samples[sample]['systematics'] == 2 : 
+        p.branch(nodeToStart = 'input', nodeToEnd = 'defs', modules = [ROOT.baseDefinitions(),ROOT.lhepdfDefinitions(),ROOT.weightDefinitions(fileSF),getLumiWeight(xsec=xsec, inputFile=fvec)])
+    else:
+        p.branch(nodeToStart = 'input', nodeToEnd = 'defs', modules = [ROOT.baseDefinitions(),ROOT.weightDefinitions(fileSF),getLumiWeight(xsec=xsec, inputFile=fvec)])
 
     for region,cut in selections_whelicity.iteritems():
 
@@ -93,14 +87,14 @@ for sample in samples:
         #last argument refers to histo category - 0 = Nominal, 1 = Pt scale , 2 = MET scale
         print "branching nominal"
 
-        if not runBKG: 
+        if region == "Signal": 
             p.branch(nodeToStart = 'defs', nodeToEnd = 'prefit_{}/Nominal'.format(region), modules = [ROOT.muonHistos(cut, weight, nom,"Nom",0)])  
         p.branch(nodeToStart = 'defs', nodeToEnd = 'templates_{}/Nominal'.format(region), modules = [ROOT.templates(cut, weight, nom,"Nom",0)])    
   
        #weight variations
         for s,variations in systematics.iteritems():
-            print "branching weight variations", s
             if "LHEScaleWeight" in s and samples[sample]['systematics'] != 2 :  continue
+            if "LHEPdfWeight"   in s and samples[sample]['systematics'] != 2 :  continue
             if not "LHEScaleWeight" in s:
                 if 'aiso' in region: continue
                 var_weight = weight.replace(s, "1.")
@@ -110,10 +104,10 @@ for sample in samples:
             vars_vec = ROOT.vector('string')()
             for var in variations[0]:
                 vars_vec.push_back(var)
-                
+            print "branching weight variations", s
             print weight,var_weight, "MODIFIED WEIGHT"
-
-            if not runBKG: p.branch(nodeToStart = 'defs'.format(region), nodeToEnd = 'prefit_{}/{}Vars'.format(region,s), modules = [ROOT.muonHistos(cut,var_weight,vars_vec,variations[1], 0)])
+            if region == "Signal": 
+                p.branch(nodeToStart = 'defs'.format(region), nodeToEnd = 'prefit_{}/{}Vars'.format(region,s), modules = [ROOT.muonHistos(cut,var_weight,vars_vec,variations[1], 0)])
             p.branch(nodeToStart = 'defs'.format(region), nodeToEnd = 'templates_{}/{}Vars'.format(region,s), modules = [ROOT.templates(cut,var_weight,vars_vec,variations[1], 0)])
 
         #column variations#weight will be nominal, cut will vary
@@ -128,8 +122,11 @@ for sample in samples:
                 cut_vec.push_back(newcut)
                 var_vec.push_back(selvar)
 
-            if not runBKG: p.branch(nodeToStart = 'defs', nodeToEnd = 'prefit_{}/{}Vars'.format(region,vartype), modules = [ROOT.muonHistos(cut_vec, weight, nom,"Nom",hcat,var_vec)])  
+            if region == "Signal": 
+                p.branch(nodeToStart = 'defs', nodeToEnd = 'prefit_{}/{}Vars'.format(region,vartype), modules = [ROOT.muonHistos(cut_vec, weight, nom,"Nom",hcat,var_vec)])  
             p.branch(nodeToStart = 'defs', nodeToEnd = 'templates_{}/{}Vars'.format(region,vartype), modules = [ROOT.templates(cut_vec, weight, nom,"Nom",hcat,var_vec)])  
 
     p.getOutput()
     p.saveGraph()
+    flog.write(sample + " Finished\n")
+flog.close()
