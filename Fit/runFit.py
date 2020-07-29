@@ -4,24 +4,16 @@ import math
 from fitUtils import fitUtils
 import os
 
+ftemplates = '/scratchssd/emanca/wproperties-analysis/signalAnalysis/TEST/templates.root'
+fmap = '/scratchssd/emanca/wproperties-analysis/signalAnalysis/ACvalues.root'
+fbkg = ''
+f = fitUtils(ftemplates, fmap, fbkg)
 
-f = fitUtils(fIn='/scratchssd/emanca/wproperties-analysis/signalAnalysis/TEST/templates.root', fMap='/scratchssd/emanca/wproperties-analysis/signalAnalysis/ACvalues.root',fileMap='/scratchssd/emanca/wproperties-analysis/signalAnalysis/TEST/AC.root', shapeFile='testfit')
-
-for key in f.file.GetListOfKeys():
-
-    if not 'TH3' in key.GetClassName(): continue
-    print key.GetName()
-                
-    th3=ROOT.TH3D
-
-    th3 = f.file.Get(key.GetName())
-
-    f.project3Dto2D(th3)
-                
+f.project3Dto2D()
+f.unrollTemplates()         
 f.fillSignalList()
 f.fillHelGroup()
 f.xsecMap()
-f.writeShapeFile()
 f.fillShapeMap()
 f.makeDatacard()
 
