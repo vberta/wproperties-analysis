@@ -32,7 +32,7 @@ RNode AngCoeff::run(RNode d){
     auto mapTot = d.Histo2D(TH2D("mapTot", "mapTot", nBinsY, yArr.data(), nBinsPt, ptArr.data()), "Wrap_preFSR_abs", "Wpt_preFSR", "lumiweight");
     auto mapAccEta = d.Filter("fabs(Mueta_preFSR)<2.4").Histo2D(TH2D("mapAccEta", "mapAccEta", nBinsY, yArr.data(), nBinsPt, ptArr.data()), "Wrap_preFSR_abs", "Wpt_preFSR", "lumiweight");
     auto mapAcc = d.Filter("fabs(Mueta_preFSR)<2.4 && Mupt_preFSR>25. && Mupt_preFSR<65.").Histo2D(TH2D("mapAcc", "mapAcc", nBinsY, yArr.data(), nBinsPt, ptArr.data()), "Wrap_preFSR_abs", "Wpt_preFSR", "lumiweight");
-    auto sumw = d.Define("genratio", "Generator_weight/genEventSumw").Histo2D(TH2D("sumw", "sumw", nBinsY, yArr.data(), nBinsPt, ptArr.data()), "Wrap_preFSR_abs", "Wpt_preFSR","genratio");
+    auto sumw = d.Define("genratio", "Generator_weight/genEventSumw").Histo2D(TH2D("sumw", "sumw", nBinsY, yArr.data(), nBinsPt, ptArr.data()), "Wrap_preFSR_abs", "Wpt_preFSR", "genratio");
 
     _h2List.push_back(mapTot);
     _h2List.push_back(mapAccEta);
@@ -43,10 +43,9 @@ RNode AngCoeff::run(RNode d){
 
     std::vector<std::string> total = stringMultiplication(_syst_name, coeff);
 
-    
     TH2weightsHelper helper(std::string("harmonics"), std::string("harmonics"), nBinsY, yArr, nBinsPt, ptArr, total);
 
-    auto helXsecs = d.Book<float,  float, ROOT::VecOps::RVec<float>>(std::move(helper), {"Wrap_preFSR_abs", "Wpt_preFSR", Form("%sharmonicsVecWeighted",_syst_weight.c_str())});
+    auto helXsecs = d.Book<float, float, float, ROOT::VecOps::RVec<float>>(std::move(helper), {"Wrap_preFSR_abs", "Wpt_preFSR", "lumiweight", Form("%sharmonicsVec", _syst_weight.c_str())});
 
     _h2Group.push_back(helXsecs);
     
