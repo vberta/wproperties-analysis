@@ -54,10 +54,10 @@ class plotter:
         self.extSyst = copy.deepcopy(bkg_utils.bkg_systematics)
         self.extSyst['Nominal'] = ['']
         
-        self.LHEdict = {
-            'Down' : ["LHEScaleWeight_muR0p5_muF0p5", "LHEScaleWeight_muR0p5_muF1p0", "LHEScaleWeight_muR1p0_muF0p5"],
-            'Up' : ["LHEScaleWeight_muR2p0_muF2p0", "LHEScaleWeight_muR2p0_muF1p0","LHEScaleWeight_muR1p0_muF2p0"]   
-        }
+        # self.LHEdict = {
+        #     'Down' : ["LHEScaleWeight_muR0p5_muF0p5", "LHEScaleWeight_muR0p5_muF1p0", "LHEScaleWeight_muR1p0_muF0p5"],
+        #     'Up' : ["LHEScaleWeight_muR2p0_muF2p0", "LHEScaleWeight_muR2p0_muF1p0","LHEScaleWeight_muR1p0_muF2p0"]   
+        # }
 
 
         if not os.path.exists(self.outdir):
@@ -151,6 +151,7 @@ class plotter:
                 for syst, hsyst in hRatioDict.iteritems() :
                     if 'Down' in syst : continue
                     # if syst in self.LHEdict['Down']: continue
+                    if 'LHE' in syst : continue 
                     if 'Up' in syst :
                         systDown =  syst.replace("Up","Down")
                     # else :
@@ -167,7 +168,7 @@ class plotter:
                 
                 deltaLHE=0 #LHEScale variations
                 for syst, hsyst in hRatioDict.iteritems() : 
-                    if not 'LHEScale' in syst: continue 
+                    if not 'LHE' in syst: continue 
                     deltaLHE+= (hsyst.GetBinContent(i)-hRatio.GetBinContent(i))**2
                 deltaLHE = math.sqrt(deltaLHE)
                 delta= delta+deltaLHE
@@ -341,6 +342,7 @@ class plotter:
                     for sName in sList :
                         if 'Down' in sName : continue
                         # if sName in self.LHEdict['Down']: continue
+                        if 'LHE' in sName : continue
                         if sName=='' : continue
                         if 'Up' in sName :
                             systDown =  sName.replace("Up","Down")
@@ -353,7 +355,8 @@ class plotter:
                     delta = 0.5*math.sqrt(delta)
                     if sKind=='Nominal' :
                         delta = hdict[''].GetBinError(i)
-                    if sKind=='LHEScaleWeightVars' :  
+                    if 'LHE' in sKind :  
+                    # if sKind=='LHEScaleWeightVars' :  
                         delta=0
                         for sName in sList :
                             delta+= (hdict[sName].GetBinContent(i)-hdict[''].GetBinContent(i))**2
