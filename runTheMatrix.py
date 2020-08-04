@@ -53,8 +53,8 @@ if step1 :
     print "step1: bkg input preparation... "
     os.chdir('./analysisOnData')
     if not os.path.isdir(outputDir): os.system('mkdir '+ outputDir)
-    os.system('python runAnalysisOnMC.py      --runBKG 1 --pretend 0 --ncores '+ncores+' --outputDir '+outputDir)
-    os.system('python runAnalysisOnWJetsMC.py --runBKG 1 --pretend 0 --ncores '+ncores+' --outputDir '+outputDir)
+    os.system('python runAnalysisOnMC.py      --pretend 0 --ncores '+ncores+' --outputDir '+outputDir)
+    os.system('python runAnalysisOnWJetsMC.py --pretend 0 --ncores '+ncores+' --outputDir '+outputDir)
     os.system('python runAnalysisOnData.py    --runBKG 1 --pretend 0 --ncores '+ncores+' --outputDir '+outputDir)
     os.chdir('../')
 
@@ -71,9 +71,9 @@ if step3 :
     print "step3: prefit plots..."
     os.chdir('analysisOnData')
     if not os.path.isdir(outputDir): os.system('mkdir '+ outputDir)
-    os.system('python runAnalysisOnMC.py      --runBKG 0 --pretend 0 --ncores '+ncores+' --outputDir '+outputDir)
-    os.system('python runAnalysisOnWJetsMC.py --runBKG 0 --pretend 0 --ncores '+ncores+' --outputDir '+outputDir)
-    os.system('python runAnalysisOnData.py    --runBKG 0 --pretend 0 --ncores '+ncores+' --outputDir '+outputDir+' --bkgFile '+bkgFile)
+    #os.system('python runAnalysisOnMC.py      --runBKG 0 --pretend 0 --ncores '+ncores+' --outputDir '+outputDir)
+    #os.system('python runAnalysisOnWJetsMC.py --runBKG 0 --pretend 0 --ncores '+ncores+' --outputDir '+outputDir)
+    os.system('python runAnalysisOnData.py --runBKG 0 --pretend 0 --ncores '+ncores+' --outputDir '+outputDir+' --bkgFile '+bkgFile)
     os.chdir('../')
 
 if step4 :

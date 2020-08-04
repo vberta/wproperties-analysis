@@ -34,7 +34,7 @@ class bkg_prepareHistos:
         
     def prepare(self) :
         varName = 'template'
-        suffString = '_bkgselections_plots'
+        suffString = '_plots'
         regList = ["Signal", "Signal_aiso","Sideband","Sideband_aiso"]
         
         if self.extrap :
@@ -72,7 +72,7 @@ class bkg_prepareHistos:
         if not os.path.isdir(self.outDir+'/hadded'): os.system('mkdir '+self.outDir+'/hadded')
         
         cmdList.append('hadd ./'+self.outDir+'hadded/WToMuNu.root ./'+self.outDir+'*.root')
-        cmdList.append('cp  ./'+self.inputDir+'SingleMuonData_bkginput_plots.root ./'+self.outDir+'hadded/Data.root')
+        cmdList.append('cp  ./'+self.inputDir+'SingleMuonData_plots.root ./'+self.outDir+'hadded/Data.root')
                 
         for i in cmdList :
             os.system(i)
