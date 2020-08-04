@@ -28,7 +28,7 @@ class plotter:
             "TTbar"       : ['TTJets_plots.root',      'prefit_Signal',         ROOT.kGreen+3,     "Top"],    
             "ST"          : ['SingleTop_plots.root',   'prefit_Signal',         ROOT.kGreen+3,     "Top"],    
             "DiBoson"     : ['Diboson_plots.root',     'prefit_Signal',         ROOT.kViolet+2,    "di-boson"],     
-            "SIGNAL_Fake" : ['Data_plots.root',        'prefit_fakes',          ROOT.kGray,        "QCD"],     
+            "SIGNAL_Fake" : ['FakeFromData_plots.root', 'prefit_fakes',          ROOT.kGray,        "QCD"],     
             "Data"        : ['Data_plots.root',        'prefit_Signal',         1,                 "Data"]
             # "WToMu"      :  ['WJets_plots.root',       'prefit_SignalWToMu',    ROOT.kRed+2,       "W^{+}#rightarrow #mu^{+}#nu_{#mu}"],         
             # "WtoTau"      : ['WJets_plots.root',       'prefit_SignalWToTau',   ROOT.kSpring+9,    "W^{#pm}#rightarrow #tau^{#pm}#nu_{#tau}"],         

@@ -33,8 +33,8 @@ class bkg_prepareHistos:
         
         
     def prepare(self) :
-        varName = 'template'
-        suffString = '_bkgselections_plots'
+        varName = 'templates'
+        suffString = '_plots'
         regList = ["Signal", "Signal_aiso","Sideband","Sideband_aiso"]
         
         if self.extrap :
@@ -58,6 +58,7 @@ class bkg_prepareHistos:
                             systName = '_'+sName
                         else :
                             systName = sName
+                        print "Trying to read:", 'templates_'+r+'/'+sKind+'/'+varName+systName
                         if ROOT.gDirectory.Get('templates_'+r+'/'+sKind+'/'+varName+systName)==None : #this syst is not present
                             print "no syst in:", f, r, sKind, systName
                             h = inFile.Get('templates_'+r+'/'+self.sKindNom+'/'+varName+self.sNameNom)
@@ -72,7 +73,7 @@ class bkg_prepareHistos:
         if not os.path.isdir(self.outDir+'/hadded'): os.system('mkdir '+self.outDir+'/hadded')
         
         cmdList.append('hadd ./'+self.outDir+'hadded/WToMuNu.root ./'+self.outDir+'*.root')
-        cmdList.append('cp  ./'+self.inputDir+'SingleMuonData_bkginput_plots.root ./'+self.outDir+'hadded/Data.root')
+        cmdList.append('cp  ./'+self.inputDir+'SingleMuonData_plots.root ./'+self.outDir+'hadded/Data.root')
                 
         for i in cmdList :
             os.system(i)

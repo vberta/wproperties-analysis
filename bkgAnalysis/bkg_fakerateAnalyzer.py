@@ -1226,7 +1226,7 @@ class bkg_analyzer:
         print "> getting histograms..."
         regionList = ['A','B','C','D']
         regionList_name = ['Sideband_aiso','Signal_aiso','Sideband','Signal']
-        var_inside_histo = 'template'
+        var_inside_histo = 'templates'
         histo3DDict = {}
         sName = self.systName
         if self.systName !='' : 
