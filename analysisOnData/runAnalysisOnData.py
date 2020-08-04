@@ -80,6 +80,9 @@ if runBKG : #produces templates for all regions and prefit for signal
     p.saveGraph()
 else : #produces Fake contribution to prefit plots computed from data 
     outF="FakeFromData_plots.root"
+    #in case we want pdf variations for fakes
+    #systematics.update({ "LHEPdfWeight" : ( ["_LHEPdfWeight" + str(i)  for i in range(0, 100)], "LHEPdfWeight" ) } )
+    print systematics
     p = RDFtree(outputDir = outputDir, inputFile = fvec, outputFile=outF, pretend=pretendJob)
     FR=ROOT.TFile.Open(bkgFile)
     p.branch(nodeToStart = 'input', nodeToEnd = 'defs', modules = [ROOT.baseDefinitions(0),ROOT.fakeRate(FR)])

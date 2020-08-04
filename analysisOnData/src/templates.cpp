@@ -18,7 +18,7 @@ RNode templates::run(RNode d)
 
 RNode templates::bookNominalhistos(RNode df)
 {
-    TH3weightsHelper helper(std::string("template"), std::string(" ; muon #{eta}; muon p_{T} (Rochester corr.); muon charge"), _etaArr.size() - 1, _etaArr, _pTArr.size() - 1, _pTArr, _chargeArr.size() - 1, _chargeArr, _syst_name);
+    TH3weightsHelper helper(std::string("templates"), std::string(" ; muon #{eta}; muon p_{T} (Rochester corr.); muon charge"), _etaArr.size() - 1, _etaArr, _pTArr.size() - 1, _pTArr, _chargeArr.size() - 1, _chargeArr, _syst_name);
     auto h = df.Filter(_filter).Book<float, float, float, float, ROOT::VecOps::RVec<float>>(std::move(helper), {"Mu1_eta", "Mu1_pt", "Mu1_charge", "weight", _syst_weight});
     _h3Group.emplace_back(h);
 
@@ -29,7 +29,7 @@ RNode templates::bookptCorrectedhistos(RNode df)
 {
     for (unsigned int i = 0; i < _colvarvec.size(); i++)
     {
-        TH3weightsHelper helper_Pt(std::string("template" + _colvarvec[i]), std::string(" ; muon #{eta}; muon p_{T} (Rochester corr.); muon charge"), _etaArr.size() - 1, _etaArr, _pTArr.size() - 1, _pTArr, _chargeArr.size() - 1, _chargeArr, _syst_name);
+        TH3weightsHelper helper_Pt(std::string("templates" + _colvarvec[i]), std::string(" ; muon #{eta}; muon p_{T} (Rochester corr.); muon charge"), _etaArr.size() - 1, _etaArr, _pTArr.size() - 1, _pTArr, _chargeArr.size() - 1, _chargeArr, _syst_name);
         _h3Group.emplace_back(df.Filter(_filtervec[i]).Book<float, float, float, float, ROOT::VecOps::RVec<float>>(std::move(helper_Pt), {"Mu1_eta", "Mu1_pt" + _colvarvec[i], "Mu1_charge", "weight", "Nom"}));
     }
     return df;
@@ -40,7 +40,7 @@ RNode templates::bookJMEvarhistos(RNode df)
 {
     for (unsigned int i = 0; i < _colvarvec.size(); i++)
     {
-        TH3weightsHelper helper_JME(std::string("template" + _colvarvec[i]), std::string(" ; muon #{eta}; muon p_{T} (Rochester corr.); muon charge"), _etaArr.size() - 1, _etaArr, _pTArr.size() - 1, _pTArr, _chargeArr.size() - 1, _chargeArr, _syst_name);
+        TH3weightsHelper helper_JME(std::string("templates" + _colvarvec[i]), std::string(" ; muon #{eta}; muon p_{T} (Rochester corr.); muon charge"), _etaArr.size() - 1, _etaArr, _pTArr.size() - 1, _pTArr, _chargeArr.size() - 1, _chargeArr, _syst_name);
         _h3Group.emplace_back(df.Filter(_filtervec[i]).Book<float, float, float, float, ROOT::VecOps::RVec<float>>(std::move(helper_JME), {"Mu1_eta", "Mu1_pt", "Mu1_charge", "weight", "Nom"}));
     }
     return df;

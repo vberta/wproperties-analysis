@@ -7,7 +7,7 @@ import argparse
 
 ################################################################################################################################################
 #
-#  usage: python runTheMatrix --outputDir OUTPUT --bkgOutput BKGOUT --ncores 64 --bkgFile myBKG --bkgPrep 1 --bkgAna 1 --prefit 1 --plotter 1
+#  usage: python runTheMatrix --outputDir OUTPUT --bkgOutput BKGOUT --ncores 64 --bkgFile MYBKG --bkgPrep 1 --bkgAna 1 --prefit 1 --plotter 1
 #
 #  each parameters is described below in the argparse
 #
@@ -44,7 +44,7 @@ step3 = args.prefit
 step4 = args.plotter
 
 if bkgFile == 'MYBKG' :
-    bkgFile = './bkgAnalysis/'+bkgOutput+'/bkg_parameters_CFstatAna.root'
+    bkgFile = '../bkgAnalysis/'+bkgOutput+'/bkg_parameters_CFstatAna.root'
     
     if not step2 :
         raw_input('You are using self-produced bkg file but you are not running step2, are you sure? [press Enter to continue]')
@@ -53,7 +53,7 @@ if step1 :
     print "step1: bkg input preparation... "
     os.chdir('./analysisOnData')
     if not os.path.isdir(outputDir): os.system('mkdir '+ outputDir)
-    os.system('python runAnalysisOnMC.py      --pretend 0 --ncores '+ncores+' --outputDir '+outputDir)
+    os.system('python runAnalysisOnMC.py --pretend 0 --ncores '+ncores+' --outputDir '+outputDir)
     os.system('python runAnalysisOnWJetsMC.py --pretend 0 --ncores '+ncores+' --outputDir '+outputDir)
     os.system('python runAnalysisOnData.py    --runBKG 1 --pretend 0 --ncores '+ncores+' --outputDir '+outputDir)
     os.chdir('../')
