@@ -85,7 +85,7 @@ class plotter:
             
     def getHistos(self):
         for f,fileInfo in self.sampleDict.iteritems() :
-            # inFile = ROOT.TFile.Open(self.indir+'/'+fileInfo[0])
+            #inFile = ROOT.TFile.Open(self.indir+'/'+fileInfo[0])
             inFile = ROOT.TFile.Open(self.outdir+'/hadded/'+fileInfo[0])
             for sKind, sList in self.extSyst.iteritems():
                 for sName in sList :
@@ -427,6 +427,7 @@ def prepareHistos(inDir,outDir) :
     # cmdList.append('cp  '+inDir+'SingleMuonData_plots.root '+outDir+'/hadded/Data_plots.root')
     # cmdList.append('cp  '+inDir+'WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_plots.root '+outDir+'/hadded/WJets_plots.root')
     cmdList.append('cp  '+inDir+'/SingleMuonData_plots.root '+outDir+'/hadded/Data_plots.root')
+    cmdList.append('cp  '+inDir+'/FakeFromData_plots.root '+outDir+'/hadded/FakeFromData_plots.root')
     cmdList.append('cp  '+inDir+'/WToMu_plots.root '+outDir+'/hadded/WToMu_plots.root')
     cmdList.append('cp  '+inDir+'/WToTau_plots.root '+outDir+'/hadded/WToTau_plots.root')
     cmdList.append('hadd -f '+outDir+'/hadded/DYJets_plots.root '+inDir+'/DYJetsToLL_M-*')
