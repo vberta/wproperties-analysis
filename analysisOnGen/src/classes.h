@@ -4,6 +4,7 @@
 #include "interface/module.hpp"
 #include "interface/AngCoeff.hpp"
 #include "interface/dataObs.hpp"
+#include "interface/accMap.hpp"
 #include "interface/defineHarmonics.hpp"
 #include "interface/defineSystWeight.hpp"
 #include "interface/getACValues.hpp"
@@ -11,3 +12,5 @@
 #include "interface/getWeights.hpp"
 #include "interface/templateBuilder.hpp"
 #include "interface/baseDefinitions.hpp"
+#include "interface/PDFWeightsHelper.hpp"
+#include "interface/Replica2Hessian.hpp"
