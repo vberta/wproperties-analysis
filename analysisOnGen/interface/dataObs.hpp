@@ -17,21 +17,32 @@ using RNode = ROOT::RDF::RNode;
 using rvec_f = const RVec<float> &;
 using rvec_i = const RVec<int> &;
 
-class dataObs : public Module{
-  
-    private:
+class dataObs : public Module {
+
+private:
 
     std::vector<ROOT::RDF::RResultPtr<TH1D>> _h1List;
     std::vector<ROOT::RDF::RResultPtr<TH2D>> _h2List;
     std::vector<ROOT::RDF::RResultPtr<TH3D>> _h3List;
-    
+
     // groups of histos
     std::vector<ROOT::RDF::RResultPtr<std::vector<TH1D>>> _h1Group;
     std::vector<ROOT::RDF::RResultPtr<std::vector<TH2D>>> _h2Group;
     std::vector<ROOT::RDF::RResultPtr<std::vector<TH3D>>> _h3Group;
 
-    public:
-    
+    std::vector<std::string> _syst_name;
+    std::string _syst_weight;
+
+public:
+
+    dataObs(std::vector<std::string> syst_name, std::string syst_weight) {
+        TH3::SetDefaultSumw2(true);
+        TH2::SetDefaultSumw2(true);
+        _syst_name = syst_name;
+        _syst_weight = syst_weight;
+    };
+
+
     ~dataObs() {};
     RNode run(RNode) override;
     std::vector<ROOT::RDF::RResultPtr<TH1D>> getTH1() override;
@@ -43,7 +54,7 @@ class dataObs : public Module{
     std::vector<ROOT::RDF::RResultPtr<std::vector<TH3D>>> getGroupTH3() override;
 
     void reset() override;
-    
+
 };
 
 #endif
@@ -53,4 +64,3 @@ class dataObs : public Module{
 
 
 
-	

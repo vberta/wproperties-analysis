@@ -58,10 +58,6 @@ if fvec.empty():
     sys.exit(1)
 print fvec 
 
-##Append the lhepdf systematics
-systematics.update({ "LHEPdfWeight" : ( ["_LHEPdfWeight" + str(i)  for i in range(0, 102)], "LHEPdfWeight" ) } )
-print systematics
-
 fileSF = ROOT.TFile.Open("data/ScaleFactors_OnTheFly.root")
 wdecayselections = { 
                      'WToMu'  : ' && (abs(genVtype) == 14)',
@@ -70,7 +66,7 @@ wdecayselections = {
 p = RDFtree(outputDir = outputDir, inputFile = fvec, outputFile="{}_plots.root".format(sample), pretend=pretendJob)
 filePt = ROOT.TFile.Open("data/histoUnfoldingSystPt_nsel2_dy3_rebin1_default.root")
 fileY = ROOT.TFile.Open("data/histoUnfoldingSystRap_nsel2_dy3_rebin1_default.root")
-p.branch(nodeToStart = 'input', nodeToEnd = 'defs', modules = [ROOT.reweightFromZ(filePt,fileY),ROOT.baseDefinitions(),ROOT.weightDefinitions(fileSF),getLumiWeight(xsec=xsec, inputFile=fvec)])
+p.branch(nodeToStart = 'input', nodeToEnd = 'defs', modules = [ROOT.reweightFromZ(filePt,fileY),ROOT.baseDefinitions(),ROOT.weightDefinitions(fileSF),getLumiWeight(xsec=xsec, inputFile=fvec),ROOT.Replica2Hessian()])
 
 for region,cut in selections_bkg.iteritems():
     if 'aiso' in region:
