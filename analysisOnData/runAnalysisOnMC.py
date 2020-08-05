@@ -71,9 +71,10 @@ for sample in samples:
 
     #sample specific systematics
     systematicsFinal=copy.deepcopy(systematics)
-    if samples[sample]['systematics'] == 2 : 
-        systematicsFinal.update({ "LHEPdfWeight" : ( ["_LHEPdfWeight" + str(i)  for i in range(0, 101)], "LHEPdfWeight" ) } )
-    p.branch(nodeToStart = 'input', nodeToEnd = 'defs', modules = [ROOT.baseDefinitions(),ROOT.weightDefinitions(fileSF),getLumiWeight(xsec=xsec, inputFile=fvec)])
+    if samples[sample]['systematics'] != 2:
+        p.branch(nodeToStart = 'input', nodeToEnd = 'defs', modules = [ROOT.baseDefinitions(),ROOT.weightDefinitions(fileSF),getLumiWeight(xsec=xsec, inputFile=fvec)])
+    else:
+        p.branch(nodeToStart = 'input', nodeToEnd = 'defs', modules = [ROOT.baseDefinitions(),ROOT.weightDefinitions(fileSF),getLumiWeight(xsec=xsec, inputFile=fvec),ROOT.Replica2Hessian()])
     #selections bkg also includes Signal
     for region,cut in selections_bkg.iteritems():
 

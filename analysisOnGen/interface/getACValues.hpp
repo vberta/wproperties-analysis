@@ -37,6 +37,7 @@ private:
   TH2D *_hA7;
   TH2D *_hAUL;
   TH2D *_mapTot;
+  TH2D *_sumw;
   TFile *_fout;
 
 public:
@@ -53,6 +54,7 @@ public:
     _hA7 = (TH2D *)_AChistos->Get("AngCoeff/harmonicsA7");
     _hAUL = (TH2D *)_AChistos->Get("AngCoeff/harmonicsAUL");
     _mapTot = (TH2D *)_AChistos->Get("AngCoeff/mapTot");
+    _sumw = (TH2D *)_AChistos->Get("AngCoeff/sumw");
 
     getAngCoeff();
 
@@ -68,6 +70,7 @@ public:
     _hA7->Write();
     _hAUL->Write();
     _mapTot->Write();
+    _sumw->Write();
   };
   ~getACValues(){
     _fout->Close();

@@ -12,24 +12,36 @@ RNode templateBuilder::run(RNode d){
   const int nBinsY = 8;
   const int nBinsQt = 11;
 
+  // whelicity binning
+  // const int nBinsEta = 48;
+  // const int nBinsPt = 29;
+
+  // std::vector<float> etaArr(nBinsEta + 1);
+  // std::vector<float> ptArr(nBinsPt + 1);
+
+  // for (unsigned int i = 0; i < 30; i++)
+  //   ptArr[i] = 26. + i;
+  // for (unsigned int i = 0; i < 49; i++)
+  //   etaArr[i] = -2.4 + i * (4.8) / 48; //eta -2.4 to 2.4
+
   const int nBinsEta = 100;
   const int nBinsPt = 80;
 
-  std::vector<float> etaArr(nBinsEta+1);
-  std::vector<float> ptArr(nBinsPt+1);
+  std::vector<float> etaArr(nBinsEta + 1);
+  std::vector<float> ptArr(nBinsPt + 1);
 
-  for(int i=0; i<nBinsEta+1; i++){
+  for (int i = 0; i < nBinsEta + 1; i++)
+  {
 
-    float binSize = 5.0/nBinsEta;
-    etaArr[i] = -2.5 + i*binSize;
-
+    float binSize = 5.0 / nBinsEta;
+    etaArr[i] = -2.5 + i * binSize;
   }
 
-  for(int i=0; i<nBinsPt+1; i++){
+  for (int i = 0; i < nBinsPt + 1; i++)
+  {
 
-    float binSize = (65.-25.)/nBinsPt;
-    ptArr[i] = 25. + i*binSize;
-
+    float binSize = (65. - 25.) / nBinsPt;
+    ptArr[i] = 25. + i * binSize;
   }
 
   auto dFit = d.Filter("accMapEta>0.4");

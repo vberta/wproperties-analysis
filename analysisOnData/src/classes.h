@@ -5,4 +5,5 @@
 #include "interface/weightDefinitions.hpp"
 #include "interface/templates.hpp"
 #include "interface/reweightFromZ.hpp"
+#include "interface/Replica2Hessian.hpp"
 //#include "interface/selectionDefs.hpp"
