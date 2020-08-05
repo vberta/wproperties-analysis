@@ -19,6 +19,7 @@ class plotter:
         self.indir = inDir # indir containig the various outputs
         self.outdir = outDir
         self.norm = norm
+        self.PDFvar = 'LHEPdfWeightVars'
                 
         self.sampleDict = {
             "WToMu"      :  ['WToMu_plots.root',       'prefit_Signal',         ROOT.kRed+2,       "W^{+}#rightarrow #mu^{+}#nu_{#mu}"],         
@@ -169,7 +170,10 @@ class plotter:
                 deltaLHE=0 #LHEScale variations
                 for syst, hsyst in hRatioDict.iteritems() : 
                     if not 'LHE' in syst: continue 
-                    deltaLHE+= (hsyst.GetBinContent(i)-hRatio.GetBinContent(i))**2
+                    Nrepl = 1
+                    if 'LHEPdfWeight' in syst :
+                        Nrepl = len(bkg_utils.bkg_systematics[self.PDFvar])
+                    deltaLHE+= (1/Nrepl)*(hsyst.GetBinContent(i)-hRatio.GetBinContent(i))**2
                 deltaLHE = math.sqrt(deltaLHE)
                 delta= delta+deltaLHE
                 
@@ -205,7 +209,7 @@ class plotter:
             legend.SetBorderSize(0)
             legend.SetNColumns(2)
             
-            hStack.SetMaximum(1.5*max(hData.GetMaximum(),hStack.GetMaximum())) 
+            hStack.SetMaximum(1.7*max(hData.GetMaximum(),hStack.GetMaximum())) 
             hStack.GetYaxis().SetTitle(varInfo[2])
             hStack.GetYaxis().SetTitleOffset(1.3)
             hStack.GetXaxis().SetTitle(varInfo[1]+varInfo[3])
@@ -280,6 +284,17 @@ class plotter:
                 else :
                     hdict[''].SetBinError(x,hData.GetBinError(x)/ hSumNOM.GetBinContent(x))
             
+            #LHEPDF variation band
+            hdict['LHEPdfUp'] = hdict[''].Clone('hsum_'+var+'LHEPdfUp')
+            hdict['LHEPdfDown'] = hdict[''].Clone('hsum_'+var+'LHEPdfDown')
+            for x in range(1,hdict['LHEPdfUp'].GetNbinsX()+1) :
+                stdVar = 0
+                for sName in bkg_utils.bkg_systematics[self.PDFvar] :
+                    stdVar+= (hdict[sName].GetBinContent(x)-hdict[''].GetBinContent(x))**2
+                stdVar = math.sqrt(stdVar/len(bkg_utils.bkg_systematics[self.PDFvar]))
+                hdict['LHEPdfUp'].SetBinContent(x, hdict['LHEPdfUp'].GetBinContent(x)+stdVar)
+                hdict['LHEPdfDown'].SetBinContent(x, hdict['LHEPdfDown'].GetBinContent(x)-stdVar)
+            
             #build the canvas
             can = ROOT.TCanvas(var+'_systBreakdown',var+'_systBreakdown',800,600)
             can.cd()
@@ -307,7 +322,10 @@ class plotter:
             colorList = [600,616,416,632,432,800,900]
             colorNumber = 1
             colorCounter = 0
-            for sKind, sList in bkg_utils.bkg_systematics.iteritems():
+            modSyst = copy.deepcopy(bkg_utils.bkg_systematics)
+            modSyst['LHEPdfUpDown'] = ['LHEPdfUp','LHEPdfDown']
+            for sKind, sList in modSyst.iteritems():
+                if sKind==self.PDFvar : continue #skip 100 lines on the plot!
                 colorNumber = colorList[colorCounter]
                 colorCounter = colorCounter+1
                 for sName in sList : 
@@ -316,11 +334,16 @@ class plotter:
                         colorNumber = colorList[colorCounter]+2
                         
                     if sKind in skipSyst : continue #skipped systs
+                    if self.PDFvar in skipSyst : 
+                        if sKind=='LHEPdfUpDown' : continue 
     
                     hdict[sName].SetLineWidth(3)
                     hdict[sName].SetLineColor(1)  
                     hdict[sName].SetLineColor(colorNumber)
                     hdict[sName].Draw("hist SAME")
+                    
+                    hdict[sName].SetFillStyle(0)
+                    hdict[sName].SetFillColor(0)
     
                     legend.AddEntry(hdict[sName], sName.replace('LHEScaleWeight','Scale'))
             legend.Draw("SAME")
@@ -358,10 +381,13 @@ class plotter:
                     if 'LHE' in sKind :  
                     # if sKind=='LHEScaleWeightVars' :  
                         delta=0
-                        for sName in sList :
+                        for sName in sList :                            
                             delta+= (hdict[sName].GetBinContent(i)-hdict[''].GetBinContent(i))**2
-                        delta = math.sqrt(delta)
-                
+                        if sKind==self.PDFvar :
+                            Nrepl = len(sList)  
+                        else : 
+                            Nrepl=1
+                        delta = math.sqrt(delta/Nrepl)
                     hdict[sKind].SetBinContent(i, delta) 
                 hdict[sKind].SetFillStyle(0)
                 hdict[sKind].SetFillColor(0)
@@ -427,6 +453,7 @@ def prepareHistos(inDir,outDir) :
     # cmdList.append('cp  '+inDir+'SingleMuonData_plots.root '+outDir+'/hadded/Data_plots.root')
     # cmdList.append('cp  '+inDir+'WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_plots.root '+outDir+'/hadded/WJets_plots.root')
     cmdList.append('cp  '+inDir+'/SingleMuonData_plots.root '+outDir+'/hadded/Data_plots.root')
+    cmdList.append('cp  '+inDir+'/FakeFromData_plots.root '+outDir+'/hadded/FakeFromData_plots.root')
     cmdList.append('cp  '+inDir+'/WToMu_plots.root '+outDir+'/hadded/WToMu_plots.root')
     cmdList.append('cp  '+inDir+'/WToTau_plots.root '+outDir+'/hadded/WToTau_plots.root')
     cmdList.append('hadd -f '+outDir+'/hadded/DYJets_plots.root '+inDir+'/DYJetsToLL_M-*')

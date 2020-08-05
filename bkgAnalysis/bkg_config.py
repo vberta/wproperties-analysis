@@ -15,7 +15,7 @@ ROOT.gROOT.SetBatch(True)
 
 #############################################################################################################################################
 #
-#  usage: python bkg_config.py --mainAna 1 --CFAna 1  --syst 1 --compAna 1 --inputDir NAME/hadded/ --outputDir OUTNAME/
+#  usage: python bkg_config.py --mainAna 1 --CFAna 1  --syst 1 --compAna 1 --inputDir NAME/hadded/ --outputDir OUTNAME/ --ncores 64
 #
 #  the full path of this config is the following
 #  1) run the nominal analysis (mainAna)
@@ -49,6 +49,7 @@ parser.add_argument('-correlatedFitAna', '--CFAna',type=int, default=False, help
 parser.add_argument('-comparisonAna', '--compAna',type=int, default=False, help="comparison plots of systematic analysis")
 parser.add_argument('-inputDir', '--inputDir',type=str, default='./data/', help="input dir name")
 parser.add_argument('-outputDir', '--outputDir',type=str, default='./bkg_V2/', help="output dir name")
+parser.add_argument('-ncores', '--ncores',type=int, default=64, help="number of cores used")
 
 args = parser.parse_args()
 mainAna = args.mainAna
@@ -57,6 +58,8 @@ correlatedFitAna = args.CFAna
 systAna = args.syst
 inputDir = args.inputDir
 outputDir = args.outputDir
+ncores = args.ncores
+
 
 #internal parameters:
 STATANA = True
@@ -64,7 +67,7 @@ CORRFITFINAL= True #correlated fit in the final plots
 TEMPLATE = True
 NOM = ['Nominal','']
 EXTRAP = False #extrapolation syst
-NCORES=64
+NCORES=ncores
 if NCORES>1 :
     MULTICORE=True
 else :
