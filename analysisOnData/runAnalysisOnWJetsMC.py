@@ -13,6 +13,7 @@ from selections import selections, selectionVars, selections_bkg
 from getLumiWeight import getLumiWeight
 
 ROOT.gSystem.Load('bin/libAnalysisOnData.so')
+ROOT.gROOT.ProcessLine("gErrorIgnoreLevel = 2001;");
 
 parser = argparse.ArgumentParser("")
 parser.add_argument('-pretend', '--pretend',type=int, default=False, help="run over a small number of event")

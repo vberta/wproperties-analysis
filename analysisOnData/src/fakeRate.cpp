@@ -14,7 +14,7 @@ RNode fakeRate::run(RNode d)
       float p_offset = _FR["prompt_offset_" + s]->GetBinContent(binX, binY);
       float p_slope = _FR["prompt_slope_" + s]->GetBinContent(binX, binY);
       float p_2deg = _FR["prompt_2deg_" + s]->GetBinContent(binX, binY);
-      float f = f_offset + (pt - 26.0) * f_slope;
+      float f = f_offset + (pt - 25.0) * f_slope;
       float p = p_offset * TMath::Erf(p_slope * pt + p_2deg);
       float res = vtype == 1 ? p * f / (p - f) : -(1 - p) * f / (p - f);
       
