@@ -1,5 +1,5 @@
 GCC=g++
-CXXFLAGS=`root-config --libs --cflags` -O3 -fPIC -Wall -I../  -I./
+CXXFLAGS=`root-config --libs --cflags` -O3 -fPIC -Wall -I../  -I./  -I /scratch/emanca/eigen-eigen-323c052e1731
 SOFLAGS=-shared
 
 SRCDIR=src
@@ -33,7 +33,7 @@ $(OBJ) : $(BINDIR)/%.o : $(SRCDIR)/%.cpp interface/%.hpp | $(BINDIR)
 Dict: $(BINDIR)/dict.o
 
 $(BINDIR)/dict.o: $(SRC) | $(BINDIR)
-	genreflex $(SRCDIR)/classes.h -s $(SRCDIR)/classes_def.xml -o $(BINDIR)/dict.cc --fail_on_warnings --rootmap=$(BINDIR)/dict.rootmap --rootmap-lib=libAnalysisOnData.so -I interface/ -I../
+	genreflex $(SRCDIR)/classes.h -s $(SRCDIR)/classes_def.xml -o $(BINDIR)/dict.cc --fail_on_warnings --rootmap=$(BINDIR)/dict.rootmap --rootmap-lib=libAnalysisOnData.so -I interface/ -I../ -I /scratch/emanca/eigen-eigen-323c052e1731
 	$(GCC) -c -o $(BINDIR)/dict.o $(CXXFLAGS) $(RPATH) -I interface $(BINDIR)/dict.cc
 
 $(BINDIR):

@@ -5,4 +5,6 @@
   <class name="weightDefinitions"/>
   <class name="templates"/>
   <class name="reweightFromZ"/>
+  <class name="Replica2Hessian"/>
+  <class name="PDFWeightsHelper"/>
 </lcgdict>
