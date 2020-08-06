@@ -170,9 +170,9 @@ class plotter:
                 deltaLHE=0 #LHEScale variations
                 for syst, hsyst in hRatioDict.iteritems() : 
                     if not 'LHE' in syst: continue 
-                    Nrepl = 1
-                    if 'LHEPdfWeight' in syst :
-                        Nrepl = len(bkg_utils.bkg_systematics[self.PDFvar])
+                    Nrepl = 1.
+                    # if 'LHEPdfWeight' in syst :
+                    #     Nrepl = float(len(bkg_utils.bkg_systematics[self.PDFvar]))
                     deltaLHE+= (1/Nrepl)*(hsyst.GetBinContent(i)-hRatio.GetBinContent(i))**2
                 deltaLHE = math.sqrt(deltaLHE)
                 delta= delta+deltaLHE
@@ -383,10 +383,10 @@ class plotter:
                         delta=0
                         for sName in sList :                            
                             delta+= (hdict[sName].GetBinContent(i)-hdict[''].GetBinContent(i))**2
-                        if sKind==self.PDFvar :
-                            Nrepl = len(sList)  
-                        else : 
-                            Nrepl=1
+                        # if sKind==self.PDFvar :
+                        #     Nrepl = float(len(sList)) 
+                        # else : 
+                        Nrepl=1.
                         delta = math.sqrt(delta/Nrepl)
                     hdict[sKind].SetBinContent(i, delta) 
                 hdict[sKind].SetFillStyle(0)
