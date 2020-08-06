@@ -80,7 +80,7 @@ if step4 :
     print "step4: plotter..."
     os.chdir('analysisOnData/python')
     if not os.path.isdir('../'+outputDir): os.system('mkdir ../'+outputDir)
-    # os.system('python plotter_prefit.py --hadd 1 --output ../'+outputDir+'/plot/ --input ../'+outputDir+' --systComp 1')
+    os.system('python plotter_prefit.py --hadd 1 --output ../'+outputDir+'/plot/ --input ../'+outputDir+' --systComp 1')
     
     sys.path.append('../../bkgAnalysis')
     import bkg_utils
