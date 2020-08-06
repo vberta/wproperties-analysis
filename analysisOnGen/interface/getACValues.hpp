@@ -38,7 +38,6 @@ private:
   TH2D *_hAUL;
   TH2D *_mapTot;
   TH2D *_sumw;
-  TFile *_fout;
 
 public:
   getACValues(TFile *AChistos)
@@ -56,25 +55,9 @@ public:
     _mapTot = (TH2D *)_AChistos->Get("AngCoeff/mapTot");
     _sumw = (TH2D *)_AChistos->Get("AngCoeff/sumw");
 
-    getAngCoeff();
-
-    _fout = new TFile("ACvalues.root", "recreate");
-    _fout->cd();
-    _hA0->Write();
-    _hA1->Write();
-    _hA2->Write();
-    _hA3->Write();
-    _hA4->Write();
-    _hA5->Write();
-    _hA6->Write();
-    _hA7->Write();
-    _hAUL->Write();
-    _mapTot->Write();
-    _sumw->Write();
   };
-  ~getACValues(){
-    _fout->Close();
-  };
+  
+  ~getACValues(){};
 
   RNode run(RNode) override;
   std::vector<ROOT::RDF::RResultPtr<TH1D>> getTH1() override;

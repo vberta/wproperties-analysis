@@ -304,8 +304,7 @@ class fitUtils:
                 self.DC.isSignal[proc] = True
             else:
                 self.DC.isSignal[proc] = False
-
-        self.DC.keyline =    [] # <type 'list'>
+        self.DC.keyline = [] # <type 'list'> # not used by combine-tf
         self.DC.exp =    {} # <type 'dict'>
         self.DC.exp['bin1'] = {}
         self.DC.exp['Wplus'] = {}

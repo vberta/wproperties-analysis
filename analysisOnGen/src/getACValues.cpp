@@ -1,35 +1,5 @@
 #include "interface/getACValues.hpp"
 
-void getACValues::getAngCoeff()
-{
-
-    _hA0->Divide(_mapTot);
-    _hA1->Divide(_mapTot);
-    _hA2->Divide(_mapTot);
-    _hA3->Divide(_mapTot);
-    _hA4->Divide(_mapTot);
-    _hA5->Divide(_mapTot);
-    _hA6->Divide(_mapTot);
-    _hA7->Divide(_mapTot);
-
-    for (int xbin = 1; xbin < _hA0->GetNbinsX() + 1; xbin++)
-    {
-        for (int ybin = 1; ybin < _hA0->GetNbinsY() + 1; ybin++)
-        {
-
-            auto content = _hA0->GetBinContent(xbin, ybin);
-            _hA0->SetBinContent(xbin, ybin, 20. / 3. * (content + 1. / 10.));
-        }
-    }
-    _hA2->Scale(20.);
-    _hA1->Scale(5.);
-    _hA5->Scale(5.);
-    _hA6->Scale(5.);
-    _hA3->Scale(4.);
-    _hA4->Scale(4.);
-    _hA7->Scale(4.);
-
-}
 
 RNode getACValues::run(RNode d)
 {
