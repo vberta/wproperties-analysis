@@ -71,7 +71,7 @@
     }, 
     "TTJets_SingleLeptFromT_TuneCUETP8M1_13TeV-madgraphMLM-pythia8": {
         "datatype": "MC", 
-        "systematics": 2, 
+        "systematics": 1, 
         "subsel": {
             "none": ""
         }, 
@@ -116,7 +116,7 @@
     }, 
     "TTJets_DiLept_TuneCUETP8M1_13TeV-madgraphMLM-pythia8": {
         "datatype": "MC", 
-        "systematics": 2, 
+        "systematics": 1, 
         "subsel": {
             "none": ""
         }, 
@@ -164,7 +164,7 @@
     }, 
     "ST_t-channel_antitop_4f_inclusiveDecays_13TeV-powhegV2-madspin-pythia8_TuneCUETP8M1": {
         "datatype": "MC", 
-        "systematics": 2, 
+        "systematics": 1, 
         "subsel": {
             "none": ""
         }, 
@@ -178,7 +178,7 @@
     }, 
     "TTJets_SingleLeptFromTbar_TuneCUETP8M1_13TeV-madgraphMLM-pythia8": {
         "datatype": "MC", 
-        "systematics": 2, 
+        "systematics": 1, 
         "subsel": {
             "none": ""
         }, 
@@ -212,7 +212,7 @@
     }, 
     "ST_t-channel_top_4f_inclusiveDecays_13TeV-powhegV2-madspin-pythia8_TuneCUETP8M1": {
         "datatype": "MC", 
-        "systematics": 2, 
+        "systematics": 1, 
         "subsel": {
             "none": ""
         }, 
@@ -257,7 +257,7 @@
     }, 
     "ST_s-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1": {
         "datatype": "MC", 
-        "systematics": 2, 
+        "systematics": 1, 
         "subsel": {
             "none": ""
         }, 

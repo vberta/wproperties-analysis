@@ -86,7 +86,7 @@ class plotter:
             
     def getHistos(self):
         for f,fileInfo in self.sampleDict.iteritems() :
-            # inFile = ROOT.TFile.Open(self.indir+'/'+fileInfo[0])
+            #inFile = ROOT.TFile.Open(self.indir+'/'+fileInfo[0])
             inFile = ROOT.TFile.Open(self.outdir+'/hadded/'+fileInfo[0])
             for sKind, sList in self.extSyst.iteritems():
                 for sName in sList :

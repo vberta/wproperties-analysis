@@ -1,5 +1,5 @@
-#ifndef ANGCOEFF_H
-#define ANGCOEFF_H
+#ifndef ACCMAP_H
+#define ACCMAP_H
 
 
 #include "ROOT/RDataFrame.hxx"
@@ -14,7 +14,7 @@
 
 using RNode = ROOT::RDF::RNode;
 
-class AngCoeff : public Module {
+class accMap : public Module {
 
     private:
 
@@ -27,22 +27,15 @@ class AngCoeff : public Module {
     std::vector<ROOT::RDF::RResultPtr<std::vector<TH2D>>> _h2Group;
     std::vector<ROOT::RDF::RResultPtr<std::vector<TH3D>>> _h3Group;
 
-    std::vector<std::string> _syst_name;
-    std::string _syst_weight;
-    
-    public:
-    
-    AngCoeff(){
-        _syst_weight = "";
-    };
+    std::vector<float> _yArr = {0, 0.4, 0.8, 1.2, 1.6, 2.0, 2.5, 3.0, 6.0};
+    std::vector<float> _ptArr = {0., 4., 8., 12., 16., 20., 24., 32., 40., 60., 100., 200.};
 
-    AngCoeff(std::vector<std::string> syst_name, std::string syst_weight){
-        
-        _syst_name = syst_name;
-        _syst_weight = syst_weight;
-    };
+    int _nBinsY = 8;
+    int _nBinsPt = 11;
 
-    ~AngCoeff() {};
+public:
+    
+    ~accMap() {};
 
     RNode run(RNode) override;
     std::vector<ROOT::RDF::RResultPtr<TH1D>> getTH1() override;
@@ -52,8 +45,6 @@ class AngCoeff : public Module {
     std::vector<ROOT::RDF::RResultPtr<std::vector<TH1D>>> getGroupTH1() override;
     std::vector<ROOT::RDF::RResultPtr<std::vector<TH2D>>> getGroupTH2() override;
     std::vector<ROOT::RDF::RResultPtr<std::vector<TH3D>>> getGroupTH3() override;
-
-    std::vector<std::string> stringMultiplication (const std::vector<std::string> &v1, const std::vector<std::string> &v2);
 
     void reset() override;
 
