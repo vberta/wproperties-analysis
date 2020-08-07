@@ -32,6 +32,7 @@ class bkg_analyzer:
         self.signList = ['Plus','Minus']
         self.sampleList =  ['WToMuNu','Data'] #WToMuNu= All EWK samples
         self.maxPt_linearFit = 55
+        self.PDFvar = 'LHEPdfWeightVars'
         print "WARNING: pt fit range 25-55 GeV"
         self.rootFiles = []
         for f in self.sampleList : 
@@ -537,9 +538,10 @@ class bkg_analyzer:
                             finalHistoDict['LHEPdfDown'+canvas+histo+s+e] = finalHistoDict['nom'+canvas+histo+s+e].Clone(finalHistoDict['nom'+canvas+histo+s+e].GetName().replace('nom','LHEPdfDown'))
                             for x in range(1,finalHistoDict['LHEPdfUp'+canvas+histo+s+e].GetNbinsX()+1) :
                                 stdVar = 0
-                                for sName in systDict['LHEPdfWeightVars'] :
+                                for sName in systDict[self.PDFvar] :
                                     stdVar+= (finalHistoDict[sName+canvas+histo+s+e].GetBinContent(x)-finalHistoDict['nom'+canvas+histo+s+e].GetBinContent(x))**2
-                                stdVar = math.sqrt(stdVar/len(systDict['LHEPdfWeightVars']))
+                                # stdVar = math.sqrt(stdVar/len(systDict['LHEPdfWeightVars']))
+                                stdVar = math.sqrt(stdVar)
                                 finalHistoDict['LHEPdfUp'+canvas+histo+s+e].SetBinContent(x, finalHistoDict['LHEPdfUp'+canvas+histo+s+e].GetBinContent(x)+stdVar)
                                 finalHistoDict['LHEPdfDown'+canvas+histo+s+e].SetBinContent(x, finalHistoDict['LHEPdfDown'+canvas+histo+s+e].GetBinContent(x)-stdVar)
         modSystDict = copy.deepcopy(systDict)
@@ -611,9 +613,9 @@ class bkg_analyzer:
                                     for sKind, sList in systDict.iteritems():
                                         for sName in sList :
                                             if not 'LHE' in sName: continue 
-                                            Nrepl=1
-                                            if sKind=='LHEPdfWeightVars' :
-                                                Nrepl = len(sList)
+                                            Nrepl=1.
+                                            # if sKind=='LHEPdfWeightVars' :
+                                            #     Nrepl = float(len(sList))
                                             deltaLHE += (1/Nrepl)*(finalHistoDict[sName+canvas+histo+s+e].GetBinContent(self.ptBinning.index(float(p))+1)-finalHistoDict['nom'+canvas+histo+s+e].GetBinContent(self.ptBinning.index(float(p))+1))**2
                                     deltaLHE = math.sqrt(deltaLHE)
                                     deltaSyst= deltaSyst+deltaLHE
@@ -682,7 +684,7 @@ class bkg_analyzer:
                             colorCounter = 0
 
                             for sKind, sList in modSystDict.iteritems():
-                                if sKind=='LHEPdfWeightVars' : continue
+                                if sKind==self.PDFvar : continue
                                 colorNumber = colorList[colorCounter]
                                 colorCounter = colorCounter+1
                                 for sName in sList :
@@ -886,7 +888,7 @@ class bkg_analyzer:
                         sameFlagUNR = True
 
                         for sKind, sList in modSystDict.iteritems():
-                            if sKind=='LHEPdfWeightVars' : continue
+                            if sKind==self.PDFvar : continue
                             for sName in sList :
                                 finalHistoDict[sName+s+canvas+histo+'ratio_unrolled'] = ROOT.TH1F(finalHistoDict[sName+canvas+histo+s+'0ratio'].GetName()+'_ratio_unrolled',finalHistoDict[sName+canvas+histo+s+'0ratio'].GetName()+'_ratio_unrolled',len(unrolledPtEta)-1, array('f',unrolledPtEta))
                                 finalHistoDict[sName+s+canvas+histo+'ratio_unrolled'].SetLineColor(finalHistoDict[sName+canvas+histo+s+'0ratio'].GetLineColor())
@@ -1038,9 +1040,10 @@ class bkg_analyzer:
                     finalHistoDict['LHEPdfDown'+kind+par+s] = finalHistoDict['nom'+kind+par+s].Clone(finalHistoDict['nom'+kind+par+s].GetName().replace('nom','LHEPdfDown'))
                     for x in range(1,finalHistoDict['LHEPdfUp'+kind+par+s].GetNbinsX()+1) :
                         stdVar = 0
-                        for sName in systDict['LHEPdfWeightVars'] :
+                        for sName in systDict[self.PDFvar] :
                             stdVar+= (finalHistoDict[sName+kind+par+s].GetBinContent(x)-finalHistoDict['nom'+kind+par+s].GetBinContent(x))**2
-                        stdVar = math.sqrt(stdVar/len(systDict['LHEPdfWeightVars']))
+                        # stdVar = math.sqrt(stdVar/len(systDict['LHEPdfWeightVars']))
+                        stdVar = math.sqrt(stdVar)
                         finalHistoDict['LHEPdfUp'+kind+par+s].SetBinContent(x, finalHistoDict['LHEPdfUp'+kind+par+s].GetBinContent(x)+stdVar)
                         finalHistoDict['LHEPdfDown'+kind+par+s].SetBinContent(x, finalHistoDict['LHEPdfDown'+kind+par+s].GetBinContent(x)-stdVar)
        
@@ -1103,10 +1106,9 @@ class bkg_analyzer:
                             for sKind, sList in systDict.iteritems():
                                 for sName in sList :
                                     if not 'LHEScale' in sName: continue 
-                                    Nrepl=1
-                                    if sKind=='LHEPdfWeightVars' :
-                                        Nrepl = len(sList)
-                                    
+                                    Nrepl=1.
+                                    # if sKind=='LHEPdfWeightVars' :
+                                    #     Nrepl = float(len(sList))                                    
                                     deltaLHE += (1/Nrepl)*(finalHistoDict[sName+kind+par+s].GetBinContent(self.etaBinning.index(float(e))+1)-finalHistoDict['nom'+kind+par+s].GetBinContent(self.etaBinning.index(float(e))+1))**2
                             deltaLHE = math.sqrt(deltaLHE)
                             deltaSyst= deltaSyst+deltaLHE
@@ -1167,7 +1169,7 @@ class bkg_analyzer:
                             colorCounter = 0
 
                             for sKind, sList in modSystDict.iteritems():
-                                if sKind=='LHEPdfWeightVars' : continue
+                                if sKind==self.PDFvar : continue
                                 colorNumber = colorList[colorCounter]
                                 colorCounter = colorCounter+1
                                 for sName in sList :
