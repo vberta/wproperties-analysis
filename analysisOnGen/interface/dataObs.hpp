@@ -35,6 +35,9 @@ private:
 
 public:
 
+    dataObs() {
+        _syst_weight = "";
+    };
     dataObs(std::vector<std::string> syst_name, std::string syst_weight) {
         TH3::SetDefaultSumw2(true);
         TH2::SetDefaultSumw2(true);

@@ -36,25 +36,20 @@ private:
   TH2D *_hA6;
   TH2D *_hA7;
   TH2D *_hAUL;
-  TH2D *_mapTot;
-  TH2D *_sumw;
 
 public:
   getACValues(TFile *AChistos)
   {
     _AChistos = AChistos;
-    _hA0 = (TH2D *)_AChistos->Get("AngCoeff/harmonicsA0");
-    _hA1 = (TH2D *)_AChistos->Get("AngCoeff/harmonicsA1");
-    _hA2 = (TH2D *)_AChistos->Get("AngCoeff/harmonicsA2");
-    _hA3 = (TH2D *)_AChistos->Get("AngCoeff/harmonicsA3");
-    _hA4 = (TH2D *)_AChistos->Get("AngCoeff/harmonicsA4");
-    _hA5 = (TH2D *)_AChistos->Get("AngCoeff/harmonicsA5");
-    _hA6 = (TH2D *)_AChistos->Get("AngCoeff/harmonicsA6");
-    _hA7 = (TH2D *)_AChistos->Get("AngCoeff/harmonicsA7");
-    _hAUL = (TH2D *)_AChistos->Get("AngCoeff/harmonicsAUL");
-    _mapTot = (TH2D *)_AChistos->Get("AngCoeff/mapTot");
-    _sumw = (TH2D *)_AChistos->Get("AngCoeff/sumw");
-
+    _hA0 = (TH2D *)_AChistos->Get("angularCoefficients/harmonicsA0");
+    _hA1 = (TH2D *)_AChistos->Get("angularCoefficients/harmonicsA1");
+    _hA2 = (TH2D *)_AChistos->Get("angularCoefficients/harmonicsA2");
+    _hA3 = (TH2D *)_AChistos->Get("angularCoefficients/harmonicsA3");
+    _hA4 = (TH2D *)_AChistos->Get("angularCoefficients/harmonicsA4");
+    _hA5 = (TH2D *)_AChistos->Get("angularCoefficients/harmonicsA5");
+    _hA6 = (TH2D *)_AChistos->Get("angularCoefficients/harmonicsA6");
+    _hA7 = (TH2D *)_AChistos->Get("angularCoefficients/harmonicsA7");
+    _hAUL = (TH2D *)_AChistos->Get("angularCoefficients/harmonicsAUL");
   };
   
   ~getACValues(){};

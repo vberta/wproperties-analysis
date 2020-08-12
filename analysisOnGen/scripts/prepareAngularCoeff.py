@@ -6,7 +6,7 @@ import argparse
 import math
 
 sys.path.append('../../bkgAnalysis')
-import bkg_utils
+
 ROOT.gROOT.SetBatch()
 ROOT.TH1.AddDirectory(False)
 ROOT.TH2.AddDirectory(False)
@@ -14,7 +14,7 @@ ROOT.gStyle.SetOptStat(0)
 
 
 parser = argparse.ArgumentParser("")
-parser.add_argument('-o','--output', type=str, default='prepareAngularCoeff',help="name of the output file")
+parser.add_argument('-o','--output', type=str, default='genInput',help="name of the output file")
 parser.add_argument('-i','--input', type=str, default='/scratchssd/emanca/wproperties-analysis/analysisOnGen/GenInfo/genInfo.root',help="name of the input root file")
 
 args = parser.parse_args()
@@ -48,6 +48,11 @@ for sKind, sList in systDict.iteritems():
         hDict[sName+'mapTot'] =  inFile.Get('angularCoefficients'+sKind+'/mapTot'+sName)
         for coeff,div in coeffDict.iteritems() :
             hDict[sName+coeff] =  inFile.Get('angularCoefficients'+sKind+'/harmonics'+coeff+sName)
+# get maps
+mapTot = inFile.Get('basicSelection/mapTot')
+mapAccEta = inFile.Get('basicSelection/mapAccEta')
+mapAcc = inFile.Get('basicSelection/mapAcc')
+sumw = inFile.Get('basicSelection/sumw')
 
 #BUILD OUTPUT
 outFile =  ROOT.TFile(OUTPUT+'.root', "RECREATE")
@@ -67,9 +72,17 @@ for sKind, sList in systDict.iteritems():
                         content = hist.GetBinContent(xx,yy)
                         hist.SetBinContent(xx,yy,20./3*(content+1./10.))
             hist.Write()
+outFile.mkdir('accMaps')
+outFile.cd('accMaps')
+mapTot.Write()
+mapAccEta.Write()
+mapAcc.Write()
+sumw.Write()
+
 outFile.Close()
-            
-                    
+
+
+
 
 
 

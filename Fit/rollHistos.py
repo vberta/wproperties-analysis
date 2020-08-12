@@ -2,6 +2,7 @@ import ROOT
 from array import array
 import math
 from termcolor import colored
+import copy
 
 ROOT.gROOT.SetBatch()
 
@@ -11,9 +12,28 @@ ptArr = [0., 4., 8., 12., 16., 20., 24., 32., 40., 60., 100., 200.]
 fFit = ROOT.TFile.Open("fit_testbkg.root")
 res = fFit.fitresults
 
-fmap = ROOT.TFile.Open("/scratchssd/emanca/wproperties-analysis/signalAnalysis/ACvalues.root")
+fmap = ROOT.TFile.Open("/scratchssd/emanca/wproperties-analysis/analysisOnGen/genInput.root")
 imap = ROOT.TH2D
-imap = fmap.Get("mapTot")
+imap = fmap.Get("accMaps/mapTot")
+cov = ROOT.TH2D
+cov = fFit.Get('covariance_matrix_channelhelpois')
+
+hgen = {}
+hgen['a0'] = []
+hgen['a1'] = []
+hgen['a2'] = []
+hgen['a3'] = []
+hgen['a4'] = []
+hgen['unpolarizedxsec'] = []
+
+for i in range(60):
+    hgen['a0'].append(fmap.Get("angularCoefficients_LHEPdfWeight/harmonicsA0_LHEPdfWeightHess{}".format(i+1)))
+    hgen['a1'].append(fmap.Get("angularCoefficients_LHEPdfWeight/harmonicsA1_LHEPdfWeightHess{}".format(i+1)))
+    hgen['a2'].append(fmap.Get("angularCoefficients_LHEPdfWeight/harmonicsA2_LHEPdfWeightHess{}".format(i+1)))
+    hgen['a3'].append(fmap.Get("angularCoefficients_LHEPdfWeight/harmonicsA3_LHEPdfWeightHess{}".format(i+1)))
+    hgen['a4'].append(fmap.Get("angularCoefficients_LHEPdfWeight/harmonicsA4_LHEPdfWeightHess{}".format(i+1)))
+    hgen['unpolarizedxsec'].append(fmap.Get("angularCoefficients_LHEPdfWeight/harmonicsAUL_LHEPdfWeightHess{}".format(i+1)))
+
 
 #factors = ['L', 'I', 'T', 'A', 'P', 'UL']
 factors = {}
@@ -24,10 +44,15 @@ factors["a3"]=4.*math.sqrt(2)
 factors["a4"]=2.
 factors["unpolarizedxsec"]=1.
 
-histos = []
+histos = {}
+histos['a0'] = []
+histos['a1'] = []
+histos['a2'] = []
+histos['a3'] = []
+histos['a4'] = []
+histos['unpolarizedxsec'] = []
 
 for c in factors:
-
 
     h = ROOT.TH2D('h{c}'.format(c=c), 'h{c}'.format(c=c), len(yArr)-1, array('f',yArr), len(ptArr)-1, array('f',ptArr))
     h1 = ROOT.TH2D('hGen{c}'.format(c=c), 'hGen{c}'.format(c=c), len(yArr)-1, array('f',yArr), len(ptArr)-1, array('f',ptArr))
@@ -45,59 +70,83 @@ for c in factors:
                     h.SetBinContent(i,j,coeff)
                     h.SetBinError(i,j,coeff_err)
                     
+                    pdferr = 0.
                     h1.SetBinContent(i,j,eval('ev.y_{i}_pt_{j}_{c}_gen'.format(c=c, j=j, i=i)))
-                    #out.append(eval('ev.{c}_pt{j}_y{i}_mu'.format(c=c, j=j, i=i)))
-                    #err.append(eval('ev.{c}_pt{j}_y{i}_mu_err'.format(c=c, j=j, i=i)))
-                    #gen.append(eval('ev.{c}_pt{j}_y{i}_mu_gen'.format(c=c, j=j, i=i)))
-                    content = content + coeff*imap.GetBinContent(i,j)
-                    norm = norm + imap.GetBinContent(i,j)
-                    err = err + coeff_err*imap.GetBinContent(i,j)
-                    hy.SetBinContent(i,content/norm)
-                    hy.SetBinError(i,err/norm)
+                    for pdf in hgen[c]:
+                        pdferr+= (coeff - pdf.GetBinContent(i,j))**2
+                    h1.SetBinError(i,j,math.sqrt(pdferr))
+                    
                 except AttributeError: 
-                    #print colored('bin of pt {} and y {}'.format(j,i), 'red')
-                    h.SetBinContent(i,j,-9999.)
-                    h.SetBinError(i,j,0.)
-                    #h1.SetBinContent(i,j,0.)
+                    pass
                     
         for j in range(1, h.GetNbinsY()+1): #loop over pt bins
-            content = 0.
-            norm = 0.
-            err = 0.
-            for i in range(1, h.GetNbinsY()+1): #loop over rapidity bins
-                try:
-                    coeff = eval('ev.y_{i}_pt_{j}_{c}'.format(c=c, j=j, i=i))
-                    coeff_err = eval('ev.y_{i}_pt_{j}_{c}_err'.format(c=c, j=j, i=i))
-                    
-                    content = content + coeff*imap.GetBinContent(i,j)
-                    norm = norm + imap.GetBinContent(i,j)
-                    err = err + coeff_err*imap.GetBinContent(i,j)
-                    hpt.SetBinContent(j,content/norm)
-                    hpt.SetBinError(j,err/norm)
-                    #h1.SetBinContent(i,j,eval('ev.y_{i}_pt_{j}_{c}_gen'.format(c=c, j=j, i=i)))
-                    #out.append(eval('ev.{c}_pt{j}_y{i}_mu'.format(c=c, j=j, i=i)))
-                    #err.append(eval('ev.{c}_pt{j}_y{i}_mu_err'.format(c=c, j=j, i=i)))
-                    #gen.append(eval('ev.{c}_pt{j}_y{i}_mu_gen'.format(c=c, j=j, i=i)))
-                except AttributeError: 
-                    #print colored('bin of pt {} and y {}'.format(j,i), 'red')
-                    h.SetBinContent(i,j,-9999.)
-                    h.SetBinError(i,j,0.)
-    #for i in range (0, h.GetNbinsX()): #y
-        #for j in range (0, h.GetNbinsY()): #pt
+            try:
+                coeff = eval('ev.pt_{j}_helmeta{c}'.format(c=c, j=j))
+                coeff_err = eval('ev.pt_{j}_helmeta{c}_err'.format(c=c, j=j))
+                
+                hpt.SetBinContent(j,coeff)
+                hpt.SetBinError(j,coeff_err)
+                
+            except AttributeError: 
+                pass
+        for i in range(1, h.GetNbinsY()+1): #loop over rapidity bins
+            try:
+                coeff = eval('ev.y_{i}_helmeta{c}'.format(c=c, i=i))
+                coeff_err = eval('ev.y_{i}_helmeta{c}_err'.format(c=c, i=i))
+                
+                hy.SetBinContent(i,coeff)
+                hy.SetBinError(i,coeff_err)
+                
+            except AttributeError: 
+                pass
 
-            #h.SetBinContent(i+1,j+1, out[i + j*h.GetNbinsX()])
-            #h.SetBinError(i+1,j+1, err[i + j*h.GetNbinsX()])
+    histos[c].append(h)
+    histos[c].append(h1)
+    histos[c].append(hpt)
+    histos[c].append(hy)
 
-            #h1.SetBinContent(i+1,j+1, gen[i + j*h.GetNbinsX()])
+#projections
+canv = {}
+canv['a0'] = []
+canv['a1'] = []
+canv['a2'] = []
+canv['a3'] = []
+canv['a4'] = []
+canv['unpolarizedxsec'] = []
 
-    histos.append(h)
-    histos.append(h1)
-    histos.append(hpt)
-    histos.append(hy)
+for c in factors:
+    h = ROOT.TH2D('h{c}'.format(c=c), 'h{c}'.format(c=c), len(yArr)-1, array('f',yArr), len(ptArr)-1, array('f',ptArr))
+    for i in range(1, h.GetNbinsX()+1): #loop over rapidity bins
+        c1 = ROOT.TCanvas("projPt{}_{}".format(i,c),"")
+        pr = histos[c][0].ProjectionY("projPt{}_{}".format(i,c),i,i)
+        pg = histos[c][1].ProjectionY("projgPt{}_{}".format(i,c),i,i)
+        c1.cd()
+        pr.Draw()
+        pg.SetFillColor(ROOT.kGreen)
+        pg.SetFillStyle(3001)
+        pg.Draw("E2 same")
+        canv[c].append(copy.deepcopy(c1))
+    for j in range(1, h.GetNbinsY()+1): #loop over pt bins
+        c1 = ROOT.TCanvas("projY{}_{}".format(j,c),"")
+        pr = histos[c][0].ProjectionX("projY{}_{}".format(j,c),j,j)
+        pg = histos[c][1].ProjectionX("projgY{}_{}".format(j,c),j,j)
+        c1.cd()
+        pr.Draw()
+        pg.SetFillColor(ROOT.kMagenta)
+        pg.SetFillStyle(3001)
+        pg.Draw("E2 same")
+        canv[c].append(copy.deepcopy(c1))
 
-
-fO = ROOT.TFile("outSyst.root", "recreate")
+fO = ROOT.TFile("outSyst2Coeff.root", "recreate")
 fO.cd()
-for h in histos:
-    h.Write()
+
+for c,hlist in histos.iteritems():
+    for h in hlist:
+        h.Write()
+
+for c,hlist in canv.iteritems():
+    for h in hlist:
+        h.Write()
+    
+    
         

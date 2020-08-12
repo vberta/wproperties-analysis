@@ -44,14 +44,17 @@ if runAC:
     p.getOutput()
 
 if runTemplates:
+    
+    nom = ROOT.vector('string')()
+    nom.push_back("")
 
-fileAC = ROOT.TFile.Open("TEST/AC.root")
-p.branch(nodeToStart = 'basicSelection', nodeToEnd = 'harmonicsWeights',modules = [ROOT.getACValues(fileAC)])
-p.branch(nodeToStart = 'harmonicsWeights', nodeToEnd = 'accMap', modules =[ROOT.getAccMap(fileAC)])
-p.branch(nodeToStart = 'accMap', nodeToEnd = 'templates', modules =[ROOT.getWeights(), ROOT.templateBuilder()])
-p.branch(nodeToStart = 'accMap', nodeToEnd = 'dataObs', modules =[ROOT.dataObs()])
+    fileAC = ROOT.TFile.Open("genInput.root")
+    p.branch(nodeToStart = 'basicSelection', nodeToEnd = 'harmonicsWeights',modules = [ROOT.getACValues(fileAC)])
+    p.branch(nodeToStart = 'harmonicsWeights', nodeToEnd = 'accMap', modules =[ROOT.getAccMap(fileAC)])
+    p.branch(nodeToStart = 'accMap', nodeToEnd = 'templates', modules =[ROOT.getWeights(), ROOT.templateBuilder()])
+    p.branch(nodeToStart = 'accMap', nodeToEnd = 'dataObs', modules =[ROOT.dataObs(nom,"Nom")])
 
-#weight variations
+    #weight variations
     for s,variations in systematics.iteritems():
         print "branching weight variations", s
         vars_vec = ROOT.vector('string')()
@@ -59,5 +62,5 @@ p.branch(nodeToStart = 'accMap', nodeToEnd = 'dataObs', modules =[ROOT.dataObs()
             vars_vec.push_back(var)
         p.branch(nodeToStart = 'accMap', nodeToEnd = 'dataObs_{}'.format(s), modules =[ROOT.dataObs(vars_vec,variations[1])])
 
-p.getOutput()
-p.saveGraph()
+    p.getOutput()
+    p.saveGraph()

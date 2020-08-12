@@ -36,9 +36,9 @@ class getAccMap : public Module {
     getAccMap(TFile *maps)
     {
       _maps = maps;
-      _mapAccEta = (TH2D *)_maps->Get("AngCoeff/mapAccEta");
-      _mapAcc = (TH2D *)_maps->Get("AngCoeff/mapAcc");
-      _mapTot = (TH2D *)_maps->Get("AngCoeff/mapTot");
+      _mapAccEta = (TH2D *)_maps->Get("accMaps/mapAccEta");
+      _mapAcc = (TH2D *)_maps->Get("accMaps/mapAcc");
+      _mapTot = (TH2D *)_maps->Get("accMaps/mapTot");
 
       _mapAccEta->Divide(_mapTot);
       _mapAcc->Divide(_mapTot);
