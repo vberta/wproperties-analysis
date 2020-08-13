@@ -4,8 +4,9 @@ import ROOT
 import json
 import argparse
 import copy
-
 from RDFtree import RDFtree
+from multiprocessing import Process
+
 sys.path.append('python/')
 sys.path.append('data/')
 from systematics import systematics
@@ -16,68 +17,18 @@ from getLumiWeight import getLumiWeight
 ROOT.gSystem.Load('bin/libAnalysisOnData.so')
 ROOT.gROOT.ProcessLine("gErrorIgnoreLevel = 2001;");
 
-parser = argparse.ArgumentParser("")
-parser.add_argument('-pretend', '--pretend',type=int, default=False, help="run over a small number of event")
-parser.add_argument('-ncores', '--ncores',type=int, default=64, help="number of cores used")
-parser.add_argument('-outputDir', '--outputDir',type=str, default='./output/', help="output dir name")
-
-args = parser.parse_args()
-pretendJob = args.pretend
-ncores = args.ncores
-outputDir = args.outputDir
-
-if pretendJob:
-    print "Running a test job over a few events"
-else:
-    print "Running on full dataset"
-
-#selections_whelicity = selections_bkg_whelicity
-flog=open("samplesFinished.txt", "w")
-samples={}
-with open('data/samples_2016.json') as f:
-  samples = json.load(f)
-for sample in samples:
-    if not samples[sample]['datatype']=='MC': continue
-    flog.write(sample + " STARTED\n")
-    #WJets to be run by a separate config
-    if 'WJets' in sample : continue
-    #if 'ST' not in sample : continue
-    print sample
-    direc = samples[sample]['dir']
-    xsec = samples[sample]['xsec']
-    c = ncores		
-    ROOT.ROOT.EnableImplicitMT(c)
-    print "running with {} cores".format(c)
-  
-    fvec=ROOT.vector('string')()
-    for dirname,fname in direc.iteritems():
-        ##check if file exists or not
-        inputFile = '/scratchssd/sroychow/NanoAOD2016-V2/{}/tree.root'.format(dirname)
-        isFile = os.path.isfile(inputFile)  
-        if not isFile:
-            print inputFile, " does not exist"
-            continue
-        fvec.push_back(inputFile)
-        print inputFile
-
-    if fvec.empty():
-        print "No files found for directory:", samples[sample], " SKIPPING processing"
-        continue
-    print fvec 
-
-    fileSF = ROOT.TFile.Open("data/ScaleFactors_OnTheFly.root")
-
+def RDFprocessMC(fvec, outputDir, sample, xsec, fileSF, ncores, systType, pretendJob=True):
+    ROOT.ROOT.EnableImplicitMT(ncores)
+    print "running with {} cores".format(ncores)
     p = RDFtree(outputDir = outputDir, inputFile = fvec, outputFile="{}_plots.root".format(sample), pretend=pretendJob)
-
     #sample specific systematics
     systematicsFinal=copy.deepcopy(systematics)
-    if samples[sample]['systematics'] != 2:
+    if systType != 2:
         p.branch(nodeToStart = 'input', nodeToEnd = 'defs', modules = [ROOT.baseDefinitions(),ROOT.weightDefinitions(fileSF),getLumiWeight(xsec=xsec, inputFile=fvec)])
     else:
         p.branch(nodeToStart = 'input', nodeToEnd = 'defs', modules = [ROOT.baseDefinitions(),ROOT.weightDefinitions(fileSF),getLumiWeight(xsec=xsec, inputFile=fvec),ROOT.Replica2Hessian()])
     #selections bkg also includes Signal
     for region,cut in selections_bkg.iteritems():
-
         print "running in region {}".format(region)
 
         if 'aiso' in region:
@@ -98,8 +49,8 @@ for sample in samples:
   
        #weight variations
         for s,variations in systematicsFinal.iteritems():
-            if "LHEScaleWeight" in s and samples[sample]['systematics'] != 2 :  continue
-            if "LHEPdfWeight"   in s and samples[sample]['systematics'] != 2 :  continue
+            if "LHEScaleWeight" in s and systType != 2 :  continue
+            if "LHEPdfWeight"   in s and systType != 2 :  continue
 
             if "LHEPdfWeight" in s or "LHEScaleWeight" in s :
                 var_weight = weight
@@ -134,5 +85,52 @@ for sample in samples:
 
     p.getOutput()
     p.saveGraph()
-    flog.write(sample + " Finished\n")
-flog.close()
+
+
+def main():
+    parser = argparse.ArgumentParser("")
+    parser.add_argument('-p', '--pretend',type=int, default=False, help="run over a small number of event")
+    parser.add_argument('-n', '--ncores',type=int, default=64, help="number of cores used")
+    parser.add_argument('-o', '--outputDir',type=str, default='./output/', help="output dir name")
+    parser.add_argument('-i', '--inputDir',type=str, default='/scratchssd/sroychow/NanoAOD2016-V2/', help="input dir name")    
+    args = parser.parse_args()
+    pretendJob = args.pretend
+    ncores = args.ncores
+    outputDir = args.outputDir
+    inDir = args.inputDir
+    if pretendJob:
+        print "Running a test job over a few events"
+    else:
+        print "Running on full dataset"
+    samples={}
+    with open('data/samples_2016.json') as f:
+        samples = json.load(f)
+    for sample in samples:
+        if not samples[sample]['datatype']=='MC': continue
+        #if not samples[sample]['multiprocessing']: continue
+        #WJets to be run by a separate config
+        if 'WJets' in sample : continue
+        print sample
+        direc = samples[sample]['dir']
+        xsec = samples[sample]['xsec']
+        cores = 0 if samples[sample]['multiprocessing'] else ncores 		
+        fvec=ROOT.vector('string')()
+        for dirname,fname in direc.iteritems():
+            ##check if file exists or not
+            inputFile = '{}/{}/tree.root'.format(inDir, dirname)
+            isFile = os.path.isfile(inputFile)  
+            if not isFile:
+                print inputFile, " does not exist"
+                continue
+            fvec.push_back(inputFile)
+
+        if fvec.empty():
+            print "No files found for directory:", samples[sample], " SKIPPING processing"
+            continue
+        print fvec 
+        fileSF = ROOT.TFile.Open("data/ScaleFactors_OnTheFly.root")
+        systType = samples[sample]['systematics']
+        RDFprocessMC(fvec, outputDir, sample, xsec, fileSF, cores, systType, pretendJob)
+
+if __name__ == "__main__":
+    main()
