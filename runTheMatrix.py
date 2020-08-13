@@ -3,18 +3,17 @@ import ROOT
 import os
 import copy
 import argparse
+import time
 # from contextlib import contextmanager
-
 ################################################################################################################################################
 #
-#  usage: python runTheMatrix.py --outputDir OUTPUT --bkgOutput BKGOUT --ncores 64 --bkgFile MYBKG --bkgPrep 1 --bkgAna 1 --prefit 1 --plotter 1
+#  usage: python runTheMatrix.py --inputDir INPUTDIR --outputDir OUTPUT --bkgOutput BKGOUT --ncores 64 --bkgFile MYBKG --bkgPrep 1 --bkgAna 1 --prefit 1 --plotter 1
 #
 #  each parameters is described below in the argparse
 #
 #  NB: if --bkgFile myBKG --> special string to use the file that runTheMatrix produce at step2. 
 #
 #################################################################################################################################################
-
 # @contextmanager
 # def cd(newdir):
 #     prevdir = os.getcwd()
@@ -23,17 +22,18 @@ import argparse
 #         yield
 
 parser = argparse.ArgumentParser("")
-parser.add_argument('-outputDir', '--outputDir',type=str, default='output/', help="output dir name of step1 and step3 (inside analysisOnData/)")
-parser.add_argument('-bkgOutput', '--bkgOutput',type=str, default='bkg/', help="output dir name for bkgAna (inside bkgAnalysis/)")
-parser.add_argument('-bkgFile', '--bkgFile',type=str, default='/scratch/bertacch/wmass/wproperties-analysis/bkgAnalysis/TEST_runTheMatrix/bkg_parameters_CFstatAna.root', help="bkg parameters file path/name.root, or the special 'MYBKG' for the one produced in the same loop")
-parser.add_argument('-ncores', '--ncores',type=int, default=64, help="number of cores used")
-parser.add_argument('-step1', '--bkgPrep',type=int, default=False, help="run the bkg input preparation")
-parser.add_argument('-step2', '--bkgAna',type=int, default=False, help="run the bkg analysis")
-parser.add_argument('-step3', '--prefit',type=int, default=False, help="run the prefit hitograms building")
-parser.add_argument('-step4', '--plotter',type=int, default=False, help="run the prfit plotter, the result are saved in outputDir/plot/")
-
+parser.add_argument('-i', '--inputDir',type=str, default='/scratchssd/sroychow/NanoAOD2016-V2/', help="input dir name with the trees")
+parser.add_argument('-o', '--outputDir',type=str, default='output/', help="output dir name of step1 and step3 (inside analysisOnData/)")
+parser.add_argument('-t', '--bkgOutput',type=str, default='bkg/', help="output dir name for bkgAna (inside bkgAnalysis/)")
+parser.add_argument('-f', '--bkgFile',type=str, default='/scratch/bertacch/wmass/wproperties-analysis/bkgAnalysis/TEST_runTheMatrix/bkg_parameters_CFstatAna.root', help="bkg parameters file path/name.root, or the special 'MYBKG' for the one produced in the same loop")
+parser.add_argument('-c', '--ncores',type=int, default=64, help="number of cores used")
+parser.add_argument('-q', '--bkgPrep',type=int, default=False, help="run the bkg input preparation")
+parser.add_argument('-w', '--bkgAna',type=int, default=False, help="run the bkg analysis")
+parser.add_argument('-e', '--prefit',type=int, default=False, help="run the prefit hitograms building")
+parser.add_argument('-r', '--plotter',type=int, default=False, help="run the prfit plotter, the result are saved in outputDir/plot/")
 
 args = parser.parse_args()
+inputDir = args.inputDir
 outputDir = args.outputDir
 bkgOutput = args.bkgOutput
 bkgFile = args.bkgFile
@@ -43,45 +43,52 @@ step2 = args.bkgAna
 step3 = args.prefit
 step4 = args.plotter
 
+tic=time.time()
+runTimes=[]
 if bkgFile == 'MYBKG' :
     bkgFile = '../bkgAnalysis/'+bkgOutput+'/bkg_parameters_CFstatAna.root'
-    
-    if not step2 :
-        raw_input('You are using self-produced bkg file but you are not running step2, are you sure? [press Enter to continue]')
+    #if not step2 :
+    #    raw_input('You are using self-produced bkg file but you are not running step2, are you sure? [press Enter to continue]')
 
 if step1 :
+    s1start=time.time()
     print "step1: bkg input preparation... "
     os.chdir('./analysisOnData')
     if not os.path.isdir(outputDir): os.system('mkdir '+ outputDir)
-    os.system('python runAnalysisOnMC.py --pretend 0 --ncores '+ncores+' --outputDir '+outputDir)
-    os.system('python runAnalysisOnWJetsMC.py --pretend 0 --ncores '+ncores+' --outputDir '+outputDir)
-    os.system('python runAnalysisOnData.py    --runBKG 1 --pretend 0 --ncores '+ncores+' --outputDir '+outputDir)
+    os.system('python runAnalysis.py -p=0 -b=1 -i='+inputDir+' -c='+ncores+' -o='+outputDir)
     os.chdir('../')
-
+    s1end=time.time()
+    runTimes.append(s1end - s1start)
 if step2 :
+    s2start=time.time()
     print "step2: bkg analysis..."
     if not os.path.isdir('bkgAnalysis/'+bkgOutput): os.system('mkdir bkgAnalysis/'+bkgOutput)
     if not os.path.isdir('bkgAnalysis/'+bkgOutput+'/bkgInput/'): os.system('mkdir bkgAnalysis/'+bkgOutput+'/bkgInput/')
     os.chdir('bkgAnalysis')
+    #inputDir for bkgAnalysis is the outputDir of step1
     os.system('python bkg_prepareHistos.py --inputDir ../analysisOnData/'+outputDir+' --outputDir '+bkgOutput+'/bkgInput/')
     os.system('python bkg_config.py --mainAna 1 --CFAna 1 --inputDir '+bkgOutput+'/bkgInput/hadded/ --outputDir '+bkgOutput+' --syst 1 --compAna 1 --ncores '+ncores)
     os.chdir('../')
+    s2end=time.time()
+    runTimes.append(s2end - s2start)
 
 if step3 :
-    print "step3: prefit plots..."
+    s3start=time.time()
+    print "step3: Fake from Data..."
     os.chdir('analysisOnData')
     if not os.path.isdir(outputDir): os.system('mkdir '+ outputDir)
-    #os.system('python runAnalysisOnMC.py      --runBKG 0 --pretend 0 --ncores '+ncores+' --outputDir '+outputDir)
-    #os.system('python runAnalysisOnWJetsMC.py --runBKG 0 --pretend 0 --ncores '+ncores+' --outputDir '+outputDir)
-    os.system('python runAnalysisOnData.py --runBKG 0 --pretend 0 --ncores '+ncores+' --outputDir '+outputDir+' --bkgFile '+bkgFile)
+    #ncores is optimized and set in the config itself, so no need to pass here
+    os.system('python runAnalysis.py -p=0 -b=0 -i='+inputDir+ ' -o=' +outputDir+ ' -f='+bkgFile)
     os.chdir('../')
+    s3end=time.time()
+    runTimes.append(s3end - s3start)
 
 if step4 :
+    s4start=time.time()
     print "step4: plotter..."
     os.chdir('analysisOnData/python')
     if not os.path.isdir('../'+outputDir): os.system('mkdir ../'+outputDir)
     os.system('python plotter_prefit.py --hadd 1 --output ../'+outputDir+'/plot/ --input ../'+outputDir+' --systComp 1')
-    
     sys.path.append('../../bkgAnalysis')
     import bkg_utils
     for sKind,sList in bkg_utils.bkg_systematics.iteritems() : 
@@ -91,3 +98,12 @@ if step4 :
             else : skipList+= ' '+str(sKindInt)
         print "Skipped systematics:", skipList 
         os.system('python plotter_prefit.py --hadd 1 --output ../'+outputDir+'/plot_only_'+str(sKind)+' --input ../'+outputDir+' --systComp 1 --skipSyst '+skipList)
+    s4end=time.time()
+    runTimes.append(s4end - s4start)
+    
+toc=time.time()
+print "Step1 completed in:", runTimes[0], " seconds"
+print "Step2 completed in:", runTimes[1], " seconds"
+print "Step3 completed in:", runTimes[2], " seconds"
+print "Step4 completed in:", runTimes[3], " seconds"
+print "Total runtime:", toc - tic, " seconds"
