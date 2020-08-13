@@ -62,11 +62,11 @@ ncores = args.ncores
 
 
 #internal parameters:
-STATANA = True
 CORRFITFINAL= True #correlated fit in the final plots
+STATANA = CORRFITFINAL  #or False or CORRFITFINAL
 TEMPLATE = True
 NOM = ['Nominal','']
-EXTRAP = False #extrapolation syst
+EXTRAP = True #extrapolation syst
 NCORES=ncores
 if NCORES>1 :
     MULTICORE=True
@@ -108,8 +108,8 @@ if mainAna :
     if EXTRAP:
         for lcut, lbin in bkg_utils.looseCutDict.iteritems() :    
             fakerate_analysis(systKind=NOM[0], systName=NOM[1], correlatedFit=False, statAna=False, template = TEMPLATE, extrapSuff=lcut)
-        fakeExtrap = bkg_fakerateAnalyzer.bkg_analyzer(systKind=NOM[0],systName=NOM[1],correlatedFit=CORRFITFINAL,statAna=False, ptBinning=bkg_utils.ptBinning, etaBinning=bkg_utils.etaBinning, outdir=outputDir+'/bkg_', inputDir=inputDir)
-        if not os.path.isdir(outputDir+'/extrapolation_plots'): os.system('mkdir '+outputDir+'/extrapolation_plots')
+        fakeExtrap = bkg_fakerateAnalyzer.bkg_analyzer(systKind=NOM[0],systName=NOM[1],correlatedFit=CORRFITFINAL,statAna=False, ptBinning=bkg_utils.ptBinning, etaBinning=bkg_utils.etaBinning, outdir=outputDir, inputDir=inputDir)
+        if not os.path.isdir(outputDir+'/extrapolation_syst'): os.system('mkdir '+outputDir+'/extrapolation_syst')
         fakeExtrap.extrapolationSyst(extrapDict=bkg_utils.looseCutDict,linearFit=True)
         fakeExtrap.extrapolationSyst(extrapDict=bkg_utils.looseCutDict,linearFit=False)
     
