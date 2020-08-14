@@ -33,7 +33,7 @@ class bkg_analyzer:
         self.sampleList =  ['WToMuNu','Data'] #WToMuNu= All EWK samples
         self.maxPt_linearFit = 55
         self.PDFvar = 'LHEPdfWeightVars'
-        print "WARNING: pt fit range 25-55 GeV"
+        # print "WARNING: pt fit range 25-55 GeV"
         self.rootFiles = []
         for f in self.sampleList : 
              self.rootFiles.append(ROOT.TFile.Open(self.inputDir+'/'+f+'.root'))    
@@ -1505,7 +1505,7 @@ class bkg_analyzer:
         return htempl
         
             
-    def extrapolationSyst(self,extrapDict, linearFit=True) :
+    def extrapolationSyst(self,extrapDict, linearFit=True,CFstring='') :
         #linearFit = trend in Mt, if False-->constant trend in Mt assumed
         
         nomMeanMt=67
@@ -1518,12 +1518,15 @@ class bkg_analyzer:
         for lcut, lbin in localLooseCutDict.iteritems() :
             fileDict[lcut] = ROOT.TFile.Open(self.outdir+'/bkg_'+lcut+'/bkg_differential_fakerate.root')
             looseCutBinning.append(lbin[0])
-        fileDict[self.systName] = ROOT.TFile.Open(self.outdir+'/bkg_'+self.systName+'/bkg_differential_fakerate.root')
+        fileDict[self.systName] = ROOT.TFile.Open(self.outdir+'/bkg_'+self.systName+'/bkg_differential_fakerate'+CFstring+'.root')
         looseCutBinning.append(40)
         looseCutBinning.append(2*nomMeanMt-40)
+        # looseCutBinning.append(100)#EXTRAP_STUDY
+        # looseCutBinning.append(120)#EXTRAP_STUDY
         looseCutBinning.sort() #because from dict 
         
         localLooseCutDict.update({self.systName:[40,2*nomMeanMt-40]})
+        # localLooseCutDict.update({self.systName:[100,120]})#EXTRAP_STUDY
         
         histoDict = {}
         discrepancyMapDict = {}
@@ -1566,8 +1569,10 @@ class bkg_analyzer:
                         histoDict[s+e].SetBinContent( histoDict[s+e].FindBin(lbin[0]),self.ptBinningS.index(p)+1,val)
                         histoDict[s+e].SetBinError( histoDict[s+e].FindBin(lbin[0]),self.ptBinningS.index(p)+1,err)
                 if linearFit :
+                    # fitFunc = ROOT.TF2("fitFunc", "[0]+[1]*x+[2]*y+[3]*x*y",0.,100.,25,55) #EXTRAP_STUDY
                     fitFunc = ROOT.TF2("fitFunc", "[0]+[1]*x+[2]*y+[3]*x*y",0.,40.,25,55) 
                 else :
+                    # fitFunc = fitFunc = ROOT.TF2("fitFunc", "[0]+[1]*y",0.,100.,25,55) #EXTRAP_STUDY
                     fitFunc = fitFunc = ROOT.TF2("fitFunc", "[0]+[1]*y",0.,40.,25,55) 
                     
                 fitRes = histoDict[s+e].Fit(fitFunc,"QSR","")#,0,40,26,55)
@@ -1591,7 +1596,7 @@ class bkg_analyzer:
                     xf=nomMeanMt
                     for p in self.ptBinningS :
                         yf = histoDict[s+e].GetYaxis().GetBinCenter(self.ptBinningS.index(p)+1)
-                        fr = fitFunc.Eval(xf)
+                        fr = fitFunc.Eval(xf,yf)
                         dfr = math.sqrt(wa**2+(wb*xf)**2+(wc*yf)**2+(wd*xf*yf)**2+2*(wab*xf+wac*yf+wad*xf*yf+wbc*xf*yf+wbd*xf**2*yf+wcd*xf*yf**2))
                         fr_nom =histoDict[s+e].GetBinContent(histoDict[s+e].GetNbinsX(),self.ptBinningS.index(p)+1)  
                         err_nom = histoDict[s+e].GetBinError(histoDict[s+e].GetNbinsX(),self.ptBinningS.index(p)+1)
@@ -1618,7 +1623,7 @@ class bkg_analyzer:
                     xf=nomMeanMt
                     for p in self.ptBinningS :
                         yf = histoDict[s+e].GetYaxis().GetBinCenter(self.ptBinningS.index(p)+1)
-                        fr = fitFunc.Eval(xf)
+                        fr = fitFunc.Eval(xf,yf)
                         dfr = math.sqrt(dq**2+(yf*dm)**2+2*yf*dmq2)
                         fr_nom =histoDict[s+e].GetBinContent(histoDict[s+e].GetNbinsX(),self.ptBinningS.index(p)+1)  
                         err_nom = histoDict[s+e].GetBinError(histoDict[s+e].GetNbinsX(),self.ptBinningS.index(p)+1)
@@ -1635,7 +1640,7 @@ class bkg_analyzer:
             linString = "_linearFit" 
         else :
             linString = "_constFit"                
-        output = ROOT.TFile(self.outdir+"/extrapolation_syst/extrapPlots_SigRegMean"+str(nomMeanMt)+'GeV'+linString+".root","recreate")
+        output = ROOT.TFile(self.outdir+"/extrapolation_syst/extrapPlots_SigRegMean"+str(nomMeanMt)+'GeV'+linString+CFstring+".root","recreate")
         for s in self.signList :
             for e in self.etaBinningS : 
                 histoDict[s+e].Write()  
