@@ -1521,12 +1521,9 @@ class bkg_analyzer:
         fileDict[self.systName] = ROOT.TFile.Open(self.outdir+'/bkg_'+self.systName+'/bkg_differential_fakerate'+CFstring+'.root')
         looseCutBinning.append(40)
         looseCutBinning.append(2*nomMeanMt-40)
-        # looseCutBinning.append(100)#EXTRAP_STUDY
-        # looseCutBinning.append(120)#EXTRAP_STUDY
         looseCutBinning.sort() #because from dict 
         
         localLooseCutDict.update({self.systName:[40,2*nomMeanMt-40]})
-        # localLooseCutDict.update({self.systName:[100,120]})#EXTRAP_STUDY
         
         histoDict = {}
         discrepancyMapDict = {}
@@ -1569,10 +1566,8 @@ class bkg_analyzer:
                         histoDict[s+e].SetBinContent( histoDict[s+e].FindBin(lbin[0]),self.ptBinningS.index(p)+1,val)
                         histoDict[s+e].SetBinError( histoDict[s+e].FindBin(lbin[0]),self.ptBinningS.index(p)+1,err)
                 if linearFit :
-                    # fitFunc = ROOT.TF2("fitFunc", "[0]+[1]*x+[2]*y+[3]*x*y",0.,100.,25,55) #EXTRAP_STUDY
                     fitFunc = ROOT.TF2("fitFunc", "[0]+[1]*x+[2]*y+[3]*x*y",0.,40.,25,55) 
                 else :
-                    # fitFunc = fitFunc = ROOT.TF2("fitFunc", "[0]+[1]*y",0.,100.,25,55) #EXTRAP_STUDY
                     fitFunc = fitFunc = ROOT.TF2("fitFunc", "[0]+[1]*y",0.,40.,25,55) 
                     
                 fitRes = histoDict[s+e].Fit(fitFunc,"QSR","")#,0,40,26,55)
