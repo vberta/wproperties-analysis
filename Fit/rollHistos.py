@@ -6,13 +6,13 @@ import copy
 
 ROOT.gROOT.SetBatch()
 
-yArr = [0, 0.4, 0.8, 1.2 ,1.6, 2.0, 2.5, 3.0, 6.0]
-ptArr = [0., 4., 8., 12., 16., 20., 24., 32., 40., 60., 100., 200.]
+yArr = [0, 0.4, 0.8, 1.2 ,1.6, 2.0, 2.4]
+ptArr = [0., 4., 8., 12., 16., 20., 24., 28., 32.]
 
 fFit = ROOT.TFile.Open("fit_testbkg.root")
 res = fFit.fitresults
 
-fmap = ROOT.TFile.Open("/scratchssd/emanca/wproperties-analysis/analysisOnGen/genInput.root")
+fmap = ROOT.TFile.Open("/scratch/emanca/wproperties-analysis/analysisOnGen/genInput.root")
 imap = ROOT.TH2D
 imap = fmap.Get("accMaps/mapTot")
 cov = ROOT.TH2D
@@ -81,22 +81,23 @@ for c in factors:
                     
         for j in range(1, h.GetNbinsY()+1): #loop over pt bins
             try:
-                coeff = eval('ev.pt_{j}_helmeta{c}'.format(c=c, j=j))
-                coeff_err = eval('ev.pt_{j}_helmeta{c}_err'.format(c=c, j=j))
+                coeff = eval('ev.pt_{j}_helmeta_{c}'.format(c=c, j=j))
+                coeff_err = eval('ev.pt_{j}_helmeta_{c}_err'.format(c=c, j=j))
                 
                 hpt.SetBinContent(j,coeff)
                 hpt.SetBinError(j,coeff_err)
-                
+
+
             except AttributeError: 
                 pass
         for i in range(1, h.GetNbinsY()+1): #loop over rapidity bins
             try:
-                coeff = eval('ev.y_{i}_helmeta{c}'.format(c=c, i=i))
-                coeff_err = eval('ev.y_{i}_helmeta{c}_err'.format(c=c, i=i))
+                coeff = eval('ev.y_{i}_helmeta_{c}'.format(c=c, i=i))
+                coeff_err = eval('ev.y_{i}_helmeta_{c}_err'.format(c=c, i=i))
                 
                 hy.SetBinContent(i,coeff)
                 hy.SetBinError(i,coeff_err)
-                
+
             except AttributeError: 
                 pass
 

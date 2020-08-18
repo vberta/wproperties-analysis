@@ -5,7 +5,6 @@ import sys
 import argparse
 import math
 
-sys.path.append('../../bkgAnalysis')
 
 ROOT.gROOT.SetBatch()
 ROOT.TH1.AddDirectory(False)
@@ -14,8 +13,10 @@ ROOT.gStyle.SetOptStat(0)
 
 
 parser = argparse.ArgumentParser("")
+
 parser.add_argument('-o','--output', type=str, default='genInput',help="name of the output file")
-parser.add_argument('-i','--input', type=str, default='/scratchssd/emanca/wproperties-analysis/analysisOnGen/GenInfo/genInfo.root',help="name of the input root file")
+parser.add_argument('-i','--input', type=str, default='./GenInfo/genInfo.root',help="name of the input root file")
+
 
 args = parser.parse_args()
 OUTPUT = args.output
@@ -34,8 +35,8 @@ coeffDict = {
 }
 
 systDict = {
-    "_LHEScaleWeight" : ["_LHEScaleWeight_muR0p5_muF0p5", "_LHEScaleWeight_muR0p5_muF1p0","_LHEScaleWeight_muR1p0_muF0p5","_LHEScaleWeight_muR1p0_muF2p0","_LHEScaleWeight_muR2p0_muF1p0", "_LHEScaleWeight_muR2p0_muF2p0"],
-    "_LHEPdfWeight" : ["_LHEPdfWeightHess" + str(i)  for i in range(1, 61)],
+    #"_LHEScaleWeight" : ["_LHEScaleWeight_muR0p5_muF0p5", "_LHEScaleWeight_muR0p5_muF1p0","_LHEScaleWeight_muR1p0_muF0p5","_LHEScaleWeight_muR1p0_muF2p0","_LHEScaleWeight_muR2p0_muF1p0", "_LHEScaleWeight_muR2p0_muF2p0"],
+    #"_LHEPdfWeight" : ["_LHEPdfWeightHess" + str(i)  for i in range(1, 61)],
     "" : [""]
 }
 
@@ -48,6 +49,8 @@ for sKind, sList in systDict.iteritems():
         hDict[sName+'mapTot'] =  inFile.Get('angularCoefficients'+sKind+'/mapTot'+sName)
         for coeff,div in coeffDict.iteritems() :
             hDict[sName+coeff] =  inFile.Get('angularCoefficients'+sKind+'/harmonics'+coeff+sName)
+            hDict[sName+coeff+'Y'] =  inFile.Get('angularCoefficients'+sKind+'/harmonicsY'+coeff+sName)
+            hDict[sName+coeff+'Pt'] =  inFile.Get('angularCoefficients'+sKind+'/harmonicsPt'+coeff+sName)
 # get maps
 mapTot = inFile.Get('basicSelection/mapTot')
 mapAccEta = inFile.Get('basicSelection/mapAccEta')
@@ -63,6 +66,8 @@ for sKind, sList in systDict.iteritems():
     for sName in sList :
          for coeff,div in coeffDict.iteritems() :
             hist = hDict[sName+coeff].Clone()
+            histY = hDict[sName+coeff+'Y'].Clone()
+            histPt = hDict[sName+coeff+'Pt'].Clone()
             if coeff!='AUL' : 
                 hist.Divide(hDict[sName+'mapTot'])
                 hist.Scale(div)
@@ -80,9 +85,4 @@ mapAcc.Write()
 sumw.Write()
 
 outFile.Close()
-
-
-
-
-
 

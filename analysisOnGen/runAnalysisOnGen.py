@@ -12,11 +12,12 @@ from getLumiWeight import getLumiWeight
 
 ROOT.gSystem.Load('bin/libSignalAnalysis.so')
 
-c=64
+c=128
 
 ROOT.ROOT.EnableImplicitMT(c)
 
 print "running with {} cores".format(c)
+
 
 parser = argparse.ArgumentParser('')
 parser.add_argument('-runAC', '--runAC', default=False, action='store_true', help='Use to run the Angular Coefficients with all the variations')
@@ -25,22 +26,23 @@ args = parser.parse_args()
 runAC = args.runAC
 runTemplates = args.runTemplates
 
-inputFile = '/scratchssd/sroychow/NanoAOD2016-V2/WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_GEN/test_tree_*.root'
+inputFile = 'test_tree_*.root'
 
 p = RDFtree(outputDir = 'GenInfo', inputFile = inputFile, outputFile="genInfo.root")
 p.branch(nodeToStart = 'input', nodeToEnd = 'basicSelection', modules = [getLumiWeight(xsec=61526.7, inputFile=inputFile), ROOT.baseDefinitions(),ROOT.defineHarmonics(),ROOT.Replica2Hessian(),ROOT.accMap()])
 
 if runAC:
     p.branch(nodeToStart = 'basicSelection', nodeToEnd = 'angularCoefficients', modules = [ROOT.AngCoeff()])
-
+    """
     #weight variations
     for s,variations in systematics.iteritems():
         print "branching weight variations", s
         vars_vec = ROOT.vector('string')()
         for var in variations[0]:
             vars_vec.push_back(var)
-    
+        
         p.branch(nodeToStart = 'basicSelection', nodeToEnd = 'angularCoefficients_{}'.format(s), modules = [ROOT.AngCoeff(vars_vec,variations[1])])
+    """
     p.getOutput()
 
 if runTemplates:

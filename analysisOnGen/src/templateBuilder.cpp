@@ -3,14 +3,14 @@
 
 RNode templateBuilder::run(RNode d){
 
-	TH3::SetDefaultSumw2(true);
+  TH3::SetDefaultSumw2(true);
   TH2::SetDefaultSumw2(true);
 
-  std::vector<float> yArr = {0, 0.4, 0.8, 1.2 ,1.6, 2.0, 2.5, 3.0, 6.0};
-  std::vector<float> qtArr = {0., 4., 8., 12., 16., 20., 24., 32., 40., 60., 100., 200.};
+  std::vector<float> yArr = {0, 0.4, 0.8, 1.2 ,1.6, 2.0, 2.4};
+  std::vector<float> qtArr = {0., 4., 8., 12., 16., 20., 24., 28., 32.};
 
-  const int nBinsY = 8;
-  const int nBinsQt = 11;
+  const int nBinsY = 6;
+  const int nBinsQt = 8;
 
   // whelicity binning
   // const int nBinsEta = 48;
@@ -44,7 +44,7 @@ RNode templateBuilder::run(RNode d){
     ptArr[i] = 25. + i * binSize;
   }
 
-  auto dFit = d.Filter("accMapEta>0.4");
+  auto dFit = d.Filter("Wpt_preFSR<32. && Wrap_preFSR_abs<2.4");
   // auto cut1 = [](float map){ return map > 0.4;};
   // auto cut2 = [](float map){ return map < 0.4;};
   

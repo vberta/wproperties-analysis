@@ -25,7 +25,7 @@ RNode dataObs::run(RNode d){
   }
   // then template to be fixed
   
-  auto dFix = d.Filter("accMapEta<0.4");
+  auto dFix = d.Filter("Wpt_preFSR>32. && Wrap_preFSR_abs>2.4");
 
   TH2weightsHelper helperAcc(std::string("lowAcc"), std::string("lowAcc"), nBinsEta, etaArr, nBinsPt, ptArr, _syst_name);
   auto lowAcc = dFix.Book<float, float, float, ROOT::VecOps::RVec<float>>(std::move(helperAcc), { "Mueta_preFSR", "Mupt_preFSR", "lumiweight", _syst_weight});
