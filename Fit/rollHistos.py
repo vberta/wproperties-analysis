@@ -19,38 +19,67 @@ cov = ROOT.TH2D
 cov = fFit.Get('covariance_matrix_channelhelpois')
 
 hgen = {}
-hgen['a0'] = []
-hgen['a1'] = []
-hgen['a2'] = []
-hgen['a3'] = []
-hgen['a4'] = []
-hgen['unpolarizedxsec'] = []
+hgen['A0'] = {}
+hgen['A1'] = {}
+hgen['A2'] = {}
+hgen['A3'] = {}
+hgen['A4'] = {}
+hgen['unpolarizedxsec'] = {}
 
-for i in range(60):
-    hgen['a0'].append(fmap.Get("angularCoefficients_LHEPdfWeight/harmonicsA0_LHEPdfWeightHess{}".format(i+1)))
-    hgen['a1'].append(fmap.Get("angularCoefficients_LHEPdfWeight/harmonicsA1_LHEPdfWeightHess{}".format(i+1)))
-    hgen['a2'].append(fmap.Get("angularCoefficients_LHEPdfWeight/harmonicsA2_LHEPdfWeightHess{}".format(i+1)))
-    hgen['a3'].append(fmap.Get("angularCoefficients_LHEPdfWeight/harmonicsA3_LHEPdfWeightHess{}".format(i+1)))
-    hgen['a4'].append(fmap.Get("angularCoefficients_LHEPdfWeight/harmonicsA4_LHEPdfWeightHess{}".format(i+1)))
-    hgen['unpolarizedxsec'].append(fmap.Get("angularCoefficients_LHEPdfWeight/harmonicsAUL_LHEPdfWeightHess{}".format(i+1)))
+systDict = {
+    "_LHEScaleWeight" : ["_LHEScaleWeight_muR0p5_muF0p5", "_LHEScaleWeight_muR0p5_muF1p0","_LHEScaleWeight_muR1p0_muF0p5","_LHEScaleWeight_muR1p0_muF2p0","_LHEScaleWeight_muR2p0_muF1p0", "_LHEScaleWeight_muR2p0_muF2p0"],
+    "_LHEPdfWeight" : ["_LHEPdfWeightHess" + str(i)  for i in range(1, 61)]
+}
+for coeff in hgen:
+    for syst,var in systDict.iteritems():
+        hgen[coeff][syst]=[]
+        for v in var:
+            if not 'unpol' in coeff:
+                hgen[coeff][syst].append(fmap.Get("angularCoefficients_{}/harmonics{}_{}".format(syst,coeff,v)))
+            else:
+                hgen[coeff][syst].append(fmap.Get("angularCoefficients_{}/mapTot_{}".format(syst,v)))
 
-
-#factors = ['L', 'I', 'T', 'A', 'P', 'UL']
+hels = ['L', 'I', 'T', 'A', 'P', 'UL']
 factors = {}
-factors["a0"]= 2.
-factors["a1"]=2.*math.sqrt(2)
-factors["a2"]=4.
-factors["a3"]=4.*math.sqrt(2)
-factors["a4"]=2.
+factors["A0"]= 2.
+factors["A1"]=2.*math.sqrt(2)
+factors["A2"]=4.
+factors["A3"]=4.*math.sqrt(2)
+factors["A4"]=2.
 factors["unpolarizedxsec"]=1.
 
 histos = {}
-histos['a0'] = []
-histos['a1'] = []
-histos['a2'] = []
-histos['a3'] = []
-histos['a4'] = []
+histos['A0'] = []
+histos['A1'] = []
+histos['A2'] = []
+histos['A3'] = []
+histos['A4'] = []
 histos['unpolarizedxsec'] = []
+
+#plot the helicity xsecs
+for hel in hels:
+    h = ROOT.TH2D('h{c}'.format(c=hel), 'h{c}'.format(c=hel), len(yArr)-1, array('f',yArr), len(ptArr)-1, array('f',ptArr))
+    hnorm = ROOT.TH2D('hnorm{c}'.format(c=hel), 'hnorm{c}'.format(c=hel), len(yArr)-1, array('f',yArr), len(ptArr)-1, array('f',ptArr))
+    histos[hel]=[]
+    for ev in res: #dummy because there's one event only
+        for i in range(1, h.GetNbinsX()+1): #loop over rapidity bins
+            for j in range(1, h.GetNbinsY()+1): #loop over pt bins
+                try:
+                    coeff = eval('ev.helXsecs_{}_y_{}_pt_{}_pmaskedexp'.format(hel, i, j))
+                    coeff_err = eval('ev.helXsecs_{}_y_{}_pt_{}_pmaskedexp_err'.format(hel, i, j))
+                    h.SetBinContent(i,j,coeff)
+                    h.SetBinError(i,j,coeff_err)
+
+                    coeffnorm = eval('ev.helXsecs_{}_y_{}_pt_{}_pmaskedexpnorm'.format(hel, i, j))
+                    coeffnorm_err = eval('ev.helXsecs_{}_y_{}_pt_{}_pmaskedexpnorm_err'.format(hel, i, j))
+                    hnorm.SetBinContent(i,j,coeffnorm)
+                    hnorm.SetBinError(i,j,coeffnorm_err)
+
+                except AttributeError:
+                    pass
+
+    histos[hel].append(h)
+    histos[hel].append(hnorm)
 
 for c in factors:
 
@@ -60,9 +89,6 @@ for c in factors:
     hy = ROOT.TH1D('hy{c}'.format(c=c), 'hy{c}'.format(c=c),len(yArr)-1, array('f',yArr))
     for ev in res: #dummy because there's one event only
         for i in range(1, h.GetNbinsX()+1): #loop over rapidity bins
-            content = 0.
-            norm = 0.
-            err = 0.
             for j in range(1, h.GetNbinsY()+1): #loop over pt bins
                 try:
                     coeff = eval('ev.y_{i}_pt_{j}_{c}'.format(c=c, j=j, i=i))
@@ -71,13 +97,19 @@ for c in factors:
                     h.SetBinError(i,j,coeff_err)
                     
                     pdferr = 0.
-                    h1.SetBinContent(i,j,eval('ev.y_{i}_pt_{j}_{c}_gen'.format(c=c, j=j, i=i)))
+                    h1.SetBinContent(i,j,coeff)
                     for pdf in hgen[c]:
-                        pdferr+= (coeff - pdf.GetBinContent(i,j))**2
+                        content = pdf.GetBinContent(i,j)
+                        if 'unpol' in c:
+                            print content, coeff, "before"
+                            content=content/10./35.9
+                            print content, coeff, "after"
+                        pdferr+= (h1.GetBinContent(i,j) - content)**2
                     h1.SetBinError(i,j,math.sqrt(pdferr))
                     
                 except AttributeError: 
                     pass
+    
                     
         for j in range(1, h.GetNbinsY()+1): #loop over pt bins
             try:

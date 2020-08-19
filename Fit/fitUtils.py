@@ -232,7 +232,7 @@ class fitUtils:
         out = ROOT.TFile('xsec.root', 'recreate')
         out.cd()
 
-        self.xsec.Scale(61526.7/0.001) #xsec in fb
+        self.xsec.Scale(61526.7*1000.) #xsec in fb
         self.xsec.Write()
 
         for kind,templList in self.templates2D.iteritems():

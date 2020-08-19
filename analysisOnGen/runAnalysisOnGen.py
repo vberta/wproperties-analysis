@@ -33,7 +33,7 @@ p.branch(nodeToStart = 'input', nodeToEnd = 'basicSelection', modules = [getLumi
 
 if runAC:
     p.branch(nodeToStart = 'basicSelection', nodeToEnd = 'angularCoefficients', modules = [ROOT.AngCoeff()])
-    """
+
     #weight variations
     for s,variations in systematics.iteritems():
         print "branching weight variations", s
@@ -42,7 +42,7 @@ if runAC:
             vars_vec.push_back(var)
         
         p.branch(nodeToStart = 'basicSelection', nodeToEnd = 'angularCoefficients_{}'.format(s), modules = [ROOT.AngCoeff(vars_vec,variations[1])])
-    """
+
     p.getOutput()
 
 if runTemplates:

@@ -39,7 +39,6 @@ RNode dataObs::run(RNode d){
 
   _h2Group.push_back(pseudodata);
 
-  
   return d;
   
   }

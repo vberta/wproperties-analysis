@@ -35,8 +35,8 @@ coeffDict = {
 }
 
 systDict = {
-    #"_LHEScaleWeight" : ["_LHEScaleWeight_muR0p5_muF0p5", "_LHEScaleWeight_muR0p5_muF1p0","_LHEScaleWeight_muR1p0_muF0p5","_LHEScaleWeight_muR1p0_muF2p0","_LHEScaleWeight_muR2p0_muF1p0", "_LHEScaleWeight_muR2p0_muF2p0"],
-    #"_LHEPdfWeight" : ["_LHEPdfWeightHess" + str(i)  for i in range(1, 61)],
+    "_LHEScaleWeight" : ["_LHEScaleWeight_muR0p5_muF0p5", "_LHEScaleWeight_muR0p5_muF1p0","_LHEScaleWeight_muR1p0_muF0p5","_LHEScaleWeight_muR1p0_muF2p0","_LHEScaleWeight_muR2p0_muF1p0", "_LHEScaleWeight_muR2p0_muF2p0"],
+    "_LHEPdfWeight" : ["_LHEPdfWeightHess" + str(i)  for i in range(1, 61)],
     "" : [""]
 }
 
@@ -47,12 +47,12 @@ inFile = ROOT.TFile.Open(INPUT)
 for sKind, sList in systDict.iteritems():
     for sName in sList :
         hDict[sName+'mapTot'] =  inFile.Get('angularCoefficients'+sKind+'/mapTot'+sName)
-        hDict[sName+'Y'] =  inFile.Get('angularCoefficients'+sKind+'/Y'+sName)
-        hDict[sName+'Pt'] =  inFile.Get('angularCoefficients'+sKind+'/Pt'+sName)
+        #hDict[sName+'Y'] =  inFile.Get('angularCoefficients'+sKind+'/Y'+sName)
+        #hDict[sName+'Pt'] =  inFile.Get('angularCoefficients'+sKind+'/Pt'+sName)
         for coeff,div in coeffDict.iteritems() :
             hDict[sName+coeff] =  inFile.Get('angularCoefficients'+sKind+'/harmonics'+coeff+sName)
-            hDict[sName+coeff+'Y'] =  inFile.Get('angularCoefficients'+sKind+'/harmonicsY'+coeff+sName)
-            hDict[sName+coeff+'Pt'] =  inFile.Get('angularCoefficients'+sKind+'/harmonicsPt'+coeff+sName)
+            #hDict[sName+coeff+'Y'] =  inFile.Get('angularCoefficients'+sKind+'/harmonicsY'+coeff+sName)
+            #hDict[sName+coeff+'Pt'] =  inFile.Get('angularCoefficients'+sKind+'/harmonicsPt'+coeff+sName)
 # get maps
 mapTot = inFile.Get('basicSelection/mapTot')
 mapAccEta = inFile.Get('basicSelection/mapAccEta')
@@ -66,39 +66,42 @@ for sKind, sList in systDict.iteritems():
     outFile.mkdir('angularCoefficients'+sKind)
     outFile.cd('angularCoefficients'+sKind) 
     for sName in sList :
-         for coeff,div in coeffDict.iteritems() :
+        hDict[sName+'mapTot'].Write()
+        for coeff,div in coeffDict.iteritems() :
             hist = hDict[sName+coeff].Clone()
-            histY = hDict[sName+coeff+'Y'].Clone()
-            histPt = hDict[sName+coeff+'Pt'].Clone()
+            #histY = hDict[sName+coeff+'Y'].Clone()
+            #histPt = hDict[sName+coeff+'Pt'].Clone()
             if coeff!='AUL' : 
                 hist.Divide(hDict[sName+'mapTot'])
-                histY.Divide(hDict[sName+'Y'])
-                histPt.Divide(hDict[sName+'Pt'])
+                #histY.Divide(hDict[sName+'Y'])
+                #histPt.Divide(hDict[sName+'Pt'])
                 hist.Scale(div)
-                histY.Scale(div)
-                histPt.Scale(div)
+                #histY.Scale(div)
+                #histPt.Scale(div)
             if coeff=='A0' :
                 for xx in range(1,hist.GetNbinsX()+1) :
                     for yy in range(1,hist.GetNbinsY()+1) :
                         content = hist.GetBinContent(xx,yy)
                         hist.SetBinContent(xx,yy,20./3*(content+1./10.))
+                """
                 for xx in range(1,histY.GetNbinsX()+1):
                     content = histY.GetBinContent(xx)
                     histY.SetBinContent(xx,20./3*(content+1./10.))
                 for xx in range(1,histPt.GetNbinsX()+1):
                     content = histPt.GetBinContent(xx)
                     histPt.SetBinContent(xx,20./3*(content+1./10.))
+                """
             hist.Write()
-            histY.Write()
-            histPt.Write()
+            #histY.Write()
+            #histPt.Write()
 outFile.mkdir('accMaps')
 outFile.cd('accMaps')
 mapTot.Write()
 mapAccEta.Write()
 mapAcc.Write()
 sumw.Write()
-hDict[sName+'Y'].Write()
-hDict[sName+'Pt'].Write()
+#hDict[sName+'Y'].Write()
+#hDict[sName+'Pt'].Write()
 
 outFile.Close()
 
