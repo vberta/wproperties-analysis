@@ -13,48 +13,38 @@ fFit = ROOT.TFile.Open("fit_testbkg.root")
 res = fFit.fitresults
 
 fmap = ROOT.TFile.Open("/scratch/emanca/wproperties-analysis/analysisOnGen/genInput.root")
-imap = ROOT.TH2D
-imap = fmap.Get("accMaps/mapTot")
-cov = ROOT.TH2D
-cov = fFit.Get('covariance_matrix_channelhelpois')
 
-hgen = {}
-hgen['A0'] = {}
-hgen['A1'] = {}
-hgen['A2'] = {}
-hgen['A3'] = {}
-hgen['A4'] = {}
-hgen['unpolarizedxsec'] = {}
+coeffDict = {
+    'A0' : 1.,
+    'A1' : 5.,
+    'A2' : 20.,
+    'A3' : 4.,
+    'A4' : 4.,
+    'unpolarizedxsec' : 1.
+}
+
+histos = {}
+for coeff in coeffDict:
+    histos[coeff] = []
 
 systDict = {
     "_LHEScaleWeight" : ["_LHEScaleWeight_muR0p5_muF0p5", "_LHEScaleWeight_muR0p5_muF1p0","_LHEScaleWeight_muR1p0_muF0p5","_LHEScaleWeight_muR1p0_muF2p0","_LHEScaleWeight_muR2p0_muF1p0", "_LHEScaleWeight_muR2p0_muF2p0"],
-    "_LHEPdfWeight" : ["_LHEPdfWeightHess" + str(i)  for i in range(1, 61)]
+    "_LHEPdfWeight" : ["_LHEPdfWeightHess" + str(i)  for i in range(1, 61)],
 }
-for coeff in hgen:
-    for syst,var in systDict.iteritems():
-        hgen[coeff][syst]=[]
-        for v in var:
-            if not 'unpol' in coeff:
-                hgen[coeff][syst].append(fmap.Get("angularCoefficients_{}/harmonics{}_{}".format(syst,coeff,v)))
-            else:
-                hgen[coeff][syst].append(fmap.Get("angularCoefficients_{}/mapTot_{}".format(syst,v)))
+
+hGen = {}
+hGen['mapTot'] =  inFile.Get('angularCoefficients/mapTot')
+for coeff,div in coeffDict.iteritems() :
+    hGen[coeff] =  inFile.Get('angularCoefficients/harmonics'+coeff)
+for sKind, sList in systDict.iteritems():
+    for sName in sList :
+        hGen[sName+'mapTot'] =  inFile.Get('angularCoefficients'+sKind+'/mapTot'+sName)
+        for coeff,div in coeffDict.iteritems() :
+            if "unpolarizedxsec": continue
+            hGen[sName+coeff] =  inFile.Get('angularCoefficients'+sKind+'/harmonics'+coeff+sName)
+
 
 hels = ['L', 'I', 'T', 'A', 'P', 'UL']
-factors = {}
-factors["A0"]= 2.
-factors["A1"]=2.*math.sqrt(2)
-factors["A2"]=4.
-factors["A3"]=4.*math.sqrt(2)
-factors["A4"]=2.
-factors["unpolarizedxsec"]=1.
-
-histos = {}
-histos['A0'] = []
-histos['A1'] = []
-histos['A2'] = []
-histos['A3'] = []
-histos['A4'] = []
-histos['unpolarizedxsec'] = []
 
 #plot the helicity xsecs
 for hel in hels:
@@ -81,12 +71,9 @@ for hel in hels:
     histos[hel].append(h)
     histos[hel].append(hnorm)
 
-for c in factors:
-
+#plot angular coefficients with bands 
+for c in coeffDict:
     h = ROOT.TH2D('h{c}'.format(c=c), 'h{c}'.format(c=c), len(yArr)-1, array('f',yArr), len(ptArr)-1, array('f',ptArr))
-    h1 = ROOT.TH2D('hGen{c}'.format(c=c), 'hGen{c}'.format(c=c), len(yArr)-1, array('f',yArr), len(ptArr)-1, array('f',ptArr))
-    hpt = ROOT.TH1D('hpt{c}'.format(c=c), 'hpt{c}'.format(c=c),len(ptArr)-1, array('f',ptArr))
-    hy = ROOT.TH1D('hy{c}'.format(c=c), 'hy{c}'.format(c=c),len(yArr)-1, array('f',yArr))
     for ev in res: #dummy because there's one event only
         for i in range(1, h.GetNbinsX()+1): #loop over rapidity bins
             for j in range(1, h.GetNbinsY()+1): #loop over pt bins
@@ -96,21 +83,8 @@ for c in factors:
                     h.SetBinContent(i,j,coeff)
                     h.SetBinError(i,j,coeff_err)
                     
-                    pdferr = 0.
-                    h1.SetBinContent(i,j,coeff)
-                    for pdf in hgen[c]:
-                        content = pdf.GetBinContent(i,j)
-                        if 'unpol' in c:
-                            print content, coeff, "before"
-                            content=content/10./35.9
-                            print content, coeff, "after"
-                        pdferr+= (h1.GetBinContent(i,j) - content)**2
-                    h1.SetBinError(i,j,math.sqrt(pdferr))
-                    
                 except AttributeError: 
                     pass
-    
-                    
         for j in range(1, h.GetNbinsY()+1): #loop over pt bins
             try:
                 coeff = eval('ev.pt_{j}_helmeta_{c}'.format(c=c, j=j))
@@ -132,20 +106,33 @@ for c in factors:
 
             except AttributeError: 
                 pass
+    
+    central = ROOT.TH2D()
+    if not "unpol" in c:
+        central = hGen[c]
+    else:
+        central = hGen['mapTot']
 
+    for i in range(1, central.GetNbinsX()+1): #loop over rapidity bins
+        for j in range(1, central.GetNbinsY()+1): #loop over pt bins
+            err = 0.
+            for sKind, sList in systDict.iteritems():
+                for sName in sList:
+                    content = hGen[sName+c].GetBinContent(i,j)
+                    if 'unpol' in c:
+                        #print content, coeff, "before"
+                        content=content/10./35.9
+                        #print content, coeff, "after"
+                        err+= (central.GetBinContent(i,j) - content)**2
+            central.SetBinError(i,j,math.sqrt(err))
+    
     histos[c].append(h)
-    histos[c].append(h1)
-    histos[c].append(hpt)
-    histos[c].append(hy)
+    histos[c].append(central)
 
 #projections
 canv = {}
-canv['a0'] = []
-canv['a1'] = []
-canv['a2'] = []
-canv['a3'] = []
-canv['a4'] = []
-canv['unpolarizedxsec'] = []
+for coeff in coeffDict:
+    canv[coeff] = []
 
 for c in factors:
     h = ROOT.TH2D('h{c}'.format(c=c), 'h{c}'.format(c=c), len(yArr)-1, array('f',yArr), len(ptArr)-1, array('f',ptArr))
@@ -154,6 +141,8 @@ for c in factors:
         pr = histos[c][0].ProjectionY("projPt{}_{}".format(i,c),i,i)
         pg = histos[c][1].ProjectionY("projgPt{}_{}".format(i,c),i,i)
         c1.cd()
+        pr.GetXaxis().SetTitle('W rapidity')
+        pr.GetYaxis().SetTitle('W p_T')
         pr.Draw()
         pg.SetFillColor(ROOT.kGreen)
         pg.SetFillStyle(3001)
@@ -164,6 +153,8 @@ for c in factors:
         pr = histos[c][0].ProjectionX("projY{}_{}".format(j,c),j,j)
         pg = histos[c][1].ProjectionX("projgY{}_{}".format(j,c),j,j)
         c1.cd()
+        pr.GetXaxis().SetTitle('W rapidity')
+        pr.GetYaxis().SetTitle('W p_T')
         pr.Draw()
         pg.SetFillColor(ROOT.kMagenta)
         pg.SetFillStyle(3001)
@@ -175,6 +166,8 @@ fO.cd()
 
 for c,hlist in histos.iteritems():
     for h in hlist:
+        h.GetXaxis().SetTitle('W rapidity')
+        h.GetYaxis().SetTitle('W p_T')
         h.Write()
 
 for c,hlist in canv.iteritems():
