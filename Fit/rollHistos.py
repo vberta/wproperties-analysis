@@ -12,7 +12,7 @@ ptArr = [0., 4., 8., 12., 16., 20., 24., 28., 32.]
 fFit = ROOT.TFile.Open("fit_testbkg.root")
 res = fFit.fitresults
 
-fmap = ROOT.TFile.Open("/scratch/emanca/wproperties-analysis/analysisOnGen/genInput.root")
+inFile = ROOT.TFile.Open("/scratch/emanca/wproperties-analysis/analysisOnGen/genInput.root")
 
 coeffDict = {
     'A0' : 1.,
@@ -40,9 +40,8 @@ for sKind, sList in systDict.iteritems():
     for sName in sList :
         hGen[sName+'mapTot'] =  inFile.Get('angularCoefficients'+sKind+'/mapTot'+sName)
         for coeff,div in coeffDict.iteritems() :
-            if "unpolarizedxsec": continue
+            if "unpolarizedxsec" in coeff: continue
             hGen[sName+coeff] =  inFile.Get('angularCoefficients'+sKind+'/harmonics'+coeff+sName)
-
 
 hels = ['L', 'I', 'T', 'A', 'P', 'UL']
 
@@ -113,17 +112,21 @@ for c in coeffDict:
     else:
         central = hGen['mapTot']
 
-    for i in range(1, central.GetNbinsX()+1): #loop over rapidity bins
-        for j in range(1, central.GetNbinsY()+1): #loop over pt bins
+    for i in range(1, h.GetNbinsX()+1): #loop over rapidity bins
+        for j in range(1, h.GetNbinsY()+1): #loop over pt bins
             err = 0.
             for sKind, sList in systDict.iteritems():
                 for sName in sList:
-                    content = hGen[sName+c].GetBinContent(i,j)
+                    content = 1.
+                    cval = central.GetBinContent(i,j)
                     if 'unpol' in c:
                         #print content, coeff, "before"
-                        content=content/10./35.9
-                        #print content, coeff, "after"
-                        err+= (central.GetBinContent(i,j) - content)**2
+                        content=hGen[sName+'mapTot'].GetBinContent(i,j)/10./35.9
+                        cval=cval/10./35.9
+                    else:
+                        content = hGen[sName+c].GetBinContent(i,j)
+                    err+= (cval - content)**2
+                    #if 'unpol' in c: print hGen['mapTot'].GetBinContent(i,j)/35.9/10.,h.GetBinContent(i,j), i, j, err
             central.SetBinError(i,j,math.sqrt(err))
     
     histos[c].append(h)
@@ -134,12 +137,14 @@ canv = {}
 for coeff in coeffDict:
     canv[coeff] = []
 
-for c in factors:
+for c in coeffDict:
+    if not 'unpol' in c: continue
     h = ROOT.TH2D('h{c}'.format(c=c), 'h{c}'.format(c=c), len(yArr)-1, array('f',yArr), len(ptArr)-1, array('f',ptArr))
     for i in range(1, h.GetNbinsX()+1): #loop over rapidity bins
         c1 = ROOT.TCanvas("projPt{}_{}".format(i,c),"")
         pr = histos[c][0].ProjectionY("projPt{}_{}".format(i,c),i,i)
         pg = histos[c][1].ProjectionY("projgPt{}_{}".format(i,c),i,i)
+        print pr.GetBinContent(3),pg.GetBinContent(3)
         c1.cd()
         pr.GetXaxis().SetTitle('W rapidity')
         pr.GetYaxis().SetTitle('W p_T')
