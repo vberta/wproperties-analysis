@@ -116,9 +116,6 @@ class fitUtils:
         self.sumGroups = OrderedDict()
         self.helMetaGroups = OrderedDict()
         
-        #self.cb = ch.CombineHarvester()
-        #self.cb.SetVerbosity(3)
-
     def project3Dto2D(self):
         # returns a list of th2 ordered by rapidity bin
         for th3 in self.templates3D:
@@ -201,8 +198,8 @@ class fitUtils:
                 if kind in self.clist:
                     self.normTempl(unrolledtempl)
                     self.templates1D[kind].append(copy.deepcopy(unrolledtempl))
-                    #if not "helXsecs_7" in unrolledtempl.GetName() and not "helXsecs_8" in unrolledtempl.GetName() and not "helXsecs_9" in unrolledtempl.GetName() and not unrolledtempl.Integral() == 0.0:
-                    if "helXsecs_L" in unrolledtempl.GetName() or "helXsecs_P" in unrolledtempl.GetName() or "helXsecs_UL" in unrolledtempl.GetName() and unrolledtempl.Integral() > 100000:
+                    if not "helXsecs_7" in unrolledtempl.GetName() and not "helXsecs_8" in unrolledtempl.GetName() and not "helXsecs_9" in unrolledtempl.GetName() and not unrolledtempl.Integral() == 0.0:
+                    #if not "helXsecs_7" in unrolledtempl.GetName() and not "helXsecs_8" in unrolledtempl.GetName() and not "helXsecs_9" in unrolledtempl.GetName() and unrolledtempl.Integral() > 100000:
                         self.signals.append(unrolledtempl.GetName())
                 
                 shapeOut.cd()

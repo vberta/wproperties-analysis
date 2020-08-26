@@ -79,6 +79,9 @@ for c in coeffDict:
                 try:
                     coeff = eval('ev.y_{i}_pt_{j}_{c}'.format(c=c, j=j, i=i))
                     coeff_err = eval('ev.y_{i}_pt_{j}_{c}_err'.format(c=c, j=j, i=i))
+                    if 'unpol' in c:
+                        coeff = coeff/(3./16./math.pi)
+                        coeff_err = coeff_err/(3./16./math.pi)
                     h.SetBinContent(i,j,coeff)
                     h.SetBinError(i,j,coeff_err)
                     
@@ -115,21 +118,27 @@ for c in coeffDict:
     for i in range(1, h.GetNbinsX()+1): #loop over rapidity bins
         for j in range(1, h.GetNbinsY()+1): #loop over pt bins
             err = 0.
+            cval = central.GetBinContent(i,j)
+            if 'unpol' in c:
+                cval=cval/35.9
+                #print cval,h.GetBinContent(i,j), i, j
+            
             for sKind, sList in systDict.iteritems():
                 for sName in sList:
                     content = 1.
-                    cval = central.GetBinContent(i,j)
                     if 'unpol' in c:
                         #print content, coeff, "before"
-                        content=hGen[sName+'mapTot'].GetBinContent(i,j)/10./35.9
-                        cval=cval/10./35.9
+                        content=hGen[sName+'mapTot'].GetBinContent(i,j)/35.9
+                        print cval, content
                     else:
                         content = hGen[sName+c].GetBinContent(i,j)
                     err+= (cval - content)**2
-                    #if 'unpol' in c: print hGen['mapTot'].GetBinContent(i,j)/35.9/10.,h.GetBinContent(i,j), i, j, err
+                    
             central.SetBinError(i,j,math.sqrt(err))
     
     histos[c].append(h)
+    if 'unpol' in c:
+        central.Scale(1./35.9)
     histos[c].append(central)
 
 #projections
@@ -138,16 +147,15 @@ for coeff in coeffDict:
     canv[coeff] = []
 
 for c in coeffDict:
-    if not 'unpol' in c: continue
     h = ROOT.TH2D('h{c}'.format(c=c), 'h{c}'.format(c=c), len(yArr)-1, array('f',yArr), len(ptArr)-1, array('f',ptArr))
     for i in range(1, h.GetNbinsX()+1): #loop over rapidity bins
         c1 = ROOT.TCanvas("projPt{}_{}".format(i,c),"")
         pr = histos[c][0].ProjectionY("projPt{}_{}".format(i,c),i,i)
         pg = histos[c][1].ProjectionY("projgPt{}_{}".format(i,c),i,i)
-        print pr.GetBinContent(3),pg.GetBinContent(3)
+
         c1.cd()
         pr.GetXaxis().SetTitle('W rapidity')
-        pr.GetYaxis().SetTitle('W p_T')
+        pr.GetYaxis().SetTitle('W p_{T}')
         pr.Draw()
         pg.SetFillColor(ROOT.kGreen)
         pg.SetFillStyle(3001)
@@ -159,7 +167,7 @@ for c in coeffDict:
         pg = histos[c][1].ProjectionX("projgY{}_{}".format(j,c),j,j)
         c1.cd()
         pr.GetXaxis().SetTitle('W rapidity')
-        pr.GetYaxis().SetTitle('W p_T')
+        pr.GetYaxis().SetTitle('W p_{T}')
         pr.Draw()
         pg.SetFillColor(ROOT.kMagenta)
         pg.SetFillStyle(3001)
