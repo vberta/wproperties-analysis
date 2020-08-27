@@ -47,14 +47,16 @@ if runAC:
 
 if runTemplates:
     
-    nom = ROOT.vector('string')()
-    nom.push_back("")
+    mass = ROOT.vector('string')()
+    mass.push_back("_massDown")
+    mass.push_back("")
+    mass.push_back("_massUp")
 
     fileAC = ROOT.TFile.Open("genInput.root")
     p.branch(nodeToStart = 'basicSelection', nodeToEnd = 'harmonicsWeights',modules = [ROOT.getACValues(fileAC)])
-    p.branch(nodeToStart = 'harmonicsWeights', nodeToEnd = 'accMap', modules =[ROOT.getAccMap(fileAC)])
-    p.branch(nodeToStart = 'accMap', nodeToEnd = 'templates', modules =[ROOT.getWeights(), ROOT.getMassWeights(), ROOT.templateBuilder()])
-    p.branch(nodeToStart = 'accMap', nodeToEnd = 'dataObs', modules =[ROOT.dataObs(nom,"Nom")])
+    p.branch(nodeToStart = 'harmonicsWeights', nodeToEnd = 'accMap', modules =[ROOT.getAccMap(fileAC),ROOT.getMassWeights()])
+    p.branch(nodeToStart = 'accMap', nodeToEnd = 'templates', modules =[ROOT.getWeights(), ROOT.templateBuilder()])
+    p.branch(nodeToStart = 'accMap', nodeToEnd = 'dataObs', modules =[ROOT.dataObs(mass,"massWeights")])
 
     #weight variations
     for s,variations in systematics.iteritems():
