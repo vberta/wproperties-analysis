@@ -67,8 +67,19 @@ RNode templateBuilder::run(RNode d){
     ptArr[i] = 25. + i * binSize;
   }
 
+  auto vecMultiplication = [](const ROOT::VecOps::RVec<float> &v1, const ROOT::VecOps::RVec<float> &v2) {
+    ROOT::VecOps::RVec<float> products;
+
+    products.reserve(v1.size() * v2.size());
+    for (auto e1 : v1)
+      for (auto e2 : v2)
+        products.push_back(e1 * e2);
+
+    return products;
+  };
+
   auto dFit = d.Filter("Wpt_preFSR<32. && Wrap_preFSR_abs<2.4").Define("harmonicsWeightsMass", vecMultiplication, {"massWeights", "harmonicsWeights"});
-  ;
+
   // auto cut1 = [](float map){ return map > 0.4;};
   // auto cut2 = [](float map){ return map < 0.4;};
   
@@ -96,7 +107,7 @@ RNode templateBuilder::run(RNode d){
     auto sel = [lowEdgePt, upEdgePt](float pt) { return (pt >lowEdgePt && pt<upEdgePt);};
 
     TH3weightsHelper helperHelXsecs(std::string("pt_")+std::to_string(j)+std::string("_helXsecs_"), std::string("pt_")+std::to_string(j)+std::string("_helXsecs_"), nBinsEta, etaArr, nBinsPt, ptArr, nBinsY, yArr, total);
-    auto htmp = dFit.Filter(sel, {"Wpt_preFSR"}).Book<float, float, float, float, ROOT::VecOps::RVec<float>>(std::move(helperHelXsecs), {"Mueta_preFSR", "Mupt_preFSR", "Wrap_preFSR_abs", "lumiweight", "harmonicsWeightsMass"});
+    auto htmp = dFit.Filter(sel, {"Wpt_preFSR"}).Book<float, float, float, float, ROOT::VecOps::RVec<float>>(std::move(helperHelXsecs), {"Mueta_preFSR", "Mupt_preFSR", "Wrap_preFSR_abs", "lumiweight", "harmonicsWeightsMass"};
     _h3Group.push_back(htmp);
 
   }
