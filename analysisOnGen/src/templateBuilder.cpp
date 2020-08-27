@@ -107,7 +107,7 @@ RNode templateBuilder::run(RNode d){
     auto sel = [lowEdgePt, upEdgePt](float pt) { return (pt >lowEdgePt && pt<upEdgePt);};
 
     TH3weightsHelper helperHelXsecs(std::string("pt_")+std::to_string(j)+std::string("_helXsecs_"), std::string("pt_")+std::to_string(j)+std::string("_helXsecs_"), nBinsEta, etaArr, nBinsPt, ptArr, nBinsY, yArr, total);
-    auto htmp = dFit.Filter(sel, {"Wpt_preFSR"}).Book<float, float, float, float, ROOT::VecOps::RVec<float>>(std::move(helperHelXsecs), {"Mueta_preFSR", "Mupt_preFSR", "Wrap_preFSR_abs", "lumiweight", "harmonicsWeightsMass"};
+    auto htmp = dFit.Filter(sel, {"Wpt_preFSR"}).Book<float, float, float, float, ROOT::VecOps::RVec<float>>(std::move(helperHelXsecs), {"Mueta_preFSR", "Mupt_preFSR", "Wrap_preFSR_abs", "lumiweight", "harmonicsWeightsMass"});
     _h3Group.push_back(htmp);
 
   }

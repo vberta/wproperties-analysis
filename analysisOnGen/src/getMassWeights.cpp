@@ -7,7 +7,7 @@ RNode getMassWeights::run(RNode d)
     return 1. / ((Q2 - M2) * (Q2 - M2) + M2 * G2);
   };
 
-  auto getBWVec = [](float Q) {
+  auto getBWVec = [&](float Q) {
     ROOT::VecOps::RVec<float> v;
 
     float w1 = BreitWigner(Q * Q, 80.419002 * 80.419002, 2.0476 * 2.0476) /
