@@ -130,8 +130,8 @@ class fitUtils:
                 proj = th3.Project3D("y_{ibin}_yxe".format(ibin=ibin))
                 
                 name = proj.GetName()
-                name = name.replace('_yxe', '')
-                
+                name = name.replace('_yx', '')
+
                 coeff = name.split('_')[3]
                 jbin = int(name.split('_')[1])
                 ibin = int(name.split('_')[5])
