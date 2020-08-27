@@ -93,8 +93,8 @@ RNode templateBuilder::run(RNode d){
   // cutReport2->Print();
  
   std::vector<std::string> helXsecs = {"L", "I", "T", "A", "P", "7", "8", "9", "UL"};
-  std::vector<std::string> mass = {"Up", "", "Down"};
-  std::vector<std::string> total = stringMultiplication(helXsecs, mass);
+  std::vector<std::string> mass = {"_massUp", "", "_massDown"};
+  std::vector<std::string> total = stringMultiplication(mass, helXsecs);
 
   // first the templates for the fit
   auto h = new TH2F("h", "h", nBinsY, yArr.data(), nBinsQt, qtArr.data());

@@ -394,6 +394,19 @@ class fitUtils:
         for i in range(60):
             self.DC.systs.append(('pdf{}'.format(i+1), False, 'shape', [], aux))
         
+        aux2 = {}
+        aux2['bin1'] = {}
+        aux2['Wplus'] = {}
+        for proc in self.processes:
+            if "lowAcc" in proc:
+                aux2['bin1'][proc] = 1.0
+                aux2['Wplus'][proc] = 1.0
+            else:
+                aux2['bin1'][proc] = 0.0
+                aux2['Wplus'][proc] = 0.0
+        
+        self.DC.systs.append(('mass', False, 'shape', [], aux2))
+        
         self.DC.shapeMap = 	{'bin1': {'*': [self.shapeFile+'.root', '$PROCESS', '$PROCESS_$SYSTEMATIC']},\
         'Wplus': {'*': [self.shapeFile+'_xsec.root', '$PROCESS', '$PROCESS_$SYSTEMATIC']}} # <type 'dict'>
         self.DC.hasShapes =  True # <type 'bool'>
