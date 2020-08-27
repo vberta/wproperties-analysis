@@ -115,7 +115,7 @@ class fitUtils:
         self.helGroups = OrderedDict()
         self.sumGroups = OrderedDict()
         self.helMetaGroups = OrderedDict()
-        
+
     def project3Dto2D(self):
         # returns a list of th2 ordered by rapidity bin
         for th3 in self.templates3D:
@@ -134,9 +134,14 @@ class fitUtils:
 
                 coeff = name.split('_')[3]
                 jbin = int(name.split('_')[1])
-                ibin = int(name.split('_')[5])
+                try:
+                    ibin = int(name.split('_')[5])
+                    syst = ""
+                except ValueError:
+                    ibin = int(name.split('_')[6])
+                    syst = name.split('_')[4]
                 
-                new = 'helXsecs_'+coeff+'_y_{}'.format(ibin)+'_pt_{}'.format(jbin)
+                new = 'helXsecs_'+coeff+'_y_{}'.format(ibin)+'_pt_{}'.format(jbin)+'_{}'.format(syst)
                 #print colored(new,'blue')
                 proj.SetName(new)
 
