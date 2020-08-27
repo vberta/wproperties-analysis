@@ -1,5 +1,6 @@
-#ifndef TEMPLATEBUILDER_H
-#define TEMPLATEBUILDER_H
+#ifndef GETMASSWEIGHTS_H
+#define GETMASSWEIGHTS_H
+
 
 #include "ROOT/RDataFrame.hxx"
 #include "ROOT/RVec.hxx"
@@ -8,17 +9,16 @@
 #include "TH2D.h"
 #include "TString.h"
 #include "TMath.h"
-#include "interface/module.hpp"
-#include "interface/TH3weightsHelper.hpp"
-#include "interface/TH2weightsHelper.hpp"
+#include "../interface/module.hpp"
 
 using namespace ROOT::VecOps;
 using RNode = ROOT::RDF::RNode;
 using rvec_f = const RVec<float> &;
 using rvec_i = const RVec<int> &;
 
-class templateBuilder : public Module{
-  
+
+class getMassWeights : public Module {
+
     private:
 
     std::vector<ROOT::RDF::RResultPtr<TH1D>> _h1List;
@@ -32,7 +32,7 @@ class templateBuilder : public Module{
 
     public:
     
-    ~templateBuilder() {};
+    ~getMassWeights() {};
     RNode run(RNode) override;
     std::vector<ROOT::RDF::RResultPtr<TH1D>> getTH1() override;
     std::vector<ROOT::RDF::RResultPtr<TH2D>> getTH2() override;
@@ -41,17 +41,9 @@ class templateBuilder : public Module{
     std::vector<ROOT::RDF::RResultPtr<std::vector<TH1D>>> getGroupTH1() override;
     std::vector<ROOT::RDF::RResultPtr<std::vector<TH2D>>> getGroupTH2() override;
     std::vector<ROOT::RDF::RResultPtr<std::vector<TH3D>>> getGroupTH3() override;
-
+    
     void reset() override;
 
-    std::vector<std::string> stringMultiplication(const std::vector<std::string> &v1, const std::vector<std::string> &v2);
 };
 
 #endif
-
-
-
-
-
-
-	
