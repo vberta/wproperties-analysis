@@ -1,0 +1,47 @@
+#ifndef THNWEIGHTSHELPER_H
+#define THNWEIGHTSHELPER_H
+
+#include "ROOT/RDataFrame.hxx"
+#include "ROOT/RVec.hxx"
+#include "ROOT/RDF/RInterface.hxx"
+
+template <typename T, unsigned int NDIM>
+class THNweightsHelper : public ROOT::Detail::RDF::RActionImpl<THNweightsHelper<T, NDIM>>
+{
+
+public:
+   /// This is a handy, expressive shortcut.
+   using THn_t = THnT<T>;
+   /// This type is a requirement for every helper.
+   using Result_t = std::vector<THn_t>;
+private:
+   std::vector<std::shared_ptr<std::vector<THn_t>>> fHistos; // one per data processing slot
+   std::string _name;
+   std::array<int, NDIM> nbins;
+   std::array<double, NDIM> xmins;
+   std::array<double, NDIM> xmax;
+   std::vector<std::string> _weightNames;
+  
+
+public:
+   /// This constructor takes all the parameters necessary to build the THnTs. In addition, it requires the names of
+   /// the columns which will be used.
+   THNweightsHelper(std::string name, std::string title,
+                    std::array<int, NDIM> nbins, std::array<double, NDIM> xmins,
+                    std::array<double, NDIM> xmax,
+                    std::vector<std::string> weightNames);
+
+   THNweightsHelper(THNweightsHelper &&) = default;
+   THNweightsHelper(const THNweightsHelper &) = delete;
+   std::shared_ptr<std::vector<THn_t>> GetResultPtr() const;
+   void Initialize();
+   void InitTask(TTreeReader *, unsigned int);
+   /// This is a method executed at every entry
+   template <typename... ColumnTypes>
+   void Exec(unsigned int slot, ColumnTypes... values, const float &weight, const ROOT::VecOps::RVec<float> &weights);
+   void Finalize();
+   std::string GetActionName();
+};
+
+#endif
+

@@ -96,21 +96,36 @@ RNode templateBuilder::run(RNode d){
   std::vector<std::string> mass = {"_massDown", "", "_massUp"};
   std::vector<std::string> total = stringMultiplication(mass, helXsecs);
 
-  // first the templates for the fit
-  auto h = new TH2F("h", "h", nBinsY, yArr.data(), nBinsQt, qtArr.data());
+  // templates for the fit
+  // auto h = new TH2F("h", "h", nBinsY, yArr.data(), nBinsQt, qtArr.data());
 
-  for(int j=1; j<h->GetNbinsY()+1; j++){ // for each W pt bin
+  // for(int j=1; j<h->GetNbinsY()+1; j++){ // for each W pt bin
 
-    float lowEdgePt = h->GetYaxis()->GetBinLowEdge(j);
-    float upEdgePt = h->GetYaxis()->GetBinUpEdge(j);
+  //   float lowEdgePt = h->GetYaxis()->GetBinLowEdge(j);
+  //   float upEdgePt = h->GetYaxis()->GetBinUpEdge(j);
 
-    auto sel = [lowEdgePt, upEdgePt](float pt) { return (pt >lowEdgePt && pt<upEdgePt);};
+  //   auto sel = [lowEdgePt, upEdgePt](float pt) { return (pt >lowEdgePt && pt<upEdgePt);};
 
-    TH3weightsHelper helperHelXsecs(std::string("pt_")+std::to_string(j)+std::string("_helXsecs_"), std::string("pt_")+std::to_string(j)+std::string("_helXsecs_"), nBinsEta, etaArr, nBinsPt, ptArr, nBinsY, yArr, total);
-    auto htmp = dFit.Filter(sel, {"Wpt_preFSR"}).Book<float, float, float, float, ROOT::VecOps::RVec<float>>(std::move(helperHelXsecs), {"Mueta_preFSR", "Mupt_preFSR", "Wrap_preFSR_abs", "lumiweight", "harmonicsWeightsMass"});
-    _h3Group.push_back(htmp);
+  //   TH3weightsHelper helperHelXsecs(std::string("pt_")+std::to_string(j)+std::string("_helXsecs_"), std::string("pt_")+std::to_string(j)+std::string("_helXsecs_"), nBinsEta, etaArr, nBinsPt, ptArr, nBinsY, yArr, total);
+  //   auto htmp = dFit.Filter(sel, {"Wpt_preFSR"}).Book<float, float, float, float, ROOT::VecOps::RVec<float>>(std::move(helperHelXsecs), {"Mueta_preFSR", "Mupt_preFSR", "Wrap_preFSR_abs", "lumiweight", "harmonicsWeightsMass"});
+  //   _h3Group.push_back(htmp);
 
-  }
+  // }
+
+  // Our Helper type: templated on the internal THnT type, the size, the types of the columns
+  // we'll use to fill.
+  using Helper_t = THnHelper<float, 4>;
+
+  Helper_t helper{"helXsecs",                           // Name
+                  "helXsecs",                           // Title
+                  {nBinsEta, nBinsPt, nBinsY, nBinsQt}, // NBins
+                  {-2.4, 25., 0., 0.},                  // Axes min values
+                  {2.4, 65., 2.4, 32.},
+                  total};          // Axes max values
+
+  // We book the action: it will be treated during the event loop.
+  auto templ = dFit.Book<float, float, float, float, float, ROOT::VecOps::RVec<float>>(std::move(helper), {"Mueta_preFSR", "Mupt_preFSR", "Wrap_preFSR_abs", "Wpt_preFSR", "lumiweight", "harmonicsWeightsMass"});
+  _hNGroup.push_back(templ);
 
   return dFit;
   
