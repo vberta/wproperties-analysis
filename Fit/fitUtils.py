@@ -81,6 +81,8 @@ class fitUtils:
         #add low acceptance templates
         self.templates2D["lowAcc"] = []
         self.templates2D["lowAcc"].append(copy.deepcopy(self.ftemplates.Get('dataObs').Get('lowAcc')))
+        self.templates2D["lowAcc"].append(copy.deepcopy(self.ftemplates.Get('dataObs').Get('lowAcc_massUp')))
+        self.templates2D["lowAcc"].append(copy.deepcopy(self.ftemplates.Get('dataObs').Get('lowAcc_massDown')))
         #add data
         self.templates2D["data_obs"] = []
         self.templates2D["data_obs"].append(copy.deepcopy(self.ftemplates.Get('dataObs').Get('data_obs')))
@@ -139,9 +141,9 @@ class fitUtils:
                     syst = ""
                 except ValueError:
                     ibin = int(name.split('_')[6])
-                    syst = name.split('_')[4]
+                    syst = "_"+name.split('_')[4]
                 
-                new = 'helXsecs_'+coeff+'_y_{}'.format(ibin)+'_pt_{}'.format(jbin)+'_{}'.format(syst)
+                new = 'helXsecs_'+coeff+'_y_{}'.format(ibin)+'_pt_{}'.format(jbin)+'{}'.format(syst)
                 #print colored(new,'blue')
                 proj.SetName(new)
 
@@ -198,7 +200,7 @@ class fitUtils:
                         unrolledtempl.SetBinError(bin1D, templ.GetBinError(ibin,ybin))
                 
                 #if not "data_obs" in kind and not "DY" in kind and not "Fake" in kind and not "Diboson" in kind and not "Top" in kind and not "Tau" in kind:
-                if not "data_obs" in kind and not "lowAcc" in kind:
+                if not "data_obs" in kind and not "lowAcc" in kind and not "mass" in unrolledtempl.GetName():
                     self.processes.append(unrolledtempl.GetName())
                 if kind in self.clist:
                     self.normTempl(unrolledtempl)
@@ -403,13 +405,9 @@ class fitUtils:
         aux2['bin1'] = {}
         aux2['Wplus'] = {}
         for proc in self.processes:
-            if "lowAcc" in proc:
-                aux2['bin1'][proc] = 1.0
-                aux2['Wplus'][proc] = 1.0
-            else:
-                aux2['bin1'][proc] = 0.0
-                aux2['Wplus'][proc] = 0.0
-        
+            aux2['bin1'][proc] = 1.0
+            aux2['Wplus'][proc] = 0.0
+                    
         self.DC.systs.append(('mass', False, 'shape', [], aux2))
         
         self.DC.shapeMap = 	{'bin1': {'*': [self.shapeFile+'.root', '$PROCESS', '$PROCESS_$SYSTEMATIC']},\
