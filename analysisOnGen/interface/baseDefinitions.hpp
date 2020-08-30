@@ -13,4 +13,5 @@ public:
     ~baseDefinitions(){};
 
     RNode run(RNode) override;
+};
 #endif
