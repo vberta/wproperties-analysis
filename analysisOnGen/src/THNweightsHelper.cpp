@@ -1,11 +1,12 @@
+#include "THn.h"
 #include "interface/THNweightsHelper.hpp"
    /// This constructor takes all the parameters necessary to build the THnTs. In addition, it requires the names of
    /// the columns which will be used.
-   THNweightsHelper(std::string name, std::string title,
-                    std::array<int, NDIM> nbins, std::array<double, NDIM> xmins,
-                    std::array<double, NDIM> xmax,
+using THn_t = THnT<float>;
+THNweightsHelper::THNweightsHelper(std::string name, std::string title,
+                    std::array<int, 4> nbins, std::array<double, 4> xmins,
+                    std::array<double, 4> xmax,
                     std::vector<std::string> weightNames)
-                    )
    {
       _name = name;
       _nbins = nbins;
@@ -26,13 +27,14 @@
 
          for (unsigned int i = 0; i < n_histos; ++i){
 
-            histos.emplace_back(THnD(std::string(_name + _weightNames[i] + slotnum).c_str(),
+            histos.emplace_back(THnF(std::string(_name + _weightNames[i] + slotnum).c_str(),
                                      std::string(_name + _weightNames[i] + slotnum).c_str(),
-                                     _nbins.data(),
+                                     4,
+				     _nbins.data(),
                                      _xmins.data(),
                                      _xmax.data()));
 
-            histos.back().SetDirectory(nullptr);
+            //histos.back().SetDirectory(nullptr);
         }
 
       }
@@ -43,13 +45,18 @@
    void THNweightsHelper::InitTask(TTreeReader *, unsigned int) {}
    /// This is a method executed at every entry
 
-   void THNweightsHelper::Exec(unsigned int slot, ColumnTypes... values, const float &weight, const ROOT::VecOps::RVec<float> &weights);
+void THNweightsHelper::Exec(unsigned int slot, const float &var1, const float &var2, const float &var3, const float &var4, const float &weight, const ROOT::VecOps::RVec<float> &weights)
    {
       auto &histos = *fHistos[slot];
       const auto n_histos = histos.size();
-      std::array<double, sizeof...(ColumnTypes)> valuesArr{static_cast<double>(values)...};
+      //std::array<double, sizeof...(ColumnTypes)> valuesArr{static_cast<double>(values)...};
+      std::vector<double> values;
+      values.emplace_back(var1);
+      values.emplace_back(var2);
+      values.emplace_back(var3);
+      values.emplace_back(var4);
       for (unsigned int i = 0; i < n_histos; ++i)
-         histos[i].Fill(valuesArr.data(), weight * weights[i]);
+	histos[i].Fill(values.data(), weight * weights[i]);
 }
    /// This method is called at the end of the event loop. It is used to merge all the internal THnTs which
    /// were used in each of the data processing slots.

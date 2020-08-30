@@ -1,6 +1,7 @@
 #include "ROOT/RDataFrame.hxx"
 #include "ROOT/RVec.hxx"
 #include "ROOT/RDF/RInterface.hxx"
+#include "interface/THNweightsHelper.hpp"
 #include "interface/templateBuilder.hpp"
 
 std::vector<std::string> templateBuilder::stringMultiplication(const std::vector<std::string> &v1, const std::vector<std::string> &v2)
@@ -118,7 +119,7 @@ RNode templateBuilder::run(RNode d)
 
   // Our Helper type: templated on the internal THnT type, the size, the types of the columns
   // we'll use to fill.
-  using Helper_t = THnHelper<float, 4>;
+  using Helper_t = THNweightsHelper<4>;
 
   Helper_t helper{"helXsecs",                           // Name
                   "helXsecs",                           // Title

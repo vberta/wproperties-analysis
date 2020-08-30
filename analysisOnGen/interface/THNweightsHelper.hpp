@@ -4,10 +4,8 @@
 #include "ROOT/RDataFrame.hxx"
 #include "ROOT/RVec.hxx"
 #include "ROOT/RDF/RInterface.hxx"
-#include "THn.h"
 
-template <typename T, unsigned int NDIM>
-class THNweightsHelper : public ROOT::Detail::RDF::RActionImpl<THNweightsHelper<T, NDIM>>
+class THNweightsHelper : public ROOT::Detail::RDF::RActionImpl<THNweightsHelper>
 {
 
 public:
@@ -18,9 +16,9 @@ public:
 private:
    std::vector<std::shared_ptr<std::vector<THn_t>>> fHistos; // one per data processing slot
    std::string _name;
-   std::array<int, NDIM> nbins;
-   std::array<double, NDIM> xmins;
-   std::array<double, NDIM> xmax;
+   std::array<int, 4> _nbins;
+   std::array<double, 4> _xmins;
+   std::array<double, 4> _xmax;
    std::vector<std::string> _weightNames;
   
 
@@ -28,8 +26,8 @@ public:
    /// This constructor takes all the parameters necessary to build the THnTs. In addition, it requires the names of
    /// the columns which will be used.
    THNweightsHelper(std::string name, std::string title,
-                    std::array<int, NDIM> nbins, std::array<double, NDIM> xmins,
-                    std::array<double, NDIM> xmax,
+                    std::array<int, 4> nbins, std::array<double, 4> xmins,
+                    std::array<double, 4> xmax,
                     std::vector<std::string> weightNames);
 
    THNweightsHelper(THNweightsHelper &&) = default;
@@ -38,8 +36,7 @@ public:
    void Initialize();
    void InitTask(TTreeReader *, unsigned int);
    /// This is a method executed at every entry
-   template <typename... ColumnTypes>
-   void Exec(unsigned int slot, ColumnTypes... values, const float &weight, const ROOT::VecOps::RVec<float> &weights);
+   void Exec(unsigned int slot, const float &var1, const float &var2, const float &var3, const float &var4, const float &weight, const ROOT::VecOps::RVec<float> &weights);
    void Finalize();
    std::string GetActionName();
 };

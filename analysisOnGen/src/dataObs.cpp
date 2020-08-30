@@ -1,6 +1,7 @@
 #include "ROOT/RDataFrame.hxx"
 #include "ROOT/RVec.hxx"
 #include "ROOT/RDF/RInterface.hxx"
+#include "interface/TH2weightsHelper.hpp"
 #include "interface/dataObs.hpp"
 
 

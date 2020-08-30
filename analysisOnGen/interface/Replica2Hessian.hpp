@@ -18,7 +18,6 @@ using rvec_f = const RVec<float> &;
 using rvec_i = const RVec<int> &;
 using rvec_d = const RVec<double> &;
 
-///template <typename T, unsigned int NDIM>
 class Replica2Hessian : public Module
 {
 
