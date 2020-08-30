@@ -10,6 +10,7 @@
 #include "interface/getACValues.hpp"
 #include "interface/getAccMap.hpp"
 #include "interface/getWeights.hpp"
+#include "interface/getMassWeights.hpp"
 #include "interface/templateBuilder.hpp"
 #include "interface/baseDefinitions.hpp"
 #include "interface/PDFWeightsHelper.hpp"

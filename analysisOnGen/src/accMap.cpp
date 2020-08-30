@@ -1,5 +1,7 @@
+#include "ROOT/RDataFrame.hxx"
+#include "ROOT/RVec.hxx"
+#include "ROOT/RDF/RInterface.hxx"
 #include "interface/accMap.hpp"
-
 
 RNode accMap::run(RNode d){
     
@@ -15,37 +17,5 @@ RNode accMap::run(RNode d){
     _h2List.push_back(sumw);
     
     return d;
-
-}
-
-std::vector<ROOT::RDF::RResultPtr<TH1D>> accMap::getTH1(){ 
-    return _h1List;
-}
-std::vector<ROOT::RDF::RResultPtr<TH2D>> accMap::getTH2(){ 
-    return _h2List;
-}
-std::vector<ROOT::RDF::RResultPtr<TH3D>> accMap::getTH3(){ 
-    return _h3List;
-}
-
-std::vector<ROOT::RDF::RResultPtr<std::vector<TH1D>>> accMap::getGroupTH1(){ 
-  return _h1Group;
-}
-std::vector<ROOT::RDF::RResultPtr<std::vector<TH2D>>> accMap::getGroupTH2(){ 
-  return _h2Group;
-}
-std::vector<ROOT::RDF::RResultPtr<std::vector<TH3D>>> accMap::getGroupTH3(){ 
-  return _h3Group;
-}
-
-void accMap::reset(){
-    
-    _h1List.clear();
-    _h2List.clear();
-    _h3List.clear();
-
-    _h1Group.clear();
-    _h2Group.clear();
-    _h3Group.clear();
 
 }

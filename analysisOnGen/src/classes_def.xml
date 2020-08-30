@@ -7,6 +7,7 @@
   <class name="getACValues"/>
   <class name="getAccMap"/>
   <class name="getWeights"/>
+  <class name="getMassWeights"/>
   <class name="templateBuilder"/>
   <class name="baseDefinitions"/>
   <class name="Replica2Hessian"/>
