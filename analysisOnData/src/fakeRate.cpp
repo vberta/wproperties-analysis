@@ -57,18 +57,20 @@ RNode fakeRate::run(RNode d)
                   return fR;
                 },
                         {"fakeRate_ptScaleVars_correctedUp", "fakeRate_ptScaleVars_correctedDown"})
-                .Define("fakeRate_jme", [](float f1, float f2, float f3, float f4, float f5, float f6) {
+                // .Define("fakeRate_jme", [](float f1, float f2, float f3, float f4, float f5, float f6) {
+                .Define("fakeRate_jme", [](float f1, float f2, float f3, float f4) {
                   ROOT::VecOps::RVec<float> fR;
                   fR.emplace_back(f1);
                   fR.emplace_back(f2);
                   fR.emplace_back(f3);
                   fR.emplace_back(f4);
-                  fR.emplace_back(f5);
-                  fR.emplace_back(f6);
+                  // fR.emplace_back(f5);
+                  // fR.emplace_back(f6);
 
                   return fR;
                 },
-                        {"fakeRate_jmeVars_jerUp", "fakeRate_jmeVars_jerDown", "fakeRate_jmeVars_jesTotalUp", "fakeRate_jmeVars_jesTotalDown", "fakeRate_jmeVars_unclustEnUp", "fakeRate_jmeVars_unclustEnDown"});
+                        // {"fakeRate_jmeVars_jerUp", "fakeRate_jmeVars_jerDown", "fakeRate_jmeVars_jesTotalUp", "fakeRate_jmeVars_jesTotalDown", "fakeRate_jmeVars_unclustEnUp", "fakeRate_jmeVars_unclustEnDown"});
+                        {"fakeRate_jmeVars_jesTotalUp", "fakeRate_jmeVars_jesTotalDown", "fakeRate_jmeVars_unclustEnUp", "fakeRate_jmeVars_unclustEnDown"});
 
   return d2;
 }
