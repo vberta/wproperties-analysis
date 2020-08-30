@@ -1,3 +1,6 @@
+#include "ROOT/RDataFrame.hxx"
+#include "ROOT/RVec.hxx"
+#include "ROOT/RDF/RInterface.hxx"
 #include "interface/getMassWeights.hpp"
 
 RNode getMassWeights::run(RNode d)
@@ -23,42 +26,4 @@ RNode getMassWeights::run(RNode d)
 
   auto d1 = d.Define("massWeights", getBWVec, {"Wmass_preFSR"});
   return d1;
-}
-
-std::vector<ROOT::RDF::RResultPtr<TH1D>> getMassWeights::getTH1()
-{
-  return _h1List;
-}
-std::vector<ROOT::RDF::RResultPtr<TH2D>> getMassWeights::getTH2()
-{
-  return _h2List;
-}
-std::vector<ROOT::RDF::RResultPtr<TH3D>> getMassWeights::getTH3()
-{
-  return _h3List;
-}
-
-std::vector<ROOT::RDF::RResultPtr<std::vector<TH1D>>> getMassWeights::getGroupTH1()
-{
-  return _h1Group;
-}
-std::vector<ROOT::RDF::RResultPtr<std::vector<TH2D>>> getMassWeights::getGroupTH2()
-{
-  return _h2Group;
-}
-std::vector<ROOT::RDF::RResultPtr<std::vector<TH3D>>> getMassWeights::getGroupTH3()
-{
-  return _h3Group;
-}
-
-void getMassWeights::reset()
-{
-
-  _h1List.clear();
-  _h2List.clear();
-  _h3List.clear();
-
-  _h1Group.clear();
-  _h2Group.clear();
-  _h3Group.clear();
 }

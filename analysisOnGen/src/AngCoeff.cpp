@@ -1,3 +1,7 @@
+#include "ROOT/RDataFrame.hxx"
+#include "ROOT/RVec.hxx"
+#include "ROOT/RDF/RInterface.hxx"
+#include "interface/TH2weightsHelper.hpp"
 #include "interface/AngCoeff.hpp"
 
 std::vector<std::string> AngCoeff::stringMultiplication(const std::vector<std::string> &v1, const std::vector<std::string> &v2)
@@ -96,42 +100,4 @@ RNode AngCoeff::run(RNode d)
 
 
     return d;
-}
-
-std::vector<ROOT::RDF::RResultPtr<TH1D>> AngCoeff::getTH1()
-{
-    return _h1List;
-}
-std::vector<ROOT::RDF::RResultPtr<TH2D>> AngCoeff::getTH2()
-{
-    return _h2List;
-}
-std::vector<ROOT::RDF::RResultPtr<TH3D>> AngCoeff::getTH3()
-{
-    return _h3List;
-}
-
-std::vector<ROOT::RDF::RResultPtr<std::vector<TH1D>>> AngCoeff::getGroupTH1()
-{
-    return _h1Group;
-}
-std::vector<ROOT::RDF::RResultPtr<std::vector<TH2D>>> AngCoeff::getGroupTH2()
-{
-    return _h2Group;
-}
-std::vector<ROOT::RDF::RResultPtr<std::vector<TH3D>>> AngCoeff::getGroupTH3()
-{
-    return _h3Group;
-}
-
-void AngCoeff::reset()
-{
-
-    _h1List.clear();
-    _h2List.clear();
-    _h3List.clear();
-
-    _h1Group.clear();
-    _h2Group.clear();
-    _h3Group.clear();
 }

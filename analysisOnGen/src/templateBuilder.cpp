@@ -1,3 +1,6 @@
+#include "ROOT/RDataFrame.hxx"
+#include "ROOT/RVec.hxx"
+#include "ROOT/RDF/RInterface.hxx"
 #include "interface/templateBuilder.hpp"
 
 std::vector<std::string> templateBuilder::stringMultiplication(const std::vector<std::string> &v1, const std::vector<std::string> &v2)
@@ -24,12 +27,13 @@ std::vector<std::string> templateBuilder::stringMultiplication(const std::vector
   }
 }
 
-RNode templateBuilder::run(RNode d){
+RNode templateBuilder::run(RNode d)
+{
 
   TH3::SetDefaultSumw2(true);
   TH2::SetDefaultSumw2(true);
 
-  std::vector<float> yArr = {0, 0.4, 0.8, 1.2 ,1.6, 2.0, 2.4};
+  std::vector<float> yArr = {0, 0.4, 0.8, 1.2, 1.6, 2.0, 2.4};
   std::vector<float> qtArr = {0., 4., 8., 12., 16., 20., 24., 28., 32.};
 
   const int nBinsY = 6;
@@ -82,7 +86,7 @@ RNode templateBuilder::run(RNode d){
 
   // auto cut1 = [](float map){ return map > 0.4;};
   // auto cut2 = [](float map){ return map < 0.4;};
-  
+
   // auto dFit = d.Filter("fabs(Mueta_preFSR)<2.4 && Mupt_preFSR>25. && Mupt_preFSR<65.").Filter(cut1, {"accMapEta"}, "accMapEta fit");
   // auto cutReport1 = dFit.Report();
 
@@ -91,7 +95,7 @@ RNode templateBuilder::run(RNode d){
 
   // cutReport1->Print();
   // cutReport2->Print();
- 
+
   std::vector<std::string> helXsecs = {"L", "I", "T", "A", "P", "7", "8", "9", "UL"};
   std::vector<std::string> mass = {"_massDown", "", "_massUp"};
   std::vector<std::string> total = stringMultiplication(mass, helXsecs);
@@ -121,44 +125,11 @@ RNode templateBuilder::run(RNode d){
                   {nBinsEta, nBinsPt, nBinsY, nBinsQt}, // NBins
                   {-2.4, 25., 0., 0.},                  // Axes min values
                   {2.4, 65., 2.4, 32.},
-                  total};          // Axes max values
+                  total}; // Axes max values
 
   // We book the action: it will be treated during the event loop.
   auto templ = dFit.Book<float, float, float, float, float, ROOT::VecOps::RVec<float>>(std::move(helper), {"Mueta_preFSR", "Mupt_preFSR", "Wrap_preFSR_abs", "Wpt_preFSR", "lumiweight", "harmonicsWeightsMass"});
   _hNGroup.push_back(templ);
 
   return dFit;
-  
-  }
-
-std::vector<ROOT::RDF::RResultPtr<TH1D>> templateBuilder::getTH1(){ 
-    return _h1List;
-}
-std::vector<ROOT::RDF::RResultPtr<TH2D>> templateBuilder::getTH2(){ 
-    return _h2List;
-}
-std::vector<ROOT::RDF::RResultPtr<TH3D>> templateBuilder::getTH3(){ 
-    return _h3List;
-}
-
-std::vector<ROOT::RDF::RResultPtr<std::vector<TH1D>>> templateBuilder::getGroupTH1(){ 
-  return _h1Group;
-}
-std::vector<ROOT::RDF::RResultPtr<std::vector<TH2D>>> templateBuilder::getGroupTH2(){ 
-  return _h2Group;
-}
-std::vector<ROOT::RDF::RResultPtr<std::vector<TH3D>>> templateBuilder::getGroupTH3(){ 
-  return _h3Group;
-}
-
-void templateBuilder::reset(){
-    
-    _h1List.clear();
-    _h2List.clear();
-    _h3List.clear();
-
-    _h1Group.clear();
-    _h2Group.clear();
-    _h3Group.clear();
-
 }
