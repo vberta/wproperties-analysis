@@ -4,6 +4,7 @@
 #include "ROOT/RDataFrame.hxx"
 #include "ROOT/RVec.hxx"
 #include "ROOT/RDF/RInterface.hxx"
+#include "THn.h"
 
 template <typename T, unsigned int NDIM>
 class THNweightsHelper : public ROOT::Detail::RDF::RActionImpl<THNweightsHelper<T, NDIM>>
@@ -11,7 +12,7 @@ class THNweightsHelper : public ROOT::Detail::RDF::RActionImpl<THNweightsHelper<
 
 public:
    /// This is a handy, expressive shortcut.
-   using THn_t = THnT<T>;
+   using THn_t = THnT<float>;
    /// This type is a requirement for every helper.
    using Result_t = std::vector<THn_t>;
 private:
