@@ -119,7 +119,7 @@ RNode templateBuilder::run(RNode d)
 
   // Our Helper type: templated on the internal THnT type, the size, the types of the columns
   // we'll use to fill.
-  using Helper_t = THNweightsHelper<4>;
+  using Helper_t = THNweightsHelper;
 
   Helper_t helper{"helXsecs",                           // Name
                   "helXsecs",                           // Title

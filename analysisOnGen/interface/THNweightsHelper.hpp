@@ -4,7 +4,7 @@
 #include "ROOT/RDataFrame.hxx"
 #include "ROOT/RVec.hxx"
 #include "ROOT/RDF/RInterface.hxx"
-
+#include "THn.h"
 class THNweightsHelper : public ROOT::Detail::RDF::RActionImpl<THNweightsHelper>
 {
 
