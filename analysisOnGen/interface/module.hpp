@@ -1,13 +1,14 @@
 #ifndef MODULE_H
 #define MODULE_H
 
-//#include "ROOT/RDataFrame.hxx"
-//#include "ROOT/RVec.hxx"
-//#include "ROOT/RDF/RInterface.hxx"
+#include "ROOT/RDataFrame.hxx"
+#include "ROOT/RVec.hxx"
+#include "ROOT/RDF/RInterface.hxx"
 #include "THn.h"
 
 using namespace ROOT::VecOps;
 using RNode = ROOT::RDF::RNode;
+using THn_t = THnT<float>;
 
 class Module
 {
@@ -27,7 +28,6 @@ public:
   std::vector<ROOT::RDF::RResultPtr<std::vector<TH2D>>> _h2Group;
   std::vector<ROOT::RDF::RResultPtr<std::vector<TH3D>>> _h3Group;
 
-  using THn_t = THnT<float>;
   std::vector<ROOT::RDF::RResultPtr<std::vector<THn_t>>> _hNGroup;
 
   std::vector<ROOT::RDF::RResultPtr<TH1D>> getTH1();

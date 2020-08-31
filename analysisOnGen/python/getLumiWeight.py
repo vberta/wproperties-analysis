@@ -11,6 +11,7 @@ class getLumiWeight(module):
         self.myTH1Group = []
         self.myTH2Group = []
         self.myTH3Group = []
+        self.myTHNGroup = []
 
         self.xsec = xsec / 0.001
         self.inputFile = inputFile
@@ -58,6 +59,10 @@ class getLumiWeight(module):
 
         return self.myTH3Group  
 
+    def getGroupTHN(self):
+
+        return self.myTHNGroup
+
     def reset(self):
 
         self.myTH1 = []
@@ -67,3 +72,4 @@ class getLumiWeight(module):
         self.myTH1Group = []
         self.myTH2Group = []
         self.myTH3Group = [] 
+        self.myTHNGroup = []
