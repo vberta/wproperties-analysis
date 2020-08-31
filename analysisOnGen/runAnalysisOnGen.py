@@ -28,7 +28,7 @@ runTemplates = args.runTemplates
 
 inputFile = 'test_tree_*.root'
 
-p = RDFtree(outputDir = 'GenInfo', inputFile = inputFile, outputFile="genInfo.root")
+p = RDFtree(outputDir = 'GenInfo', inputFile = inputFile, outputFile="genInfo.root",pretend=True)
 p.branch(nodeToStart = 'input', nodeToEnd = 'basicSelection', modules = [getLumiWeight(xsec=61526.7, inputFile=inputFile), ROOT.baseDefinitions(),ROOT.defineHarmonics(),ROOT.Replica2Hessian(),ROOT.accMap()])
 
 if runAC:
