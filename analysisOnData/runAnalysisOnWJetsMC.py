@@ -26,6 +26,7 @@ def RDFprocessWJetsMC(fvec, outputDir, sample, xsec, fileSF, ncores, pretendJob=
     p = RDFtree(outputDir = outputDir, inputFile = fvec, outputFile="{}_plots.root".format(sample), pretend=pretendJob)
     filePt = ROOT.TFile.Open("data/histoUnfoldingSystPt_nsel2_dy3_rebin1_default.root")
     fileY = ROOT.TFile.Open("data/histoUnfoldingSystRap_nsel2_dy3_rebin1_default.root")
+    fileAC = ROOT.TFile.Open("../analysisOnGen/genInput.root")
     p.branch(nodeToStart = 'input', nodeToEnd = 'defs', modules = [ROOT.reweightFromZ(filePt,fileY),ROOT.baseDefinitions(),ROOT.weightDefinitions(fileSF),getLumiWeight(xsec=xsec, inputFile=fvec),ROOT.Replica2Hessian()])
     for region,cut in selections_bkg.iteritems():
         if 'aiso' in region:
@@ -41,11 +42,14 @@ def RDFprocessWJetsMC(fvec, outputDir, sample, xsec, fileSF, ncores, pretendJob=
         print "branching nominal for region:", region 
         wtomu_cut = cut + wdecayselections['WToMu']
         wtotau_cut = cut + wdecayselections['WToTau']
-        if region == "Signal":             
+        if region == "Signal":
             print "adding muon histo to graph for Signal region"
             p.branch(nodeToStart = 'defs', nodeToEnd = '{}/prefit_{}/Nominal'.format('WToMu', region), modules = [ROOT.muonHistos(wtomu_cut, weight, nom,"Nom",0)])     
             p.branch(nodeToStart = 'defs', nodeToEnd = '{}/prefit_{}/Nominal'.format('WToTau', region), modules = [ROOT.muonHistos(wtotau_cut, weight, nom,"Nom",0)])     
-
+            
+            #reco templates with AC reweighting
+            steps = [ROOT.getACValues(fileAC),ROOT.getMassWeights(),ROOT.getWeights(),ROOT.templateBuilder()]
+            p.branch(nodeToStart = 'defs', nodeToEnd = '{}/templatesAC_{}/Nominal'.format('WToMu', region), modules = steps)
         #Nominal templates
         p.branch(nodeToStart = 'defs', nodeToEnd = '{}/templates_{}/Nominal'.format('WToMu', region), modules = [ROOT.templates(wtomu_cut, weight, nom,"Nom",0)])            
         p.branch(nodeToStart = 'defs', nodeToEnd = '{}/templates_{}/Nominal'.format('WToTau', region), modules = [ROOT.templates(wtotau_cut, weight, nom,"Nom",0)])            

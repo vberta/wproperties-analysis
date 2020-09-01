@@ -1,5 +1,7 @@
 #include "interface/muonHistos.hpp"
 #include "interface/functions.hpp"
+#include "interface/TH2weightsHelper.hpp"
+
 RNode muonHistos::run(RNode d)
 {
   //for MC part this is a product of few columns// for Data this is just 1.// both are passed from python config
