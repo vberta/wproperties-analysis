@@ -61,8 +61,6 @@ class muonHistos : public Module {
     RNode bookNominalhistos(RNode);
     RNode bookptCorrectedhistos(RNode);
     RNode bookJMEvarhistos(RNode);
-
-
     RNode run(RNode) override;
 };
 

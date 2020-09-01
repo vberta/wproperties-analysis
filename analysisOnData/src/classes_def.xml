@@ -7,4 +7,8 @@
   <class name="reweightFromZ"/>
   <class name="Replica2Hessian"/>
   <class name="PDFWeightsHelper"/>
+  <class name="getACValues"/>
+  <class name="getMassWeights"/>
+  <class name="getWeights"/>
+  <class name="templateBuilder"/>
 </lcgdict>

@@ -1,9 +1,19 @@
+#include "ROOT/RDataFrame.hxx"
+#include "ROOT/RVec.hxx"
+#include "ROOT/RDF/RInterface.hxx"
+#include "TH1D.h"
+#include "TH2D.h"
+#include "TString.h"
+#include "TMath.h"
+#include "interface/PDFWeightsHelper.hpp"
+#include "interface/TH1weightsHelper.hpp"
 #include "interface/Replica2Hessian.hpp"
+
 
 RNode Replica2Hessian::run(RNode d)
 {
 
-  auto newPDFweights = [this](rvec_f replicas, float lhenom, unsigned long long ev) {
+  auto newPDFweights = [this](ROOT::VecOps::RVec<float> replicas, float lhenom, unsigned long long ev) {
     std::vector<float> raw_weights;
 
     for (unsigned int i = 0; i < nPdfWeights_; i++)

@@ -1,5 +1,6 @@
 #include "interface/templates.hpp"
 #include "interface/functions.hpp"
+#include "interface/TH3weightsHelper.hpp"
 
 RNode templates::run(RNode d)
 {
