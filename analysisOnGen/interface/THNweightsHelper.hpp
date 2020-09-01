@@ -4,7 +4,7 @@
 #include "ROOT/RDataFrame.hxx"
 #include "ROOT/RVec.hxx"
 #include "ROOT/RDF/RInterface.hxx"
-
+#include "THn.h"
 class THNweightsHelper : public ROOT::Detail::RDF::RActionImpl<THNweightsHelper>
 {
 
@@ -12,9 +12,9 @@ public:
    /// This is a handy, expressive shortcut.
    using THn_t = THnT<float>;
    /// This type is a requirement for every helper.
-   using Result_t = std::vector<THn_t>;
+  using Result_t = std::vector<std::unique_ptr<THn_t>>;
 private:
-   std::vector<std::shared_ptr<std::vector<THn_t>>> fHistos; // one per data processing slot
+  std::vector<std::shared_ptr<std::vector<std::unique_ptr<THn_t>>>> fHistos; // one per data processing slot
    std::string _name;
    std::array<int, 4> _nbins;
    std::array<double, 4> _xmins;
@@ -32,7 +32,7 @@ public:
 
    THNweightsHelper(THNweightsHelper &&) = default;
    THNweightsHelper(const THNweightsHelper &) = delete;
-   std::shared_ptr<std::vector<THn_t>> GetResultPtr() const;
+  std::shared_ptr<std::vector<std::unique_ptr<THn_t>>> GetResultPtr() const;
    void Initialize();
    void InitTask(TTreeReader *, unsigned int);
    /// This is a method executed at every entry
