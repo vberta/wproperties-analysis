@@ -22,7 +22,7 @@ RNode getACValues::run(RNode d)
     return AngCoeff;
   };
 
-  auto d1 = d.Define("AngCoeffVec", getACValues, {"Wrap_preFSR_abs", "Wpt_preFSR"});
+  auto d1 = d.Define("GenV_preFSR_yabs", "TMath::Abs(GenV_preFSR_y)").Define("AngCoeffVec", getACValues, {"GenV_preFSR_yabs", "GenV_preFSR_qt"});
 
   return d1;
 }
