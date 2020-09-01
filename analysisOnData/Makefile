@@ -1,5 +1,5 @@
 GCC=g++
-CXXFLAGS=`root-config --libs --cflags` -O3 -fPIC -Wall -I../  -I./  -I /scratch/emanca/eigen-eigen-323c052e1731
+CXXFLAGS=`root-config --libs --cflags` -O3 -fPIC -Wall -I../  -I./  -I /scratch/sroychow/eigen-3.3.7/
 SOFLAGS=-shared
 
 SRCDIR=src
@@ -17,13 +17,13 @@ all:
 	$(info, "-> if you want just to recompile something use 'make fast' ")	
 	$(info, "------------------------ ")	
 	$(MAKE) clean
-	$(MAKE) libAnalysisOnData.so
+	$(MAKE) libSignalAnalysis.so
 
 .PHONY: fast
 fast:
-	$(MAKE) libAnalysisOnData.so
+	$(MAKE) libSignalAnalysis.so
 
-libAnalysisOnData.so: $(OBJ) Dict | $(BINDIR)
+libSignalAnalysis.so: $(OBJ) Dict | $(BINDIR)
 	$(GCC) $(CXXFLAGS) $(RPATH) $(SOFLAGS) -o $(BINDIR)/$@ $(OBJ) $(BINDIR)/dict.o
 
 $(OBJ) : $(BINDIR)/%.o : $(SRCDIR)/%.cpp interface/%.hpp | $(BINDIR)
@@ -33,7 +33,7 @@ $(OBJ) : $(BINDIR)/%.o : $(SRCDIR)/%.cpp interface/%.hpp | $(BINDIR)
 Dict: $(BINDIR)/dict.o
 
 $(BINDIR)/dict.o: $(SRC) | $(BINDIR)
-	genreflex $(SRCDIR)/classes.h -s $(SRCDIR)/classes_def.xml -o $(BINDIR)/dict.cc --fail_on_warnings --rootmap=$(BINDIR)/dict.rootmap --rootmap-lib=libAnalysisOnData.so -I interface/ -I../ -I /scratch/emanca/eigen-eigen-323c052e1731
+	genreflex $(SRCDIR)/classes.h -s $(SRCDIR)/classes_def.xml -o $(BINDIR)/dict.cc --fail_on_warnings --rootmap=$(BINDIR)/dict.rootmap --rootmap-lib=libSignalAnalysis.so -I interface/ -I../ -I /scratch/sroychow/eigen-3.3.7
 	$(GCC) -c -o $(BINDIR)/dict.o $(CXXFLAGS) $(RPATH) -I interface $(BINDIR)/dict.cc
 
 $(BINDIR):
@@ -44,5 +44,5 @@ $(BINDIR):
 clean:
 	-rm $(OBJ)
 	-rm $(BINDIR)/dict*
-	-rm $(BINDIR)/libAnalysisOnData.so
+	-rm $(BINDIR)/libSignalAnalysis.so
 	-rmdir $(BINDIR)

@@ -10,6 +10,13 @@ using namespace ROOT::VecOps;
 using RNode = ROOT::RDF::RNode;
 using THn_t = THnT<float>;
 
+enum HistoCategory
+  {
+    Nominal = 0,
+    Corrected,
+  JME
+  };
+
 class Module
 {
 

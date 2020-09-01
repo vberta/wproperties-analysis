@@ -2,6 +2,7 @@
 #define REPLICA2HESSIAN_H
 
 #include "module.hpp"
+#include "PDFWeightsHelper.hpp"
 
 class Replica2Hessian : public Module
 {
