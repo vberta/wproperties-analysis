@@ -107,6 +107,19 @@ class bkg_analyzer:
         outdict[s+e+'slope'+'Minuit'+'Err'] = err1.value
 
         outdict[s+e+'offset*slope'+'Minuit'] = ROOT.TMatrixDRow(out_cov,0)(1)
+                
+        chi2min  = ctypes.c_double(0.)
+        vertDist = ctypes.c_double(0.)
+        errdef  = ctypes.c_double(0.)
+        npars = ctypes.c_int(0)
+        nparsEx = ctypes.c_int(0)
+        infoFit  = ctypes.c_int(0)
+        ndf = float(xx.size)-2.
+        
+        minuit.mnstat(chi2min,vertDist,errdef,npars,nparsEx,infoFit)
+        # print "chi2=", chi2min, " npars=", npars, nparsEx, " ndf=", ndf
+        outdict[s+e+'chi2red'+'Minuit'] = float(chi2min.value)/ndf
+        outdict[s+e+'chi2red'+'Minuit'+'Err'] = math.sqrt(2*ndf)/ndf
         return outdict
 
 
@@ -333,7 +346,7 @@ class bkg_analyzer:
         
         nameDict = {
             'prompt' : ['offset','slope','2deg', 'offset*slope', 'offset*2deg','slope*2deg', 'chi2red'],
-            'fake'   : ['offset','slope','offset*slope']
+            'fake'   : ['offset','slope','offset*slope','chi2red']
             }
 
         dictDict = {
@@ -351,7 +364,7 @@ class bkg_analyzer:
                 for s in self.signList :
                      for e in self.etaBinningS :
                          outdict[kind+pp].SetBinContent(self.signList.index(s)+1,self.etaBinningS.index(e)+1,dictDict[kind][s+e+pint])
-                         if pp == 'offset' or pp=='slope' or pp=='2deg' :
+                         if pp == 'offset' or pp=='slope' or pp=='2deg' or pp=='chi2red':
                             outdict[kind+pp].SetBinError(self.signList.index(s)+1,self.etaBinningS.index(e)+1,dictDict[kind][s+e+pint+'Err'])
                             
         #erf error histogram (sign,eta,pt) to avoid to repeat the toys
@@ -375,7 +388,7 @@ class bkg_analyzer:
 
         nameDict = {
             'prompt' : ['offset','slope','2deg', 'offset*slope', 'offset*2deg','slope*2deg', 'chi2red'],
-            'fake'   : ['offset','slope','offset*slope']
+            'fake'   : ['offset','slope','offset*slope','chi2red']
             }
         
         for par in nameDict[kind] :
@@ -1006,7 +1019,7 @@ class bkg_analyzer:
         
         ParnameDict = {
             'prompt' : ['offset','slope','2deg', 'offset*slope', 'offset*2deg','slope*2deg', 'chi2red'],
-            'fake'   : ['offset','slope','offset*slope']
+            'fake'   : ['offset','slope','offset*slope','chi2red']
             }
         for sKind, sList in systDict.iteritems():
             for sName in sList :
@@ -1393,6 +1406,7 @@ class bkg_analyzer:
                 parDict[s+e+'slopeErr']=fitFake.GetParError(1)
                 parDict[s+e+'offset*slope'] = ROOT.TMatrixDRow(cov,0)(1) #covarinace
                 parDict[s+e+'chi2red'] =fitFake.GetChisquare()/fitFake.GetNDF()
+                parDict[s+e+'chi2redErr'] = math.sqrt(2*fitFake.GetNDF())/fitFake.GetNDF()
 
                 if kind =='prompt' :
                     parDict[s+e+'2deg']=fitFake.GetParameter(2)
