@@ -3,7 +3,6 @@
   <class name="dataObs"/>
   <class name="accMap"/>
   <class name="defineHarmonics"/>
-  <class name="defineSystWeight"/>
   <class name="getACValues"/>
   <class name="getAccMap"/>
   <class name="getWeights"/>

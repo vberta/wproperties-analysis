@@ -6,7 +6,6 @@
 #include "interface/dataObs.hpp"
 #include "interface/accMap.hpp"
 #include "interface/defineHarmonics.hpp"
-#include "interface/defineSystWeight.hpp"
 #include "interface/getACValues.hpp"
 #include "interface/getAccMap.hpp"
 #include "interface/getWeights.hpp"
