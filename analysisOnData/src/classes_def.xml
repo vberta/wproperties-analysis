@@ -11,4 +11,5 @@
   <class name="getMassWeights"/>
   <class name="getWeights"/>
   <class name="templateBuilder"/>
+  <class name="defineHarmonics"/>
 </lcgdict>

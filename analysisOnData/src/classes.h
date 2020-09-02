@@ -10,3 +10,4 @@
 #include "interface/getMassWeights.hpp"
 #include "interface/getWeights.hpp"
 #include "interface/templateBuilder.hpp"
+#include "interface/defineHarmonics.hpp"

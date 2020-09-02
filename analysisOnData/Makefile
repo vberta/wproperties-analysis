@@ -17,13 +17,13 @@ all:
 	$(info, "-> if you want just to recompile something use 'make fast' ")	
 	$(info, "------------------------ ")	
 	$(MAKE) clean
-	$(MAKE) libSignalAnalysis.so
+	$(MAKE) libAnalysisOnData.so
 
 .PHONY: fast
 fast:
-	$(MAKE) libSignalAnalysis.so
+	$(MAKE) libAnalysisOnData.so
 
-libSignalAnalysis.so: $(OBJ) Dict | $(BINDIR)
+libAnalysisOnData.so: $(OBJ) Dict | $(BINDIR)
 	$(GCC) $(CXXFLAGS) $(RPATH) $(SOFLAGS) -o $(BINDIR)/$@ $(OBJ) $(BINDIR)/dict.o
 
 $(OBJ) : $(BINDIR)/%.o : $(SRCDIR)/%.cpp interface/%.hpp | $(BINDIR)
@@ -44,5 +44,5 @@ $(BINDIR):
 clean:
 	-rm $(OBJ)
 	-rm $(BINDIR)/dict*
-	-rm $(BINDIR)/libSignalAnalysis.so
+	-rm $(BINDIR)/libAnalysisOnData.so
 	-rmdir $(BINDIR)
