@@ -22,7 +22,16 @@ RNode getACValues::run(RNode d)
     return AngCoeff;
   };
 
-  auto d1 = d.Define("GenV_preFSR_yabs", "TMath::Abs(GenV_preFSR_y)").Define("AngCoeffVec", getACValues, {"GenV_preFSR_yabs", "GenV_preFSR_qt"});
+  auto getMapValue = [this](float y, float pt) mutable  {
+    int bin = _htotMap->FindBin(y, pt);
+    float totval = _htotMap->GetBinContent(bin);
+    return totval;
+  };
+
+  auto d1 = d.Define("GenV_preFSR_yabs", "TMath::Abs(GenV_preFSR[1])")
+             .Define("GenV_preFSR_qt", "TMath::Abs(GenV_preFSR[0])")
+             .Define("AngCoeffVec", getACValues, {"GenV_preFSR_yabs", "GenV_preFSR_qt"})
+             .Define("totMap", getMapValue, {"GenV_preFSR_yabs", "GenV_preFSR_qt"});
 
   return d1;
 }

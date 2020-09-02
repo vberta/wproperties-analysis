@@ -14,7 +14,8 @@ enum HistoCategory
   {
     Nominal = 0,
     Corrected,
-  JME
+    JME,
+    Weights
   };
 
 class Module
@@ -50,10 +51,6 @@ public:
 };
 
 #endif
-
-
-
-
 
 
   

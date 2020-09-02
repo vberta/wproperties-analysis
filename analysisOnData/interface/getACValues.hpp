@@ -18,6 +18,7 @@ private:
   TH2D *_hA6;
   TH2D *_hA7;
   TH2D *_hAUL;
+  TH2D *_htotMap;
 
 public:
   getACValues(TFile *AChistos)
@@ -32,6 +33,7 @@ public:
     _hA6 = (TH2D *)_AChistos->Get("angularCoefficients/harmonicsA6");
     _hA7 = (TH2D *)_AChistos->Get("angularCoefficients/harmonicsA7");
     _hAUL = (TH2D *)_AChistos->Get("angularCoefficients/harmonicsAUL");
+    _htotMap = (TH2D *)_AChistos->Get("accMaps/mapTot");
   };
   
   ~getACValues(){};

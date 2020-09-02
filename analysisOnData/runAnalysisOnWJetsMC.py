@@ -48,7 +48,7 @@ def RDFprocessWJetsMC(fvec, outputDir, sample, xsec, fileSF, ncores, pretendJob=
             p.branch(nodeToStart = 'defs', nodeToEnd = '{}/prefit_{}/Nominal'.format('WToTau', region), modules = [ROOT.muonHistos(wtotau_cut, weight, nom,"Nom",0)])     
             
             #reco templates with AC reweighting
-            steps = [ROOT.getACValues(fileAC),ROOT.getMassWeights(),ROOT.getWeights(),ROOT.templateBuilder()]
+            steps = [ROOT.getACValues(fileAC),ROOT.defineHarmonics(),ROOT.getMassWeights(),ROOT.getWeights(),ROOT.templateBuilder(wtomu_cut, weight,nom,"Nom",3)]
             p.branch(nodeToStart = 'defs', nodeToEnd = '{}/templatesAC_{}/Nominal'.format('WToMu', region), modules = steps)
         #Nominal templates
         p.branch(nodeToStart = 'defs', nodeToEnd = '{}/templates_{}/Nominal'.format('WToMu', region), modules = [ROOT.templates(wtomu_cut, weight, nom,"Nom",0)])            

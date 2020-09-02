@@ -27,25 +27,6 @@ std::vector<std::string> templateBuilder::stringMultiplication(const std::vector
 
 RNode templateBuilder::run(RNode d)
 {
-  auto vecMultiplication = [](const ROOT::VecOps::RVec<float> &v1, const ROOT::VecOps::RVec<float> &v2) {
-    ROOT::VecOps::RVec<float> products;
-
-    products.reserve(v1.size() * v2.size());
-    for (auto e1 : v1)
-      for (auto e2 : v2)
-        products.push_back(e1 * e2);
-
-    return products;
-  };
-
-  std::vector<std::string> helXsecs = {"L", "I", "T", "A", "P", "7", "8", "9", "UL"};
-
-  const int nBinsY = 6;
-  const int nBinsQt = 8;
-  const int nBinsEta = 48;
-  const int nBinsPt = 30;
-  const int nBinsCharge = 2;
-
   auto d1 = d.Define("weight", _weight);
   if (_hcat == HistoCategory::Nominal)
     return bookNominalhistos(d1);
@@ -63,7 +44,6 @@ RNode templateBuilder::run(RNode d)
 RNode templateBuilder::bookNominalhistos(RNode d)
 //books nominal histos (=nominal + mass variations)
 {
-
   auto d1 = d.Filter("GenV_preFSR_qt<32. && GenV_preFSR_yabs<2.4").Define("harmonicsWeightsMass", vecMultiplication, {"massWeights", "harmonicsWeights"});
 
   std::vector<std::string> mass = {"_massDown", "", "_massUp"};
@@ -80,7 +60,7 @@ RNode templateBuilder::bookNominalhistos(RNode d)
   auto templ = d1.Book<float, float, float, float, float, float, ROOT::VecOps::RVec<float>>(std::move(helper), {"Mu1_eta", "Mu1_pt", "GenV_preFSR_yabs", "GenV_preFSR_qt", "Mu1_charge", "weight", "harmonicsWeightsMass"});
   _hNGroup.push_back(templ);
 
-  return dFit;
+  return d1;
 }
 
 RNode templateBuilder::bookWeightVariatedhistos(RNode d)
@@ -101,7 +81,7 @@ RNode templateBuilder::bookWeightVariatedhistos(RNode d)
   auto templ = d1.Book<float, float, float, float, float, float, ROOT::VecOps::RVec<float>>(std::move(helper), {"Mu1_eta", "Mu1_pt", "GenV_preFSR_yabs", "GenV_preFSR_qt", "Mu1_charge", "weight", "harmonicsWeightsSyst"});
   _hNGroup.push_back(templ);
 
-  return dFit;
+  return d1;
 }
 
 RNode templateBuilder::bookptCorrectedhistos(RNode d)
@@ -122,7 +102,7 @@ RNode templateBuilder::bookptCorrectedhistos(RNode d)
     auto templ = d1.Filter(_filtervec[i]).Book<float, float, float, float, float, float, ROOT::VecOps::RVec<float>>(std::move(helper), {"Mu1_eta", "Mu1_pt" + _colvarvec[i], "GenV_preFSR_yabs", "GenV_preFSR_qt", "Mu1_charge", "weight", "harmonicsWeights"});
     _hNGroup.push_back(templ);
   }
-  return dFit;
+  return d1;
 }
 
 RNode templateBuilder::bookJMEvarhistos(RNode d)
@@ -144,5 +124,5 @@ RNode templateBuilder::bookJMEvarhistos(RNode d)
     auto templ = d1.Filter(_filtervec[i]).Book<float, float, float, float, float, float, ROOT::VecOps::RVec<float>>(std::move(helper), {"Mu1_eta", "Mu1_pt", "GenV_preFSR_yabs", "GenV_preFSR_qt", "Mu1_charge", "weight", "harmonicsWeights"});
     _hNGroup.push_back(templ);
   }
-  return dFit;
+  return d1;
 }

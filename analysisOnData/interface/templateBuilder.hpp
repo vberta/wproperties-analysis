@@ -16,9 +16,17 @@ private:
     std::vector<std::string> _colvarvec;
     HistoCategory _hcat;
 
+  std::vector<std::string> helXsecs = {"L", "I", "T", "A", "P", "7", "8", "9", "UL"};
+  
+  const int nBinsY = 6;
+  const int nBinsQt = 8;
+  const int nBinsEta = 48;
+  const int nBinsPt = 30;
+  const int nBinsCharge = 2;
+
+
 public:
-    ~templateBuilder(){};
-    templates(std::string filter, std::string weight, std::vector<std::string> syst_name, std::string syst_weight, HistoCategory hcat, std::string colvar = "")
+  templateBuilder(std::string filter, std::string weight, std::vector<std::string> syst_name, std::string syst_weight, HistoCategory hcat, std::string colvar = "")
     {
 
         _filter = filter;
@@ -27,7 +35,7 @@ public:
         _syst_weight = syst_weight;
         _hcat = hcat;
         _colvar = colvar;
-        setAxisarrays();
+        //setAxisarrays();
     };
 
     templateBuilder(std::vector<std::string> filtervec, std::string weight, std::vector<std::string> syst_name, std::string syst_weight, HistoCategory hcat, std::vector<std::string> colvarvec)
@@ -39,15 +47,27 @@ public:
         _syst_weight = syst_weight;
         _hcat = hcat;
         _colvarvec = colvarvec;
-        setAxisarrays();
+        //setAxisarrays();
     };
 
-    ~templateBuilder(){};
-    RNode bookNominalhistos(RNode);
-    RNode bookptCorrectedhistos(RNode);
-    RNode bookJMEvarhistos(RNode);
-    RNode run(RNode) override;
-    std::vector<std::string> stringMultiplication(const std::vector<std::string> &v1, const std::vector<std::string> &v2);
+  ~templateBuilder(){};
+  RNode bookNominalhistos(RNode);
+  RNode bookptCorrectedhistos(RNode);
+  RNode bookJMEvarhistos(RNode);
+  RNode bookWeightVariatedhistos(RNode d);
+  RNode run(RNode) override;
+  std::vector<std::string> stringMultiplication(const std::vector<std::string> &v1, const std::vector<std::string> &v2);
+  static ROOT::VecOps::RVec<float> vecMultiplication(const ROOT::VecOps::RVec<float> &v1, const ROOT::VecOps::RVec<float> &v2) {
+    ROOT::VecOps::RVec<float> products;
+    
+    products.reserve(v1.size() * v2.size());
+    for (auto e1 : v1)
+      for (auto e2 : v2)
+	products.push_back(e1 * e2);
+    
+    return products;
+  
+  }
 };
 
 #endif
