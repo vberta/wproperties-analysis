@@ -121,7 +121,7 @@ def main():
     parser.add_argument('-p', '--pretend',type=int, default=False, help="run over a small number of event")
     parser.add_argument('-c', '--ncores',type=int, default=64, help="number of cores used")
     parser.add_argument('-o', '--outputDir',type=str, default='./output/', help="output dir name")
-    parser.add_argument('-i', '--inputDir',type=str, default='/scratchssd/sroychow/NanoAOD2016-V2/', help="input dir name")
+    parser.add_argument('-i', '--inputDir',type=str, default='/scratch/wmass/NanoAOD2016-V2/', help="input dir name")
     args = parser.parse_args()
     pretendJob = args.pretend
     ncores = args.ncores

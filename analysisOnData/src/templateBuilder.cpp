@@ -90,13 +90,15 @@ RNode templateBuilder::bookptCorrectedhistos(RNode d)
   auto d1 = d.Filter("GenV_preFSR_qt<32. && GenV_preFSR_yabs<2.4");
   for (unsigned int i = 0; i < _colvarvec.size(); i++)
   {
-
-    THNweightsHelper helper{"helXsecs" + _colvarvec[i],                        // Name
-                            "helXsecs" + _colvarvec[i],                        // Title
+    std::vector<std::string> tmp;
+    tmp.emplace_back(_colvarvec[i]);
+    std::vector<std::string> total = stringMultiplication(tmp, helXsecs);
+    THNweightsHelper helper{"helXsecs",                        // Name
+                            "helXsecs",                        // Title
                             {nBinsEta, nBinsPt, nBinsY, nBinsQt, nBinsCharge}, // NBins
                             {-2.4, 25., 0., 0., -2},                           // Axes min values
                             {2.4, 55., 2.4, 32., 2},                           // Axes max values
-                            _syst_name};
+                            total};
 
     // We book the action: it will be treated during the event loop.
     auto templ = d1.Filter(_filtervec[i]).Book<float, float, float, float, float, float, ROOT::VecOps::RVec<float>>(std::move(helper), {"Mu1_eta", "Mu1_pt" + _colvarvec[i], "GenV_preFSR_yabs", "GenV_preFSR_qt", "Mu1_charge", "weight", "harmonicsWeights"});
@@ -112,13 +114,16 @@ RNode templateBuilder::bookJMEvarhistos(RNode d)
 
   for (unsigned int i = 0; i < _colvarvec.size(); i++)
   {
+    std::vector<std::string> tmp;
+    tmp.emplace_back(_colvarvec[i]);
+    std::vector<std::string> total = stringMultiplication(tmp, helXsecs);
 
-    THNweightsHelper helper{"helXsecs" + _colvarvec[i],                        // Name
-                            "helXsecs" + _colvarvec[i],                        // Title
+    THNweightsHelper helper{"helXsecs",                        // Name
+                            "helXsecs",                        // Title
                             {nBinsEta, nBinsPt, nBinsY, nBinsQt, nBinsCharge}, // NBins
                             {-2.4, 25., 0., 0., -2},                           // Axes min values
                             {2.4, 55., 2.4, 32., 2},                           // Axes max values
-                            _syst_name};
+                            total};
 
     // We book the action: it will be treated during the event loop.
     auto templ = d1.Filter(_filtervec[i]).Book<float, float, float, float, float, float, ROOT::VecOps::RVec<float>>(std::move(helper), {"Mu1_eta", "Mu1_pt", "GenV_preFSR_yabs", "GenV_preFSR_qt", "Mu1_charge", "weight", "harmonicsWeights"});
