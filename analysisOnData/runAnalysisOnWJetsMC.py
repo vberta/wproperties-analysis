@@ -55,7 +55,8 @@ def RDFprocessWJetsMC(fvec, outputDir, sample, xsec, fileSF, ncores, pretendJob=
             p.branch(nodeToStart = 'defsAC', nodeToEnd = '{}/templatesAC_{}/Nominal'.format('WToMu', region), modules = [ROOT.templateBuilder(wtomu_cut, weight,nom,"Nom",0)])
             #reco templates for out of acceptance events
             wtomu_cut+= "&& GenV_preFSR_qt>32. && GenV_preFSR_yabs>2.4"
-            p.branch(nodeToStart = 'defsAC', nodeToEnd = '{}/templatesLowAcc_{}/Nominal'.format('WToMu', region), modules = [ROOT.templates(wtomu_cut, weight, nom,"Nom",0)])            
+            p.branch(nodeToStart = 'defsAC', nodeToEnd = '{}/templatesLowAcc_{}/Nominal'.format('WToMu', region), modules = [ROOT.templates(wtomu_cut, weight, nom,"Nom",0)])    
+            wtomu_cut = cut + wdecayselections['WToMu']        
    
         #weight variations
         for s,variations in systematics.iteritems():
@@ -84,7 +85,8 @@ def RDFprocessWJetsMC(fvec, outputDir, sample, xsec, fileSF, ncores, pretendJob=
                 #reco templates for out of acceptance events
                 wtomu_cut+= "&& GenV_preFSR_qt>32. && GenV_preFSR_yabs>2.4"
                 p.branch(nodeToStart = 'defsAC', nodeToEnd = '{}/templatesLowAcc_{}/{}Vars'.format('WToMu', region,s), modules = [ROOT.templates(wtomu_cut, var_weight,vars_vec,variations[1], 0)])
-
+                wtomu_cut = cut + wdecayselections['WToMu'] 
+                
         #column variations#weight will be nominal, cut will vary
         for vartype, vardict in selectionVars.iteritems():
             wtomu_cut_vec = ROOT.vector('string')()
@@ -115,6 +117,7 @@ def RDFprocessWJetsMC(fvec, outputDir, sample, xsec, fileSF, ncores, pretendJob=
                 #reco templates for out of acceptance events
                 wtomu_cut+= "&& GenV_preFSR_qt>32. && GenV_preFSR_yabs>2.4"
                 p.branch(nodeToStart = 'defsAC', nodeToEnd = '{}/templatesLowAcc_{}/{}Vars'.format('WToMu', region,vartype), modules = [ROOT.templates(wtomu_cut_vec, weight, nom,"Nom",hcat,wtomu_var_vec)])
+                wtomu_cut = cut + wdecayselections['WToMu'] 
 
     p.getOutput()
     p.saveGraph()
