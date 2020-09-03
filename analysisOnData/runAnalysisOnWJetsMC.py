@@ -42,6 +42,9 @@ def RDFprocessWJetsMC(fvec, outputDir, sample, xsec, fileSF, ncores, pretendJob=
         print "branching nominal for region:", region 
         wtomu_cut = cut + wdecayselections['WToMu']
         wtotau_cut = cut + wdecayselections['WToTau']
+        #Nominal templates
+        p.branch(nodeToStart = 'defs', nodeToEnd = '{}/templates_{}/Nominal'.format('WToMu', region), modules = [ROOT.templates(wtomu_cut, weight, nom,"Nom",0)])            
+        p.branch(nodeToStart = 'defs', nodeToEnd = '{}/templates_{}/Nominal'.format('WToTau', region), modules = [ROOT.templates(wtotau_cut, weight, nom,"Nom",0)])
         if region == "Signal":
             print "adding muon histo to graph for Signal region"
             p.branch(nodeToStart = 'defs', nodeToEnd = '{}/prefit_{}/Nominal'.format('WToMu', region), modules = [ROOT.muonHistos(wtomu_cut, weight, nom,"Nom",0)])     
@@ -49,14 +52,10 @@ def RDFprocessWJetsMC(fvec, outputDir, sample, xsec, fileSF, ncores, pretendJob=
             #reco templates with AC reweighting
             steps = [ROOT.getACValues(fileAC),ROOT.defineHarmonics(),ROOT.getMassWeights(),ROOT.getWeights()]
             p.branch(nodeToStart = 'defs', nodeToEnd = 'defsAC', modules = steps)
-            p.branch(nodeToStart = 'defsAC', nodeToEnd = '{}/templatesAC_{}/Nominal'.format('WToMu', region), modules = [ROOT.templateBuilder(wtomu_cut, weight,nom,"Nom",0)]])
+            p.branch(nodeToStart = 'defsAC', nodeToEnd = '{}/templatesAC_{}/Nominal'.format('WToMu', region), modules = [ROOT.templateBuilder(wtomu_cut, weight,nom,"Nom",0)])
             #reco templates for out of acceptance events
             wtomu_cut+= "&& GenV_preFSR_qt>32. && GenV_preFSR_yabs>2.4"
-            p.branch(nodeToStart = 'defsAC', nodeToEnd = '{}/templatesLowAcc_{}/Nominal'.format('WToMu', region), modules = [ROOT.templates(wtomu_cut, weight, nom,"Nom",0)])
-            wtomu_cut-= "&& GenV_preFSR_qt>32. && GenV_preFSR_yabs>2.4"
-        #Nominal templates
-        p.branch(nodeToStart = 'defs', nodeToEnd = '{}/templates_{}/Nominal'.format('WToMu', region), modules = [ROOT.templates(wtomu_cut, weight, nom,"Nom",0)])            
-        p.branch(nodeToStart = 'defs', nodeToEnd = '{}/templates_{}/Nominal'.format('WToTau', region), modules = [ROOT.templates(wtotau_cut, weight, nom,"Nom",0)])            
+            p.branch(nodeToStart = 'defsAC', nodeToEnd = '{}/templatesLowAcc_{}/Nominal'.format('WToMu', region), modules = [ROOT.templates(wtomu_cut, weight, nom,"Nom",0)])            
    
         #weight variations
         for s,variations in systematics.iteritems():
@@ -72,6 +71,9 @@ def RDFprocessWJetsMC(fvec, outputDir, sample, xsec, fileSF, ncores, pretendJob=
             for var in variations[0]:
                 vars_vec.push_back(var)
             print weight,"\t",var_weight, "MODIFIED WEIGHT"
+            #Template vars
+            p.branch(nodeToStart = 'defs'.format(region), nodeToEnd = '{}/templates_{}/{}Vars'.format('WToMu', region,s), modules = [ROOT.templates(wtomu_cut, var_weight,vars_vec,variations[1], 0)])
+            p.branch(nodeToStart = 'defs'.format(region), nodeToEnd = '{}/templates_{}/{}Vars'.format('WToTau', region,s), modules = [ROOT.templates(wtotau_cut, var_weight,vars_vec,variations[1], 0)])
             if region == "Signal": 
                 p.branch(nodeToStart = 'defs'.format(region), nodeToEnd = '{}/prefit_{}/{}Vars'.format('WToMu', region,s), modules = [ROOT.muonHistos(wtomu_cut, var_weight,vars_vec,variations[1], 0)])
                 p.branch(nodeToStart = 'defs'.format(region), nodeToEnd = '{}/prefit_{}/{}Vars'.format('WToTau', region,s), modules = [ROOT.muonHistos(wtotau_cut, var_weight,vars_vec,variations[1], 0)])
@@ -82,10 +84,6 @@ def RDFprocessWJetsMC(fvec, outputDir, sample, xsec, fileSF, ncores, pretendJob=
                 #reco templates for out of acceptance events
                 wtomu_cut+= "&& GenV_preFSR_qt>32. && GenV_preFSR_yabs>2.4"
                 p.branch(nodeToStart = 'defsAC', nodeToEnd = '{}/templatesLowAcc_{}/{}Vars'.format('WToMu', region,s), modules = [ROOT.templates(wtomu_cut, var_weight,vars_vec,variations[1], 0)])
-                wtomu_cut-= "&& GenV_preFSR_qt>32. && GenV_preFSR_yabs>2.4"
-            #Template vars
-            p.branch(nodeToStart = 'defs'.format(region), nodeToEnd = '{}/templates_{}/{}Vars'.format('WToMu', region,s), modules = [ROOT.templates(wtomu_cut, var_weight,vars_vec,variations[1], 0)])
-            p.branch(nodeToStart = 'defs'.format(region), nodeToEnd = '{}/templates_{}/{}Vars'.format('WToTau', region,s), modules = [ROOT.templates(wtotau_cut, var_weight,vars_vec,variations[1], 0)])
 
         #column variations#weight will be nominal, cut will vary
         for vartype, vardict in selectionVars.iteritems():
@@ -104,6 +102,9 @@ def RDFprocessWJetsMC(fvec, outputDir, sample, xsec, fileSF, ncores, pretendJob=
                 wtotau_cut_vec.push_back(wtotau_newcut)
                 wtotau_var_vec.push_back(selvar)
                 print "branching column variations:", vartype, " for region:", region, "\tvariations:", wtomu_var_vec
+            #templates (integrated over helicity xsecs)
+            p.branch(nodeToStart = 'defs', nodeToEnd = '{}/templates_{}/{}Vars'.format('WToMu', region,vartype), modules = [ROOT.templates(wtomu_cut_vec, weight, nom,"Nom",hcat,wtomu_var_vec)])  
+            p.branch(nodeToStart = 'defs', nodeToEnd = '{}/templates_{}/{}Vars'.format('WToTau', region,vartype), modules = [ROOT.templates(wtotau_cut_vec, weight, nom,"Nom",hcat,wtotau_var_vec)])  
             if region == "Signal": 
                 p.branch(nodeToStart = 'defs', nodeToEnd = '{}/prefit_{}/{}Vars'.format('WToMu', region,vartype), modules = [ROOT.muonHistos(wtomu_cut_vec, weight, nom,"Nom",hcat,wtomu_var_vec)])  
                 p.branch(nodeToStart = 'defs', nodeToEnd = '{}/prefit_{}/{}Vars'.format('WToTau', region,vartype), modules = [ROOT.muonHistos(wtotau_cut_vec, weight, nom,"Nom",hcat,wtotau_var_vec)])
@@ -114,10 +115,6 @@ def RDFprocessWJetsMC(fvec, outputDir, sample, xsec, fileSF, ncores, pretendJob=
                 #reco templates for out of acceptance events
                 wtomu_cut+= "&& GenV_preFSR_qt>32. && GenV_preFSR_yabs>2.4"
                 p.branch(nodeToStart = 'defsAC', nodeToEnd = '{}/templatesLowAcc_{}/{}Vars'.format('WToMu', region,vartype), modules = [ROOT.templates(wtomu_cut_vec, weight, nom,"Nom",hcat,wtomu_var_vec)])
-                wtomu_cut-= "&& GenV_preFSR_qt>32. && GenV_preFSR_yabs>2.4"
-            #templates (integrated over helicity xsecs)
-            p.branch(nodeToStart = 'defs', nodeToEnd = '{}/templates_{}/{}Vars'.format('WToMu', region,vartype), modules = [ROOT.templates(wtomu_cut_vec, weight, nom,"Nom",hcat,wtomu_var_vec)])  
-            p.branch(nodeToStart = 'defs', nodeToEnd = '{}/templates_{}/{}Vars'.format('WToTau', region,vartype), modules = [ROOT.templates(wtotau_cut_vec, weight, nom,"Nom",hcat,wtotau_var_vec)])  
 
     p.getOutput()
     p.saveGraph()
