@@ -2,8 +2,6 @@
 #define TEMPLATES_H
 
 #include "module.hpp"
-#include <map>
-#include <vector>
 
 
 class templates : public Module
