@@ -33,7 +33,7 @@ class bkg_analyzer:
         self.sampleList =  ['WToMuNu','Data'] #WToMuNu= All EWK samples
         self.maxPt_linearFit = 55
         self.PDFvar = 'LHEPdfWeightVars'
-        print "WARNING: pt fit range 25-55 GeV"
+        # print "WARNING: pt fit range 25-55 GeV"
         self.rootFiles = []
         for f in self.sampleList : 
              self.rootFiles.append(ROOT.TFile.Open(self.inputDir+'/'+f+'.root'))    
@@ -1505,7 +1505,7 @@ class bkg_analyzer:
         return htempl
         
             
-    def extrapolationSyst(self,extrapDict, linearFit=True) :
+    def extrapolationSyst(self,extrapDict, linearFit=True,CFstring='') :
         #linearFit = trend in Mt, if False-->constant trend in Mt assumed
         
         nomMeanMt=67
@@ -1514,17 +1514,16 @@ class bkg_analyzer:
         }
         looseCutBinning = [] 
         fileDict = {}
-        for lcut, lbin in looseCutDict.iteritems() :
+        localLooseCutDict = copy.deepcopy(bkg_utils.looseCutDict)
+        for lcut, lbin in localLooseCutDict.iteritems() :
             fileDict[lcut] = ROOT.TFile.Open(self.outdir+'/bkg_'+lcut+'/bkg_differential_fakerate.root')
-            fileDict[lcut+'par'] = ROOT.TFile.Open(self.outdir+'/bkg_'+lcut+'/bkg_parameters_file.root')
             looseCutBinning.append(lbin[0])
-        fileDict[self.systName] = ROOT.TFile.Open(self.outdir+'/bkg_'+self.systName+'/bkg_differential_fakerate.root')
-        fileDict[self.systName+'par'] = ROOT.TFile.Open(self.outdir+'/bkg_'+self.systName+'/bkg_parameters_file.root')
+        fileDict[self.systName] = ROOT.TFile.Open(self.outdir+'/bkg_'+self.systName+'/bkg_differential_fakerate'+CFstring+'.root')
         looseCutBinning.append(40)
         looseCutBinning.append(2*nomMeanMt-40)
         looseCutBinning.sort() #because from dict 
         
-        looseCutDict.update({self.systName:[40,2*nomMeanMt-40]})
+        localLooseCutDict.update({self.systName:[40,2*nomMeanMt-40]})
         
         histoDict = {}
         discrepancyMapDict = {}
@@ -1533,12 +1532,12 @@ class bkg_analyzer:
             discrepancyMapDict[s] = ROOT.TH2F("discrepancyMap_{sign}".format(sign=s),"discrepancyMap_{sign}".format(sign=s),len(self.etaBinning)-1, array('f',self.etaBinning), len(self.ptBinning)-1, array('f',self.ptBinning) )
             discrepancyMapDict[s].GetXaxis().SetTitle("#eta")
             discrepancyMapDict[s].GetYaxis().SetTitle("p_{T} [GeV]")
-            discrepancyMapDict[s].GetZaxis().SetTitle("(extrap-nom)/nom")
+            discrepancyMapDict[s].GetZaxis().SetTitle("extrap/nom")
             
             discrepancyMapDict[s+'Err'] = ROOT.TH2F("discrepancyMapErr_{sign}".format(sign=s),"discrepancyMapErr_{sign}".format(sign=s),len(self.etaBinning)-1, array('f',self.etaBinning), len(self.ptBinning)-1, array('f',self.ptBinning) )
             discrepancyMapDict[s+'Err'].GetXaxis().SetTitle("#eta")
             discrepancyMapDict[s+'Err'].GetYaxis().SetTitle("p_{T} [GeV]")
-            discrepancyMapDict[s+'Err'].GetZaxis().SetTitle("#sigma (extrap-nom)/nom")
+            discrepancyMapDict[s+'Err'].GetZaxis().SetTitle("#sigma extrap/nom")
            
             if s=='Plus' :
                 chi2_extrap = ROOT.TH2F("chi2_extrap","chi2_extrap",len(self.etaBinning)-1, array('f',self.etaBinning), len(self.signList), array('f',[0,1,2]))
@@ -1552,15 +1551,16 @@ class bkg_analyzer:
                 paramMapDict[s+par].GetYaxis().SetTitle("Parameter value")
                         
             for e in self.etaBinningS :
-                dirString = 'Fakerate/hFakes_pt_fake_'
                 histoDict[s+e] = ROOT.TH2F("paramExtrap_{sign}_{eta}".format(sign=s,eta=e),"paramExtrap_{sign}_{eta}".format(sign=s,eta=e),len(looseCutBinning)-1, array('f',looseCutBinning), len(self.ptBinning)-1, array('f',self.ptBinning) )
                 histoDict[s+e].GetXaxis().SetTitle("M_{T} [GeV]")
                 histoDict[s+e].GetYaxis().SetTitle("p_{T} [GeV]")
                 histoDict[s+e].GetZaxis().SetTitle("f (iso. cut eff.)")
                 for p in self.ptBinningS :
-                    for lcut, lbin in looseCutDict.iteritems() :
+                    for lcut, lbin in localLooseCutDict.iteritems() :
                         if lcut==self.systName :
                             dirString = 'Template/htempl_fake_pt_fake_'
+                        else :
+                            dirString = 'Fakerate/hFakes_pt_fake_' 
                         val = fileDict[lcut].Get(dirString+s+'_'+e).GetBinContent(self.ptBinningS.index(p)+1) 
                         err = fileDict[lcut].Get(dirString+s+'_'+e).GetBinError(self.ptBinningS.index(p)+1)
                         histoDict[s+e].SetBinContent( histoDict[s+e].FindBin(lbin[0]),self.ptBinningS.index(p)+1,val)
@@ -1591,11 +1591,11 @@ class bkg_analyzer:
                     xf=nomMeanMt
                     for p in self.ptBinningS :
                         yf = histoDict[s+e].GetYaxis().GetBinCenter(self.ptBinningS.index(p)+1)
-                        fr = fitFunc.Eval(xf)
+                        fr = fitFunc.Eval(xf,yf)
                         dfr = math.sqrt(wa**2+(wb*xf)**2+(wc*yf)**2+(wd*xf*yf)**2+2*(wab*xf+wac*yf+wad*xf*yf+wbc*xf*yf+wbd*xf**2*yf+wcd*xf*yf**2))
                         fr_nom =histoDict[s+e].GetBinContent(histoDict[s+e].GetNbinsX(),self.ptBinningS.index(p)+1)  
                         err_nom = histoDict[s+e].GetBinError(histoDict[s+e].GetNbinsX(),self.ptBinningS.index(p)+1)
-                        discr = (fr_nom - fr)/fr_nom
+                        discr = fr/fr_nom
                         discrepancyMapDict[s].SetBinContent(self.etaBinningS.index(e)+1,self.ptBinningS.index(p)+1,discr) 
                         err = 1/(fr_nom**2)*math.sqrt((dfr*fr_nom)**2+(fr*err_nom)**2)
                         discrepancyMapDict[s].SetBinError(self.etaBinningS.index(e)+1,self.ptBinningS.index(p)+1,err)
@@ -1608,7 +1608,7 @@ class bkg_analyzer:
                     paramMapDict[s+'offset*slope'].SetBinContent(self.etaBinningS.index(e)+1,wab)    
                     paramMapDict[s+'offset*slope'].SetBinError(self.etaBinningS.index(e)+1,0)        
                     
-                else : #contant in mt fit
+                else : #constant in mt fit
                     cov = fitRes.GetCovarianceMatrix()
                     dmq2 = ROOT.TMatrixDRow(cov,0)(1)
                     q = fitFunc.GetParameter(0)
@@ -1618,11 +1618,11 @@ class bkg_analyzer:
                     xf=nomMeanMt
                     for p in self.ptBinningS :
                         yf = histoDict[s+e].GetYaxis().GetBinCenter(self.ptBinningS.index(p)+1)
-                        fr = fitFunc.Eval(xf)
+                        fr = fitFunc.Eval(xf,yf)
                         dfr = math.sqrt(dq**2+(yf*dm)**2+2*yf*dmq2)
                         fr_nom =histoDict[s+e].GetBinContent(histoDict[s+e].GetNbinsX(),self.ptBinningS.index(p)+1)  
                         err_nom = histoDict[s+e].GetBinError(histoDict[s+e].GetNbinsX(),self.ptBinningS.index(p)+1)
-                        discr = (fr_nom - fr)/fr_nom
+                        discr = fr/fr_nom
                         discrepancyMapDict[s].SetBinContent(self.etaBinningS.index(e)+1,self.ptBinningS.index(p)+1,discr) 
                         err = 1/(fr_nom**2)*math.sqrt((dfr*fr_nom)**2+(fr*err_nom)**2)
                         discrepancyMapDict[s].SetBinError(self.etaBinningS.index(e)+1,self.ptBinningS.index(p)+1,err)
@@ -1635,7 +1635,7 @@ class bkg_analyzer:
             linString = "_linearFit" 
         else :
             linString = "_constFit"                
-        output = ROOT.TFile(self.outdir+"/extrapolation_plots_"+str(nomMeanMt)+'GeV_'+linString+".root","recreate")
+        output = ROOT.TFile(self.outdir+"/extrapolation_syst/extrapPlots_SigRegMean"+str(nomMeanMt)+'GeV'+linString+CFstring+".root","recreate")
         for s in self.signList :
             for e in self.etaBinningS : 
                 histoDict[s+e].Write()  

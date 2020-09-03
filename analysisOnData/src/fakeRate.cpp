@@ -57,56 +57,20 @@ RNode fakeRate::run(RNode d)
                   return fR;
                 },
                         {"fakeRate_ptScaleVars_correctedUp", "fakeRate_ptScaleVars_correctedDown"})
-                .Define("fakeRate_jme", [](float f1, float f2, float f3, float f4, float f5, float f6) {
+                // .Define("fakeRate_jme", [](float f1, float f2, float f3, float f4, float f5, float f6) {
+                .Define("fakeRate_jme", [](float f1, float f2, float f3, float f4) {
                   ROOT::VecOps::RVec<float> fR;
                   fR.emplace_back(f1);
                   fR.emplace_back(f2);
                   fR.emplace_back(f3);
                   fR.emplace_back(f4);
-                  fR.emplace_back(f5);
-                  fR.emplace_back(f6);
+                  // fR.emplace_back(f5);
+                  // fR.emplace_back(f6);
 
                   return fR;
                 },
-                        {"fakeRate_jmeVars_jerUp", "fakeRate_jmeVars_jerDown", "fakeRate_jmeVars_jesTotalUp", "fakeRate_jmeVars_jesTotalDown", "fakeRate_jmeVars_unclustEnUp", "fakeRate_jmeVars_unclustEnDown"});
+                        // {"fakeRate_jmeVars_jerUp", "fakeRate_jmeVars_jerDown", "fakeRate_jmeVars_jesTotalUp", "fakeRate_jmeVars_jesTotalDown", "fakeRate_jmeVars_unclustEnUp", "fakeRate_jmeVars_unclustEnDown"});
+                        {"fakeRate_jmeVars_jesTotalUp", "fakeRate_jmeVars_jesTotalDown", "fakeRate_jmeVars_unclustEnUp", "fakeRate_jmeVars_unclustEnDown"});
 
   return d2;
-}
-
-std::vector<ROOT::RDF::RResultPtr<TH1D>> fakeRate::getTH1()
-{
-  return _h1List;
-}
-std::vector<ROOT::RDF::RResultPtr<TH2D>> fakeRate::getTH2()
-{
-  return _h2List;
-}
-std::vector<ROOT::RDF::RResultPtr<TH3D>> fakeRate::getTH3()
-{
-  return _h3List;
-}
-
-std::vector<ROOT::RDF::RResultPtr<std::vector<TH1D>>> fakeRate::getGroupTH1()
-{
-  return _h1Group;
-}
-std::vector<ROOT::RDF::RResultPtr<std::vector<TH2D>>> fakeRate::getGroupTH2()
-{
-  return _h2Group;
-}
-std::vector<ROOT::RDF::RResultPtr<std::vector<TH3D>>> fakeRate::getGroupTH3()
-{
-  return _h3Group;
-}
-
-void fakeRate::reset()
-{
-
-  _h1List.clear();
-  _h2List.clear();
-  _h3List.clear();
-
-  _h1Group.clear();
-  _h2Group.clear();
-  _h3Group.clear();
 }

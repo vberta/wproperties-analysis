@@ -58,7 +58,7 @@ class bkg_prepareHistos:
                             systName = '_'+sName
                         else :
                             systName = sName
-                        print "Trying to read:", 'templates_'+r+'/'+sKind+'/'+varName+systName
+                        # print "Trying to read:", 'templates_'+r+'/'+sKind+'/'+varName+systName
                         if ROOT.gDirectory.Get('templates_'+r+'/'+sKind+'/'+varName+systName)==None : #this syst is not present
                             print "no syst in:", f, r, sKind, systName
                             h = inFile.Get('templates_'+r+'/'+self.sKindNom+'/'+varName+self.sNameNom)

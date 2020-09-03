@@ -291,7 +291,9 @@ class plotter:
                 stdVar = 0
                 for sName in bkg_utils.bkg_systematics[self.PDFvar] :
                     stdVar+= (hdict[sName].GetBinContent(x)-hdict[''].GetBinContent(x))**2
-                stdVar = math.sqrt(stdVar/len(bkg_utils.bkg_systematics[self.PDFvar]))
+                # Nrepl = float(len(bkg_utils.bkg_systematics[self.PDFvar])) 
+                Nrepl=1.
+                stdVar = math.sqrt(stdVar/Nrepl)
                 hdict['LHEPdfUp'].SetBinContent(x, hdict['LHEPdfUp'].GetBinContent(x)+stdVar)
                 hdict['LHEPdfDown'].SetBinContent(x, hdict['LHEPdfDown'].GetBinContent(x)-stdVar)
             

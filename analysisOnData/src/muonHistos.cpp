@@ -1,5 +1,7 @@
 #include "interface/muonHistos.hpp"
 #include "interface/functions.hpp"
+#include "interface/TH2weightsHelper.hpp"
+
 RNode muonHistos::run(RNode d)
 {
   //for MC part this is a product of few columns// for Data this is just 1.// both are passed from python config
@@ -79,42 +81,4 @@ void muonHistos::setAxisarrays()
     _MTArr[i] = 0. + i*(150.-0.)/30;
   for (int i = 0; i < 3; i++)
     _chargeArr[i] = -2. +  i*2. ; //eta -1.5 to 1.5
-}
-
-std::vector<ROOT::RDF::RResultPtr<TH1D>> muonHistos::getTH1()
-{
-  return _h1List;
-}
-std::vector<ROOT::RDF::RResultPtr<TH2D>> muonHistos::getTH2()
-{
-  return _h2List;
-}
-std::vector<ROOT::RDF::RResultPtr<TH3D>> muonHistos::getTH3()
-{
-  return _h3List;
-}
-
-std::vector<ROOT::RDF::RResultPtr<std::vector<TH1D>>> muonHistos::getGroupTH1()
-{
-  return _h1Group;
-}
-std::vector<ROOT::RDF::RResultPtr<std::vector<TH2D>>> muonHistos::getGroupTH2()
-{
-  return _h2Group;
-}
-std::vector<ROOT::RDF::RResultPtr<std::vector<TH3D>>> muonHistos::getGroupTH3()
-{
-  return _h3Group;
-}
-
-void muonHistos::reset()
-{
-
-  _h1List.clear();
-  _h2List.clear();
-  _h3List.clear();
-
-  _h1Group.clear();
-  _h2Group.clear();
-  _h3Group.clear();
 }
