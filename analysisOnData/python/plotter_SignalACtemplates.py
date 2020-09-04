@@ -13,7 +13,7 @@ ROOT.TH2.AddDirectory(False)
 
 class plotter:
     
-    def __init__(self, outDir, inDir = ''):
+    def __init__(self, outDir, inDir = '', ACfile):
         self.indir = inDir # indir containig the various outputs
         self.outdir = outDir
         self.sampleFile = 'WToMu_plots.root'
@@ -26,7 +26,20 @@ class plotter:
         if not self.inFile :
             print self.inFile, ' does not exist'
             sys.exit(1)
-
+        self.ACfile = ROOT.TFile.Open(ACfile)
+        self.imap = self.ACfile.Get("accMaps/mapTot")
+        
+        self.helXsecs = OrderedDict()
+        self.helXsecs["L"] = "A0"
+        self.helXsecs["I"] = "A1" 
+        self.helXsecs["T"] = "A2" 
+        self.helXsecs["A"] = "A3" 
+        self.helXsecs["P"] = "A4" 
+        self.helXsecs["7"] = "A5" 
+        self.helXsecs["8"] = "A6" 
+        self.helXsecs["9"] = "A7" 
+        self.helXsecs["UL"] = "AUL"
+        
     def makeTH5slices(self, thn5, systname, chargeBin):
         hname=thn5.GetName()
         #minus charge
@@ -40,6 +53,12 @@ class plotter:
                 thn5.GetAxis(3).SetRange(iQt, iQt)
                 th2slice=thn5.Projection(1, 0)
                 th2slice.SetName(slicename)
+                #normalise templates to its helicity xsec
+                nsum = (3./16./math.pi)*self.imap.GetBinContent(iY,iQt)
+                if not 'UL' in hname:
+                    hAC = self.fileAC.Get("angularCoefficients/harmonics{}".format(self.helXsecs[hname.replace('helXsecs',"")]))
+                    nsum = nsum*hAC.GetBinContent(iY,iQt)/self.factors[self.helXsecs[hname.replace('helXsecs',"")]]
+                th2slice.Scale(nsum)
                 th2slice.SetDirectory(0)
                 self.histoDict[systname].append(th2slice)
 
