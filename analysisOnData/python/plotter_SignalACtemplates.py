@@ -2,9 +2,10 @@ import ROOT
 import copy
 import sys
 import argparse
-
+from collections import OrderedDict
 sys.path.append('../../bkgAnalysis')
 import bkg_utils
+import math
 
 ROOT.gROOT.SetBatch()
 ROOT.TH1.AddDirectory(False)
@@ -13,7 +14,7 @@ ROOT.TH2.AddDirectory(False)
 
 class plotter:
     
-    def __init__(self, outDir, inDir = '', ACfile):
+    def __init__(self, outDir, ACfile, inDir = ''):
         self.indir = inDir # indir containig the various outputs
         self.outdir = outDir
         self.sampleFile = 'WToMu_plots.root'
@@ -40,15 +41,31 @@ class plotter:
         self.helXsecs["9"] = "A7" 
         self.helXsecs["UL"] = "AUL"
         
+        self.factors = {}
+        self.factors["A0"]= 2.
+        self.factors["A1"]=2.*math.sqrt(2)
+        self.factors["A2"]=4.
+        self.factors["A3"]=4.*math.sqrt(2)
+        self.factors["A4"]=2.
+        self.factors["A5"]=2.
+        self.factors["A6"]=2.*math.sqrt(2)
+        self.factors["A7"]=4.*math.sqrt(2)
+
     def makeTH5slices(self, thn5, systname, chargeBin):
         hname=thn5.GetName()
+        coeff = hname.replace('helXsecs',"")
+        try:
+            syst = "_" + coeff.split('_')[1]
+            coeff = coeff.split('_')[0]
+        except IndexError:
+            syst = ""
         #minus charge
         thn5.GetAxis(4).SetRange(chargeBin, chargeBin)
         for iY in range(1, 7):
             for iQt in range(1, 9):
                 #w_y = 0. + iY*0.4
                 #w_qt = 0 + iQt*4
-                slicename = hname + '_y_{}'.format(iY)+'_qt_{}'.format(iQt)
+                slicename = 'helXsecs'+ coeff + '_y_{}'.format(iY)+'_qt_{}'.format(iQt) + syst
                 thn5.GetAxis(2).SetRange(iY, iY)
                 thn5.GetAxis(3).SetRange(iQt, iQt)
                 th2slice=thn5.Projection(1, 0)
@@ -56,8 +73,8 @@ class plotter:
                 #normalise templates to its helicity xsec
                 nsum = (3./16./math.pi)*self.imap.GetBinContent(iY,iQt)
                 if not 'UL' in hname:
-                    hAC = self.fileAC.Get("angularCoefficients/harmonics{}".format(self.helXsecs[hname.replace('helXsecs',"")]))
-                    nsum = nsum*hAC.GetBinContent(iY,iQt)/self.factors[self.helXsecs[hname.replace('helXsecs',"")]]
+                    hAC = self.ACfile.Get("angularCoefficients/harmonics{}".format(self.helXsecs[coeff]))
+                    nsum = nsum*hAC.GetBinContent(iY,iQt)/self.factors[self.helXsecs[coeff]]
                 th2slice.Scale(nsum)
                 th2slice.SetDirectory(0)
                 self.histoDict[systname].append(th2slice)
@@ -94,11 +111,12 @@ class plotter:
 
 parser = argparse.ArgumentParser("")
 parser.add_argument('-o','--output', type=str, default='./',help="name of the output directory")
-parser.add_argument('-i','--input', type=str, default='./',help="name of the input direcory root file")
-
+parser.add_argument('-i','--input', type=str, default='./',help="name of the input directory root file")
+parser.add_argument('-AC','--AC', type=str, default='./',help="name of the input AC file root file")
 args = parser.parse_args()
 OUTPUT = args.output
 INPUT = args.input
-p=plotter(outDir=OUTPUT, inDir = INPUT)
+ACfile = args.AC
+p=plotter(outDir=OUTPUT, inDir = INPUT, ACfile=ACfile)
 p.getHistos(1)
 p.getHistos(2)
