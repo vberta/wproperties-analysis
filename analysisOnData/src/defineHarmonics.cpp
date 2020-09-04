@@ -39,6 +39,7 @@ RNode defineHarmonics::run(RNode d)
 
   auto scaleAngles = [](float phi){
     if(phi<0.) phi+=2*TMath::Pi();
+    return phi;
   };
 
   auto d1 = d.Define("GenV_preFSR_CSphiCorr", scaleAngles, {"GenV_preFSR_CSphi"}).Define("harmonicsVec", getHarmonicsVec, {"GenV_preFSR_CStheta", "GenV_preFSR_CSphiCorr"}).Define("harmonicsVecWeighted", multByWeight, {"lumiweight", "harmonicsVec"}).Define("harmonicsVecSqWeighted", multSqByWeight, {"lumiweight", "harmonicsVec"});
