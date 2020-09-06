@@ -515,6 +515,15 @@ class bkg_analyzer:
             'templ' : ['fake', 'prompt']
             }
         }
+        
+        groupedSystColors = {
+            "WHSFVars"  : [ROOT.kGreen+1, 'Scale Factors'],
+            "LHEScaleWeightVars" : [ROOT.kViolet-2, 'MC Scale'],
+            "ptScaleVars" : [ROOT.kBlue-4, 'pT Scale'],
+            "jmeVars" : [ROOT.kAzure+10, 'MET'],
+            "LHEPdfWeightVars" : [ROOT.kRed+1, 'PDF'],
+            "Nominal" : [1, 'Stat. Unc.']
+        }
             
         #getting canvas and histoss
         finalCanvasDict = {}
@@ -820,8 +829,94 @@ class bkg_analyzer:
                             # finalLegDict[e+s+'errCompare'].AddEntry(finalHistoDict['nom'+canvas+histo+s+e+'sum2'], histo)
                 finalLegDict[e+s+'errCompare'].Draw("SAME")
                 finalCanvasDict['sum2Error'+s+e] = c_errCompare
+                
 
 
+        #ratio grouped plot creation
+        nomSystDict = copy.deepcopy(systDict)
+        nomSystDict['Nominal'] = ['nom']
+        for s in self.signList :
+            for e in self.etaBinningS :
+                for canvas in histoNameDict :
+                    for name in histoNameDict[canvas] :
+                        for histo in histoNameDict[canvas][name] :
+                            c_groupSyst = ROOT.TCanvas("c_groupSyst_{sign}_{eta}_{canvas}_{histo}".format(sign=s,eta=e,canvas=canvas,histo=histo),"c_groupSyst_{sign}_{eta}_{canvas}_{histo}".format(sign=s,eta=e,canvas=canvas,histo=histo),1600,1200)
+                            c_groupSyst.cd()
+                            c_groupSyst.SetGridx()
+                            c_groupSyst.SetGridy()
+                            c_groupSyst.SetTicky()
+                            c_groupSyst.SetLogy()
+                            finalLegDict[e+s+canvas+histo+"groupSyst"] = ROOT.TLegend(0.12,0.7,0.7,0.9)
+                            finalLegDict[e+s+canvas+histo+"groupSyst"].SetFillStyle(0)
+                            finalLegDict[e+s+canvas+histo+"groupSyst"].SetBorderSize(0)
+                            finalLegDict[e+s+canvas+histo+"groupSyst"].SetNColumns(2)
+
+                            for sKind, sList in nomSystDict.iteritems():
+                                finalHistoDict[sKind+canvas+histo+s+e+'group'] = ROOT.TH1F(canvas+'_'+finalHistoDict[sList[0]+canvas+histo+s+e].GetName()+'_'+sKind+'_ratio',canvas+'_'+finalHistoDict[sList[0]+canvas+histo+s+e].GetName()+'_'+sKind+'_ratio',len(self.ptBinning)-1, array('f',self.ptBinning))
+                                
+                                for ipt in range(1,finalHistoDict[sKind+canvas+histo+s+e+'group'].GetNbinsX()+1) :
+                                    delta = 0
+                                    for sName in sList :
+                                        if 'Down' in sName : continue
+                                        if 'LHE' in sName : continue
+                                        if sName=='nom' : continue
+                                        if 'Up' in sName :
+                                            systDown =  sName.replace("Up","Down")
+                                        delta += ((finalHistoDict[sName+canvas+histo+s+e].GetBinContent(ipt)-finalHistoDict[systDown+canvas+histo+s+e].GetBinContent(ipt))/finalHistoDict['nom'+canvas+histo+s+e].GetBinContent(ipt))**2    
+                                    delta = 0.5*math.sqrt(delta)
+                                    if sKind=='Nominal' :
+                                            delta = finalHistoDict['nom'+canvas+histo+s+e].GetBinError(ipt)/finalHistoDict['nom'+canvas+histo+s+e].GetBinContent(ipt)
+                                    if 'LHE' in sKind :  
+                                        delta=0
+                                        for sName in sList :                            
+                                            delta+= (finalHistoDict[sName+canvas+histo+s+e].GetBinContent(ipt)/finalHistoDict['nom'+canvas+histo+s+e].GetBinContent(ipt)-1)**2
+                                        Nrepl=1.#hessian approach
+                                        delta = math.sqrt(delta/Nrepl)
+                                    finalHistoDict[sKind+canvas+histo+s+e+'group'].SetBinContent(ipt, delta) 
+                                finalHistoDict[sKind+canvas+histo+s+e+'group'].SetFillStyle(0)
+                                finalHistoDict[sKind+canvas+histo+s+e+'group'].SetFillColor(0)
+                                finalHistoDict[sKind+canvas+histo+s+e+'group'].SetLineWidth(3)
+                                finalHistoDict[sKind+canvas+histo+s+e+'group'].SetTitle("grouped #Delta Syst/Nom: "+canvas+', '+histo+', '+s+', #eta='+e)
+                                finalHistoDict[sKind+canvas+histo+s+e+'group'].GetXaxis().SetTitle("p_{T} [GeV]")
+                                finalHistoDict[sKind+canvas+histo+s+e+'group'].GetYaxis().SetTitle("#Delta Syst/Nom")
+                                finalHistoDict[sKind+canvas+histo+s+e+'group'].GetYaxis().SetRangeUser(0.000003,10)
+
+                                if sKind == 'Nominal' :
+                                    finalHistoDict[sKind+canvas+histo+s+e+'group'].SetLineColor(1)
+                                    finalHistoDict[sKind+canvas+histo+s+e+'group'].SetFillStyle(3003)
+                                    finalHistoDict[sKind+canvas+histo+s+e+'group'].SetFillColor(1) 
+                                    finalHistoDict[sKind+canvas+histo+s+e+'group'].SetFillColor(1)
+                                    # finalHistoDict[sKind+canvas+histo+s+e+'group'].SetLineWidth(1)
+                                    finalLegDict[e+s+canvas+histo+"groupSyst"].AddEntry(finalHistoDict[sKind+canvas+histo+s+e+'group'], 'Stat. Unc.')
+                                else :
+                                    finalHistoDict[sKind+canvas+histo+s+e+'group'].SetLineColor(groupedSystColors[sKind][0])
+                                    finalLegDict[e+s+canvas+histo+"groupSyst"].AddEntry(finalHistoDict[sKind+canvas+histo+s+e+'group'], groupedSystColors[sKind][1])
+                            
+                            finalHistoDict['sum'+canvas+histo+s+e+'group'] = finalHistoDict['Nominal'+canvas+histo+s+e+'group'].Clone(finalHistoDict['Nominal'+canvas+histo+s+e+'group'].GetName().replace('Nominal','sum'))
+                            finalHistoDict['sum'+canvas+histo+s+e+'group'].SetFillStyle(0)
+                            finalHistoDict['sum'+canvas+histo+s+e+'group'].SetFillColor(800)
+                            finalHistoDict['sum'+canvas+histo+s+e+'group'].SetLineColor(800)
+                            finalHistoDict['sum'+canvas+histo+s+e+'group'].SetFillStyle(3003)
+                            for ipt in range(1,finalHistoDict['sum'+canvas+histo+s+e+'group'].GetNbinsX()+1) :
+                                sumOfDelta = 0
+                                for sKind, sList in nomSystDict.iteritems():
+                                    if sKind=='Nominal' : continue
+                                    sumOfDelta+= finalHistoDict[sKind+canvas+histo+s+e+'group'].GetBinContent(ipt)**2
+                                sumOfDelta = math.sqrt(sumOfDelta)
+                                finalHistoDict['sum'+canvas+histo+s+e+'group'].SetBinContent(ipt,sumOfDelta)
+                            finalLegDict[e+s+canvas+histo+"groupSyst"].AddEntry(finalHistoDict['sum'+canvas+histo+s+e+'group'], 'Squared Sum of Syst.')
+
+                            c_groupSyst.cd()
+                            finalHistoDict['sum'+canvas+histo+s+e+'group'].Draw("hist")
+                            finalHistoDict['Nominal'+canvas+histo+s+e+'group'].Draw('hist SAME')
+                            for sKind, sList in systDict.iteritems():
+                                finalHistoDict[sKind+canvas+histo+s+e+'group'].Draw("hist SAME")
+                            finalLegDict[e+s+canvas+histo+"groupSyst"].Draw("SAME")
+                            
+                            finalCanvasDict['groupSyst'+canvas+histo+s+e] = c_groupSyst
+                                    
+
+        
         #unrolled plot creation
         #binning
         unrolledPtEta= list(self.ptBinning)
@@ -949,7 +1044,7 @@ class bkg_analyzer:
                         finalLegDict[s+canvas+histo+"ratioSyst_unrolled"].AddEntry(finalHistoDict['nom'+s+canvas+histo+'ratio_unrolled'], 'Nominal')
 
                         #sum2 errorband in the ratios (DISABLED!)
-                        sum2Flag_unr = False
+                        sum2Flag_unr = sum2Flag
                         if sum2Flag_unr :
                             finalHistoDict[s+canvas+histo+'unrolled'+'ratio_sum2'] = ROOT.TGraphAsymmErrors()
                             finalHistoDict[s+canvas+histo+'unrolled'+'ratio_sum2'].SetName(finalHistoDict[s+canvas+histo+'unrolled'].GetName()+'_ratio_sum2')
@@ -1011,7 +1106,60 @@ class bkg_analyzer:
             # finalHistoDict[s+canvas+'fake'+'unrolled'+'sum2'].Draw("5")
             finalLegDict[s+'errCompare_unrolled'].Draw("SAME")
             finalCanvasDict['sum2Error_unrolled'+s] = c_errCompare_unrolled
+        
+        
+        
+        #ratio grouped unrolled
+        nomExtSystDict = copy.deepcopy(nomSystDict)
+        nomExtSystDict['sum'] = ['sum']
+        for s in self.signList :
+            for canvas in histoNameDict :
+                for name in histoNameDict[canvas] :
+                    for histo in histoNameDict[canvas][name] :
+                        c_groupSyst_unrolled = ROOT.TCanvas("c_groupSyst_unrolled_{sign}_{canvas}_{histo}".format(sign=s,canvas=canvas,histo=histo),"c_groupSyst_unrolled_{sign}_{canvas}_{histo}".format(sign=s,canvas=canvas,histo=histo),2400,600)
+                        c_groupSyst_unrolled.cd()
+                        c_groupSyst_unrolled.SetGridx()
+                        c_groupSyst_unrolled.SetGridy()
+                        c_groupSyst_unrolled.SetTicky()
+                        # c_groupSyst_unrolled.SetLogy()
+                        finalLegDict[s+canvas+histo+"groupSyst_unrolled"] = ROOT.TLegend(0.6,0.7,0.95,0.9)
+                        finalLegDict[s+canvas+histo+"groupSyst_unrolled"].SetFillStyle(0)
+                        finalLegDict[s+canvas+histo+"groupSyst_unrolled"].SetBorderSize(0)
+                        finalLegDict[s+canvas+histo+"groupSyst_unrolled"].SetNColumns(2)
+                        
+                        for sKind, sList in nomExtSystDict.iteritems():
+                            finalHistoDict[sKind+s+canvas+histo+'group_unrolled'] = ROOT.TH1F(finalHistoDict[sKind+canvas+histo+s+'0group'].GetName()+'_group_unrolled',finalHistoDict[sKind+canvas+histo+s+'0group'].GetName()+'_group_unrolled',len(unrolledPtEta)-1, array('f',unrolledPtEta))
+                            finalHistoDict[sKind+s+canvas+histo+'group_unrolled'].SetLineColor(finalHistoDict[sKind+canvas+histo+s+'0group'].GetLineColor())
+                            finalHistoDict[sKind+s+canvas+histo+'group_unrolled'].SetLineWidth(finalHistoDict[sKind+canvas+histo+s+'0group'].GetLineWidth())
+                            finalHistoDict[sKind+s+canvas+histo+'group_unrolled'].GetXaxis().SetTitle('Unrolled #eta, p_{T}')
+                            finalHistoDict[sKind+s+canvas+histo+'group_unrolled'].GetYaxis().SetTitle(finalHistoDict[sKind+canvas+histo+s+'0group'].GetYaxis().GetTitle())
+                            finalHistoDict[sKind+s+canvas+histo+'group_unrolled'].SetTitle('grouped #Delta Syst/Nom: Unorlled '+canvas+', W'+s)
+                            finalHistoDict[sKind+s+canvas+histo+'group_unrolled'].GetYaxis().SetRangeUser(0,0.6)
+                            finalHistoDict[sKind+s+canvas+histo+'group_unrolled'].SetLineWidth(2)
+                            finalHistoDict[sKind+s+canvas+histo+'group_unrolled'].SetFillStyle(finalHistoDict[sKind+canvas+histo+s+'0group'].GetFillStyle())
+                            finalHistoDict[sKind+s+canvas+histo+'group_unrolled'].SetFillColor(finalHistoDict[sKind+canvas+histo+s+'0group'].GetFillColor())
+                            
+                            if sKind =='sum' :
+                                finalLegDict[s+canvas+histo+"groupSyst_unrolled"].AddEntry(finalHistoDict[sKind+s+canvas+histo+'group_unrolled'], 'Squared Sum of Syst.')
+                                # finalHistoDict[sKind+s+canvas+histo+'group_unrolled'].SetLineWidth(finalHistoDict[sKind+canvas+histo+s+'0group'].GetLineWidth())
+                            else :
+                                finalLegDict[s+canvas+histo+"groupSyst_unrolled"].AddEntry(finalHistoDict[sKind+s+canvas+histo+'group_unrolled'], groupedSystColors[sKind][1])
 
+                            for e in self.etaBinningS :
+                                for p in self.ptBinningS :
+                                    indexUNR = self.etaBinning.index(float(e))*len(self.ptBinningS)+self.ptBinning.index(float(p))
+                                    finalHistoDict[sKind+s+canvas+histo+'group_unrolled'].SetBinContent(indexUNR+1,finalHistoDict[sKind+canvas+histo+s+e+'group'].GetBinContent(self.ptBinning.index(float(p))+1))
+                                    finalHistoDict[sKind+s+canvas+histo+'group_unrolled'].SetBinError(indexUNR+1,finalHistoDict[sKind+canvas+histo+s+e+'group'].GetBinError(self.ptBinning.index(float(p))+1))
+                           
+                        c_groupSyst_unrolled.cd()
+                        
+                        finalHistoDict['sum'+s+canvas+histo+'group_unrolled'].Draw("hist")
+                        finalHistoDict['Nominal'+s+canvas+histo+'group_unrolled'].Draw('hist SAME')
+                        for sKind, sList in systDict.iteritems():
+                            finalHistoDict[sKind+s+canvas+histo+'group_unrolled'].Draw("hist SAME")
+                        finalLegDict[s+canvas+histo+"groupSyst_unrolled"].Draw("SAME")
+                        
+                        finalCanvasDict['groupSyst_unrolled'+canvas+histo+s] = c_groupSyst_unrolled
 
 
 
@@ -1388,8 +1536,10 @@ class bkg_analyzer:
                     
                 #do the fit
                 if kind == 'prompt' :
+                    # fitFake = ROOT.TF1("fitFake", "[0]*erf([1]*(x)+[2])*(1+[3]*x)",0,100,3)
                     fitFake = ROOT.TF1("fitFake", "[0]*erf([1]*(x)+[2])",0,100,3)
                     fitFake.SetParameters(1,0.1,-3)
+                    # fitFake.SetParNames("offset","slope",'2deg','extra')              
                     fitFake.SetParNames("offset","slope",'2deg')              
                 if kind == 'fake' :
                     fitFake = ROOT.TF1("fitFake", '[0]+[1]*(x-25)',0,100,2) 
@@ -1415,6 +1565,7 @@ class bkg_analyzer:
                     parDict[s+e+'slope*2deg'] = ROOT.TMatrixDRow(cov,1)(2)
                     parDict[s+e+'fitRes'] = cov
                     parDict[s+e+'sigmaERFvec'] = self.evaluate_erf_error(ERFfitResult=cov,ERFp0=parDict[s+e+'offset'],ERFp1=parDict[s+e+'slope'],ERFp2=parDict[s+e+'2deg'])
+                    # parDict[s+e+'extra']=fitFake.GetParameter(3)
                 else:  #only to have a coherent filling
                     parDict[s+e+'2deg']=0
                     parDict[s+e+'2degErr']=0
@@ -1422,6 +1573,7 @@ class bkg_analyzer:
                     parDict[s+e+'slope*2deg'] = 0
                     parDict[s+e+'fitRes'] = 0
                     parDict[s+e+'sigmaERFvec'] = 0
+                    # parDict[s+e+'extra']=0
 
         #for compatibility add the 1Dhistos to the parDict
         parDict.update(h1Dict)        
@@ -1478,6 +1630,7 @@ class bkg_analyzer:
                         #prompt rate eval:
                         xp = promptDict[s+e].GetBinCenter(self.ptBinningS.index(p)+1)
                         pr = promptDict[s+e+'offset']*erf(promptDict[s+e+'slope']*xp+promptDict[s+e+'2deg'])
+                        # pr = promptDict[s+e+'offset']*erf(promptDict[s+e+'slope']*xp+promptDict[s+e+'2deg'])*(1+promptDict[s+e+'extra']*xp)
                         dpr = promptDict[s+e+'sigmaERFvec'][self.ptBinningS.index(p)]#*math.sqrt(promptDict[s+e+'chi2red'])
                         # print "WARNING: not applied x1.5 to the ERF fit error."
                         
