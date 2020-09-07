@@ -100,20 +100,23 @@ class plotter:
         #helXsecs9_y_3_qt_1_LHEPdfWeightHess60
         #helXsecs9_y_3_qt_1
         aux = {}
-        aux['LHEPdfWeightVars']
+        aux['LHEPdfWeightVars']=[]
         for h in self.histoDict['Nominal']:
             if 'mass' in h.GetName(): continue
             for i in range(60):
                 for hvar in self.histoDict['LHEPdfWeightVars']:
-                    if hvar.GetName() == h.GetName()+ '_LHEPdfWeightHess{}'.format(i+1)
-                    th2var = hvar
+                    if hvar.GetName() == h.GetName()+ '_LHEPdfWeightHess{}'.format(i+1):
+                        th2var = hvar
+                        break
+                print h.GetName()
                 th2c = h.Clone()
                 th2varD = th2var.Clone()
                 th2var.Divide(th2c)
                 th2c.Divide(th2varD)
-
-                th2Up = ROOT.TH2D("up","up",h.GetXaxis().GetNbins(),h.GetXaxis().GetXbins().GetArray(),h.GetYaxis().GetNbins(),h.GetYaxis().GetXbins().GetArray())
-                th2Down = ROOT.TH2D("down","down",h.GetXaxis().GetNbins(),h.GetXaxis().GetXbins().GetArray(),h.GetYaxis().GetNbins(),h.GetYaxis().GetXbins().GetArray())
+                nbinsX = h.GetXaxis().GetNbins()
+                nbinsY = h.GetYaxis().GetNbins()
+                th2Up = ROOT.TH2D("up","up",nbinsX,h.GetXaxis().GetBinLowEdge(1),h.GetXaxis().GetBinUpEdge(nbinsX),nbinsY,h.GetYaxis().GetBinLowEdge(1),h.GetYaxis().GetBinUpEdge(nbinsY))
+                th2Down =ROOT.TH2D("down","down",nbinsX,h.GetXaxis().GetBinLowEdge(1),h.GetXaxis().GetBinUpEdge(nbinsX),nbinsY,h.GetYaxis().GetBinLowEdge(1),h.GetYaxis().GetBinUpEdge(nbinsY))
 
                 for j in range(1,h.GetNbinsX()+1):
                     for k in range(1,h.GetNbinsY()+1):
@@ -127,6 +130,7 @@ class plotter:
                 aux['LHEPdfWeightVars'].append(th2Down)
 
         self.histoDict.update(aux)
+        print aux
 
     def writeHistos(self, chargeBin):
         foutName = 'WPlus' if chargeBin == 2 else 'WMinus'
@@ -137,6 +141,7 @@ class plotter:
             fout.mkdir(sKind)
             fout.cd(sKind)
             for h in hlist:
+                print h.GetName()
                 h.Write()
             fout.cd()
         fout.Save()
