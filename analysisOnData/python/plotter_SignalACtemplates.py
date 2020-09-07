@@ -93,7 +93,40 @@ class plotter:
                     print "Histo read:", fpath
                     thn5 = self.inFile.Get(fpath)
                     self.makeTH5slices(thn5, sKind, chargeBin)
+        self.symmetrisePDF()
         self.writeHistos(chargeBin)
+    
+    def symmetrisePDF(self):
+        #helXsecs9_y_3_qt_1_LHEPdfWeightHess60
+        #helXsecs9_y_3_qt_1
+        aux = {}
+        aux['LHEPdfWeightVars']
+        for h in self.histoDict['Nominal']:
+            if 'mass' in h.GetName(): continue
+            for i in range(60):
+                for hvar in self.histoDict['LHEPdfWeightVars']:
+                    if hvar.GetName() == h.GetName()+ '_LHEPdfWeightHess{}'.format(i+1)
+                    th2var = hvar
+                th2c = h.Clone()
+                th2varD = th2var.Clone()
+                th2var.Divide(th2c)
+                th2c.Divide(th2varD)
+
+                th2Up = ROOT.TH2D("up","up",h.GetXaxis().GetNbins(),h.GetXaxis().GetXbins().GetArray(),h.GetYaxis().GetNbins(),h.GetYaxis().GetXbins().GetArray())
+                th2Down = ROOT.TH2D("down","down",h.GetXaxis().GetNbins(),h.GetXaxis().GetXbins().GetArray(),h.GetYaxis().GetNbins(),h.GetYaxis().GetXbins().GetArray())
+
+                for j in range(1,h.GetNbinsX()+1):
+                    for k in range(1,h.GetNbinsY()+1):
+                    
+                        th2Up.SetBinContent(j,k,h.GetBinContent(j,k)*th2var.GetBinContent(j,k))
+                        th2Down.SetBinContent(j,k,h.GetBinContent(j,k)*th2c.GetBinContent(j,k))
+
+                th2Up.SetName(h.GetName()+ '_LHEPdfWeightHess{}Up'.format(i+1))
+                th2Down.SetName(h.GetName()+ '_LHEPdfWeightHess{}Down'.format(i+1))
+                aux['LHEPdfWeightVars'].append(th2Up)
+                aux['LHEPdfWeightVars'].append(th2Down)
+
+        self.histoDict.update(aux)
 
     def writeHistos(self, chargeBin):
         foutName = 'WPlus' if chargeBin == 2 else 'WMinus'
