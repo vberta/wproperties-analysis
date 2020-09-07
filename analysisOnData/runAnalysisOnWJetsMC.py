@@ -115,9 +115,12 @@ def RDFprocessWJetsMC(fvec, outputDir, sample, xsec, fileSF, ncores, pretendJob=
                 p.branch(nodeToStart = 'defs', nodeToEnd = 'defsAC', modules = steps)
                 p.branch(nodeToStart = 'defsAC', nodeToEnd = '{}/templatesAC_{}/{}Vars'.format('WToMu', region, vartype), modules = [ROOT.templateBuilder(wtomu_cut_vec, weight, nom,"Nom",hcat,wtomu_var_vec)])
                 #reco templates for out of acceptance events
-                wtomu_cut+= "&& GenV_preFSR_qt>32. && GenV_preFSR_yabs>2.4"
+                print 'low Acc'
+                for cut in wtomu_cut_vec:
+                    cut+= "&& GenV_preFSR_qt>32. && GenV_preFSR_yabs>2.4"
+                    print cut
                 p.branch(nodeToStart = 'defsAC', nodeToEnd = '{}/templatesLowAcc_{}/{}Vars'.format('WToMu', region,vartype), modules = [ROOT.templates(wtomu_cut_vec, weight, nom,"Nom",hcat,wtomu_var_vec)])
-                wtomu_cut = cut + wdecayselections['WToMu'] 
+                wtomu_newcut = cut + wdecayselections['WToMu'] 
 
     p.getOutput()
     p.saveGraph()
