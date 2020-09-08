@@ -37,9 +37,8 @@ class plotter:
         self.histoDict ={} 
     
     def getHistoforSample(self, sample, infile, chargeBin) :
-        if not 'Fake' in sample or 'Data' in sample:
-            syst = self.extSyst
-            for sKind, sList in syst.iteritems():
+        if not 'FakeFromData' in sample:
+            for sKind in self.extSyst:
                 self.histoDict[sample][sKind] = []
                 gap = '' if sKind == 'Nominal' else '_'
                 basepath = 'templates_Signal/' + sKind
@@ -54,28 +53,35 @@ class plotter:
                         th2.SetDirectory(0)
                         th2.SetName(th3.GetName())
                         self.histoDict[sample][sKind].append(th2)
-
-    def getLowAcctemplate(self, sample, infile, chargeBin) :
-        syst = self.extSyst
-        for sKind, sList in syst.iteritems():
-              gap = '' if sKind == 'Nominal' else '_'
-              basepath = 'templatesLowAcc_Signal/' + sKind + '/templates' +  gap
-              self.histoDict[sample]['LowAcc_Signal/' + sKind] = []
-              for sname in sList:
-                  hname = basepath + sname
-                  #basepath + sname
-                  #print "Reading:", hname
-                  th3=infile.Get(hname)
-                  if not hname:
-                      print hname, ' not found in file'
-                      continue
-                  #plus charge bin 2, minus bin 1
-                  th3.GetZaxis().SetRange(chargeBin,chargeBin)
-                  th2=th3.Project3D("yx")
-                  th2.SetDirectory(0)
-                  th2.SetName(th3.GetName())
-                  self.histoDict[sample]['LowAcc_Signal/' + sKind].append(th2)
-        
+                if "WToMu" in sample:
+                    basepath = 'templatesLowAcc_Signal/' + sKind
+                    for key in infile.Get(basepath).GetListOfKeys():
+                        print key.GetName()
+                        th3=infile.Get(basepath+'/'+key.GetName())
+                        #plus charge bin 2, minus bin 1
+                        th3.GetZaxis().SetRange(chargeBin,chargeBin)
+                        th2=th3.Project3D("yx")
+                        th2.SetDirectory(0)
+                        th2.SetName(th3.GetName())
+                        self.histoDict['LowAcc'+sample][sKind].append(th2)
+                        
+        else:
+            for sKind in self.extSyst:
+                self.histoDict[sample][sKind] = []
+                gap = '' if sKind == 'Nominal' else '_'
+                basepath = 'templates_fakes/' + sKind
+                if infile.GetDirectory(basepath):
+                    print basepath
+                    for key in infile.Get(basepath).GetListOfKeys():
+                        print key.GetName()
+                        th3=infile.Get(basepath+'/'+key.GetName())
+                        #plus charge bin 2, minus bin 1
+                        th3.GetZaxis().SetRange(chargeBin,chargeBin)
+                        th2=th3.Project3D("yx")
+                        th2.SetDirectory(0)
+                        th2.SetName(th3.GetName())
+                        self.histoDict[sample][sKind].append(th2)
+                        
     def getHistos(self, chargeBin) :
         for sample,fname in self.sampleDict.iteritems():
             print  "Processing sample:", sample
@@ -86,16 +92,15 @@ class plotter:
                 continue
             self.histoDict[sample] = {}
             self.getHistoforSample(sample,infile, chargeBin)
-            if sample == 'WToMu'  : self.getLowAcctemplate(sample, infile, chargeBin)
             chargeTag='minus' if chargeBin == 1 else 'plus'
             outname = self.outdir  + '/' + sample + '_templates2D' + chargeTag + '.root'
             fout = ROOT.TFile(outname, 'RECREATE')
             if sample not in  self.histoDict : 
                 print "No histo dict for sample:", sample, " What have you done??!!!!"
                 continue
-            for region, hlist in self.histoDict[sample].iteritems():
-                fout.mkdir(region)
-                fout.cd(region)
+            for syst, hlist in self.histoDict[sample].iteritems():
+                fout.mkdir(syst)
+                fout.cd(syst)
                 for h in hlist:
                     h.Write()
                 fout.cd()
