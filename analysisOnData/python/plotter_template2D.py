@@ -30,74 +30,74 @@ class plotter:
                             "Data"        : ('Data_plots.root', 0)
                           }
 
+        self.selections =["Signal"] 
+        self.selectionFake = ['fakes']       
         self.extSyst = copy.deepcopy(bkg_utils.bkg_systematics)
         self.extSyst['Nominal'] = ['']
-        
         self.histoDict ={} 
     
-    def getHistoforSample(self, sample, infile, selection, systType, chargeBin) :
-        self.histoDict[sample][selection] = {}
+    def getHistoforSample(self, sample, infile, systType, chargeBin) :
+        if not 'Fake' in sample or 'Data' in sample:
+            syst = self.extSyst
+            for sKind, sList in syst.iteritems():
+                gap = '' if sKind == 'Nominal' else '_'
+                basepath = templates_Signal + '/' + sKind
+                if infile.GetDirectory(basepath):
+                    hname =  '/templates' +  gap + sname
+                    th3=infile.Get(hname)
+                    #plus charge bin 2, minus bin 1
+                    th3.GetZaxis().SetRange(chargeBin,chargeBin)
+                    th2=th3.Project3D("yx")
+                    th2.SetDirectory(0)
+                    th2.SetName(th3.GetName())
+                    self.histoDict[sample][sKind].append(th2)
+
+    def getLowAcctemplate(self, sample, infile, chargeBin) :
         syst = self.extSyst
-        if 'Data' in sample:
-            syst = {}
-            syst['Nominal'] = ['']
         for sKind, sList in syst.iteritems():
-            if 'Fake' in sample and sKind == 'WHSFVars': continue
-            if systType != 2 and 'LHE' in sKind : continue
-            self.histoDict[sample][selection][sKind]  = []
-            gap = '' if sKind == 'Nominal' else '_'
-            basepath = selection + '/' + sKind + '/templates' +  gap
-            for sname in sList:
-                hname =  basepath + sname
-                print "Reading:", hname
-                th3=infile.Get(hname)
-                if not hname:
-                    print hname, ' not found in file'
-                    continue
-                #plus charge bin 2, minus bin 1
-                th3.GetZaxis().SetRange(chargeBin,chargeBin)
-                th2=th3.Project3D("yx")
-                th2.SetDirectory(0)
-                th2.SetName(th3.GetName())
-                self.histoDict[sample][ selection][sKind].append(th2)
-
-    def writeHistos(self, sample, chargeTag):
-        outname = self.outdir  + '/' + sample + '_templates2D' + chargeTag + '.root'
-        fout = ROOT.TFile(outname, 'RECREATE')
-        if sample not in  self.histoDict.keys() : 
-            print "No histo dict for sample:", sample, " What have you done??!!!!"
-            return 1
-        for dirTag, regionDict in self.histoDict[sample].iteritems():
-            fout.mkdir(dirTag)
-            #fout.cd(dirTag)
-            for region, hlist in regionDict.iteritems():
-                fout.mkdir(dirTag +'/' +region)
-                fout.cd( dirTag +'/' +region)
-                for h in hlist:
-                    h.Write()
-                fout.cd()
-        fout.Save()
-        fout.Write()   
-        fout.Close()
-
+              gap = '' if sKind == 'Nominal' else '_'
+              basepath = 'templatesLowAcc_Signal/' + sKind + '/templates' +  gap
+              self.histoDict[sample]['LowAcc_Signal/' + sKind] = []
+              for sname in sList:
+                  hname = basepath + sname
+                  #basepath + sname
+                  #print "Reading:", hname
+                  th3=infile.Get(hname)
+                  if not hname:
+                      print hname, ' not found in file'
+                      continue
+                  #plus charge bin 2, minus bin 1
+                  th3.GetZaxis().SetRange(chargeBin,chargeBin)
+                  th2=th3.Project3D("yx")
+                  th2.SetDirectory(0)
+                  th2.SetName(th3.GetName())
+                  self.histoDict[sample]['LowAcc_Signal/' + sKind].append(th2)
+        
     def getHistos(self, chargeBin) :
         for sample,fname in self.sampleDict.iteritems():
-            print  "Procesing sample:", sample
+            print  "Processing sample:", sample
             infile = ROOT.TFile(self.indir + '/' + fname[0])
             systType = fname[1]
             if not infile:
                 print infile,' does not exist'
                 continue
             self.histoDict[sample] = {}
-            selection = "templates_Signal" 
-            if 'Fake' in sample:
-                selection = "templates_fakes"
-
-            self.getHistoforSample(sample,infile, selection, systType, chargeBin)
-            if sample == 'WToMu'  : 
-                self.getHistoforSample(sample,infile, 'templatesLowAcc_Signal', systType, chargeBin)
+            self.getHistoforSample(sample,infile, systType, chargeBin)
+            if sample == 'WToMu'  : self.getLowAcctemplate(sample, infile, chargeBin)
             chargeTag='minus' if chargeBin == 1 else 'plus'
-            self.writeHistos(sample, chargeTag)
+            outname = self.outdir  + '/' + sample + '_templates2D' + chargeTag + '.root'
+            fout = ROOT.TFile(outname, 'RECREATE')
+            if sample not in  self.histoDict : 
+                print "No histo dict for sample:", sample, " What have you done??!!!!"
+                continue
+            for region, hlist in self.histoDict[sample].iteritems():
+                fout.mkdir(region)
+                fout.cd(region)
+                for h in hlist:
+                    h.Write()
+                fout.cd()
+            fout.Save()
+            fout.Write()
 
 parser = argparse.ArgumentParser("")
 parser.add_argument('-o','--output', type=str, default='./',help="name of the output directory")

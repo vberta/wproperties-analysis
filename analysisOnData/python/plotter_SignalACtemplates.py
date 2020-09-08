@@ -97,8 +97,7 @@ class plotter:
         self.writeHistos(chargeBin)
     
     def symmetrisePDF(self):
-        #helXsecs9_y_3_qt_1_LHEPdfWeightHess60
-        #helXsecs9_y_3_qt_1
+        
         aux = {}
         aux['LHEPdfWeightVars']=[]
         for h in self.histoDict['Nominal']:
@@ -108,7 +107,7 @@ class plotter:
                     if hvar.GetName() == h.GetName()+ '_LHEPdfWeightHess{}'.format(i+1):
                         th2var = hvar
                         break
-                print h.GetName()
+                print h.GetName(), "pdf {}".format(i+1)
                 th2c = h.Clone()
                 th2varD = th2var.Clone()
                 th2var.Divide(th2c)
@@ -130,9 +129,9 @@ class plotter:
                 aux['LHEPdfWeightVars'].append(th2Down)
 
         self.histoDict.update(aux)
-        print aux
 
     def writeHistos(self, chargeBin):
+        print 'writing histogram'
         foutName = 'WPlus' if chargeBin == 2 else 'WMinus'
         foutName += '_2D_ACTemplates.root'
         fout = ROOT.TFile.Open(self.outdir + '/' + foutName, "RECREATE")
@@ -141,7 +140,6 @@ class plotter:
             fout.mkdir(sKind)
             fout.cd(sKind)
             for h in hlist:
-                print h.GetName()
                 h.Write()
             fout.cd()
         fout.Save()
