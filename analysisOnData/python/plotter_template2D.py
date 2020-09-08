@@ -36,21 +36,24 @@ class plotter:
         self.extSyst['Nominal'] = ['']
         self.histoDict ={} 
     
-    def getHistoforSample(self, sample, infile, systType, chargeBin) :
+    def getHistoforSample(self, sample, infile, chargeBin) :
         if not 'Fake' in sample or 'Data' in sample:
             syst = self.extSyst
             for sKind, sList in syst.iteritems():
+                self.histoDict[sample][sKind] = []
                 gap = '' if sKind == 'Nominal' else '_'
-                basepath = templates_Signal + '/' + sKind
+                basepath = 'templates_Signal/' + sKind
                 if infile.GetDirectory(basepath):
-                    hname =  '/templates' +  gap + sname
-                    th3=infile.Get(hname)
-                    #plus charge bin 2, minus bin 1
-                    th3.GetZaxis().SetRange(chargeBin,chargeBin)
-                    th2=th3.Project3D("yx")
-                    th2.SetDirectory(0)
-                    th2.SetName(th3.GetName())
-                    self.histoDict[sample][sKind].append(th2)
+                    print basepath
+                    for key in infile.Get(basepath).GetListOfKeys():
+                        print key.GetName()
+                        th3=infile.Get(basepath+'/'+key.GetName())
+                        #plus charge bin 2, minus bin 1
+                        th3.GetZaxis().SetRange(chargeBin,chargeBin)
+                        th2=th3.Project3D("yx")
+                        th2.SetDirectory(0)
+                        th2.SetName(th3.GetName())
+                        self.histoDict[sample][sKind].append(th2)
 
     def getLowAcctemplate(self, sample, infile, chargeBin) :
         syst = self.extSyst
@@ -82,7 +85,7 @@ class plotter:
                 print infile,' does not exist'
                 continue
             self.histoDict[sample] = {}
-            self.getHistoforSample(sample,infile, systType, chargeBin)
+            self.getHistoforSample(sample,infile, chargeBin)
             if sample == 'WToMu'  : self.getLowAcctemplate(sample, infile, chargeBin)
             chargeTag='minus' if chargeBin == 1 else 'plus'
             outname = self.outdir  + '/' + sample + '_templates2D' + chargeTag + '.root'
