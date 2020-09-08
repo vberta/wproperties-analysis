@@ -27,7 +27,8 @@ class plotter:
                             "ST"          : ('SingleTop_plots.root',1),
                             "DiBoson"     : ('Diboson_plots.root', 1),
                             "SIGNAL_Fake" : ('FakeFromData_plots.root', 0), 
-                            "Data"        : ('Data_plots.root', 0)
+                            "Data"        : ('Data_plots.root', 0),
+                            "LowAcc": ('WToMu_plots.root', 2 )
                           }
 
         self.selections =["Signal"] 
@@ -42,10 +43,11 @@ class plotter:
                 self.histoDict[sample][sKind] = []
                 gap = '' if sKind == 'Nominal' else '_'
                 basepath = 'templates_Signal/' + sKind
+                if 'LowAcc' in sample: basepath = 'templatesLowAcc_Signal/' + sKind
                 if infile.GetDirectory(basepath):
-                    print basepath
+                    if 'LowAcc' in sample: print basepath
                     for key in infile.Get(basepath).GetListOfKeys():
-                        print key.GetName()
+                        if 'LowAcc' in sample: print key.GetName()
                         th3=infile.Get(basepath+'/'+key.GetName())
                         #plus charge bin 2, minus bin 1
                         th3.GetZaxis().SetRange(chargeBin,chargeBin)
@@ -53,17 +55,6 @@ class plotter:
                         th2.SetDirectory(0)
                         th2.SetName(th3.GetName())
                         self.histoDict[sample][sKind].append(th2)
-                if "WToMu" in sample:
-                    basepath = 'templatesLowAcc_Signal/' + sKind
-                    for key in infile.Get(basepath).GetListOfKeys():
-                        print key.GetName()
-                        th3=infile.Get(basepath+'/'+key.GetName())
-                        #plus charge bin 2, minus bin 1
-                        th3.GetZaxis().SetRange(chargeBin,chargeBin)
-                        th2=th3.Project3D("yx")
-                        th2.SetDirectory(0)
-                        th2.SetName(th3.GetName())
-                        self.histoDict['LowAcc'+sample][sKind].append(th2)
                         
         else:
             for sKind in self.extSyst:
