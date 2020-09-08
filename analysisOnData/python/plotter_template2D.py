@@ -74,8 +74,9 @@ class plotter:
                         self.histoDict[sample][sKind].append(th2)
     
     def symmetrisePDF(self,sample):
-        
-        if 'LHEPdfWeightVars' in self.histoDict[sample]:
+
+        print sample
+        if not self.histoDict[sample]['LHEPdfWeightVars']==[]:
             aux = {}
             aux['LHEPdfWeightVars']=[]
             for h in self.histoDict[sample]['Nominal']:
@@ -103,7 +104,7 @@ class plotter:
                     th2Down.SetName(h.GetName()+ '_LHEPdfWeightHess{}Down'.format(i+1))
                     aux['LHEPdfWeightVars'].append(th2Up)
                     aux['LHEPdfWeightVars'].append(th2Down)
-        self.histoDict[sample].update(aux)
+            self.histoDict[sample].update(aux)
     
     def getHistos(self, chargeBin) :
         for sample,fname in self.sampleDict.iteritems():
