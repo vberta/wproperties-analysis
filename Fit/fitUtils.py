@@ -7,11 +7,12 @@ from collections import OrderedDict
 import copy
 
 class fitUtils:
-    def __init__(self, fsig, fmap, fbkg = {}, channel):
+    def __init__(self, fsig, fmap, fbkg = {}, channel ="WPlus"):
         
         self.templates2D = {}
         self.processes = []
         self.signals = []
+
         #combine utils
         self.channel = channel
         self.shapeMap = {}
@@ -20,12 +21,13 @@ class fitUtils:
         self.helMetaGroups = OrderedDict()
         
         self.templSystematics = {
-        "Nominal" : []
-        "WHSFVars"  : ["WHSFSyst0", "WHSFSyst1","WHSFSyst2","WHSFSystFlat"],
-        #"LHEScaleWeightVars" : ["LHEScaleWeight_muR0p5_muF0p5", "LHEScaleWeight_muR0p5_muF1p0","LHEScaleWeight_muR1p0_muF0p5","LHEScaleWeight_muR1p0_muF2p0","LHEScaleWeight_muR2p0_muF1p0", "LHEScaleWeight_muR2p0_muF2p0"],
-        "ptScaleVars" : [ "corrected"], 
-        "jmeVars" : ["jesTotal", "unclustEn"],
-        "LHEPdfWeightVars" : ["LHEPdfWeightHess{}".format(i+1) for i in range(60)]
+            "Nominal" : [""],
+            "mass" : ["mass"],
+            "WHSFVars"  : ["WHSFSyst0", "WHSFSyst1","WHSFSyst2","WHSFSystFlat"],
+            #"LHEScaleWeightVars" : ["LHEScaleWeight_muR0p5_muF0p5", "LHEScaleWeight_muR0p5_muF1p0","LHEScaleWeight_muR1p0_muF0p5","LHEScaleWeight_muR1p0_muF2p0","LHEScaleWeight_muR2p0_muF1p0", "LHEScaleWeight_muR2p0_muF2p0"],
+            "ptScaleVars" : [ "corrected"], 
+            "jmeVars" : ["jesTotal", "unclustEn"],
+            "LHEPdfWeightVars" : ["LHEPdfWeightHess{}".format(i+1) for i in range(60)]
         }
         
         #all the files that are needed
@@ -40,13 +42,37 @@ class fitUtils:
     def getTemplates(self):
         
         for key in self.fsig.Get("Nominal").GetListOfKeys():
-            if 'mass' in key.GetName(): continue
-            self.processes.append(key.GetName())
-            if not "helXsecs7" in key.GetName() and not "helXsecs8" in key.GetName() and not "helXsecs9" in key.GetName():
-                self.signals.append(key.GetName())
-        
-        self.processes.extend(["DY","Diboson","Top","Fake","Tau","LowAcc"])
+            if not 'mass' in key.GetName():
+                self.templates2D[key.GetName()] = {}
+                self.templates2D[key.GetName()]['Nominal']=[]
+                self.templates2D[key.GetName()]['mass']=[]
+                self.processes.append(key.GetName())
+                if not "helXsecs7" in key.GetName() and not "helXsecs8" in key.GetName() and not "helXsecs9" in key.GetName():
+                    self.signals.append(key.GetName())
+                self.templates2D[key.GetName()]['Nominal'].append(self.fsig.Get("Nominal").Get(key.GetName()))
+
         for proc in self.processes:
+            self.templates2D[proc]['mass'].append(self.fsig.Get("Nominal").Get(proc+'_massUp'))
+            self.templates2D[proc]['mass'].append(self.fsig.Get("Nominal").Get(proc+'_massDown'))
+
+        for proc in self.processes:
+            for syst,vars in self.templSystematics.iteritems():
+                if 'Nominal' in syst or 'mass' in syst: continue
+                self.templates2D[proc][syst] = []
+                print proc, syst
+                #dive into file and add the relevant histograms
+                if self.fsig.GetDirectory(syst):
+                    for var in vars:
+                        temp = self.fsig.Get(syst).Get(proc+'_'+var+'Up')
+                        print temp.GetName()
+                        self.templates2D[proc][syst].append(temp)
+                        temp = self.fsig.Get(syst).Get(proc+'_'+var+'Down')
+                        print temp.GetName()
+                        self.templates2D[proc][syst].append(temp)
+
+
+        bkg_list = ["DY","Diboson","Top","Fake","Tau","LowAcc"]
+        for proc in bkg_list:
             if not self.fbkg[proc]=="":
                 aux = ROOT.TFile.Open(self.fbkg[proc])
                 self.templates2D[proc] = {}
@@ -54,10 +80,11 @@ class fitUtils:
                     self.templates2D[proc][syst] = []
                     for var in vars:
                         #dive into file and add the relevant histograms
-                        if self.fbkg.GetDirectory(syst):
-                            self.templates2D[proc][syst].append(self.fbkg.Get(syst+"/"+"templates_"+var))
+                        if aux.GetDirectory(syst):
+                            self.templates2D[proc][syst].append(aux.Get(syst+"/"+"templates_"+var))
 
-        print self.processes
+        self.processes.extend(bkg_list)
+
     def xsecMap(self):
 
         shapeOut = ROOT.TFile(self.channel+'_xsec.root', 'recreate')
