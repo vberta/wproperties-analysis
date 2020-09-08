@@ -4,26 +4,29 @@ import math
 from fitUtils import fitUtils
 import os
 
-ftemplates = '/scratch/emanca/wproperties-analysis/analysisOnGen/GenInfo/genInfo.root'
+basepath = '/scratch/emanca/wproperties-analysis/analysisOnData/python/templates2D/'
+fsig = basepath+'WPlus_2D_ACTemplates.root'
 fmap = '/scratch/emanca/wproperties-analysis/analysisOnGen/genInput.root'
-fbkg = '/scratchssd/sroychow/wproperties-sroychow/analysisOnData/output/hadded/'
-fbkg_list = []
-#fbkg_list.append(fbkg+'TTJets_plots.root')
-#fbkg_list.append(fbkg+'DYJets_plots.root')
-#fbkg_list.append(fbkg+'Diboson_plots.root')
-#fbkg_list.append(fbkg+'FakeFromData_plots.root')
-#fbkg_list.append(fbkg+'WToTau_plots.root')
 
-f = fitUtils(ftemplates, fmap, fbkg_list)
+samples = ["DY","Diboson","Top","Fake","Tau","LowAcc"]
+fbkg = basepath
+fbkg_dict = {}
+fbkg_dict["Top"]=fbkg+'TTJets_templates2Dplus.root'
+fbkg_dict["DY"]=fbkg+'DYJets_templates2Dplus.root'
+fbkg_dict["Diboson"]=fbkg+'Diboson_templates2Dplus.root'
+fbkg_dict["Fake"]=fbkg+'FakeFromData_templates2Dplus.root'
+fbkg_dict["Tau"]=fbkg+'WToTau_templates2Dplus.root'
+fbkg_dict["LowAcc"]=fbkg+'WToMu_templates2Dplus.root'
 
-f.project3Dto2D()
-f.symmetrisePDF()
-f.unrollTemplates()
-f.fillHelGroup()
+f = fitUtils(fsig, fmap, fbkg, "Wplus")
+f.getTemplates()
+
+#f.unrollTemplates()
+#f.fillHelGroup()
 #f.fillSumGroup()
 #f.fillHelMetaGroup()
-f.xsecMap()
-f.makeDatacard()
+#f.xsecMap()
+#f.makeDatacard()
 
 #assert(0)
 
