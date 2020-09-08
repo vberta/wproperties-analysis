@@ -8,7 +8,8 @@ basepath = '/scratch/emanca/wproperties-analysis/analysisOnData/python/templates
 fsig = basepath+'WPlus_2D_ACTemplates.root'
 fmap = '/scratch/emanca/wproperties-analysis/analysisOnGen/genInput.root'
 
-samples = ["DY","Diboson","Top","Fake","Tau","LowAcc"]
+samples = ["DY","Diboson","Top","Fake","Tau","LowAcc","data_obs"]
+
 fbkg = basepath
 fbkg_dict = {}
 fbkg_dict["Top"]=fbkg+'TTbar_templates2Dplus.root'
@@ -17,9 +18,11 @@ fbkg_dict["Diboson"]=fbkg+'DiBoson_templates2Dplus.root'
 fbkg_dict["Fake"]=fbkg+'SIGNAL_Fake_templates2Dplus.root'
 fbkg_dict["Tau"]=fbkg+'WtoTau_templates2Dplus.root'
 fbkg_dict["LowAcc"]=fbkg+'WToMu_templates2Dplus.root'
+fbkg_dict["data_obs"]=fbkg+'Data_templates2Dplus.root'
 
 f = fitUtils(fsig, fmap, fbkg_dict, "Wplus")
 f.getTemplates()
+f.shapeFile()
 
 #f.unrollTemplates()
 #f.fillHelGroup()

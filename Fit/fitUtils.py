@@ -71,7 +71,7 @@ class fitUtils:
                         self.templates2D[proc][syst].append(temp)
 
 
-        bkg_list = ["DY","Diboson","Top","Fake","Tau","LowAcc"]
+        bkg_list = ["DY","Diboson","Top","Fake","Tau","LowAcc","data_obs"]
         for proc in bkg_list:
             if not self.fbkg[proc]=="":
                 aux = ROOT.TFile.Open(self.fbkg[proc])
@@ -84,47 +84,85 @@ class fitUtils:
                             self.templates2D[proc][syst].append(aux.Get(syst+"/"+"templates_"+var))
 
         self.processes.extend(bkg_list)
+    def shapeFile(self):
 
-    def xsecMap(self):
-
-        shapeOut = ROOT.TFile(self.channel+'_xsec.root', 'recreate')
-        shapeOut.cd()
-
-        out = ROOT.TFile('xsec.root', 'recreate')
-        out.cd()
+        shapeOut = ROOT.TFile(self.channel+'.root', 'recreate')
+        
+        for proc in self.processes:
+            for syst in self.templSystematics:
+                
+                temp = self.templates2D[proc][syst]
+                nbins = temp.GetNbinsX()*temp.GetNbinsY()
+                temp.Sumw2()
+                new = temp.GetName()
+                old = new + '_roll'
+                temp.SetName(old)
+                unrolledtemp = ROOT.TH1F(new, '', nbins, 0., nbins+1)
+        
+                for ibin in range(1, temp.GetNbinsX()+1):
+                    for ybin in range(1, temp.GetNbinsY()+1):
+                
+                        bin1D = temp.GetBin(ibin,ybin)
+                        unrolledtemp.SetBinContent(bin1D, temp.GetBinContent(ibin,ybin))
+                        unrolledtemp.SetBinError(bin1D, temp.GetBinError(ibin,ybin))
+                
+                shapeOut.cd()
+                unrolledtemp.Write()
+                
+                
+        shapeOutxsec = ROOT.TFile(self.channel+'_xsec.root', 'recreate')
 
         self.xsec.Scale(61526.7*1000.) #xsec in fb
         self.xsec.Write()
+        
+        #just a bunch of useful factors
+        self.factors = {}
+        self.factors["A0"]= 2.
+        self.factors["A1"]=2.*math.sqrt(2)
+        self.factors["A2"]=4.
+        self.factors["A3"]=4.*math.sqrt(2)
+        self.factors["A4"]=2.
+        self.factors["A5"]=2.
+        self.factors["A6"]=2.*math.sqrt(2)
+        self.factors["A7"]=4.*math.sqrt(2)
 
-        for templList in self.templates2D.iteritems():
-            if kind in self.clist:
-                for t in templList:
-                        
-                    name = t.GetName()
-                    if "_roll" in name:
-                        name = name.replace("_roll","")
+        self.helXsecs = OrderedDict()
+        self.helXsecs["L"] = "A0"
+        self.helXsecs["I"] = "A1" 
+        self.helXsecs["T"] = "A2" 
+        self.helXsecs["A"] = "A3" 
+        self.helXsecs["P"] = "A4" 
+        self.helXsecs["7"] = "A5" 
+        self.helXsecs["8"] = "A6" 
+        self.helXsecs["9"] = "A7" 
+        self.helXsecs["UL"] = "AUL" 
 
-                    jbin = int(name.split('_')[5])
-                    ibin = int(name.split('_')[3])
-                    tmp = ROOT.TH1D(name,name, 1, 0., 1.)
-                    cont = self.xsec.GetBinContent(ibin,jbin)
-                    tmp.SetBinContent(1, cont)
+        for proc in self.processes:
+            if proc in self.signals: #give the correct xsec to unfold
+                #helXsecsUL_y_6_qt_1_massUp  
+                
+                iY = int(proc.split('_')[2])
+                iQt = int(proc.split('_')[4])
+                coeff = proc.split('_')[0].replace('helXsecs','')
 
-                    nsum = (3./16./math.pi)
-                    if not "UL" in kind:
-                        hAC = ROOT.TH2D
-                        hAC = self.fmap.Get("angularCoefficients/harmonics{}".format(self.helXsecs[kind]))
-
-                        nsum = nsum*hAC.GetBinContent(ibin,jbin)/self.factors[self.helXsecs[kind]]
-
-                    tmp.Scale(nsum)
-                    shapeOut.cd()
-                    tmp.Write()
-            else:
-                tmp = ROOT.TH1D(kind, kind, 1, 0.,1.)
-                if kind == "data_obs": tmp.SetBinContent(1, 1.)
-                else: tmp.SetBinContent(1, 0.)
+                tmp = ROOT.TH1D(proc,proc, 1, 0., 1.)
+                cont = self.xsec.GetBinContent(ibin,jbin)
+                tmp.SetBinContent(1, cont)
+                nsum = (3./16./math.pi)
+                
+                if not "UL" in proc: #rescale for the releative xsec
+                    hAC = self.fmap.Get("angularCoefficients/harmonics{}".format(self.helXsecs[coeff]))
+                    nsum = nsum*hAC.GetBinContent(iY,iQt)/self.factors[self.helXsecs[coeff]]
+                tmp.Scale(nsum)
+                shapeOutxsec.cd()
                 tmp.Write()
+            else:
+                tmp = ROOT.TH1D(proc, proc, 1, 0.,1.)
+                if proc == "data_obs": tmp.SetBinContent(1, 1.)
+                else: tmp.SetBinContent(1, 0.)
+                shapeOutxsec.cd()
+                tmp.Write()
+    
     def fillHelGroup(self):
 
         for i in range(1, self.imap.GetNbinsX()+1):
