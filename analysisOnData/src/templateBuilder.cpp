@@ -3,15 +3,10 @@
 
 std::vector<std::string> templateBuilder::stringMultiplication(const std::vector<std::string> &v1, const std::vector<std::string> &v2)
 {
-
   std::vector<std::string> products;
-
-  if (v1.size() == 0)
-    return v2;
-
+  if (v1.size() == 0) return v2;
   else
   {
-
     products.reserve(v1.size() * v2.size());
     for (auto e1 : v1)
     {
@@ -20,7 +15,6 @@ std::vector<std::string> templateBuilder::stringMultiplication(const std::vector
         products.push_back(e2 + e1);
       }
     }
-
     return products;
   }
 }
