@@ -73,41 +73,37 @@ class plotter:
                         th2.SetName(th3.GetName())
                         self.histoDict[sample][sKind].append(th2)
     
-    def symmetrisePDF(self):
+    def symmetrisePDF(self,sample):
         
-        for sample in self.histoDict:
-            if 'LHEPdfWeightVars' in self.histoDict[sample]:
-                aux = {}
-                aux['LHEPdfWeightVars']=[]
-                for h in self.histoDict[sample]['Nominal']:
-                    if 'mass' in h.GetName(): continue
-                    for i in range(60):
-                        for hvar in self.histoDict[sample]['LHEPdfWeightVars']:
-                            if hvar.GetName() == h.GetName()+ '_LHEPdfWeightHess{}'.format(i+1):
-                                th2var = hvar
-                                break
-                        print h.GetName(), "pdf {}".format(i+1)
-                        th2c = h.Clone()
-                        th2varD = th2var.Clone()
-                        th2var.Divide(th2c)
-                        th2c.Divide(th2varD)
-                        nbinsX = h.GetXaxis().GetNbins()
-                        nbinsY = h.GetYaxis().GetNbins()
-                        th2Up = ROOT.TH2D("up","up",nbinsX,h.GetXaxis().GetBinLowEdge(1),h.GetXaxis().GetBinUpEdge(nbinsX),nbinsY,h.GetYaxis().GetBinLowEdge(1),h.GetYaxis().GetBinUpEdge(nbinsY))
-                        th2Down =ROOT.TH2D("down","down",nbinsX,h.GetXaxis().GetBinLowEdge(1),h.GetXaxis().GetBinUpEdge(nbinsX),nbinsY,h.GetYaxis().GetBinLowEdge(1),h.GetYaxis().GetBinUpEdge(nbinsY))
-
-                        for j in range(1,h.GetNbinsX()+1):
-                            for k in range(1,h.GetNbinsY()+1):
-                            
-                                th2Up.SetBinContent(j,k,h.GetBinContent(j,k)*th2var.GetBinContent(j,k))
-                                th2Down.SetBinContent(j,k,h.GetBinContent(j,k)*th2c.GetBinContent(j,k))
-
-                        th2Up.SetName(h.GetName()+ '_LHEPdfWeightHess{}Up'.format(i+1))
-                        th2Down.SetName(h.GetName()+ '_LHEPdfWeightHess{}Down'.format(i+1))
-                        aux['LHEPdfWeightVars'].append(th2Up)
-                        aux['LHEPdfWeightVars'].append(th2Down)
-
-            self.histoDict[sample].update(aux)
+        if 'LHEPdfWeightVars' in self.histoDict[sample]:
+            aux = {}
+            aux['LHEPdfWeightVars']=[]
+            for h in self.histoDict[sample]['Nominal']:
+                if 'mass' in h.GetName(): continue
+                for i in range(60):
+                    for hvar in self.histoDict[sample]['LHEPdfWeightVars']:
+                        if hvar.GetName() == h.GetName()+ '_LHEPdfWeightHess{}'.format(i+1):
+                            th2var = hvar
+                            break
+                    print h.GetName(), "pdf {}".format(i+1)
+                    th2c = h.Clone()
+                    th2varD = th2var.Clone()
+                    th2var.Divide(th2c)
+                    th2c.Divide(th2varD)
+                    nbinsX = h.GetXaxis().GetNbins()
+                    nbinsY = h.GetYaxis().GetNbins()
+                    th2Up = ROOT.TH2D("up","up",nbinsX,h.GetXaxis().GetBinLowEdge(1),h.GetXaxis().GetBinUpEdge(nbinsX),nbinsY,h.GetYaxis().GetBinLowEdge(1),h.GetYaxis().GetBinUpEdge(nbinsY))
+                    th2Down =ROOT.TH2D("down","down",nbinsX,h.GetXaxis().GetBinLowEdge(1),h.GetXaxis().GetBinUpEdge(nbinsX),nbinsY,h.GetYaxis().GetBinLowEdge(1),h.GetYaxis().GetBinUpEdge(nbinsY))
+                    for j in range(1,h.GetNbinsX()+1):
+                        for k in range(1,h.GetNbinsY()+1):
+                        
+                            th2Up.SetBinContent(j,k,h.GetBinContent(j,k)*th2var.GetBinContent(j,k))
+                            th2Down.SetBinContent(j,k,h.GetBinContent(j,k)*th2c.GetBinContent(j,k))
+                    th2Up.SetName(h.GetName()+ '_LHEPdfWeightHess{}Up'.format(i+1))
+                    th2Down.SetName(h.GetName()+ '_LHEPdfWeightHess{}Down'.format(i+1))
+                    aux['LHEPdfWeightVars'].append(th2Up)
+                    aux['LHEPdfWeightVars'].append(th2Down)
+        self.histoDict[sample].update(aux)
     
     def getHistos(self, chargeBin) :
         for sample,fname in self.sampleDict.iteritems():
@@ -125,7 +121,7 @@ class plotter:
             if sample not in  self.histoDict : 
                 print "No histo dict for sample:", sample, " What have you done??!!!!"
                 continue
-            self.symmetrisePDF()
+            self.symmetrisePDF(sample)
             for syst, hlist in self.histoDict[sample].iteritems():
                 fout.mkdir(syst)
                 fout.cd(syst)
