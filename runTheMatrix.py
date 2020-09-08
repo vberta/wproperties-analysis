@@ -57,8 +57,9 @@ if step1 :
     if not os.path.isdir(outputDir): os.system('mkdir '+ outputDir)
     os.system('python runAnalysis.py -p=0 -b=1 -i='+inputDir+' -c='+ncores+' -o='+outputDir)
     os.chdir('../')
-    s1end=time.time()
-    runTimes.append(s1end - s1start)
+s1end=time.time()
+runTimes.append(s1end - s1start)
+    
 if step2 :
     s2start=time.time()
     print "step2: bkg analysis..."
@@ -69,8 +70,8 @@ if step2 :
     os.system('python bkg_prepareHistos.py --inputDir ../analysisOnData/'+outputDir+' --outputDir '+bkgOutput+'/bkgInput/')
     os.system('python bkg_config.py --mainAna 1 --CFAna 1 --inputDir '+bkgOutput+'/bkgInput/hadded/ --outputDir '+bkgOutput+' --syst 1 --compAna 1 --ncores '+ncores)
     os.chdir('../')
-    s2end=time.time()
-    runTimes.append(s2end - s2start)
+s2end=time.time()
+runTimes.append(s2end - s2start)
 
 if step3 :
     s3start=time.time()
@@ -80,8 +81,8 @@ if step3 :
     #ncores is optimized and set in the config itself, so no need to pass here
     os.system('python runAnalysis.py -p=0 -b=0 -i='+inputDir+ ' -o=' +outputDir+ ' -f='+bkgFile)
     os.chdir('../')
-    s3end=time.time()
-    runTimes.append(s3end - s3start)
+s3end=time.time()
+runTimes.append(s3end - s3start)
 
 if step4 :
     s4start=time.time()
@@ -98,8 +99,8 @@ if step4 :
             else : skipList+= ' '+str(sKindInt)
         print "Skipped systematics:", skipList 
         os.system('python plotter_prefit.py --hadd 1 --output ../'+outputDir+'/plot_only_'+str(sKind)+' --input ../'+outputDir+' --systComp 1 --skipSyst '+skipList)
-    s4end=time.time()
-    runTimes.append(s4end - s4start)
+s4end=time.time()
+runTimes.append(s4end - s4start)
     
 toc=time.time()
 print "Step1 completed in:", runTimes[0], " seconds"
