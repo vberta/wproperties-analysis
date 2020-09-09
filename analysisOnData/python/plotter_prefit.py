@@ -25,14 +25,10 @@ class plotter:
             "WToMu"      :  ['WToMu_plots.root',       'prefit_Signal',         ROOT.kRed+2,       "W^{+}#rightarrow #mu^{+}#nu_{#mu}"],         
             "DYJets"      : ['DYJets_plots.root',      'prefit_Signal',         ROOT.kAzure+2,     "DYJets"],              
             "WtoTau"      : ['WToTau_plots.root',      'prefit_Signal',         ROOT.kSpring+9,    "W^{#pm}#rightarrow #tau^{#pm}#nu_{#tau}"],   
-            "TW"          : ['TW_plots.root',          'prefit_Signal',         ROOT.kGreen+3,     "Top"],    
-            "TTbar"       : ['TTJets_plots.root',      'prefit_Signal',         ROOT.kGreen+3,     "Top"],    
-            "ST"          : ['SingleTop_plots.root',   'prefit_Signal',         ROOT.kGreen+3,     "Top"],    
+            "Top"       : ['Top_plots.root',         'prefit_Signal',         ROOT.kGreen+3,     "Top"],    
             "DiBoson"     : ['Diboson_plots.root',     'prefit_Signal',         ROOT.kViolet+2,    "di-boson"],     
             "SIGNAL_Fake" : ['FakeFromData_plots.root', 'prefit_fakes',          ROOT.kGray,        "QCD"],     
             "Data"        : ['Data_plots.root',        'prefit_Signal',         1,                 "Data"]
-            # "WToMu"      :  ['WJets_plots.root',       'prefit_SignalWToMu',    ROOT.kRed+2,       "W^{+}#rightarrow #mu^{+}#nu_{#mu}"],         
-            # "WtoTau"      : ['WJets_plots.root',       'prefit_SignalWToTau',   ROOT.kSpring+9,    "W^{#pm}#rightarrow #tau^{#pm}#nu_{#tau}"],         
             }   
         
         self.variableDict = {
@@ -49,7 +45,7 @@ class plotter:
             'plus' :  [2, ROOT.kRed+2, "W^{+}#rightarrow #mu^{+}#nu_{#mu}"]
         }
         
-        self.sampleOrder = ['DiBoson','WtoTau','ST','TTbar','TW','DYJets','SIGNAL_Fake','WToMu']
+        self.sampleOrder = ['DiBoson','WtoTau','Top','DYJets','SIGNAL_Fake','WToMu']
         self.histoDict ={} 
         
         self.extSyst = copy.deepcopy(bkg_utils.bkg_systematics)
@@ -95,8 +91,8 @@ class plotter:
             
     def getHistos(self):
         for f,fileInfo in self.sampleDict.iteritems() :
-            #inFile = ROOT.TFile.Open(self.indir+'/'+fileInfo[0])
-            inFile = ROOT.TFile.Open(self.outdir+'/hadded/'+fileInfo[0])
+            inFile = ROOT.TFile.Open(self.indir+'/hadded/'+fileInfo[0])
+            #inFile = ROOT.TFile.Open(self.outdir+'/hadded/'+fileInfo[0])
             for sKind, sList in self.extSyst.iteritems():
                 for sName in sList :
                     for var, varInfo in self.variableDict.iteritems() :
@@ -134,7 +130,6 @@ class plotter:
                 self.histoDict[sample+s+var].SetFillColor(self.sampleDict[sample][2])
                 hStack.Add(self.histoDict[sample+s+var])
                 hSum.Add(self.histoDict[sample+s+var])
-                if sample == 'TTbar' or sample == 'TW' : continue #all top together, only one legend
                 if sample =='WToMu' : #signal has different color and legend entry
                     self.histoDict[sample+s+var].SetFillColor(self.signDict[s][1])
                     legTag = self.signDict[s][2]
@@ -472,31 +467,18 @@ class plotter:
                     
         outFile.Close()
 
-                    
-                    
-                    
-                    
-        
-        
-        
-
 def prepareHistos(inDir,outDir) :
     cmdList = []
     if not os.path.exists(outDir): os.system("mkdir -p " + outDir)
-    if not os.path.isdir(outDir+'/hadded'): os.system('mkdir '+outDir+'/hadded')
-        
-    # cmdList.append('cp  '+inDir+'SingleMuonData_plots.root '+outDir+'/hadded/Data_plots.root')
-    # cmdList.append('cp  '+inDir+'WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_plots.root '+outDir+'/hadded/WJets_plots.root')
+    if not os.path.isdir(outDir+'/hadded'): os.system('mkdir '+ outDir+'/hadded')
     cmdList.append('cp  '+inDir+'/SingleMuonData_plots.root '+outDir+'/hadded/Data_plots.root')
     cmdList.append('cp  '+inDir+'/FakeFromData_plots.root '+outDir+'/hadded/FakeFromData_plots.root')
     cmdList.append('cp  '+inDir+'/WToMu_plots.root '+outDir+'/hadded/WToMu_plots.root')
     cmdList.append('cp  '+inDir+'/WToTau_plots.root '+outDir+'/hadded/WToTau_plots.root')
     cmdList.append('hadd -f '+outDir+'/hadded/DYJets_plots.root '+inDir+'/DYJetsToLL_M-*')
-    cmdList.append('hadd -f '+outDir+'/hadded/TTJets_plots.root '+inDir+'/TTJets*')
-    cmdList.append('hadd -f '+outDir+'/hadded/SingleTop_plots.root  '+inDir+'/ST_t-channel_* '+inDir+'/ST_s-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1_plots.root ')
-    cmdList.append('hadd -f '+outDir+'/hadded/TW_plots.root  '+inDir+'/ST_tW_*')
+    cmdList.append('hadd -f '+outDir+'/hadded/Top_plots.root '+inDir+'/TTJets* ' +inDir+'/ST* '+inDir+'/ST_tW_* ')
     cmdList.append('hadd -f '+outDir+'/hadded/Diboson_plots.root '+inDir+'/WW_TuneCUETP8M1_13TeV-pythia8_plots.root '+inDir+'/WZ_TuneCUETP8M1_13TeV-pythia8_plots.root '+inDir+'/ZZ_TuneCUETP8M1_13TeV-pythia8_plots.root')
-            
+
     for i in cmdList :
         os.system(i)
 
@@ -513,11 +495,11 @@ def prepareHistos(inDir,outDir) :
 
     
 parser = argparse.ArgumentParser("")
-parser.add_argument('-hadd','--hadd', type=int, default=True,help="hadd of the output of RDF")
+parser.add_argument('-a','--hadd', type=int, default=True,help="hadd of the output of RDF")
 parser.add_argument('-o','--output', type=str, default='TEST',help="name of the output directory")
-parser.add_argument('-i','--input', type=str, default='TEST',help="name of the input direcory root file")
+parser.add_argument('-i','--input', type=str, default='TEST',help="name of the input direcory with HADDED root files/if used with HADD=1, will be set to output dir")
 parser.add_argument('-s','--skipSyst', type=str, default='',nargs='*', help="list of skipped syst class as in bkgAnalysis/bkg_utils.py, separated by space")
-parser.add_argument('-comp','--systComp', type=int, default=True,help="systematic uncertainity comparison plots")
+parser.add_argument('-c','--systComp', type=int, default=True,help="systematic uncertainity comparison plots")
 
 args = parser.parse_args()
 HADD = args.hadd
@@ -528,6 +510,8 @@ SYSTCOMP = args.systComp
 
 if HADD :
     prepareHistos(inDir=INPUT,outDir=OUTPUT)
+    INPUT=OUTPUT
+
 p=plotter(outDir=OUTPUT, inDir = INPUT)
 p.plotStack(skipSyst=skippedSyst)
 if SYSTCOMP :

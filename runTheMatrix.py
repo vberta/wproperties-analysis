@@ -22,7 +22,7 @@ import time
 #         yield
 
 parser = argparse.ArgumentParser("")
-parser.add_argument('-i', '--inputDir',type=str, default='/scratchssd/sroychow/NanoAOD2016-V2/', help="input dir name with the trees")
+parser.add_argument('-i', '--inputDir',type=str, default='/scratch/wmass/NanoAOD2016-V2/', help="input dir name with the trees")
 parser.add_argument('-o', '--outputDir',type=str, default='output/', help="output dir name of step1 and step3 (inside analysisOnData/)")
 parser.add_argument('-t', '--bkgOutput',type=str, default='bkg/', help="output dir name for bkgAna (inside bkgAnalysis/)")
 parser.add_argument('-f', '--bkgFile',type=str, default='/scratch/bertacch/wmass/wproperties-analysis/bkgAnalysis/TEST_runTheMatrix/bkg_parameters_CFstatAna.root', help="bkg parameters file path/name.root, or the special 'MYBKG' for the one produced in the same loop")
@@ -57,9 +57,9 @@ if step1 :
     if not os.path.isdir(outputDir): os.system('mkdir '+ outputDir)
     os.system('python runAnalysis.py -p=0 -b=1 -i='+inputDir+' -c='+ncores+' -o='+outputDir)
     os.chdir('../')
-s1end=time.time()
-runTimes.append(s1end - s1start)
-    
+    s1end=time.time()
+    runTimes.append(s1end - s1start)
+else :   runTimes.append(0.)
 if step2 :
     s2start=time.time()
     print "step2: bkg analysis..."
@@ -70,8 +70,10 @@ if step2 :
     os.system('python bkg_prepareHistos.py --inputDir ../analysisOnData/'+outputDir+' --outputDir '+bkgOutput+'/bkgInput/')
     os.system('python bkg_config.py --mainAna 1 --CFAna 1 --inputDir '+bkgOutput+'/bkgInput/hadded/ --outputDir '+bkgOutput+' --syst 1 --compAna 1 --ncores '+ncores)
     os.chdir('../')
-s2end=time.time()
-runTimes.append(s2end - s2start)
+    s2end=time.time()
+    runTimes.append(s2end - s2start)
+else :   runTimes.append(0.)
+
 
 if step3 :
     s3start=time.time()
@@ -81,8 +83,9 @@ if step3 :
     #ncores is optimized and set in the config itself, so no need to pass here
     os.system('python runAnalysis.py -p=0 -b=0 -i='+inputDir+ ' -o=' +outputDir+ ' -f='+bkgFile)
     os.chdir('../')
-s3end=time.time()
-runTimes.append(s3end - s3start)
+    s3end=time.time()
+    runTimes.append(s3end - s3start)
+else :   runTimes.append(0.)
 
 if step4 :
     s4start=time.time()
@@ -90,6 +93,10 @@ if step4 :
     os.chdir('analysisOnData/python')
     if not os.path.isdir('../'+outputDir): os.system('mkdir ../'+outputDir)
     os.system('python plotter_prefit.py --hadd 1 --output ../'+outputDir+'/plot/ --input ../'+outputDir+' --systComp 1')
+
+    if not os.path.isdir('../'+outputDir+'/plot/hadded/template2D/'): os.system('mkdir -p ../'+outputDir+'/plot/hadded/template2D/')
+    os.system('python plotter_template2D.py -o=../'+outputDir+'/plot/hadded/template2D/ -i=../'+outputDir+'/plot/hadded')
+
     sys.path.append('../../bkgAnalysis')
     import bkg_utils
     for sKind,sList in bkg_utils.bkg_systematics.iteritems() : 
@@ -98,9 +105,11 @@ if step4 :
             if sKindInt==sKind : continue
             else : skipList+= ' '+str(sKindInt)
         print "Skipped systematics:", skipList 
-        os.system('python plotter_prefit.py --hadd 1 --output ../'+outputDir+'/plot_only_'+str(sKind)+' --input ../'+outputDir+' --systComp 1 --skipSyst '+skipList)
-s4end=time.time()
-runTimes.append(s4end - s4start)
+        os.system('python plotter_prefit.py --hadd 0 --output ../'+outputDir+'/plot_only_'+str(sKind)+' --input ../'+outputDir+'/plot/  --systComp 1 --skipSyst '+skipList)
+    s4end=time.time()
+    runTimes.append(s4end - s4start)
+else :   runTimes.append(0.)
+
     
 toc=time.time()
 print "Step1 completed in:", runTimes[0], " seconds"
