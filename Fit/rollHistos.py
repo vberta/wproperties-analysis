@@ -9,7 +9,7 @@ ROOT.gROOT.SetBatch()
 yArr = [0, 0.4, 0.8, 1.2 ,1.6, 2.0, 2.4]
 ptArr = [0., 4., 8., 12., 16., 20., 24., 28., 32.]
 
-fFit = ROOT.TFile.Open("fit_testbkg.root")
+fFit = ROOT.TFile.Open("fit_Wplus.root")
 res = fFit.fitresults
 
 inFile = ROOT.TFile.Open("/scratch/emanca/wproperties-analysis/analysisOnGen/genInput.root")
@@ -54,13 +54,13 @@ for hel in hels:
         for i in range(1, h.GetNbinsX()+1): #loop over rapidity bins
             for j in range(1, h.GetNbinsY()+1): #loop over pt bins
                 try:
-                    coeff = eval('ev.helXsecs_{}_y_{}_pt_{}_pmaskedexp'.format(hel, i, j))
-                    coeff_err = eval('ev.helXsecs_{}_y_{}_pt_{}_pmaskedexp_err'.format(hel, i, j))
+                    coeff = eval('ev.helXsecs{}_y_{}_qt_{}_pmaskedexp'.format(hel, i, j))
+                    coeff_err = eval('ev.helXsecs{}_y_{}_qt_{}_pmaskedexp_err'.format(hel, i, j))
                     h.SetBinContent(i,j,coeff)
                     h.SetBinError(i,j,coeff_err)
 
-                    coeffnorm = eval('ev.helXsecs_{}_y_{}_pt_{}_pmaskedexpnorm'.format(hel, i, j))
-                    coeffnorm_err = eval('ev.helXsecs_{}_y_{}_pt_{}_pmaskedexpnorm_err'.format(hel, i, j))
+                    coeffnorm = eval('ev.helXsecs{}_y_{}_qt_{}_pmaskedexpnorm'.format(hel, i, j))
+                    coeffnorm_err = eval('ev.helXsecs{}_y_{}_qt_{}_pmaskedexpnorm_err'.format(hel, i, j))
                     hnorm.SetBinContent(i,j,coeffnorm)
                     hnorm.SetBinError(i,j,coeffnorm_err)
 
@@ -77,8 +77,8 @@ for c in coeffDict:
         for i in range(1, h.GetNbinsX()+1): #loop over rapidity bins
             for j in range(1, h.GetNbinsY()+1): #loop over pt bins
                 try:
-                    coeff = eval('ev.y_{i}_pt_{j}_{c}'.format(c=c, j=j, i=i))
-                    coeff_err = eval('ev.y_{i}_pt_{j}_{c}_err'.format(c=c, j=j, i=i))
+                    coeff = eval('ev.y_{i}_qt_{j}_{c}'.format(c=c, j=j, i=i))
+                    coeff_err = eval('ev.y_{i}_qt_{j}_{c}_err'.format(c=c, j=j, i=i))
                     if 'unpol' in c:
                         coeff = coeff/(3./16./math.pi)
                         coeff_err = coeff_err/(3./16./math.pi)

@@ -3,89 +3,129 @@ import pickle
 from termcolor import colored
 import math
 from HiggsAnalysis.CombinedLimit.DatacardParser import *
-#import CombineHarvester.CombineTools.ch as ch
 from collections import OrderedDict
 import copy
 
 class fitUtils:
-    def __init__(self, ftemplates, fmap, fbkg=[]):
+    def __init__(self, fsig, fmap, fbkg = {}, channel ="WPlus"):
         
-        self.ftemplates = ROOT.TFile.Open(ftemplates) #file containing the N-dimensional templates
+        self.templates2D = {}
+        self.processes = []
+        self.signals = []
+
+        #combine utils
+        self.channel = channel
+        self.shapeMap = {}
+        self.helGroups = OrderedDict()
+        self.sumGroups = OrderedDict()
+        self.helMetaGroups = OrderedDict()
+        
+        self.templSystematics = {
+            "Nominal" : [""],
+            "mass" : ["mass"],
+            #"WHSFVars"  : ["WHSFSyst0", "WHSFSyst1","WHSFSyst2","WHSFSystFlat"],
+            #"LHEScaleWeightVars" : ["LHEScaleWeight_muR0p5_muF0p5", "LHEScaleWeight_muR0p5_muF1p0","LHEScaleWeight_muR1p0_muF0p5","LHEScaleWeight_muR1p0_muF2p0","LHEScaleWeight_muR2p0_muF1p0", "LHEScaleWeight_muR2p0_muF2p0"],
+            #"ptScaleVars" : [ "corrected"], 
+            #"jmeVars" : ["jesTotal", "unclustEn"],
+            #"LHEPdfWeightVars" : ["LHEPdfWeightHess{}".format(i+1) for i in range(60)]
+        }
+        
+        #all the files that are needed
         self.fmap = ROOT.TFile.Open(fmap) #file containing the angular coefficient values and inclusive pt-y map
         self.fbkg = fbkg
-        self.templates2D = {}
+        self.fsig = ROOT.TFile.Open(fsig)
         
-        if not fbkg == []:
-            
-            self.templates2D["DY"] = []
-            self.templates2D["Diboson"] = []
-            self.templates2D["Top"] = []
-            self.templates2D["Fake"] = []
-            self.templates2D["Tau"] = []
-            
-            for f in fbkg:
-                aux = ROOT.TFile.Open(f)
-                if "Fake" in f:
-                    faux = aux.Get('templates_fakes/Nominal')
-                else:
-                    faux = aux.Get('templates_Signal/Nominal')
-                templ = ROOT.TH3D
-                templ = faux.Get('template')
-                if "DY" in f:
-                    templ.GetZaxis().SetRange(2,2)
-                    taux = templ.Project3D("yxe")
-                    taux.SetName("DY")
-                    self.templates2D["DY"].append(copy.deepcopy(taux))
-                elif "Diboson" in f:
-                    templ.GetZaxis().SetRange(2,2)
-                    taux = templ.Project3D("yxe")
-                    taux.SetName("Diboson")
-                    self.templates2D["Diboson"].append(copy.deepcopy(taux))
-                elif "TT" in f:
-                    templ.GetZaxis().SetRange(2,2)
-                    taux = templ.Project3D("yxe")
-                    taux.SetName("Top")
-                    self.templates2D["Top"].append(copy.deepcopy(taux))
-                elif "Fake" in f:
-                    templ.GetZaxis().SetRange(2,2)
-                    taux = templ.Project3D("yxe")
-                    taux.SetName("Fake")
-                    self.templates2D["Fake"].append(copy.deepcopy(taux))
-                elif "Tau" in f:
-                    templ.GetZaxis().SetRange(2,2)
-                    taux = templ.Project3D("yxe")
-                    taux.SetName("Tau")
-                    self.templates2D["Tau"].append(copy.deepcopy(taux))
-
-        #get a list of the 3D templates
-        self.templates3D = []
-        for key in self.ftemplates.Get('templates').GetListOfKeys():
-            if not 'TH3' in key.GetClassName(): continue
-            #print key.GetName()
-            self.templates3D.append(self.ftemplates.Get('templates').Get(key.GetName()))
-        
-        #get the inclusive pt-y map
-        self.imap = ROOT.TH2D
+        #get the inclusive pt-y map to unfold
         self.imap = self.fmap.Get("accMaps/mapTot")
-        #use this histogram to check that histograms are correctly normalised
-        self.closure = copy.deepcopy(ROOT.TH2D("clos", "clos", self.imap.GetXaxis().GetNbins(),self.imap.GetXaxis().GetXbins().GetArray(),self.imap.GetYaxis().GetNbins(),self.imap.GetYaxis().GetXbins().GetArray()))
-        self.xsec = ROOT.TH2D
         self.xsec = self.fmap.Get("accMaps/sumw")
 
-        self.templates1D = {}
-        #organise the projected templates into helXsecs
-        self.clist = ["L", "I", "T", "A", "P", "7", "8", "9", "UL"]
-        for c in self.clist:
-            self.templates2D[c] = []
-            self.templates1D[c] = []
-        #add low acceptance templates
-        self.templates2D["lowAcc"] = []
-        self.templates2D["lowAcc"].append(copy.deepcopy(self.ftemplates.Get('dataObs').Get('lowAcc')))
-        self.templates2D["lowAcc"].append(copy.deepcopy(self.ftemplates.Get('dataObs').Get('lowAcc_massUp')))
-        self.templates2D["lowAcc"].append(copy.deepcopy(self.ftemplates.Get('dataObs').Get('lowAcc_massDown')))
-        #add data
-        self.templates2D["data_obs"] = []
-        self.templates2D["data_obs"].append(copy.deepcopy(self.ftemplates.Get('dataObs').Get('data_obs')))
+    def getTemplates(self):
+        
+        for key in self.fsig.Get("Nominal").GetListOfKeys():
+            if not 'mass' in key.GetName():
+                self.templates2D[key.GetName()] = {}
+                self.templates2D[key.GetName()]['Nominal']=[]
+                self.templates2D[key.GetName()]['mass']=[]
+                self.processes.append(key.GetName())
+                if not "helXsecs7" in key.GetName() and not "helXsecs8" in key.GetName() and not "helXsecs9" in key.GetName():
+                    self.signals.append(key.GetName())
+                self.templates2D[key.GetName()]['Nominal'].append(self.fsig.Get("Nominal").Get(key.GetName()))
+
+        for proc in self.processes:
+            self.templates2D[proc]['mass'].append(self.fsig.Get("Nominal").Get(proc+'_massUp'))
+            self.templates2D[proc]['mass'].append(self.fsig.Get("Nominal").Get(proc+'_massDown'))
+
+        for proc in self.processes:
+            for syst,variations in self.templSystematics.iteritems():
+                if 'Nominal' in syst or 'mass' in syst: continue
+                self.templates2D[proc][syst] = []
+                #dive into file and add the relevant histograms
+                if self.fsig.GetDirectory(syst):
+                    for var in variations:
+                        temp = self.fsig.Get(syst).Get(proc+'_'+var+'Up')
+                        self.templates2D[proc][syst].append(temp)
+                        temp = self.fsig.Get(syst).Get(proc+'_'+var+'Down')
+                        self.templates2D[proc][syst].append(temp)
+
+        bkg_list = ["DY","Diboson","Top","Fake","Tau","LowAcc","data_obs"]
+        for proc in bkg_list:
+            if '.root' in self.fbkg[proc]:
+                print 'copying bkg templates for', proc
+                aux = ROOT.TFile.Open(self.fbkg[proc])
+                self.templates2D[proc] = {}
+                for syst,variations in self.templSystematics.iteritems():
+                    self.templates2D[proc][syst] = []
+                    if 'mass' in syst: continue
+                    for var in variations:
+                        #dive into file and add the relevant histograms
+                        if 'Nominal' in syst:
+                            print aux.Get(syst).GetListOfKeys()
+                            temp = aux.Get(syst+"/"+"templates")
+                            temp.SetName(proc)
+                            self.templates2D[proc][syst].append(copy.deepcopy(temp))
+                            print temp.GetName()
+                        else:
+                            if aux.Get(syst).GetListOfKeys().Contains(syst+"/"+"templates_"+var+'Up'):
+                                temp = aux.Get(syst+"/"+"templates_"+var+'Up')
+                                temp.SetName(proc+'_'+var+'Up')
+                                self.templates2D[proc][syst].append(copy.deepcopy(temp))
+                                temp = aux.Get(syst+"/"+"templates_"+var+'Down')
+                                temp.SetName(proc+'_'+var+'Down')
+                                self.templates2D[proc][syst].append(copy.deepcopy(temp))
+
+        self.processes.extend(bkg_list)
+    def shapeFile(self):
+
+        shapeOut = ROOT.TFile(self.channel+'.root', 'recreate')
+                
+        for proc in self.processes:
+            for syst in self.templSystematics:
+                for temp in self.templates2D[proc][syst]:
+                    
+                    if not temp.GetSumw2().GetSize()>0: print colored('warning: {} Sumw2 not called'.format(temp.GetName()),'red')
+                    
+                    nbins = temp.GetNbinsX()*temp.GetNbinsY()
+                    #temp.Sumw2() #don't think it's necessary
+                    new = temp.GetName()
+                    old = new + '_roll'
+                    temp.SetName(old)
+                    unrolledtemp = ROOT.TH1F(new, '', nbins, 0., nbins+1)
+        
+                    for ibin in range(1, temp.GetNbinsX()+1):
+                        for jbin in range(1, temp.GetNbinsY()+1):
+                
+                            bin1D = temp.GetBin(ibin,jbin)
+                            unrolledtemp.SetBinContent(bin1D, temp.GetBinContent(ibin,jbin))
+                            unrolledtemp.SetBinError(bin1D, temp.GetBinError(ibin,jbin))
+                
+                    shapeOut.cd()
+                    unrolledtemp.Write()
+                    
+                
+        shapeOutxsec = ROOT.TFile(self.channel+'_xsec.root', 'recreate')
+
+        self.xsec.Scale(61526.7*1000.) #xsec in fb
+        self.xsec.Write()
         
         #just a bunch of useful factors
         self.factors = {}
@@ -108,206 +148,44 @@ class fitUtils:
         self.helXsecs["8"] = "A6" 
         self.helXsecs["9"] = "A7" 
         self.helXsecs["UL"] = "AUL" 
-        
-        #combine utils
-        self.shapeFile='testbkg'
-        self.processes = []
-        self.signals = []
-        self.shapeMap = {}
-        self.helGroups = OrderedDict()
-        self.sumGroups = OrderedDict()
-        self.helMetaGroups = OrderedDict()
 
-    def project3Dto2D(self):
-        # returns a list of th2 ordered by rapidity bin
-        for th3 in self.templates3D:
-            th3.Sumw2()
-        
-            for ibin in range(1, th3.GetNbinsZ()+1):
-
-                lowEdgeY = th3.GetZaxis().GetBinLowEdge(ibin)
-                upEdgeY = th3.GetZaxis().GetBinUpEdge(ibin)
-
-                th3.GetZaxis().SetRange(ibin, ibin)
-                proj = th3.Project3D("y_{ibin}_yxe".format(ibin=ibin))
+        for proc in self.processes:
+            if proc in self.signals: #give the correct xsec to unfold
                 
-                name = proj.GetName()
-                name = name.replace('_yx', '')
+                iY = int(proc.split('_')[2])
+                iQt = int(proc.split('_')[4])
+                coeff = proc.split('_')[0].replace('helXsecs','')
 
-                coeff = name.split('_')[3]
-                jbin = int(name.split('_')[1])
-                try:
-                    ibin = int(name.split('_')[5])
-                    syst = ""
-                except ValueError:
-                    ibin = int(name.split('_')[6])
-                    syst = "_"+name.split('_')[4]
+                tmp = ROOT.TH1D(proc,proc, 1, 0., 1.)
+                cont = self.xsec.GetBinContent(iY,iQt)
+                tmp.SetBinContent(1, cont)
+                nsum = (3./16./math.pi)
                 
-                new = 'helXsecs_'+coeff+'_y_{}'.format(ibin)+'_pt_{}'.format(jbin)+'{}'.format(syst)
-                #print colored(new,'blue')
-                proj.SetName(new)
-
-                if proj.Integral()==0.0: #debug line
-                    #print colored(proj.GetName(),'red')
-                    continue 
-
-                self.templates2D[coeff].append(proj)
-    
-    def symmetrisePDF(self):
-        for i in range(60):
-            th2var = ROOT.TH2D()
-            th2var = self.ftemplates.Get('dataObs_LHEPdfWeight').Get('lowAcc_LHEPdfWeightHess{}'.format(i+1))
-            th2central = self.ftemplates.Get('dataObs').Get('lowAcc')
-            th2c = th2central.Clone()
-            th2varD = th2var.Clone()
-            th2var.Divide(th2c)
-            th2c.Divide(th2varD)
-            
-            th2Up = ROOT.TH2D("up","up",th2central.GetXaxis().GetNbins(),th2central.GetXaxis().GetXbins().GetArray(),th2central.GetYaxis().GetNbins(),th2central.GetYaxis().GetXbins().GetArray())
-            th2Down = ROOT.TH2D("down","down",th2central.GetXaxis().GetNbins(),th2central.GetXaxis().GetXbins().GetArray(),th2central.GetYaxis().GetNbins(),th2central.GetYaxis().GetXbins().GetArray())
-            
-            for j in range(1,th2central.GetNbinsX()+1):
-                for k in range(1,th2central.GetNbinsY()+1):
-                
-                    th2Up.SetBinContent(j,k,th2central.GetBinContent(j,k)*th2var.GetBinContent(j,k))
-                    th2Down.SetBinContent(j,k,th2central.GetBinContent(j,k)*th2c.GetBinContent(j,k))
-                
-            th2Up.SetName('lowAcc_pdf{}Up'.format(i+1))
-            self.templates2D["lowAcc"].append(copy.deepcopy(th2Up))
-            
-            th2Down.SetName('lowAcc_pdf{}Down'.format(i+1))
-            self.templates2D["lowAcc"].append(copy.deepcopy(th2Down))
-            
-    def unrollTemplates(self):
-        # returns a th1 out of a th2
-        shapeOut = ROOT.TFile(self.shapeFile+'.root', 'recreate')
-  
-        for kind,templList in self.templates2D.iteritems():
-            for templ in templList:
-                nbins = (templ.GetNbinsX()+2)*(templ.GetNbinsY()+2)
-                templ.Sumw2()
-                new = templ.GetName()
-                old = new + '_roll'
-                templ.SetName(old)
-                
-                unrolledtempl = ROOT.TH1F(new, '', nbins-1, 0., nbins-1)
-        
-                for ibin in range(1, templ.GetNbinsX()+1):
-                    for ybin in range(1, templ.GetNbinsY()+1):
-                
-                        bin1D = templ.GetBin(ibin,ybin)
-                        unrolledtempl.SetBinContent(bin1D, templ.GetBinContent(ibin,ybin))
-                        unrolledtempl.SetBinError(bin1D, templ.GetBinError(ibin,ybin))
-                
-                #if not "data_obs" in kind and not "DY" in kind and not "Fake" in kind and not "Diboson" in kind and not "Top" in kind and not "Tau" in kind:
-                if not "data_obs" in kind and not "lowAcc" in kind and not "mass" in unrolledtempl.GetName():
-                    self.processes.append(unrolledtempl.GetName())
-                if kind in self.clist:
-                    self.normTempl(unrolledtempl)
-                    self.templates1D[kind].append(copy.deepcopy(unrolledtempl))
-                    if not "helXsecs_7" in unrolledtempl.GetName() and not "helXsecs_8" in unrolledtempl.GetName() and not "helXsecs_9" in unrolledtempl.GetName() and not unrolledtempl.Integral() == 0.0:
-                    #if not "helXsecs_7" in unrolledtempl.GetName() and not "helXsecs_8" in unrolledtempl.GetName() and not "helXsecs_9" in unrolledtempl.GetName() and unrolledtempl.Integral() > 100000:
-                        self.signals.append(unrolledtempl.GetName())
-                
-                shapeOut.cd()
-                unrolledtempl.Write()
-        
-    def normTempl(self, t):
-
-        name = t.GetName()
-        #print name, "normalising"
-        coeff = name.split('_')[1]
-        jbin = int(name.split('_')[5])
-        ibin = int(name.split('_')[3])
-
-        nsum = (3./16./math.pi)*self.imap.GetBinContent(ibin,jbin)
-
-        if not "UL" in coeff:
-            hAC = ROOT.TH2D
-            hAC = self.fmap.Get("angularCoefficients/harmonics{}".format(self.helXsecs[coeff]))
-            nsum = nsum*hAC.GetBinContent(ibin,jbin)/self.factors[self.helXsecs[coeff]]
-        t.Scale(nsum)
-
-    def xsecMap(self):
-
-        shapeOut = ROOT.TFile(self.shapeFile+'_xsec.root', 'recreate')
-        shapeOut.cd()
-
-        out = ROOT.TFile('xsec.root', 'recreate')
-        out.cd()
-
-        self.xsec.Scale(61526.7*1000.) #xsec in fb
-        self.xsec.Write()
-
-        for kind,templList in self.templates2D.iteritems():
-            if kind in self.clist:
-                for t in templList:
-                        
-                    name = t.GetName()
-                    if "_roll" in name:
-                        name = name.replace("_roll","")
-
-                    jbin = int(name.split('_')[5])
-                    ibin = int(name.split('_')[3])
-                    tmp = ROOT.TH1D(name,name, 1, 0., 1.)
-                    cont = self.xsec.GetBinContent(ibin,jbin)
-                    tmp.SetBinContent(1, cont)
-
-                    nsum = (3./16./math.pi)
-                    if not "UL" in kind:
-                        hAC = ROOT.TH2D
-                        hAC = self.fmap.Get("angularCoefficients/harmonics{}".format(self.helXsecs[kind]))
-
-                        nsum = nsum*hAC.GetBinContent(ibin,jbin)/self.factors[self.helXsecs[kind]]
-
-                    tmp.Scale(nsum)
-                    shapeOut.cd()
-                    tmp.Write()
-            else:
-                tmp = ROOT.TH1D(kind, kind, 1, 0.,1.)
-                if kind == "data_obs": tmp.SetBinContent(1, 1.)
-                else: tmp.SetBinContent(1, 0.)
+                if not "UL" in proc: #rescale for the releative xsec
+                    hAC = self.fmap.Get("angularCoefficients/harmonics{}".format(self.helXsecs[coeff]))
+                    nsum = nsum*hAC.GetBinContent(iY,iQt)/self.factors[self.helXsecs[coeff]]
+                tmp.Scale(nsum)
+                shapeOutxsec.cd()
                 tmp.Write()
-                    
-        #build closure map
-        for i in range(1, self.imap.GetNbinsX()+1):
-            for j in range(1, self.imap.GetNbinsY()+1):
-
-                hlist = []
-
-                for kind,templList in self.templates1D.iteritems():
-                    for t in templList:
-                        name = t.GetName()
-                        s = 'y_{i}_pt_{j}'.format(i=i,j=j)
-                            
-                        if name.replace('helXsecs_'+kind+'_', '') == s:
-                            hlist.append(t)
-                yields = 0
-                for h in hlist:
-                    #print colored(h.GetName(), "red"), i,j
-                    #print colored(h.Integral(), 'yellow')
-                    yields=yields+h.Integral(0, h.GetNbinsX()+2,)
-                #print i,j,yields
-                self.closure.SetBinContent(i,j,yields)
-
-
-        self.closure.Divide(self.imap)
-        out = ROOT.TFile('clos.root', 'recreate')
-        out.cd()
-        self.closure.Write()
-
+            else:
+                tmp = ROOT.TH1D(proc, proc, 1, 0.,1.)
+                if proc == "data_obs": tmp.SetBinContent(1, 1.)
+                else: tmp.SetBinContent(1, 0.)
+                shapeOutxsec.cd()
+                tmp.Write()
+    
     def fillHelGroup(self):
 
         for i in range(1, self.imap.GetNbinsX()+1):
             for j in range(1, self.imap.GetNbinsY()+1):
 
-                s = 'y_{i}_pt_{j}'.format(i=i,j=j)
+                s = 'y_{i}_qt_{j}'.format(i=i,j=j)
                 self.helGroups[s] = []
                 
                 for hel in self.helXsecs:
-                    if 'helXsecs_'+hel+'_'+s in self.signals:
+                    if 'helXsecs'+hel+'_'+s in self.signals:
 
-                        self.helGroups[s].append('helXsecs_'+hel+'_'+s)
+                        self.helGroups[s].append('helXsecs'+hel+'_'+s)
                                 
                 if self.helGroups[s] == []:
                     del self.helGroups[s]
@@ -332,9 +210,6 @@ class fitUtils:
         
             if self.helMetaGroups[s] == []:
                     del self.helMetaGroups[s]
-        
-        
-    
     def fillSumGroup(self):
 
         for i in range(1, self.imap.GetNbinsX()+1):
@@ -359,16 +234,15 @@ class fitUtils:
                             #print 'append', 'helXsecs_'+hel+'_y_{i}_'.format(i=i)+s, 'to', 'helXsecs_'+hel+'_'+s
                                 self.sumGroups['helXsecs_'+hel+'_'+s].append('helXsecs_'+hel+'_y_{i}_'.format(i=i)+s)
         #print self.sumGroups
-        
     def makeDatacard(self):
 
         self.DC = Datacard()
 
         ############## Setup the datacard (must be filled in) ###########################
 
-        self.DC.bins =   ['bin1', 'Wplus'] # <type 'list'>
+        self.DC.bins =   [self.channel, self.channel+'_xsec'] # <type 'list'>
         self.DC.obs =    {} # <type 'dict'>
-        self.processes.append("lowAcc")
+        self.processes.remove('data_obs')
         self.DC.processes =  self.processes # <type 'list'>
         self.DC.signals =    self.signals # <type 'list'>
         self.DC.isSignal =   {} # <type 'dict'>
@@ -379,39 +253,42 @@ class fitUtils:
                 self.DC.isSignal[proc] = False
         self.DC.keyline = [] # <type 'list'> # not used by combine-tf
         self.DC.exp =    {} # <type 'dict'>
-        self.DC.exp['bin1'] = {}
-        self.DC.exp['Wplus'] = {}
+        self.DC.exp[self.channel] = {}
+        self.DC.exp[self.channel+'_xsec'] = {}
         for proc in self.processes:
-            self.DC.exp['bin1'][proc] = -1.00
-            self.DC.exp['Wplus'][proc] = -1.00
+            self.DC.exp[self.channel][proc] = -1.00
+            self.DC.exp[self.channel+'_xsec'][proc] = -1.00
         self.DC.systs =  [] # <type 'list'>
-        
+        """
         ## list of [{bin : {process : [input file, path to shape, path to shape for uncertainty]}}]
         aux = {}
-        aux['bin1'] = {}
-        aux['Wplus'] = {}
+        aux[self.channel] = {}
+        aux[self.channel+'_xsec'] = {}
         for proc in self.processes:
             if "lowAcc" in proc:
-                aux['bin1'][proc] = 1.0
-                aux['Wplus'][proc] = 0.0
+                aux[self.channel][proc] = 1.0
+                aux[self.channel+'_xsec'][proc] = 0.0
             else:
-                aux['bin1'][proc] = 0.0
-                aux['Wplus'][proc] = 0.0
+                aux[self.channel][proc] = 0.0
+                aux[self.channel+'_xsec'][proc] = 0.0
         
         for i in range(60):
             self.DC.systs.append(('pdf{}'.format(i+1), False, 'shape', [], aux))
-        
+        """
         aux2 = {}
-        aux2['bin1'] = {}
-        aux2['Wplus'] = {}
+        aux2[self.channel] = {}
+        aux2[self.channel+'_xsec'] = {}
         for proc in self.processes:
-            aux2['bin1'][proc] = 1.0
-            aux2['Wplus'][proc] = 0.0
-                    
+            if 'hel' in proc:
+                aux2[self.channel][proc] = 1.0
+            else:
+                aux2[self.channel][proc] = 0.0
+            aux2[self.channel+'_xsec'][proc] = 0.0
+        
         self.DC.systs.append(('mass', False, 'shape', [], aux2))
         
-        self.DC.shapeMap = 	{'bin1': {'*': [self.shapeFile+'.root', '$PROCESS', '$PROCESS_$SYSTEMATIC']},\
-        'Wplus': {'*': [self.shapeFile+'_xsec.root', '$PROCESS', '$PROCESS_$SYSTEMATIC']}} # <type 'dict'>
+        self.DC.shapeMap = 	{self.channel: {'*': [self.channel+'.root', '$PROCESS', '$PROCESS_$SYSTEMATIC']},\
+        self.channel+'_xsec': {'*': [self.channel+'_xsec.root', '$PROCESS', '$PROCESS_$SYSTEMATIC']}} # <type 'dict'>
         self.DC.hasShapes =  True # <type 'bool'>
         self.DC.flatParamNuisances =  {} # <type 'dict'>
         self.DC.rateParams =  {} # <type 'dict'>
@@ -420,12 +297,12 @@ class fitUtils:
         self.DC.frozenNuisances  =  set([]) # <type 'set'>
         self.DC.systematicsShapeMap =  {} # <type 'dict'>
         self.DC.nuisanceEditLines    =  [] # <type 'list'>
-        self.DC.groups   =  {'pdfs': set(['pdf{}'.format(i+1) for i in range(60)])} # <type 'dict'>
+        #self.DC.groups   =  {'pdfs': set(['pdf{}'.format(i+1) for i in range(60)])} # <type 'dict'>
+        self.DC.groups   =  {} # <type 'dict'>
         self.DC.discretes    =  [] # <type 'list'>
         self.DC.helGroups = self.helGroups
         self.DC.sumGroups = self.sumGroups
         self.DC.helMetaGroups = self.helMetaGroups
 
-
-        filehandler = open('{}.pkl'.format(self.shapeFile), 'w')
+        filehandler = open('{}.pkl'.format(self.channel), 'w')
         pickle.dump(self.DC, filehandler)

@@ -22,9 +22,9 @@ class plotter:
         self.sampleDict = { "WToMu"      :  ('WToMu_plots.root', 2 ),
                             "DYJets"      : ('DYJets_plots.root', 2 ),
                             "WtoTau"      : ('WToTau_plots.root', 2 ),
-                            "Top"         : ('Top_plots.root', 1),
+                            "Top"         : ('TTJets_plots.root', 1),
                             "DiBoson"     : ('Diboson_plots.root', 1),
-                            "SIGNAL_Fake" : ('FakeFromData_plots.root', 0), 
+                            "Fake" : ('FakeFromData_plots.root', 0), 
                             "Data"        : ('Data_plots.root', 0),
                             "LowAcc": ('WToMu_plots.root', 2 )
                           }
@@ -36,16 +36,14 @@ class plotter:
         self.histoDict ={} 
     
     def getHistoforSample(self, sample, infile, chargeBin) :
-        if not 'FakeFromData' in sample:
+        if not 'Fake' in sample:
             for sKind in self.extSyst:
                 self.histoDict[sample][sKind] = []
                 gap = '' if sKind == 'Nominal' else '_'
                 basepath = 'templates_Signal/' + sKind
                 if 'LowAcc' in sample: basepath = 'templatesLowAcc_Signal/' + sKind
                 if infile.GetDirectory(basepath):
-                    if 'LowAcc' in sample: print basepath
                     for key in infile.Get(basepath).GetListOfKeys():
-                        if 'LowAcc' in sample: print key.GetName()
                         th3=infile.Get(basepath+'/'+key.GetName())
                         #plus charge bin 2, minus bin 1
                         th3.GetZaxis().SetRange(chargeBin,chargeBin)
@@ -67,13 +65,13 @@ class plotter:
                         #plus charge bin 2, minus bin 1
                         th3.GetZaxis().SetRange(chargeBin,chargeBin)
                         th2=th3.Project3D("yx")
+                        print th2.GetName()
                         th2.SetDirectory(0)
                         th2.SetName(th3.GetName())
                         self.histoDict[sample][sKind].append(th2)
     
     def symmetrisePDF(self,sample):
 
-        print sample
         if not self.histoDict[sample]['LHEPdfWeightVars']==[]:
             aux = {}
             aux['LHEPdfWeightVars']=[]
@@ -84,7 +82,6 @@ class plotter:
                         if hvar.GetName() == h.GetName()+ '_LHEPdfWeightHess{}'.format(i+1):
                             th2var = hvar
                             break
-                    print h.GetName(), "pdf {}".format(i+1)
                     th2c = h.Clone()
                     th2varD = th2var.Clone()
                     th2var.Divide(th2c)

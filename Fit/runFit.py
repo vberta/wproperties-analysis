@@ -4,33 +4,37 @@ import math
 from fitUtils import fitUtils
 import os
 
-ftemplates = '/scratch/emanca/wproperties-analysis/analysisOnGen/GenInfo/genInfo.root'
+basepath = '/scratch/emanca/wproperties-analysis/analysisOnData/python/templates2D/'
+fsig = basepath+'WPlus_2D_ACTemplates.root'
 fmap = '/scratch/emanca/wproperties-analysis/analysisOnGen/genInput.root'
-fbkg = '/scratchssd/sroychow/wproperties-sroychow/analysisOnData/output/hadded/'
-fbkg_list = []
-#fbkg_list.append(fbkg+'TTJets_plots.root')
-#fbkg_list.append(fbkg+'DYJets_plots.root')
-#fbkg_list.append(fbkg+'Diboson_plots.root')
-#fbkg_list.append(fbkg+'FakeFromData_plots.root')
-#fbkg_list.append(fbkg+'WToTau_plots.root')
 
-f = fitUtils(ftemplates, fmap, fbkg_list)
+samples = ["DY","Diboson","Top","Fake","Tau","LowAcc","data_obs"]
 
-f.project3Dto2D()
-f.symmetrisePDF()
-f.unrollTemplates()
-f.fillHelGroup()
+fbkg = basepath
+fbkg_dict = {}
+fbkg_dict["Top"]=fbkg+'TTbar_templates2Dplus.root'
+fbkg_dict["DY"]=fbkg+'DYJets_templates2Dplus.root'
+fbkg_dict["Diboson"]=fbkg+'DiBoson_templates2Dplus.root'
+fbkg_dict["Fake"]=fbkg+'Fake_templates2Dplus.root'
+fbkg_dict["Tau"]=fbkg+'WtoTau_templates2Dplus.root'
+fbkg_dict["LowAcc"]=fbkg+'WToMu_templates2Dplus.root'
+fbkg_dict["data_obs"]=fbkg+'WToMu_templates2Dplus.root' #placeholder for data
+
+f = fitUtils(fsig, fmap, fbkg_dict, "Wplus")
+#f.getTemplates()
+#f.shapeFile()
+#f.fillHelGroup()
 #f.fillSumGroup()
 #f.fillHelMetaGroup()
-f.xsecMap()
-f.makeDatacard()
+#f.makeDatacard()
 
 #assert(0)
 
-text2hd5f = 'text2hdf5.py --allowNegativeExpectation --maskedChan=Wplus {}.pkl'.format(f.shapeFile)
+text2hd5f = 'text2hdf5.py --allowNegativeExpectation --maskedChan={}_xsec {}.pkl'.format(f.channel,f.channel)
 print 'executing', text2hd5f 
-os.system(text2hd5f)
+#os.system(text2hd5f)
 
-combinetf = 'combinetf.py --allowNegativePOI --binByBinStat --correlateXsecStat --doImpacts -t-1 {}.pkl.hdf5 -o fit_{}.root'.format(f.shapeFile, f.shapeFile)
+#combinetf = 'combinetf.py --allowNegativePOI --binByBinStat --correlateXsecStat --doImpacts -t-1 {}.pkl.hdf5 -o fit_{}.root'.format(f.channel, f.channel)
+combinetf = 'combinetf.py --allowNegativePOI  --correlateXsecStat --doImpacts -t-1 {}.pkl.hdf5 -o fit_{}.root'.format(f.channel, f.channel)
 print 'executing', combinetf
 os.system(combinetf)
