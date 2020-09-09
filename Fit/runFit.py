@@ -15,10 +15,10 @@ fbkg_dict = {}
 fbkg_dict["Top"]=fbkg+'TTbar_templates2Dplus.root'
 fbkg_dict["DY"]=fbkg+'DYJets_templates2Dplus.root'
 fbkg_dict["Diboson"]=fbkg+'DiBoson_templates2Dplus.root'
-fbkg_dict["Fake"]=fbkg+'SIGNAL_Fake_templates2Dplus.root'
+fbkg_dict["Fake"]=fbkg+'Fake_templates2Dplus.root'
 fbkg_dict["Tau"]=fbkg+'WtoTau_templates2Dplus.root'
 fbkg_dict["LowAcc"]=fbkg+'WToMu_templates2Dplus.root'
-fbkg_dict["data_obs"]=fbkg+'Data_templates2Dplus.root'
+fbkg_dict["data_obs"]=fbkg+'WToMu_templates2Dplus.root' #placeholder for data
 
 f = fitUtils(fsig, fmap, fbkg_dict, "Wplus")
 f.getTemplates()

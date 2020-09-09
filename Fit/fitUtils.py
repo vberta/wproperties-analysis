@@ -67,10 +67,10 @@ class fitUtils:
                         temp = self.fsig.Get(syst).Get(proc+'_'+var+'Down')
                         self.templates2D[proc][syst].append(temp)
 
-
         bkg_list = ["DY","Diboson","Top","Fake","Tau","LowAcc","data_obs"]
         for proc in bkg_list:
-            if not self.fbkg[proc]=="":
+            if '.root' in self.fbkg[proc]:
+                print 'copying bkg templates for', proc
                 aux = ROOT.TFile.Open(self.fbkg[proc])
                 self.templates2D[proc] = {}
                 for syst,variations in self.templSystematics.iteritems():
@@ -79,14 +79,20 @@ class fitUtils:
                     for var in variations:
                         #dive into file and add the relevant histograms
                         if 'Nominal' in syst:
+                            print aux.Get(syst).GetListOfKeys()
                             temp = aux.Get(syst+"/"+"templates")
+                            temp.SetName(proc)
+                            self.templates2D[proc][syst].append(copy.deepcopy(temp))
+                            print temp.GetName()
                         else:
                             if aux.Get(syst).GetListOfKeys().Contains(syst+"/"+"templates_"+var+'Up'):
                                 temp = aux.Get(syst+"/"+"templates_"+var+'Up')
+                                temp.SetName(proc+'_'+var+'Up')
                                 self.templates2D[proc][syst].append(copy.deepcopy(temp))
                                 temp = aux.Get(syst+"/"+"templates_"+var+'Down')
+                                temp.SetName(proc+'_'+var+'Down')
                                 self.templates2D[proc][syst].append(copy.deepcopy(temp))
-                                
+
         self.processes.extend(bkg_list)
     def shapeFile(self):
 
@@ -95,9 +101,11 @@ class fitUtils:
         for proc in self.processes:
             for syst in self.templSystematics:
                 for temp in self.templates2D[proc][syst]:
-                               
+                    
+                    if not temp.GetSumw2().GetSize()>0: print colored('warning: {} Sumw2 not called'.format(temp.GetName()),'red')
+                    
                     nbins = temp.GetNbinsX()*temp.GetNbinsY()
-                    temp.Sumw2()
+                    temp.Sumw2() #don't think it's necessary
                     new = temp.GetName()
                     old = new + '_roll'
                     temp.SetName(old)
@@ -143,7 +151,6 @@ class fitUtils:
 
         for proc in self.processes:
             if proc in self.signals: #give the correct xsec to unfold
-                #helXsecsUL_y_6_qt_1_massUp  
                 
                 iY = int(proc.split('_')[2])
                 iQt = int(proc.split('_')[4])
@@ -235,6 +242,7 @@ class fitUtils:
 
         self.DC.bins =   [self.channel, self.channel+'_xsec'] # <type 'list'>
         self.DC.obs =    {} # <type 'dict'>
+        self.processes.remove('data_obs')
         self.DC.processes =  self.processes # <type 'list'>
         self.DC.signals =    self.signals # <type 'list'>
         self.DC.isSignal =   {} # <type 'dict'>
@@ -251,7 +259,7 @@ class fitUtils:
             self.DC.exp[self.channel][proc] = -1.00
             self.DC.exp[self.channel+'_xsec'][proc] = -1.00
         self.DC.systs =  [] # <type 'list'>
-        
+        """
         ## list of [{bin : {process : [input file, path to shape, path to shape for uncertainty]}}]
         aux = {}
         aux[self.channel] = {}
@@ -266,18 +274,18 @@ class fitUtils:
         
         for i in range(60):
             self.DC.systs.append(('pdf{}'.format(i+1), False, 'shape', [], aux))
-        
+        """
         aux2 = {}
         aux2[self.channel] = {}
         aux2[self.channel+'_xsec'] = {}
         for proc in self.processes:
             aux2[self.channel][proc] = 1.0
             aux2[self.channel+'_xsec'][proc] = 0.0
-                    
+        
         self.DC.systs.append(('mass', False, 'shape', [], aux2))
         
-        self.DC.shapeMap = 	{self.channel: {'*': [self.channel+'.root', '$PROCESS', '']},\
-        self.channel+'_xsec': {'*': [self.channel+'_xsec.root', '$PROCESS', '']}} # <type 'dict'>
+        self.DC.shapeMap = 	{self.channel: {'*': [self.channel+'.root', '$PROCESS', '$PROCESS_$SYSTEMATIC']},\
+        self.channel+'_xsec': {'*': [self.channel+'_xsec.root', '$PROCESS', '$PROCESS_$SYSTEMATIC']}} # <type 'dict'>
         self.DC.hasShapes =  True # <type 'bool'>
         self.DC.flatParamNuisances =  {} # <type 'dict'>
         self.DC.rateParams =  {} # <type 'dict'>
@@ -286,7 +294,8 @@ class fitUtils:
         self.DC.frozenNuisances  =  set([]) # <type 'set'>
         self.DC.systematicsShapeMap =  {} # <type 'dict'>
         self.DC.nuisanceEditLines    =  [] # <type 'list'>
-        self.DC.groups   =  {'pdfs': set(['pdf{}'.format(i+1) for i in range(60)])} # <type 'dict'>
+        #self.DC.groups   =  {'pdfs': set(['pdf{}'.format(i+1) for i in range(60)])} # <type 'dict'>
+        self.DC.groups   =  {} # <type 'dict'>
         self.DC.discretes    =  [] # <type 'list'>
         self.DC.helGroups = self.helGroups
         self.DC.sumGroups = self.sumGroups
