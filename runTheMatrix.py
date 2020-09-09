@@ -59,6 +59,8 @@ if step1 :
     os.chdir('../')
     s1end=time.time()
     runTimes.append(s1end - s1start)
+else :   runTimes.append(0.)
+
 if step2 :
     s2start=time.time()
     print "step2: bkg analysis..."
@@ -71,6 +73,7 @@ if step2 :
     os.chdir('../')
     s2end=time.time()
     runTimes.append(s2end - s2start)
+else :   runTimes.append(0.)
 
 if step3 :
     s3start=time.time()
@@ -82,6 +85,7 @@ if step3 :
     os.chdir('../')
     s3end=time.time()
     runTimes.append(s3end - s3start)
+else :   runTimes.append(0.)
 
 if step4 :
     s4start=time.time()
@@ -89,6 +93,10 @@ if step4 :
     os.chdir('analysisOnData/python')
     if not os.path.isdir('../'+outputDir): os.system('mkdir ../'+outputDir)
     os.system('python plotter_prefit.py --hadd 1 --output ../'+outputDir+'/plot/ --input ../'+outputDir+' --systComp 1')
+
+    if not os.path.isdir('../'+outputDir+'/plot/hadded/template2D/'): os.system('mkdir -p ../'+outputDir+'/plot/hadded/template2D/')
+    os.system('python plotter_template2D.py -o=../'+outputDir+'/plot/hadded/template2D/ -i=../'+outputDir+'/plot/hadded')
+
     sys.path.append('../../bkgAnalysis')
     import bkg_utils
     for sKind,sList in bkg_utils.bkg_systematics.iteritems() : 
@@ -97,9 +105,10 @@ if step4 :
             if sKindInt==sKind : continue
             else : skipList+= ' '+str(sKindInt)
         print "Skipped systematics:", skipList 
-        os.system('python plotter_prefit.py --hadd 1 --output ../'+outputDir+'/plot_only_'+str(sKind)+' --input ../'+outputDir+' --systComp 1 --skipSyst '+skipList)
+        os.system('python plotter_prefit.py --hadd 0 --output ../'+outputDir+'/plot_only_'+str(sKind)+' --input ../'+outputDir+'/plot/  --systComp 1 --skipSyst '+skipList)
     s4end=time.time()
     runTimes.append(s4end - s4start)
+else :   runTimes.append(0.)
     
 toc=time.time()
 print "Step1 completed in:", runTimes[0], " seconds"
