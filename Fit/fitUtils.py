@@ -93,6 +93,14 @@ class fitUtils:
                                 temp.SetName(proc+'_'+var+'Down')
                                 self.templates2D[proc][syst].append(copy.deepcopy(temp))
 
+        aux = ROOT.TFile.Open(self.fbkg['LowAcc'])
+        temp = aux.Get("Nominal").Get('templates_massUp')
+        temp.SetName("LowAcc_massUp")
+        self.templates2D[proc]['mass'].append(copy.deepcopy(temp))
+        temp = aux.Get("Nominal").Get('templates_massDown')
+        temp.SetName("LowAcc_massDown")
+        self.templates2D[proc]['mass'].append(copy.deepcopy(temp))
+
         self.processes.extend(bkg_list)
     def shapeFile(self):
 
@@ -101,7 +109,7 @@ class fitUtils:
         for proc in self.processes:
             for syst in self.templSystematics:
                 for temp in self.templates2D[proc][syst]:
-                    
+                    print temp.GetName()
                     if not temp.GetSumw2().GetSize()>0: print colored('warning: {} Sumw2 not called'.format(temp.GetName()),'red')
                     
                     nbins = temp.GetNbinsX()*temp.GetNbinsY()
@@ -279,7 +287,7 @@ class fitUtils:
         aux2[self.channel] = {}
         aux2[self.channel+'_xsec'] = {}
         for proc in self.processes:
-            if 'hel' in proc:
+            if 'hel' in proc or 'LowAcc' in proc:
                 aux2[self.channel][proc] = 1.0
             else:
                 aux2[self.channel][proc] = 0.0
