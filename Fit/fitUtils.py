@@ -105,7 +105,7 @@ class fitUtils:
                     if not temp.GetSumw2().GetSize()>0: print colored('warning: {} Sumw2 not called'.format(temp.GetName()),'red')
                     
                     nbins = temp.GetNbinsX()*temp.GetNbinsY()
-                    temp.Sumw2() #don't think it's necessary
+                    #temp.Sumw2() #don't think it's necessary
                     new = temp.GetName()
                     old = new + '_roll'
                     temp.SetName(old)
@@ -179,13 +179,13 @@ class fitUtils:
         for i in range(1, self.imap.GetNbinsX()+1):
             for j in range(1, self.imap.GetNbinsY()+1):
 
-                s = 'y_{i}_pt_{j}'.format(i=i,j=j)
+                s = 'y_{i}_qt_{j}'.format(i=i,j=j)
                 self.helGroups[s] = []
                 
                 for hel in self.helXsecs:
-                    if 'helXsecs_'+hel+'_'+s in self.signals:
+                    if 'helXsecs'+hel+'_'+s in self.signals:
 
-                        self.helGroups[s].append('helXsecs_'+hel+'_'+s)
+                        self.helGroups[s].append('helXsecs'+hel+'_'+s)
                                 
                 if self.helGroups[s] == []:
                     del self.helGroups[s]
@@ -279,7 +279,10 @@ class fitUtils:
         aux2[self.channel] = {}
         aux2[self.channel+'_xsec'] = {}
         for proc in self.processes:
-            aux2[self.channel][proc] = 1.0
+            if 'hel' in proc:
+                aux2[self.channel][proc] = 1.0
+            else:
+                aux2[self.channel][proc] = 0.0
             aux2[self.channel+'_xsec'][proc] = 0.0
         
         self.DC.systs.append(('mass', False, 'shape', [], aux2))
