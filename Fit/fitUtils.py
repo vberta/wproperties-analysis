@@ -23,11 +23,11 @@ class fitUtils:
         self.templSystematics = {
             "Nominal" : [""],
             "mass" : ["mass"],
-            "WHSFVars"  : ["WHSFSyst0", "WHSFSyst1","WHSFSyst2","WHSFSystFlat"],
+            #"WHSFVars"  : ["WHSFSyst0", "WHSFSyst1","WHSFSyst2","WHSFSystFlat"],
             #"LHEScaleWeightVars" : ["LHEScaleWeight_muR0p5_muF0p5", "LHEScaleWeight_muR0p5_muF1p0","LHEScaleWeight_muR1p0_muF0p5","LHEScaleWeight_muR1p0_muF2p0","LHEScaleWeight_muR2p0_muF1p0", "LHEScaleWeight_muR2p0_muF2p0"],
-            "ptScaleVars" : [ "corrected"], 
-            "jmeVars" : ["jesTotal", "unclustEn"],
-            "LHEPdfWeightVars" : ["LHEPdfWeightHess{}".format(i+1) for i in range(60)]
+            #"ptScaleVars" : [ "corrected"], 
+            #"jmeVars" : ["jesTotal", "unclustEn"],
+            #"LHEPdfWeightVars" : ["LHEPdfWeightHess{}".format(i+1) for i in range(60)]
         }
         
         #all the files that are needed
@@ -56,18 +56,15 @@ class fitUtils:
             self.templates2D[proc]['mass'].append(self.fsig.Get("Nominal").Get(proc+'_massDown'))
 
         for proc in self.processes:
-            for syst,vars in self.templSystematics.iteritems():
+            for syst,variations in self.templSystematics.iteritems():
                 if 'Nominal' in syst or 'mass' in syst: continue
                 self.templates2D[proc][syst] = []
-                print proc, syst
                 #dive into file and add the relevant histograms
                 if self.fsig.GetDirectory(syst):
-                    for var in vars:
+                    for var in variations:
                         temp = self.fsig.Get(syst).Get(proc+'_'+var+'Up')
-                        print temp.GetName()
                         self.templates2D[proc][syst].append(temp)
                         temp = self.fsig.Get(syst).Get(proc+'_'+var+'Down')
-                        print temp.GetName()
                         self.templates2D[proc][syst].append(temp)
 
 
@@ -76,39 +73,46 @@ class fitUtils:
             if not self.fbkg[proc]=="":
                 aux = ROOT.TFile.Open(self.fbkg[proc])
                 self.templates2D[proc] = {}
-                for syst,vars in self.templSystematics.iteritems():
+                for syst,variations in self.templSystematics.iteritems():
                     self.templates2D[proc][syst] = []
-                    for var in vars:
+                    if 'mass' in syst: continue
+                    for var in variations:
                         #dive into file and add the relevant histograms
-                        if aux.GetDirectory(syst):
-                            self.templates2D[proc][syst].append(aux.Get(syst+"/"+"templates_"+var))
-
+                        if 'Nominal' in syst:
+                            temp = aux.Get(syst+"/"+"templates")
+                        else:
+                            if aux.Get(syst).GetListOfKeys().Contains(syst+"/"+"templates_"+var+'Up'):
+                                temp = aux.Get(syst+"/"+"templates_"+var+'Up')
+                                self.templates2D[proc][syst].append(copy.deepcopy(temp))
+                                temp = aux.Get(syst+"/"+"templates_"+var+'Down')
+                                self.templates2D[proc][syst].append(copy.deepcopy(temp))
+                                
         self.processes.extend(bkg_list)
     def shapeFile(self):
 
         shapeOut = ROOT.TFile(self.channel+'.root', 'recreate')
-        
+                
         for proc in self.processes:
             for syst in self.templSystematics:
-                
-                temp = self.templates2D[proc][syst]
-                nbins = temp.GetNbinsX()*temp.GetNbinsY()
-                temp.Sumw2()
-                new = temp.GetName()
-                old = new + '_roll'
-                temp.SetName(old)
-                unrolledtemp = ROOT.TH1F(new, '', nbins, 0., nbins+1)
+                for temp in self.templates2D[proc][syst]:
+                               
+                    nbins = temp.GetNbinsX()*temp.GetNbinsY()
+                    temp.Sumw2()
+                    new = temp.GetName()
+                    old = new + '_roll'
+                    temp.SetName(old)
+                    unrolledtemp = ROOT.TH1F(new, '', nbins, 0., nbins+1)
         
-                for ibin in range(1, temp.GetNbinsX()+1):
-                    for ybin in range(1, temp.GetNbinsY()+1):
+                    for ibin in range(1, temp.GetNbinsX()+1):
+                        for jbin in range(1, temp.GetNbinsY()+1):
                 
-                        bin1D = temp.GetBin(ibin,ybin)
-                        unrolledtemp.SetBinContent(bin1D, temp.GetBinContent(ibin,ybin))
-                        unrolledtemp.SetBinError(bin1D, temp.GetBinError(ibin,ybin))
+                            bin1D = temp.GetBin(ibin,jbin)
+                            unrolledtemp.SetBinContent(bin1D, temp.GetBinContent(ibin,jbin))
+                            unrolledtemp.SetBinError(bin1D, temp.GetBinError(ibin,jbin))
                 
-                shapeOut.cd()
-                unrolledtemp.Write()
-                
+                    shapeOut.cd()
+                    unrolledtemp.Write()
+                    
                 
         shapeOutxsec = ROOT.TFile(self.channel+'_xsec.root', 'recreate')
 
@@ -146,7 +150,7 @@ class fitUtils:
                 coeff = proc.split('_')[0].replace('helXsecs','')
 
                 tmp = ROOT.TH1D(proc,proc, 1, 0., 1.)
-                cont = self.xsec.GetBinContent(ibin,jbin)
+                cont = self.xsec.GetBinContent(iY,iQt)
                 tmp.SetBinContent(1, cont)
                 nsum = (3./16./math.pi)
                 
@@ -272,8 +276,8 @@ class fitUtils:
                     
         self.DC.systs.append(('mass', False, 'shape', [], aux2))
         
-        self.DC.shapeMap = 	{self.channel: {'*': [self.channel+'.root', '$PROCESS', '$PROCESS_$SYSTEMATIC']},\
-        self.channel+'_xsec': {'*': [self.channel+'_xsec.root', '$PROCESS', '$PROCESS_$SYSTEMATIC']}} # <type 'dict'>
+        self.DC.shapeMap = 	{self.channel: {'*': [self.channel+'.root', '$PROCESS', '']},\
+        self.channel+'_xsec': {'*': [self.channel+'_xsec.root', '$PROCESS', '']}} # <type 'dict'>
         self.DC.hasShapes =  True # <type 'bool'>
         self.DC.flatParamNuisances =  {} # <type 'dict'>
         self.DC.rateParams =  {} # <type 'dict'>
