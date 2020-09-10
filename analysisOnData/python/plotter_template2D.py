@@ -89,7 +89,9 @@ class plotter:
                     nbinsX = h.GetXaxis().GetNbins()
                     nbinsY = h.GetYaxis().GetNbins()
                     th2Up = ROOT.TH2D("up","up",nbinsX,h.GetXaxis().GetBinLowEdge(1),h.GetXaxis().GetBinUpEdge(nbinsX),nbinsY,h.GetYaxis().GetBinLowEdge(1),h.GetYaxis().GetBinUpEdge(nbinsY))
+                    th2Up.Sumw2()
                     th2Down =ROOT.TH2D("down","down",nbinsX,h.GetXaxis().GetBinLowEdge(1),h.GetXaxis().GetBinUpEdge(nbinsX),nbinsY,h.GetYaxis().GetBinLowEdge(1),h.GetYaxis().GetBinUpEdge(nbinsY))
+                    th2Down.Sumw2()
                     for j in range(1,h.GetNbinsX()+1):
                         for k in range(1,h.GetNbinsY()+1):
                         

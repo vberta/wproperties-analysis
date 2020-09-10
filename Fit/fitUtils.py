@@ -27,7 +27,7 @@ class fitUtils:
             #"LHEScaleWeightVars" : ["LHEScaleWeight_muR0p5_muF0p5", "LHEScaleWeight_muR0p5_muF1p0","LHEScaleWeight_muR1p0_muF0p5","LHEScaleWeight_muR1p0_muF2p0","LHEScaleWeight_muR2p0_muF1p0", "LHEScaleWeight_muR2p0_muF2p0"],
             #"ptScaleVars" : [ "corrected"], 
             #"jmeVars" : ["jesTotal", "unclustEn"],
-            #"LHEPdfWeightVars" : ["LHEPdfWeightHess{}".format(i+1) for i in range(60)]
+            "LHEPdfWeightVars" : ["LHEPdfWeightHess{}".format(i+1) for i in range(60)]
         }
         
         #all the files that are needed
@@ -67,7 +67,8 @@ class fitUtils:
                         temp = self.fsig.Get(syst).Get(proc+'_'+var+'Down')
                         self.templates2D[proc][syst].append(temp)
 
-        bkg_list = ["DY","Diboson","Top","Fake","Tau","LowAcc","data_obs"]
+        #bkg_list = ["DY","Diboson","Top","Fake","Tau","LowAcc","data_obs"]
+        bkg_list = ["LowAcc","data_obs"]
         for proc in bkg_list:
             if '.root' in self.fbkg[proc]:
                 print 'copying bkg templates for', proc
@@ -117,7 +118,7 @@ class fitUtils:
                     new = temp.GetName()
                     old = new + '_roll'
                     temp.SetName(old)
-                    unrolledtemp = ROOT.TH1F(new, '', nbins, 0., nbins+1)
+                    unrolledtemp = ROOT.TH1F(new, '', nbins, 1., nbins+1)
         
                     for ibin in range(1, temp.GetNbinsX()+1):
                         for jbin in range(1, temp.GetNbinsY()+1):
@@ -267,13 +268,13 @@ class fitUtils:
             self.DC.exp[self.channel][proc] = -1.00
             self.DC.exp[self.channel+'_xsec'][proc] = -1.00
         self.DC.systs =  [] # <type 'list'>
-        """
+
         ## list of [{bin : {process : [input file, path to shape, path to shape for uncertainty]}}]
         aux = {}
         aux[self.channel] = {}
         aux[self.channel+'_xsec'] = {}
         for proc in self.processes:
-            if "lowAcc" in proc:
+            if 'hel' in proc or 'LowAcc' in proc:
                 aux[self.channel][proc] = 1.0
                 aux[self.channel+'_xsec'][proc] = 0.0
             else:
@@ -281,8 +282,8 @@ class fitUtils:
                 aux[self.channel+'_xsec'][proc] = 0.0
         
         for i in range(60):
-            self.DC.systs.append(('pdf{}'.format(i+1), False, 'shape', [], aux))
-        """
+            self.DC.systs.append(('LHEPdfWeightHess{}'.format(i+1), False, 'shape', [], aux))
+
         aux2 = {}
         aux2[self.channel] = {}
         aux2[self.channel+'_xsec'] = {}
@@ -293,7 +294,7 @@ class fitUtils:
                 aux2[self.channel][proc] = 0.0
             aux2[self.channel+'_xsec'][proc] = 0.0
         
-        self.DC.systs.append(('mass', False, 'shape', [], aux2))
+        self.DC.systs.append(('mass', False, 'shapeNoConstraint', [], aux2))
         
         self.DC.shapeMap = 	{self.channel: {'*': [self.channel+'.root', '$PROCESS', '$PROCESS_$SYSTEMATIC']},\
         self.channel+'_xsec': {'*': [self.channel+'_xsec.root', '$PROCESS', '$PROCESS_$SYSTEMATIC']}} # <type 'dict'>
@@ -305,12 +306,13 @@ class fitUtils:
         self.DC.frozenNuisances  =  set([]) # <type 'set'>
         self.DC.systematicsShapeMap =  {} # <type 'dict'>
         self.DC.nuisanceEditLines    =  [] # <type 'list'>
-        #self.DC.groups   =  {'pdfs': set(['pdf{}'.format(i+1) for i in range(60)])} # <type 'dict'>
-        self.DC.groups   =  {} # <type 'dict'>
+        self.DC.groups   =  {'pdfs': set(['LHEPdfWeightHess{}'.format(i+1) for i in range(60)])} # <type 'dict'>
+        #self.DC.groups   =  {} # <type 'dict'>
         self.DC.discretes    =  [] # <type 'list'>
         self.DC.helGroups = self.helGroups
         self.DC.sumGroups = self.sumGroups
         self.DC.helMetaGroups = self.helMetaGroups
+        self.DC.noiGroups = {'mass':['mass']}
 
         filehandler = open('{}.pkl'.format(self.channel), 'w')
         pickle.dump(self.DC, filehandler)
