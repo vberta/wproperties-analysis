@@ -11,7 +11,7 @@ import bkg_utils
 
 
 class bkg_analyzer:
-    def __init__(self, ptBinning, etaBinning, outdir='./bkg', inputDir='./data', systKind='Nominal',systName='',correlatedFit=False,statAna=False, nameSuff = '')  :
+    def __init__(self, ptBinning, etaBinning, outdir='./bkg', inputDir='./data', systKind='Nominal',systName='',correlatedFit=False,statAna=False, nameSuff = '',extrapCorr=False)  :
 
         self.outdir = outdir
         self.inputDir = inputDir
@@ -22,6 +22,7 @@ class bkg_analyzer:
         self.systName = systName
         self.correlatedFit = correlatedFit
         self.statAna = statAna
+        self.extrapCorr = extrapCorr
         
         if self.correlatedFit :
             self.corrFitSuff = '_CF'  
@@ -1580,6 +1581,15 @@ class bkg_analyzer:
         
         if correlatedFit :
             parCorFit = self.correlatedFitter(parDict)
+            
+            if self.extrapCorr :
+                for s in self.signList :
+                    for e in self.etaBinningS :  
+                        corrSlope = ROOT.TFile.Open(self.outdir.replace('bkg_','extrapolation_syst/')+'/extrapPlots_SigRegMean67GeV_linearFit_CFstatAna.root').Get('paramCorr_dict'+s).GetBinContent(self.etaBinningS.index(e)+1,1)
+                        corrOffset = ROOT.TFile.Open(self.outdir.replace('bkg_','extrapolation_syst/')+'/extrapPlots_SigRegMean67GeV_linearFit_CFstatAna.root').Get('paramCorr_dict'+s).GetBinContent(self.etaBinningS.index(e)+1,2)
+                        parCorFit[s+e+'offset'+'Minuit'] = parCorFit[s+e+'offset'+'Minuit']*corrOffset
+                        parCorFit[s+e+'slope'+'Minuit'] = parCorFit[s+e+'slope'+'Minuit']*corrSlope
+
             parDict.update(parCorFit)    
         
         
@@ -1695,6 +1705,7 @@ class bkg_analyzer:
         histoDict = {}
         discrepancyMapDict = {}
         paramMapDict = {}
+        paramCorrDict = {}
         for s in self.signList :        
             discrepancyMapDict[s] = ROOT.TH2F("discrepancyMap_{sign}".format(sign=s),"discrepancyMap_{sign}".format(sign=s),len(self.etaBinning)-1, array('f',self.etaBinning), len(self.ptBinning)-1, array('f',self.ptBinning) )
             discrepancyMapDict[s].GetXaxis().SetTitle("#eta")
@@ -1705,6 +1716,13 @@ class bkg_analyzer:
             discrepancyMapDict[s+'Err'].GetXaxis().SetTitle("#eta")
             discrepancyMapDict[s+'Err'].GetYaxis().SetTitle("p_{T} [GeV]")
             discrepancyMapDict[s+'Err'].GetZaxis().SetTitle("#sigma extrap/nom")
+            
+            if linearFit :
+                sideMeanMt=17
+                paramCorrDict[s] = ROOT.TH2F("paramCorr_dict{sign}".format(sign=s),"paramCorr_dict{sign}".format(sign=s),len(self.etaBinning)-1, array('f',self.etaBinning), 2, array('f',[0,1,2]) )
+                paramCorrDict[s].GetXaxis().SetTitle("#eta")
+                paramCorrDict[s].GetYaxis().SetTitle("parameter (1st=slope,2nd=offset")
+                paramCorrDict[s].GetZaxis().SetTitle("extrap/nom")
            
             if s=='Plus' :
                 chi2_extrap = ROOT.TH2F("chi2_extrap","chi2_extrap",len(self.etaBinning)-1, array('f',self.etaBinning), len(self.signList), array('f',[0,1,2]))
@@ -1773,7 +1791,10 @@ class bkg_analyzer:
                     paramMapDict[s+'offset'].SetBinContent(self.etaBinningS.index(e)+1,a)    
                     paramMapDict[s+'offset'].SetBinError(self.etaBinningS.index(e)+1,wa)
                     paramMapDict[s+'offset*slope'].SetBinContent(self.etaBinningS.index(e)+1,wab)    
-                    paramMapDict[s+'offset*slope'].SetBinError(self.etaBinningS.index(e)+1,0)        
+                    paramMapDict[s+'offset*slope'].SetBinError(self.etaBinningS.index(e)+1,0) 
+                    
+                    paramCorrDict[s].SetBinContent(self.etaBinningS.index(e)+1,1,(c+d*nomMeanMt)/(c+d*sideMeanMt)) #see vberta logbook
+                    paramCorrDict[s].SetBinContent(self.etaBinningS.index(e)+1,2,(a+b*nomMeanMt)/(a+b*sideMeanMt))
                     
                 else : #constant in mt fit
                     cov = fitRes.GetCovarianceMatrix()
@@ -1812,6 +1833,8 @@ class bkg_analyzer:
                 chi2_extrap.Write()
             for par in ['offset','slope','offset*slope'] :
                 paramMapDict[s+par].Write()
+            if linearFit :
+                paramCorrDict[s].Write()
 
 
     
@@ -1832,9 +1855,14 @@ class bkg_analyzer:
         systDict = copy.deepcopy(bkg_utils.bkg_systematics)
         systDict['Nominal'] = ['']
         
+        # if self.extrapCorr :
+        #     self.nameSuff = self.nameSuff.replace('_extrapCorr','')
+        
         for sKind, sList in systDict.iteritems():
             if sKind =='Nominal' : 
                 SAsuff = statAnaSuff
+                # if self.extrapCorr :
+                #      SAsuff = SAsuff+'_extrapCorr' #only for nominal (for the moment...)
             else :
                 SAsuff = ''
             for sName in sList :
