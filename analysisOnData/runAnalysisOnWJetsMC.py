@@ -15,7 +15,7 @@ from getLumiWeight import getLumiWeight
 ROOT.gSystem.Load('bin/libAnalysisOnData.so')
 ROOT.gROOT.ProcessLine("gErrorIgnoreLevel = 2001;");
 
-def RDFprocessWJetsMC(fvec, outputDir, sample, xsec, fileSF, ncores, pretendJob=True):
+def RDFprocessWJetsMC(fvec, outputDir, sample, xsec, fileSF, ncores, pretendJob, bkg):
     ROOT.ROOT.EnableImplicitMT(ncores)
     print "running with {} cores for sample:{}".format(ncores, sample) 
     wdecayselections = { 
@@ -29,6 +29,8 @@ def RDFprocessWJetsMC(fvec, outputDir, sample, xsec, fileSF, ncores, pretendJob=
     fileAC = ROOT.TFile.Open("../analysisOnGen/genInput.root")
     p.branch(nodeToStart = 'input', nodeToEnd = 'defs', modules = [ROOT.reweightFromZ(filePt,fileY),ROOT.baseDefinitions(),ROOT.weightDefinitions(fileSF),getLumiWeight(xsec=xsec, inputFile=fvec),ROOT.Replica2Hessian()])
     for region,cut in selections_bkg.iteritems():
+        if not bkg:
+            if not region=='Signal': continue
         if 'aiso' in region:
             weight = 'float(puWeight*lumiweight*weightPt*weightY)'
         else:
@@ -54,10 +56,15 @@ def RDFprocessWJetsMC(fvec, outputDir, sample, xsec, fileSF, ncores, pretendJob=
             p.branch(nodeToStart = 'defs', nodeToEnd = 'defsAC', modules = steps)
             p.branch(nodeToStart = 'defsAC', nodeToEnd = '{}/templatesAC_{}/Nominal'.format('WToMu', region), modules = [ROOT.templateBuilder(wtomu_cut, weight,nom,"Nom",0)])
             #reco templates for out of acceptance events
+
             wtomu_cut+= "&& GenV_preFSR_qt>32. && GenV_preFSR_yabs>2.4"
-            p.branch(nodeToStart = 'defsAC', nodeToEnd = '{}/templatesLowAcc_{}/Nominal'.format('WToMu', region), modules = [ROOT.templates(wtomu_cut, weight, nom,"Nom",0)])    
+            p.branch(nodeToStart = 'defsAC', nodeToEnd = '{}/templatesLowAcc_{}/Nominal'.format('WToMu', region), modules = [ROOT.templates(wtomu_cut, weight, nom,"Nom",0)])
+            mass = ROOT.vector('string')()
+            mass.push_back("_massUp")
+            mass.push_back("_massDown")
+            p.branch(nodeToStart = 'defsAC', nodeToEnd = '{}/templatesLowAcc_{}/Nominal'.format('WToMu', region), modules = [ROOT.templates(wtomu_cut, weight, mass,"massWeights",0)])
             wtomu_cut = cut + wdecayselections['WToMu']        
-   
+
         #weight variations
         for s,variations in systematics.iteritems():
             print "branching weight variations", s
@@ -135,15 +142,17 @@ def RDFprocessWJetsMC(fvec, outputDir, sample, xsec, fileSF, ncores, pretendJob=
 
 def main():
     parser = argparse.ArgumentParser("")
-    parser.add_argument('-p', '--pretend',type=int, default=False, help="run over a small number of event")
+    parser.add_argument('-p', '--pretend',type=bool, default=False, help="run over a small number of event")
     parser.add_argument('-c', '--ncores',type=int, default=128, help="number of cores used")
     parser.add_argument('-o', '--outputDir',type=str, default='./output/', help="output dir name")
     parser.add_argument('-i', '--inputDir',type=str, default='/scratch/wmass/NanoAOD2016-V2/', help="input dir name")
+    parser.add_argument('-bkg', '--bkg',type=bool, default=False, help="get histograms for bkg analysis")
     args = parser.parse_args()
     pretendJob = args.pretend
     ncores = args.ncores
     outputDir = args.outputDir
     inDir = args.inputDir
+    bkg = args.bkg
     if pretendJob:
         print "Running a test job over a few events"
     else:
@@ -170,7 +179,7 @@ def main():
     print fvec 
 
     fileSF = ROOT.TFile.Open("data/ScaleFactors_OnTheFly.root")
-    RDFprocessWJetsMC(fvec, outputDir, sample, xsec, fileSF, ncores, pretendJob)
+    RDFprocessWJetsMC(fvec, outputDir, sample, xsec, fileSF, ncores, pretendJob, bkg)
 
 
 if __name__ == "__main__":
