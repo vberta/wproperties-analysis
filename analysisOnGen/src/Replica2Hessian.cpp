@@ -1,4 +1,14 @@
+#include "ROOT/RDataFrame.hxx"
+#include "ROOT/RVec.hxx"
+#include "ROOT/RDF/RInterface.hxx"
+#include "TH1D.h"
+#include "TH2D.h"
+#include "TString.h"
+#include "TMath.h"
+#include "interface/PDFWeightsHelper.hpp"
+#include "interface/TH1weightsHelper.hpp"
 #include "interface/Replica2Hessian.hpp"
+
 
 RNode Replica2Hessian::run(RNode d)
 {
@@ -26,6 +36,7 @@ RNode Replica2Hessian::run(RNode d)
 
   return d1;
 }
+/*
 std::vector<ROOT::RDF::RResultPtr<TH1D>> Replica2Hessian::getTH1()
 {
   return _h1List;
@@ -63,3 +74,4 @@ void Replica2Hessian::reset()
   _h2Group.clear();
   _h3Group.clear();
 }
+*/

@@ -1,5 +1,6 @@
 #include "interface/templates.hpp"
 #include "interface/functions.hpp"
+#include "interface/TH3weightsHelper.hpp"
 
 RNode templates::run(RNode d)
 {
@@ -54,42 +55,4 @@ void templates::setAxisarrays()
         _etaArr[i] = -2.4 + i * (4.8) / 48; //eta -2.4 to 2.4
     for (int i = 0; i < 3; i++)
       _chargeArr[i] = -2. +  i*2. ;
-}
-
-std::vector<ROOT::RDF::RResultPtr<TH1D>> templates::getTH1()
-{
-    return _h1List;
-}
-std::vector<ROOT::RDF::RResultPtr<TH2D>> templates::getTH2()
-{
-    return _h2List;
-}
-std::vector<ROOT::RDF::RResultPtr<TH3D>> templates::getTH3()
-{
-    return _h3List;
-}
-
-std::vector<ROOT::RDF::RResultPtr<std::vector<TH1D>>> templates::getGroupTH1()
-{
-    return _h1Group;
-}
-std::vector<ROOT::RDF::RResultPtr<std::vector<TH2D>>> templates::getGroupTH2()
-{
-    return _h2Group;
-}
-std::vector<ROOT::RDF::RResultPtr<std::vector<TH3D>>> templates::getGroupTH3()
-{
-    return _h3Group;
-}
-
-void templates::reset()
-{
-
-    _h1List.clear();
-    _h2List.clear();
-    _h3List.clear();
-
-    _h1Group.clear();
-    _h2Group.clear();
-    _h3Group.clear();
 }
