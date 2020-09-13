@@ -86,7 +86,8 @@ class fitUtils:
                             self.templates2D[proc][syst].append(copy.deepcopy(temp))
                             print temp.GetName()
                         else:
-                            if aux.Get(syst).GetListOfKeys().Contains(syst+"/"+"templates_"+var+'Up'):
+                            print syst+"/"+"templates_"+var+'Up'
+                            if aux.Get(syst).GetListOfKeys().Contains("templates_"+var+'Up'):
                                 temp = aux.Get(syst+"/"+"templates_"+var+'Up')
                                 temp.SetName(proc+'_'+var+'Up')
                                 self.templates2D[proc][syst].append(copy.deepcopy(temp))
@@ -108,9 +109,11 @@ class fitUtils:
         shapeOut = ROOT.TFile(self.channel+'.root', 'recreate')
                 
         for proc in self.processes:
+            print 'analysing', proc
             for syst in self.templSystematics:
+                print syst
                 for temp in self.templates2D[proc][syst]:
-                    print temp.GetName()
+           
                     if not temp.GetSumw2().GetSize()>0: print colored('warning: {} Sumw2 not called'.format(temp.GetName()),'red')
                     
                     nbins = temp.GetNbinsX()*temp.GetNbinsY()
