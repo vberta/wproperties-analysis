@@ -67,6 +67,7 @@ STATANA = CORRFITFINAL  #or False or CORRFITFINAL
 TEMPLATE = True
 NOM = ['Nominal','']
 EXTRAP = True #extrapolation syst
+EXTRAPCORR = False #extrapolation correction. not applied by default 
 NCORES=ncores
 if NCORES>1 :
     MULTICORE=True
@@ -78,7 +79,7 @@ def fakerate_analysis(systKind, systName,correlatedFit,statAna, template, ptBinn
     outdirBkg = outdir+'/bkg_'+systName+extrapSuff        
     if not os.path.isdir(outdirBkg): os.system('mkdir '+outdirBkg)
     
-    fake = bkg_fakerateAnalyzer.bkg_analyzer(systKind=systKind,systName=systName,correlatedFit=correlatedFit,statAna=statAna, ptBinning=ptBinning, etaBinning=etaBinning, outdir=outdirBkg, inputDir=indir)
+    fake = bkg_fakerateAnalyzer.bkg_analyzer(systKind=systKind,systName=systName,correlatedFit=correlatedFit,statAna=statAna, ptBinning=ptBinning, etaBinning=etaBinning, outdir=outdirBkg, inputDir=indir,extrapCorr=EXTRAPCORR)
     fake.main_analysis(correlatedFit=correlatedFit,template=template,output4Plots=template,produce_ext_output=True,extrapSuff=extrapSuff)
     if template :
         fake.bkg_plots()
@@ -140,6 +141,9 @@ if EXTRAP :
     if not os.path.isdir(outputDir+'/extrapolation_syst'): os.system('mkdir '+outputDir+'/extrapolation_syst')
     fakeExtrap.extrapolationSyst(extrapDict=bkg_utils.looseCutDict,linearFit=True, CFstring=CFstring)
     fakeExtrap.extrapolationSyst(extrapDict=bkg_utils.looseCutDict,linearFit=False, CFstring=CFstring)
+    if EXTRAPCORR :
+        print "extrapCorr"
+        fakerate_analysis(systKind=NOM[0], systName=NOM[1], correlatedFit=CORRFITFINAL, statAna=STATANA, template = TEMPLATE)
                 
 if comparisonAna :
     print "--> Syst comparison plots:"

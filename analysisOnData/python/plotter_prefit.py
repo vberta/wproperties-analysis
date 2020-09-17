@@ -55,6 +55,15 @@ class plotter:
         #     'Down' : ["LHEScaleWeight_muR0p5_muF0p5", "LHEScaleWeight_muR0p5_muF1p0", "LHEScaleWeight_muR1p0_muF0p5"],
         #     'Up' : ["LHEScaleWeight_muR2p0_muF2p0", "LHEScaleWeight_muR2p0_muF1p0","LHEScaleWeight_muR1p0_muF2p0"]   
         # }
+        
+        self.groupedSystColors = {
+            "WHSFVars"  : [ROOT.kGreen+1, 'Scale Factors'],
+            "LHEScaleWeightVars" : [ROOT.kViolet-2, 'MC Scale'],
+            "ptScaleVars" : [ROOT.kBlue-4, 'pT Scale'],
+            "jmeVars" : [ROOT.kAzure+10, 'MET'],
+            "LHEPdfWeightVars" : [ROOT.kRed+1, 'PDF'],
+            "Nominal" : [1, 'Stat. Unc.']
+        }
 
 
         if not os.path.exists(self.outdir):
@@ -175,7 +184,7 @@ class plotter:
                 hRatioBand.SetBinError(i, delta)
     
             #build the canvas
-            can = ROOT.TCanvas(var,var,800,700)
+            can = ROOT.TCanvas('prefit_'+var,'prefit_'+var,800,700)
             can.cd()
             pad_histo = ROOT.TPad("pad_histo_"+var, "pad_histo_"+var,0,0.2,1,1)
             pad_ratio = ROOT.TPad("pad_ratio_"+var, "pad_ratio_"+var,0,0,1,0.2)
@@ -219,7 +228,7 @@ class plotter:
             hRatio.SetLineWidth(2)
             
             hRatioBand.SetLineWidth(0)
-            hRatioBand.SetFillColor(ROOT.kCyan-4)
+            hRatioBand.SetFillColor(ROOT.kCyan-4)#ROOT.kOrange
             hRatioBand.SetFillStyle(3001)
             hRatioBand.SetMarkerStyle(1)
             hRatioBand.SetTitle("")
@@ -233,7 +242,11 @@ class plotter:
             hRatioBand.SetTitleSize(0.18,'x')
             hRatioBand.SetLabelSize(0.15,'x')
             if var.startswith('MT') :
-                hRatioBand.GetYaxis().SetRangeUser(0.8,1.2)
+                hRatioBand.GetYaxis().SetRangeUser(0.8,1.23)
+            elif var.startswith('Mu1_pt'):
+                hRatioBand.GetYaxis().SetRangeUser(0.88,1.18)
+            else :
+                hRatioBand.GetYaxis().SetRangeUser(0.9,1.13)
             
             # can.Update()
             can.SaveAs("{dir}/{c}.pdf".format(dir=self.outdir,c=can.GetName()))
@@ -293,7 +306,7 @@ class plotter:
                 hdict['LHEPdfDown'].SetBinContent(x, hdict['LHEPdfDown'].GetBinContent(x)-stdVar)
             
             #build the canvas
-            can = ROOT.TCanvas(var+'_systBreakdown',var+'_systBreakdown',800,600)
+            can = ROOT.TCanvas('prefit_'+var+'_systBreakdown','prefit_'+var+'_systBreakdown',800,600)
             can.cd()
             can.SetGridx()
             can.SetGridy()
@@ -354,7 +367,7 @@ class plotter:
             
             
             #grouped syst
-            legend2 = ROOT.TLegend(0.15, 0.7, 0.5, 0.85) 
+            legend2 = ROOT.TLegend(0.15, 0.7, 0.7, 0.9) 
             for sKind, sList in self.extSyst.iteritems(): #ratios
                 hdict[sKind] = self.CloneEmpty(self.histoDict[self.sampleOrder[0]+s+var],'hsum_'+var+'_'+sKind)
                 for i in range(1,hdict[sKind].GetNbinsX()+1) :
@@ -383,14 +396,15 @@ class plotter:
                         # if sKind==self.PDFvar :
                         #     Nrepl = float(len(sList)) 
                         # else : 
-                        Nrepl=1.
+                        Nrepl=1.#hessian approach
                         delta = math.sqrt(delta/Nrepl)
                     hdict[sKind].SetBinContent(i, delta) 
                 hdict[sKind].SetFillStyle(0)
                 hdict[sKind].SetFillColor(0)
             
+  
             #build the canvas
-            can2 = ROOT.TCanvas(var+'_systComparison',var+'_systComparison',800,600)
+            can2 = ROOT.TCanvas('prefit_'+var+'_systComparison','prefit_'+var+'_systComparison',800,600)
             can2.cd()
             can2.SetGridx()
             can2.SetGridy()
@@ -398,31 +412,50 @@ class plotter:
             
             hdict['Nominal'].SetLineWidth(3)
             hdict['Nominal'].SetLineColor(1)
-            hdict['Nominal'].Draw()
-            hdict['Nominal'].Draw()# same 0P5
-            hdict['Nominal'].SetTitle(varInfo[1]+', systematic comparison')
+            # hdict['Nominal'].Draw()
+            # hdict['Nominal'].Draw()# same 0P5
+            hdict['Nominal'].SetTitle(varInfo[1]+', grouped systematic breakdown')
             hdict['Nominal'].GetYaxis().SetTitle('Syst/Nom')
             hdict['Nominal'].GetXaxis().SetTitle(varInfo[1]+varInfo[3])
             # if 'MT' in var :
             hdict['Nominal'].GetYaxis().SetRangeUser(0.0001,1)
+            hdict['Nominal'].SetFillColor(1)
+            hdict['Nominal'].SetFillStyle(3002)
             # else :
             #      hdict['Nominal'].GetYaxis().SetRangeUser(0.95,1.1)
+            
             legend2.AddEntry(hdict['Nominal'], 'Stat. from Data')
             legend2.SetFillStyle(0)
             legend2.SetBorderSize(0)
             legend2.SetNColumns(2)
             
-            colorNumber=2
+            hdict['sum'] = self.CloneEmpty(hdict['Nominal'],'hsum_'+var+'_'+'sum')                            
+            hdict['sum'].SetFillColor(ROOT.kOrange)
+            hdict['sum'].SetLineColor(ROOT.kOrange)
+            hdict['sum'].SetFillStyle(3003)
+            for i in range(1,hdict['sum'].GetNbinsX()+1) :
+                sumOfDelta=0
+                for sKind, sList in bkg_utils.bkg_systematics.iteritems():
+                    if sKind in skipSyst : continue #skipped systs
+                    sumOfDelta+= hdict[sKind].GetBinContent(i)**2
+                sumOfDelta = math.sqrt(sumOfDelta)
+                hdict['sum'].SetBinContent(i,sumOfDelta) 
+            legend2.AddEntry(hdict['sum'], 'Squared Sum of Syst.')
+            hdict['sum'].Draw('hist')
+            hdict['Nominal'].Draw('hist SAME')
+            
+            # colorNumber=2
             for sKind, sList in bkg_utils.bkg_systematics.iteritems():
-                    if colorNumber==5 : colorNumber+=1
+                    # if colorNumber==5 : colorNumber+=1
 
                     if sKind in skipSyst : continue #skipped systs
                     
                     hdict[sKind].SetLineWidth(3)
-                    hdict[sKind].SetLineColor(colorNumber)
+                    hdict[sKind].SetLineColor(self.groupedSystColors[sKind][0])
                     hdict[sKind].Draw("hist SAME")
-                    colorNumber+=1
-                    legend2.AddEntry(hdict[sKind], sKind.replace('Vars',''))
+                    # colorNumber+=1
+                    # legend2.AddEntry(hdict[sKind], sKind.replace('Vars',''))
+                    legend2.AddEntry(hdict[sKind],self.groupedSystColors[sKind][1])
                     
             legend2.Draw("SAME")
         
