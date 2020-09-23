@@ -97,8 +97,6 @@ regionList = ['']
 if SBana :
     regionList.append('SideBand')
 
-regionList = ['SideBand']
-
 for reg in regionList : 
     if mainAna :
         print "--> Not correlated analysis path:"
