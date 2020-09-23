@@ -47,7 +47,8 @@ class bkg_analyzer:
         #     'Down' : ["LHEScaleWeight_muR0p5_muF0p5", "LHEScaleWeight_muR0p5_muF1p0", "LHEScaleWeight_muR1p0_muF0p5"],
         #     'Up' : ["LHEScaleWeight_muR2p0_muF2p0", "LHEScaleWeight_muR2p0_muF1p0","LHEScaleWeight_muR1p0_muF2p0"]   
         # }
-        
+        if self.nameSuff =='SideBand' :
+            print "WARNING: special name used, SideBand, processed sideband clousure test"
         
     def binNumb_calculator(self,histo, axis, lowEdge) : #axis can be X,Y,Z
         binout = 0
@@ -1503,9 +1504,14 @@ class bkg_analyzer:
         
         signBinning = [-2,0,2]
         if kind =='prompt' :
-            h3Num =  histo3D[kindDict[kind]+'D'].Clone(kind+'Num') #D
-            h3Den = histo3D[kindDict[kind]+'D'].Clone(kind+'Den') #D
-            h3Den.Add(histo3D[kindDict[kind]+'B']) #D+B
+            if self.nameSuff !='SideBand' :
+                h3Num =  histo3D[kindDict[kind]+'D'].Clone(kind+'Num') #D
+                h3Den = histo3D[kindDict[kind]+'D'].Clone(kind+'Den') #D
+                h3Den.Add(histo3D[kindDict[kind]+'B']) #D+B
+            else :
+                h3Num =  histo3D[kindDict[kind]+'C'].Clone(kind+'Num') #D
+                h3Den = histo3D[kindDict[kind]+'C'].Clone(kind+'Den') #D
+                h3Den.Add(histo3D[kindDict[kind]+'A']) #D+B
             
         if kind == 'fake' :
             h3Num =  histo3D[kindDict[kind]+'C'].Clone(kind+'Num') #C
@@ -1614,12 +1620,19 @@ class bkg_analyzer:
             for e in self.etaBinningS :
                 if kind =='prompt' :
                     etaBinN= self.binNumb_calculator( histo3D[kindDict[kind]+'D'],'X',self.etaBinning[self.etaBinningS.index(e)])    
-                    h1Dict[s+e] = histo3D[kindDict[kind]+'D'].ProjectionY('htempl_pt_'+kind+'_'+s+'_'+e,etaBinN,etaBinN,binS,binS,"e")
+                    if self.nameSuff !='SideBand' :    
+                        h1Dict[s+e] = histo3D[kindDict[kind]+'D'].ProjectionY('htempl_pt_'+kind+'_'+s+'_'+e,etaBinN,etaBinN,binS,binS,"e")
+                    else :
+                        h1Dict[s+e] = histo3D[kindDict[kind]+'C'].ProjectionY('htempl_pt_'+kind+'_'+s+'_'+e,etaBinN,etaBinN,binS,binS,"e")
 
                 if kind=='fake' :
                     etaBinN= self.binNumb_calculator(histo3D[kindDict[kind]+'D'],'X',self.etaBinning[self.etaBinningS.index(e)]) 
-                    hDregion = histo3D[kindDict[kind]+'D'].ProjectionY('D_pt_'+kind+'_'+s+'_'+e,etaBinN,etaBinN,binS,binS,"e")
-                    hBregion = histo3D[kindDict[kind]+'B'].ProjectionY('B_pt_'+kind+'_'+s+'_'+e,etaBinN,etaBinN,binS,binS,"e")
+                    if self.nameSuff !='SideBand' :
+                        hDregion = histo3D[kindDict[kind]+'D'].ProjectionY('D_pt_'+kind+'_'+s+'_'+e,etaBinN,etaBinN,binS,binS,"e")
+                        hBregion = histo3D[kindDict[kind]+'B'].ProjectionY('B_pt_'+kind+'_'+s+'_'+e,etaBinN,etaBinN,binS,binS,"e")
+                    else :
+                        hDregion = histo3D[kindDict[kind]+'C'].ProjectionY('D_pt_'+kind+'_'+s+'_'+e,etaBinN,etaBinN,binS,binS,"e")
+                        hBregion = histo3D[kindDict[kind]+'A'].ProjectionY('B_pt_'+kind+'_'+s+'_'+e,etaBinN,etaBinN,binS,binS,"e")
 
                     htempl_pt = ROOT.TH1F("htempl_pt_{kind}_{sign}_{eta}".format(kind=kind,sign=s,eta=e),"htempl_pt_{kind}_{sign}_{eta}".format(kind=kind,sign=s,eta=e), len(self.ptBinning)-1, array('f',self.ptBinning) )
                     htempl_fake_pt = ROOT.TH1F("htempl_fake_pt_{kind}_{sign}_{eta}".format(kind=kind,sign=s,eta=e),"htempl_fake_pt_{kind}_{sign}_{eta}".format(kind=kind,sign=s,eta=e), len(self.ptBinning)-1, array('f',self.ptBinning) )
