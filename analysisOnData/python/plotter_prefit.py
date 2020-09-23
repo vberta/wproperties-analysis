@@ -181,19 +181,25 @@ class plotter:
                         if (hRatioDict[systDown].GetBinContent(i)<hRatio.GetBinContent(i) and hRatioDict[syst].GetBinContent(i)<hRatio.GetBinContent(i)) or (hRatioDict[systDown].GetBinContent(i)>hRatio.GetBinContent(i) and hRatioDict[syst].GetBinContent(i)>hRatio.GetBinContent(i)) : #nominal not in between systs
                             print var,"WARNING: systematic", syst," up/down not around nominal in bin", i, hRatioDict[systDown].GetBinContent(i), hRatio.GetBinContent(i), hRatioDict[syst].GetBinContent(i)
                             
-                delta = 0.5*math.sqrt(delta)
+                delta = 0.25*delta
                 
-                deltaLHE=0 #LHEScale variations
+                deltaPDF=0 #LHE PDF variations (wrt nominal)
                 for syst, hsyst in hRatioDict.iteritems() : 
-                    if not 'LHE' in syst: continue 
+                    if not 'LHEPdf' in syst: continue 
                     Nrepl = 1.
                     # if 'LHEPdfWeight' in syst :
                     #     Nrepl = float(len(bkg_utils.bkg_systematics[self.PDFvar]))
-                    deltaLHE+= (1/Nrepl)*(hsyst.GetBinContent(i)-hRatio.GetBinContent(i))**2
-                deltaLHE = math.sqrt(deltaLHE)
-                delta= delta+deltaLHE
+                    deltaPDF+= (1/Nrepl)*(hsyst.GetBinContent(i)-hRatio.GetBinContent(i))**2
                 
-                hRatioBand.SetBinError(i, delta)
+                deltaScale=0 #LHE Scale variations (envelope)
+                for syst, hsyst in hRatioDict.iteritems() : 
+                    if not 'LHEScale' in syst: continue 
+                    deltaScale_temp= (hsyst.GetBinContent(i)-hRatio.GetBinContent(i))**2
+                    if deltaScale_temp>deltaScale : 
+                        deltaScale = deltaScale_temp
+                
+                deltaSum = math.sqrt(delta+deltaPDF+deltaScale)
+                hRatioBand.SetBinError(i, deltaSum)
     
             #build the canvas
             can = ROOT.TCanvas('prefit_'+var,'prefit_'+var,800,700)
@@ -400,7 +406,7 @@ class plotter:
                     delta = 0.5*math.sqrt(delta)
                     if sKind=='Nominal' :
                         delta = hdict[''].GetBinError(i)
-                    if 'LHE' in sKind :  
+                    if 'LHEPdf' in sKind :  
                     # if sKind=='LHEScaleWeightVars' :  
                         delta=0
                         for sName in sList :                            
@@ -410,6 +416,13 @@ class plotter:
                         # else : 
                         Nrepl=1.#hessian approach
                         delta = math.sqrt(delta/Nrepl)
+                    if 'LHEScale' in sKind :
+                        delta = 0
+                        for sName in sList :
+                            delta_temp = (hdict[sName].GetBinContent(i)-hdict[''].GetBinContent(i))**2
+                            if delta_temp> delta :
+                                delta=delta_temp
+                        delta = math.sqrt(delta)
                     hdict[sKind].SetBinContent(i, delta) 
                 hdict[sKind].SetFillStyle(0)
                 hdict[sKind].SetFillColor(0)
@@ -525,7 +538,7 @@ SBana = args.SBana
 
 if HADD :
     prepareHistos(inDir=INPUT,outDir=OUTPUT)
-    INPUT=OUTPUT
+INPUT=OUTPUT
 
 p=plotter(outDir=OUTPUT, inDir = INPUT)
 p.plotStack(skipSyst=skippedSyst)
