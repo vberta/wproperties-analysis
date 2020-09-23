@@ -60,7 +60,6 @@ if step1 :
     s1end=time.time()
     runTimes.append(s1end - s1start)
 else :   runTimes.append(0.)
-
 if step2 :
     s2start=time.time()
     print "step2: bkg analysis..."
