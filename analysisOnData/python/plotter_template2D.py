@@ -5,7 +5,7 @@ import sys
 import argparse
 import math
 
-#sys.path.append('../../bkgAnalysis')
+sys.path.append('../../bkgAnalysis')
 import bkg_utils
 ROOT.gROOT.SetBatch()
 ROOT.TH1.AddDirectory(False)
