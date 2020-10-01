@@ -50,6 +50,7 @@ parser.add_argument('-comparisonAna', '--compAna',type=int, default=False, help=
 parser.add_argument('-inputDir', '--inputDir',type=str, default='./data/', help="input dir name")
 parser.add_argument('-outputDir', '--outputDir',type=str, default='./bkg_V2/', help="output dir name")
 parser.add_argument('-ncores', '--ncores',type=int, default=64, help="number of cores used")
+parser.add_argument('-sideBandAna', '--SBana',type=int, default=False, help="run also on the sideband (clousure test)")
 
 args = parser.parse_args()
 mainAna = args.mainAna
@@ -59,6 +60,7 @@ systAna = args.syst
 inputDir = args.inputDir
 outputDir = args.outputDir
 ncores = args.ncores
+SBana = args.SBana
 
 
 #internal parameters:
@@ -75,78 +77,83 @@ else :
     MULTICORE=False
 
 
-def fakerate_analysis(systKind, systName,correlatedFit,statAna, template, ptBinning=bkg_utils.ptBinning, etaBinning=bkg_utils.etaBinning, outdir=outputDir, indir=inputDir, extrapSuff='') :
+def fakerate_analysis(systKind, systName,correlatedFit,statAna, template, ptBinning=bkg_utils.ptBinning, etaBinning=bkg_utils.etaBinning, outdir=outputDir, indir=inputDir, extrapSuff='',regionSuff='') :
     outdirBkg = outdir+'/bkg_'+systName+extrapSuff        
     if not os.path.isdir(outdirBkg): os.system('mkdir '+outdirBkg)
     
-    fake = bkg_fakerateAnalyzer.bkg_analyzer(systKind=systKind,systName=systName,correlatedFit=correlatedFit,statAna=statAna, ptBinning=ptBinning, etaBinning=etaBinning, outdir=outdirBkg, inputDir=indir,extrapCorr=EXTRAPCORR)
+    fake = bkg_fakerateAnalyzer.bkg_analyzer(systKind=systKind,systName=systName,correlatedFit=correlatedFit,statAna=statAna, ptBinning=ptBinning, etaBinning=etaBinning, outdir=outdirBkg, inputDir=indir,extrapCorr=EXTRAPCORR, nameSuff=regionSuff)
     fake.main_analysis(correlatedFit=correlatedFit,template=template,output4Plots=template,produce_ext_output=True,extrapSuff=extrapSuff)
     if template :
         fake.bkg_plots()
 
 def runSingleAna(par) :
-    fakerate_analysis_call = fakerate_analysis(systKind=par[0], systName=par[1], correlatedFit=par[2], statAna=par[3], template = par[4])
+    fakerate_analysis_call = fakerate_analysis(systKind=par[0], systName=par[1], correlatedFit=par[2], statAna=par[3], template = par[4], regionSuff=par[5])
 
 
 print "----> Background analyzer:"
 if not os.path.isdir(outputDir): os.system('mkdir '+outputDir)
 
-if mainAna :
-    print "--> Not correlated analysis path:"
-    fakerate_analysis(systKind=NOM[0], systName=NOM[1], correlatedFit=False, statAna=False, template = TEMPLATE)
-    if systAna :
-        processesMain = []
-        for sKind, sList in bkg_utils.bkg_systematics.iteritems():
-            for sName in sList :
-                print "-> systematic:", sKind,sName
+regionList = ['']
+if SBana :
+    regionList.append('SideBand')
+
+for reg in regionList : 
+    if mainAna :
+        print "--> Not correlated analysis path:"
+        fakerate_analysis(systKind=NOM[0], systName=NOM[1], correlatedFit=False, statAna=False, template = TEMPLATE, regionSuff=reg)
+        if systAna :
+            processesMain = []
+            for sKind, sList in bkg_utils.bkg_systematics.iteritems():
+                for sName in sList :
+                    print "-> systematic:", sKind,sName
+                    if MULTICORE :
+                        processesMain.append((sKind,sName,False,False,TEMPLATE,reg))
+                    else :
+                        fakerate_analysis(systKind=sKind, systName=sName, correlatedFit=False, statAna=False, template = TEMPLATE, regionSuff=reg)
                 if MULTICORE :
-                    processesMain.append((sKind,sName,False,False,TEMPLATE))
-                else :
-                    fakerate_analysis(systKind=sKind, systName=sName, correlatedFit=False, statAna=False, template = TEMPLATE)
+                    poolMain = multiprocessing.Pool(NCORES)
+                    poolMain.map(runSingleAna,processesMain)
+
+    if correlatedFitAna :
+        print "--> Correlated analysis path:"
+        fakerate_analysis(systKind=NOM[0], systName=NOM[1], correlatedFit=True, statAna=False, template = TEMPLATE, regionSuff=reg)
+        if STATANA :
+            print "-> statistical uncertainity analysis:"
+            fakerate_analysis(systKind=NOM[0], systName=NOM[1], correlatedFit=True, statAna=STATANA, template = TEMPLATE, regionSuff=reg)
+        if systAna :
+            processesCF = []
+            for sKind, sList in bkg_utils.bkg_systematics.iteritems():
+                for sName in sList : 
+                    print "-> systematatic:", sKind,sName
+                    if MULTICORE :
+                        processesCF.append((sKind,sName,True,False,TEMPLATE,reg))
+                    else :
+                        fakerate_analysis(systKind=sKind, systName=sName, correlatedFit=True, statAna=False, template = TEMPLATE, regionSuff=reg)
             if MULTICORE :
-                poolMain = multiprocessing.Pool(NCORES)
-                poolMain.map(runSingleAna,processesMain)
+                poolCF = multiprocessing.Pool(NCORES)
+                poolCF.map(runSingleAna,processesCF)
 
-if correlatedFitAna :
-    print "--> Correlated analysis path:"
-    fakerate_analysis(systKind=NOM[0], systName=NOM[1], correlatedFit=True, statAna=False, template = TEMPLATE)
-    if STATANA :
-        print "-> statistical uncertainity analysis:"
-        fakerate_analysis(systKind=NOM[0], systName=NOM[1], correlatedFit=True, statAna=STATANA, template = TEMPLATE)
-    if systAna :
-        processesCF = []
-        for sKind, sList in bkg_utils.bkg_systematics.iteritems():
-            for sName in sList : 
-                print "-> systematatic:", sKind,sName
-                if MULTICORE :
-                    processesCF.append((sKind,sName,True,False,TEMPLATE))
-                else :
-                    fakerate_analysis(systKind=sKind, systName=sName, correlatedFit=True, statAna=False, template = TEMPLATE)
-        if MULTICORE :
-            poolCF = multiprocessing.Pool(NCORES)
-            poolCF.map(runSingleAna,processesCF)
-
-if EXTRAP :
-    print "--> Extrapolation syst evaluation:"
-    CFstring = ''
-    if CORRFITFINAL :
-        CFstring+='_CF'
-    if STATANA :
-        CFstring+='statAna'
-    if (mainAna or correlatedFitAna):
-        for lcut, lbin in bkg_utils.looseCutDict.iteritems() :    
-            print "-> Mt bin:", lbin
-            fakerate_analysis(systKind=NOM[0], systName=NOM[1], correlatedFit=False, statAna=False, template = TEMPLATE, extrapSuff=lcut)
-    fakeExtrap = bkg_fakerateAnalyzer.bkg_analyzer(systKind=NOM[0],systName=NOM[1],correlatedFit=CORRFITFINAL,statAna=False, ptBinning=bkg_utils.ptBinning, etaBinning=bkg_utils.etaBinning, outdir=outputDir, inputDir=inputDir)
-    if not os.path.isdir(outputDir+'/extrapolation_syst'): os.system('mkdir '+outputDir+'/extrapolation_syst')
-    fakeExtrap.extrapolationSyst(extrapDict=bkg_utils.looseCutDict,linearFit=True, CFstring=CFstring)
-    fakeExtrap.extrapolationSyst(extrapDict=bkg_utils.looseCutDict,linearFit=False, CFstring=CFstring)
-    if EXTRAPCORR :
-        print "extrapCorr"
-        fakerate_analysis(systKind=NOM[0], systName=NOM[1], correlatedFit=CORRFITFINAL, statAna=STATANA, template = TEMPLATE)
-                
-if comparisonAna :
-    print "--> Syst comparison plots:"
-    fakeFinal = bkg_fakerateAnalyzer.bkg_analyzer(systKind=NOM[0],systName=NOM[1],correlatedFit=CORRFITFINAL,statAna=False, ptBinning=bkg_utils.ptBinning, etaBinning=bkg_utils.etaBinning, outdir=outputDir+'/bkg_'+NOM[1], inputDir=inputDir)
-    fakeFinal.syst_comparison(systDict=bkg_utils.bkg_systematics, SymBands=True, outDir=outputDir, noratio=False, statAna=STATANA)
-    fakeFinal.buildOutput(outputDir=outputDir,statAna=STATANA)
+    if EXTRAP and reg!='SideBand' :
+        print "--> Extrapolation syst evaluation:"
+        CFstring = ''
+        if CORRFITFINAL :
+            CFstring+='_CF'
+        if STATANA :
+            CFstring+='statAna'
+        if (mainAna or correlatedFitAna):
+            for lcut, lbin in bkg_utils.looseCutDict.iteritems() :    
+                print "-> Mt bin:", lbin
+                fakerate_analysis(systKind=NOM[0], systName=NOM[1], correlatedFit=False, statAna=False, template = TEMPLATE, extrapSuff=lcut)
+        fakeExtrap = bkg_fakerateAnalyzer.bkg_analyzer(systKind=NOM[0],systName=NOM[1],correlatedFit=CORRFITFINAL,statAna=False, ptBinning=bkg_utils.ptBinning, etaBinning=bkg_utils.etaBinning, outdir=outputDir, inputDir=inputDir)
+        if not os.path.isdir(outputDir+'/extrapolation_syst'): os.system('mkdir '+outputDir+'/extrapolation_syst')
+        fakeExtrap.extrapolationSyst(extrapDict=bkg_utils.looseCutDict,linearFit=True, CFstring=CFstring)
+        fakeExtrap.extrapolationSyst(extrapDict=bkg_utils.looseCutDict,linearFit=False, CFstring=CFstring)
+        if EXTRAPCORR :
+            print "extrapCorr"
+            fakerate_analysis(systKind=NOM[0], systName=NOM[1], correlatedFit=CORRFITFINAL, statAna=STATANA, template = TEMPLATE)
+                    
+    if comparisonAna :
+        print "--> Syst comparison plots:"
+        fakeFinal = bkg_fakerateAnalyzer.bkg_analyzer(systKind=NOM[0],systName=NOM[1],correlatedFit=CORRFITFINAL,statAna=False, ptBinning=bkg_utils.ptBinning, etaBinning=bkg_utils.etaBinning, outdir=outputDir+'/bkg_'+NOM[1], inputDir=inputDir, nameSuff=reg)
+        fakeFinal.syst_comparison(systDict=bkg_utils.bkg_systematics, SymBands=True, outDir=outputDir, noratio=False, statAna=STATANA)
+        fakeFinal.buildOutput(outputDir=outputDir,statAna=STATANA)

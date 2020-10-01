@@ -17,6 +17,7 @@ selections_bkg = {
 
 selections_fakes = {
   "fakes": "HLT_SingleMu24 && Mu1_pt>25.0 && Mu1_pt<55.0 && MT>=40.0 && MET_filters==1 && nVetoElectrons==0 && 1", 
+  "fakes_SideBand": "HLT_SingleMu24 && Mu1_pt>25.0 && Mu1_pt<55.0 && MT<30.0 && MET_filters==1 && nVetoElectrons==0 && 1", 
   }
 
 selectionVars = { 

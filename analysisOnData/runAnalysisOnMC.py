@@ -17,7 +17,7 @@ from getLumiWeight import getLumiWeight
 ROOT.gSystem.Load('bin/libAnalysisOnData.so')
 ROOT.gROOT.ProcessLine("gErrorIgnoreLevel = 2001;");
 
-def RDFprocessMC(fvec, outputDir, sample, xsec, fileSF, ncores, systType, pretendJob=True):
+def RDFprocessMC(fvec, outputDir, sample, xsec, fileSF, ncores, systType, pretendJob=True,SBana=False):
     ROOT.ROOT.EnableImplicitMT(ncores)
     print "running with {} cores".format(ncores)
     p = RDFtree(outputDir = outputDir, inputFile = fvec, outputFile="{}_plots.root".format(sample), pretend=pretendJob)
@@ -43,7 +43,7 @@ def RDFprocessMC(fvec, outputDir, sample, xsec, fileSF, ncores, systType, preten
         #last argument refers to histo category - 0 = Nominal, 1 = Pt scale , 2 = MET scale
         print "branching nominal"
 
-        if region == "Signal": 
+        if region == "Signal" or (region=='Sideband' and SBana):
             p.branch(nodeToStart = 'defs', nodeToEnd = 'prefit_{}/Nominal'.format(region), modules = [ROOT.muonHistos(cut, weight, nom,"Nom",0)])  
         p.branch(nodeToStart = 'defs', nodeToEnd = 'templates_{}/Nominal'.format(region), modules = [ROOT.templates(cut, weight, nom,"Nom",0)])    
   
@@ -63,7 +63,7 @@ def RDFprocessMC(fvec, outputDir, sample, xsec, fileSF, ncores, systType, preten
                 vars_vec.push_back(var)
             print "branching weight variations", s
             print weight,var_weight, "MODIFIED WEIGHT"
-            if region == "Signal": 
+            if region == "Signal" or (region=='Sideband' and SBana): 
                 p.branch(nodeToStart = 'defs'.format(region), nodeToEnd = 'prefit_{}/{}Vars'.format(region,s), modules = [ROOT.muonHistos(cut,var_weight,vars_vec,variations[1], 0)])
             p.branch(nodeToStart = 'defs'.format(region), nodeToEnd = 'templates_{}/{}Vars'.format(region,s), modules = [ROOT.templates(cut,var_weight,vars_vec,variations[1], 0)])
 
@@ -79,7 +79,7 @@ def RDFprocessMC(fvec, outputDir, sample, xsec, fileSF, ncores, systType, preten
                 cut_vec.push_back(newcut)
                 var_vec.push_back(selvar)
 
-            if region == "Signal": 
+            if region == "Signal" or (region=='Sideband' and SBana):
                 p.branch(nodeToStart = 'defs', nodeToEnd = 'prefit_{}/{}Vars'.format(region,vartype), modules = [ROOT.muonHistos(cut_vec, weight, nom,"Nom",hcat,var_vec)])  
             p.branch(nodeToStart = 'defs', nodeToEnd = 'templates_{}/{}Vars'.format(region,vartype), modules = [ROOT.templates(cut_vec, weight, nom,"Nom",hcat,var_vec)])  
 
@@ -93,11 +93,13 @@ def main():
     parser.add_argument('-n', '--ncores',type=int, default=64, help="number of cores used")
     parser.add_argument('-o', '--outputDir',type=str, default='./output/', help="output dir name")
     parser.add_argument('-i', '--inputDir',type=str, default='/scratchssd/sroychow/NanoAOD2016-V2/', help="input dir name")    
+    parser.add_argument('-sb', '--SBana',type=int, default=False, help="run also on the sideband (clousure test)")
     args = parser.parse_args()
     pretendJob = args.pretend
     ncores = args.ncores
     outputDir = args.outputDir
     inDir = args.inputDir
+    SBana = args.SBana
     if pretendJob:
         print "Running a test job over a few events"
     else:
@@ -130,7 +132,7 @@ def main():
         print fvec 
         fileSF = ROOT.TFile.Open("data/ScaleFactors_OnTheFly.root")
         systType = samples[sample]['systematics']
-        RDFprocessMC(fvec, outputDir, sample, xsec, fileSF, cores, systType, pretendJob)
+        RDFprocessMC(fvec, outputDir, sample, xsec, fileSF, cores, systType, pretendJob,SBana)
 
 if __name__ == "__main__":
     main()

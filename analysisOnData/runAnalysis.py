@@ -27,6 +27,7 @@ parser.add_argument('-i', '--inputDir',type=str, default='/scratchssd/sroychow/N
 parser.add_argument('-b', '--runBKG',type=int, default=False, help="prepare the input of the bkg analysis, if =false run the prefit Plots")
 parser.add_argument('-f', '--bkgFile',type=str, default='/scratch/bertacch/wmass/wproperties-analysis/bkgAnalysis/TEST_runTheMatrix/bkg_parameters_C\
 FstatAna.root', help="bkg parameters file path/name.root")
+parser.add_argument('-sb', '--SBana',type=int, default=False, help="run also on the sideband (clousure test)")
 args = parser.parse_args()
 pretendJob = args.pretend
 ncores = args.ncores
@@ -34,6 +35,7 @@ outputDir = args.outputDir
 inDir = args.inputDir
 runBKG = args.runBKG
 bkgFile = args.bkgFile
+SBana = args.SBana
 
 #in the new machine, optimal performance with 128 cores is seen.
 ncmax = cpu_count()/2 if cpu_count() > 64 else cpu_count()
@@ -73,11 +75,11 @@ if runBKG : #produces templates for all regions and prefit for signal
       systType = samples[sample]['systematics']
 
       if 'WJets' in sample : #nc = ncpus/2
-          p = Process(target=RDFprocessWJetsMC, args=(fvec, outputDir, sample, xsec, fileSF, ncmax, pretendJob))
+          p = Process(target=RDFprocessWJetsMC, args=(fvec, outputDir, sample, xsec, fileSF, ncmax, pretendJob, runBKG,SBana))
           p.start()
           multiprocs.append(p)
       else:
-          p = Process(target=RDFprocessMC, args=(fvec, outputDir, sample, xsec, fileSF, cores, systType, pretendJob))	
+          p = Process(target=RDFprocessMC, args=(fvec, outputDir, sample, xsec, fileSF, cores, systType, pretendJob,SBana))	
           p.start()
           multiprocs.append(p)
 
@@ -101,11 +103,11 @@ if fvec.empty():
     sys.exit(1)
 print fvec
 if runBKG : #produces templates for all regions and prefit for signal
-    p = Process(target=RDFprocessData, args=(fvec, outputDir, ncmax, pretendJob))
+    p = Process(target=RDFprocessData, args=(fvec, outputDir, ncmax, pretendJob, SBana))
     p.start()
     multiprocs.append(p)
 else : #produces Fake contribution to prefit plots computed from data
-    p = Process(target=RDFprocessfakefromData, args=(fvec, outputDir, bkgFile, ncmax, pretendJob))
+    p = Process(target=RDFprocessfakefromData, args=(fvec, outputDir, bkgFile, ncmax, pretendJob, SBana))
     p.start()
     multiprocs.append(p)
 

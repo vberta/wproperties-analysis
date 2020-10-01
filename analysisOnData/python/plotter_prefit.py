@@ -14,22 +14,32 @@ ROOT.gStyle.SetOptStat(0)
 
 class plotter:
     
-    def __init__(self, outDir, inDir = '', norm = 1):
+    def __init__(self, outDir, inDir = '',SBana=False):
 
         self.indir = inDir # indir containig the various outputs
         self.outdir = outDir
-        self.norm = norm
         self.PDFvar = 'LHEPdfWeightVars'
+        self.SBana = SBana
+        
+        if not self.SBana :
+            dirMC = 'prefit_Signal'
+            dirFakes = 'prefit_fakes'
+            self.SBsuff = ''
+        else :
+            dirMC = 'prefit_Sideband'
+            dirFakes = 'prefit_fakes_SideBand'
+            self.SBsuff = '_SideBand'
+            
                 
         self.sampleDict = {
-            "WToMu"      :  ['WToMu_plots.root',       'prefit_Signal',         ROOT.kRed+2,       "W^{+}#rightarrow #mu^{+}#nu_{#mu}"],         
-            "DYJets"      : ['DYJets_plots.root',      'prefit_Signal',         ROOT.kAzure+2,     "DYJets"],              
-            "WtoTau"      : ['WToTau_plots.root',      'prefit_Signal',         ROOT.kSpring+9,    "W^{#pm}#rightarrow #tau^{#pm}#nu_{#tau}"],   
-            "Top"       : ['Top_plots.root',         'prefit_Signal',         ROOT.kGreen+3,     "Top"],    
-            "DiBoson"     : ['Diboson_plots.root',     'prefit_Signal',         ROOT.kViolet+2,    "di-boson"],     
-            "SIGNAL_Fake" : ['FakeFromData_plots.root', 'prefit_fakes',          ROOT.kGray,        "QCD"],     
-            "Data"        : ['Data_plots.root',        'prefit_Signal',         1,                 "Data"]
-            }   
+            "WToMu"      :  ['WToMu_plots.root',        dirMC,         ROOT.kRed+2,       "W^{+}#rightarrow #mu^{+}#nu_{#mu}"],         
+            "DYJets"      : ['DYJets_plots.root',       dirMC,         ROOT.kAzure+2,     "DYJets"],              
+            "WtoTau"      : ['WToTau_plots.root',       dirMC,         ROOT.kSpring+9,    "W^{#pm}#rightarrow #tau^{#pm}#nu_{#tau}"],   
+            "Top"       : ['Top_plots.root',            dirMC,         ROOT.kGreen+3,     "Top"],    
+            "DiBoson"     : ['Diboson_plots.root',      dirMC,         ROOT.kViolet+2,    "di-boson"],     
+            "SIGNAL_Fake" : ['FakeFromData_plots.root', dirFakes,      ROOT.kGray,        "QCD"],     
+            "Data"        : ['Data_plots.root',         dirMC,         1,                 "Data"]
+            }    
         
         self.variableDict = {
             "Mu1_pt_plus"   :  ["Mu1_pt",   "p_{T} (#mu^{+})",    "Events /binWidth", " [GeV]"],
@@ -102,7 +112,9 @@ class plotter:
                             h2 = inFile.Get(fileInfo[1]+'/Nominal/'+varInfo[0])
                         else : 
                             h2 = inFile.Get(fileInfo[1]+'/'+sKind+'/'+varInfo[0]+'_'+sName)
+                        # print fileInfo[1]+'/'+sKind+'/'+varInfo[0]+'_'+sName
                         for s,sInfo in self.signDict.iteritems() :
+                            # print "inside=", h2
                             self.histoDict[f+s+var+sName] = h2.ProjectionX(h2.GetName() + s, sInfo[0],sInfo[0])
                             self.varBinWidth_modifier(self.histoDict[f+s+var+sName])
    
@@ -110,7 +122,7 @@ class plotter:
     def plotStack(self,skipSyst=[]):
 
         self.getHistos()
-        fname = "{dir}/stackPlots.root".format(dir=self.outdir)
+        fname = "{dir}/stackPlots{suff}.root".format(dir=self.outdir,suff=self.SBsuff)
         outFile =  ROOT.TFile(fname, "RECREATE")
         
         for var,varInfo in self.variableDict.iteritems() :
@@ -169,19 +181,25 @@ class plotter:
                         if (hRatioDict[systDown].GetBinContent(i)<hRatio.GetBinContent(i) and hRatioDict[syst].GetBinContent(i)<hRatio.GetBinContent(i)) or (hRatioDict[systDown].GetBinContent(i)>hRatio.GetBinContent(i) and hRatioDict[syst].GetBinContent(i)>hRatio.GetBinContent(i)) : #nominal not in between systs
                             print var,"WARNING: systematic", syst," up/down not around nominal in bin", i, hRatioDict[systDown].GetBinContent(i), hRatio.GetBinContent(i), hRatioDict[syst].GetBinContent(i)
                             
-                delta = 0.5*math.sqrt(delta)
+                delta = 0.25*delta
                 
-                deltaLHE=0 #LHEScale variations
+                deltaPDF=0 #LHE PDF variations (wrt nominal)
                 for syst, hsyst in hRatioDict.iteritems() : 
-                    if not 'LHE' in syst: continue 
+                    if not 'LHEPdf' in syst: continue 
                     Nrepl = 1.
                     # if 'LHEPdfWeight' in syst :
                     #     Nrepl = float(len(bkg_utils.bkg_systematics[self.PDFvar]))
-                    deltaLHE+= (1/Nrepl)*(hsyst.GetBinContent(i)-hRatio.GetBinContent(i))**2
-                deltaLHE = math.sqrt(deltaLHE)
-                delta= delta+deltaLHE
+                    deltaPDF+= (1/Nrepl)*(hsyst.GetBinContent(i)-hRatio.GetBinContent(i))**2
                 
-                hRatioBand.SetBinError(i, delta)
+                deltaScale=0 #LHE Scale variations (envelope)
+                for syst, hsyst in hRatioDict.iteritems() : 
+                    if not 'LHEScale' in syst: continue 
+                    deltaScale_temp= (hsyst.GetBinContent(i)-hRatio.GetBinContent(i))**2
+                    if deltaScale_temp>deltaScale : 
+                        deltaScale = deltaScale_temp
+                
+                deltaSum = math.sqrt(delta+deltaPDF+deltaScale)
+                hRatioBand.SetBinError(i, deltaSum)
     
             #build the canvas
             can = ROOT.TCanvas('prefit_'+var,'prefit_'+var,800,700)
@@ -249,8 +267,8 @@ class plotter:
                 hRatioBand.GetYaxis().SetRangeUser(0.9,1.13)
             
             # can.Update()
-            can.SaveAs("{dir}/{c}.pdf".format(dir=self.outdir,c=can.GetName()))
-            can.SaveAs("{dir}/{c}.png".format(dir=self.outdir,c=can.GetName()))
+            can.SaveAs("{dir}/{c}{suff}.pdf".format(dir=self.outdir,c=can.GetName(),suff=self.SBsuff))
+            can.SaveAs("{dir}/{c}{suff}.png".format(dir=self.outdir,c=can.GetName(),suff=self.SBsuff))
 
             outFile.cd()
             can.Write()
@@ -263,7 +281,7 @@ class plotter:
         outFile.Close()
 
     def plotSyst(self,skipSyst=[]) :
-        fname = "{dir}/systPlots.root".format(dir=self.outdir)
+        fname = "{dir}/systPlots{suff}.root".format(dir=self.outdir,suff=self.SBsuff)
         outFile =  ROOT.TFile(fname, "RECREATE")
         
         for var,varInfo in self.variableDict.iteritems() :
@@ -358,8 +376,8 @@ class plotter:
                     legend.AddEntry(hdict[sName], sName.replace('LHEScaleWeight','Scale'))
             legend.Draw("SAME")
         
-            can.SaveAs("{dir}/{c}.pdf".format(dir=self.outdir,c=can.GetName()))
-            can.SaveAs("{dir}/{c}.png".format(dir=self.outdir,c=can.GetName()))
+            can.SaveAs("{dir}/{c}{suff}.pdf".format(dir=self.outdir,c=can.GetName(),suff=self.SBsuff))
+            can.SaveAs("{dir}/{c}{suff}.png".format(dir=self.outdir,c=can.GetName(),suff=self.SBsuff))
             
             outFile.cd()
             can.Write()  
@@ -388,7 +406,7 @@ class plotter:
                     delta = 0.5*math.sqrt(delta)
                     if sKind=='Nominal' :
                         delta = hdict[''].GetBinError(i)
-                    if 'LHE' in sKind :  
+                    if 'LHEPdf' in sKind :  
                     # if sKind=='LHEScaleWeightVars' :  
                         delta=0
                         for sName in sList :                            
@@ -398,6 +416,13 @@ class plotter:
                         # else : 
                         Nrepl=1.#hessian approach
                         delta = math.sqrt(delta/Nrepl)
+                    if 'LHEScale' in sKind :
+                        delta = 0
+                        for sName in sList :
+                            delta_temp = (hdict[sName].GetBinContent(i)-hdict[''].GetBinContent(i))**2
+                            if delta_temp> delta :
+                                delta=delta_temp
+                        delta = math.sqrt(delta)
                     hdict[sKind].SetBinContent(i, delta) 
                 hdict[sKind].SetFillStyle(0)
                 hdict[sKind].SetFillColor(0)
@@ -459,8 +484,8 @@ class plotter:
                     
             legend2.Draw("SAME")
         
-            can2.SaveAs("{dir}/{c}.pdf".format(dir=self.outdir,c=can2.GetName()))
-            can2.SaveAs("{dir}/{c}.png".format(dir=self.outdir,c=can2.GetName()))
+            can2.SaveAs("{dir}/{c}{suff}.pdf".format(dir=self.outdir,c=can2.GetName(),suff=self.SBsuff))
+            can2.SaveAs("{dir}/{c}{suff}.png".format(dir=self.outdir,c=can2.GetName(),suff=self.SBsuff))
             
             outFile.cd()
             can2.Write()  
@@ -500,6 +525,8 @@ parser.add_argument('-o','--output', type=str, default='TEST',help="name of the 
 parser.add_argument('-i','--input', type=str, default='TEST',help="name of the input direcory with HADDED root files/if used with HADD=1, will be set to output dir")
 parser.add_argument('-s','--skipSyst', type=str, default='',nargs='*', help="list of skipped syst class as in bkgAnalysis/bkg_utils.py, separated by space")
 parser.add_argument('-c','--systComp', type=int, default=True,help="systematic uncertainity comparison plots")
+parser.add_argument('-sb', '--SBana',type=int, default=False, help="run also on the sideband (clousure test)")
+
 
 args = parser.parse_args()
 HADD = args.hadd
@@ -507,12 +534,19 @@ OUTPUT = args.output
 INPUT = args.input
 skippedSyst =args.skipSyst
 SYSTCOMP = args.systComp
+SBana = args.SBana
 
 if HADD :
     prepareHistos(inDir=INPUT,outDir=OUTPUT)
-    INPUT=OUTPUT
+INPUT=OUTPUT
 
 p=plotter(outDir=OUTPUT, inDir = INPUT)
 p.plotStack(skipSyst=skippedSyst)
 if SYSTCOMP :
     p.plotSyst(skipSyst=skippedSyst)
+
+if SBana :
+    pSB=plotter(outDir=OUTPUT, inDir = INPUT,SBana=SBana)
+    pSB.plotStack(skipSyst=skippedSyst)
+    if SYSTCOMP :
+        pSB.plotSyst(skipSyst=skippedSyst)

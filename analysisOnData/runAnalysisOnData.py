@@ -13,7 +13,7 @@ from getLumiWeight import getLumiWeight
 ROOT.gSystem.Load('bin/libAnalysisOnData.so')
 
 #produces templates for all regions and prefit for signal
-def RDFprocessData(fvec, outputDir, ncores, pretendJob=True, outF="SingleMuonData_plots.root"):
+def RDFprocessData(fvec, outputDir, ncores, pretendJob=True, SBana=False, outF="SingleMuonData_plots.root"):
     ROOT.ROOT.EnableImplicitMT(ncores)
     print "running with {} cores".format(ncores)
     weight = 'float(1)'
@@ -26,7 +26,7 @@ def RDFprocessData(fvec, outputDir, ncores, pretendJob=True, outF="SingleMuonDat
         nom.push_back("")
         #last argument refers to histo category - 0 = Nominal, 1 = Pt scale , 2 = MET scale
         print "branching nominal"
-        if region == "Signal":
+        if region == "Signal" or (region=='Sideband' and SBana):
             p.branch(nodeToStart = 'defs', nodeToEnd = 'prefit_{}/Nominal'.format(region), modules = [ROOT.muonHistos(cut, weight, nom,"Nom",0)]) 
         #nominal templates
         p.branch(nodeToStart = 'defs', nodeToEnd = 'templates_{}/Nominal'.format(region), modules = [ROOT.templates(cut, weight, nom,"Nom",0)])       
@@ -34,7 +34,7 @@ def RDFprocessData(fvec, outputDir, ncores, pretendJob=True, outF="SingleMuonDat
     p.saveGraph()
 
 #produces Fake contribution to prefit plots computed from data 
-def RDFprocessfakefromData(fvec, outputDir, bkgFile, ncores, pretendJob=True, outF="FakeFromData_plots.root"):
+def RDFprocessfakefromData(fvec, outputDir, bkgFile, ncores, pretendJob=True, SBana=False, outF="FakeFromData_plots.root"):
     ROOT.ROOT.EnableImplicitMT(ncores)
     print "running with {} cores".format(ncores)
     weight = 'float(1)'
@@ -42,9 +42,12 @@ def RDFprocessfakefromData(fvec, outputDir, bkgFile, ncores, pretendJob=True, ou
     #systematics.update({ "LHEPdfWeight" : ( ["_LHEPdfWeight" + str(i)  for i in range(0, 100)], "LHEPdfWeight" ) } )
     print systematics
     p = RDFtree(outputDir = outputDir, inputFile = fvec, outputFile=outF, pretend=pretendJob)
-    FR=ROOT.TFile.Open(bkgFile)
-    p.branch(nodeToStart = 'input', nodeToEnd = 'defs', modules = [ROOT.baseDefinitions(0),ROOT.fakeRate(FR)])
-    for region,cut in selections_fakes.iteritems():    
+    for region,cut in selections_fakes.iteritems(): 
+        if 'SideBand' in region and (not SBana) : continue 
+        if 'SideBand' in region : bkgFile_mod = bkgFile.replace('.root','SideBand.root') 
+        else :  bkgFile_mod=bkgFile
+        FR=ROOT.TFile.Open(bkgFile_mod)
+        p.branch(nodeToStart = 'input', nodeToEnd = 'defs', modules = [ROOT.baseDefinitions(0),ROOT.fakeRate(FR)]) 
         print region       
         nom = ROOT.vector('string')()
         nom.push_back("")
@@ -88,6 +91,7 @@ def main():
     parser.add_argument('-o', '--outputDir',type=str, default='./output/', help="output dir name")
     parser.add_argument('-f', '--bkgFile',type=str, default='/scratch/bertacch/wmass/wproperties-analysis/bkgAnalysis/TEST_runTheMatrix/bkg_parameters_CFstatAna.root', help="bkg parameters file path/name.root")
     parser.add_argument('-i', '--inputDir',type=str, default='/scratchssd/sroychow/NanoAOD2016-V2/', help="input dir name")
+    parser.add_argument('-sb', '--SBana',type=int, default=False, help="run also on the sideband (clousure test)")
 
     args = parser.parse_args()
     pretendJob = args.pretend
@@ -96,6 +100,7 @@ def main():
     outputDir = args.outputDir
     bkgFile = args.bkgFile
     inDir = args.inputDir
+    SBana = args.SBana
     if pretendJob:
         print "Running a test job over a few events"
     else:
@@ -121,9 +126,9 @@ def main():
         sys.exit(1)
     print fvec
     if runBKG : #produces templates for all regions and prefit for signal
-        RDFprocessData(fvec, outputDir, ncores, pretendJob)
+        RDFprocessData(fvec, outputDir, ncores, pretendJob,SBana)
     else : #produces Fake contribution to prefit plots computed from data 
-        RDFprocessfakefromData(fvec, outputDir, bkgFile, ncores, pretendJob)
+        RDFprocessfakefromData(fvec, outputDir, bkgFile, ncores, pretendJob,SBana)
 
 if __name__ == "__main__":
     main()
