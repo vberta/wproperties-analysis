@@ -27,7 +27,7 @@ class fitUtils:
             #"LHEScaleWeightVars" : ["LHEScaleWeight_muR0p5_muF0p5", "LHEScaleWeight_muR0p5_muF1p0","LHEScaleWeight_muR1p0_muF0p5","LHEScaleWeight_muR1p0_muF2p0","LHEScaleWeight_muR2p0_muF1p0", "LHEScaleWeight_muR2p0_muF2p0"],
             #"ptScaleVars" : [ "corrected"], 
             #"jmeVars" : ["jesTotal", "unclustEn"],
-            "LHEPdfWeightVars" : ["LHEPdfWeightHess{}".format(i+1) for i in range(60)]
+            #"LHEPdfWeightVars" : ["LHEPdfWeightHess{}".format(i+1) for i in range(60)]
         }
         
         #all the files that are needed
@@ -42,6 +42,7 @@ class fitUtils:
     def getTemplates(self):
         
         for key in self.fsig.Get("Nominal").GetListOfKeys():
+            if 'clos' in key.GetName() or 'mapTot' in key.GetName(): continue
             if not 'mass' in key.GetName():
                 self.templates2D[key.GetName()] = {}
                 self.templates2D[key.GetName()]['Nominal']=[]
@@ -284,8 +285,8 @@ class fitUtils:
                 aux[self.channel][proc] = 0.0
                 aux[self.channel+'_xsec'][proc] = 0.0
         
-        for i in range(60):
-            self.DC.systs.append(('LHEPdfWeightHess{}'.format(i+1), False, 'shape', [], aux))
+        #for i in range(60):
+            #self.DC.systs.append(('LHEPdfWeightHess{}'.format(i+1), False, 'shape', [], aux))
 
         aux2 = {}
         aux2[self.channel] = {}
@@ -297,7 +298,7 @@ class fitUtils:
                 aux2[self.channel][proc] = 0.0
             aux2[self.channel+'_xsec'][proc] = 0.0
         
-        self.DC.systs.append(('mass', False, 'shapeNoConstraint', [], aux2))
+        self.DC.systs.append(('mass', False, 'shape', [], aux2))
         
         self.DC.shapeMap = 	{self.channel: {'*': [self.channel+'.root', '$PROCESS', '$PROCESS_$SYSTEMATIC']},\
         self.channel+'_xsec': {'*': [self.channel+'_xsec.root', '$PROCESS', '$PROCESS_$SYSTEMATIC']}} # <type 'dict'>
@@ -309,8 +310,8 @@ class fitUtils:
         self.DC.frozenNuisances  =  set([]) # <type 'set'>
         self.DC.systematicsShapeMap =  {} # <type 'dict'>
         self.DC.nuisanceEditLines    =  [] # <type 'list'>
-        self.DC.groups   =  {'pdfs': set(['LHEPdfWeightHess{}'.format(i+1) for i in range(60)])} # <type 'dict'>
-        #self.DC.groups   =  {} # <type 'dict'>
+        #self.DC.groups   =  {'pdfs': set(['LHEPdfWeightHess{}'.format(i+1) for i in range(60)])} # <type 'dict'>
+        self.DC.groups   =  {} # <type 'dict'>
         self.DC.discretes    =  [] # <type 'list'>
         self.DC.helGroups = self.helGroups
         self.DC.sumGroups = self.sumGroups

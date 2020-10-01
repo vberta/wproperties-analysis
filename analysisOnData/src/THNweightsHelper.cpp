@@ -55,8 +55,11 @@ void THNweightsHelper::Exec(unsigned int slot, const float &var1, const float &v
    values.emplace_back(var4);
    values.emplace_back(var5);
 
-   for (unsigned int i = 0; i < n_histos; ++i)
+   for (unsigned int i = 0; i < n_histos; ++i){
       histos[i]->Fill(values.data(), weight * weights[i]);
+      std::cout<< values[0] << " " << values[1] << " " <<values[2] << " " <<values[3] << " " <<values[4] << std::endl;
+      std::cout<< weight << " " << weights[i] << std::endl;
+   }
 }
 /// This method is called at the end of the event loop. It is used to merge all the internal THnTs which
 /// were used in each of the data processing slots.

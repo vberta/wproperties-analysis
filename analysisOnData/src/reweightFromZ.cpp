@@ -24,10 +24,7 @@ RNode reweightFromZ::run(RNode d)
             return _hY->GetBinContent(bin);
     };
 
-    auto d1 = d.Define("GenV_dress_qt", [&](ROOT::VecOps::RVec<float> vec) { return vec[0];}, {"GenV_dress"})
-               .Define("GenV_dress_y", [&](ROOT::VecOps::RVec<float> vec)  { return vec[1];}, {"GenV_dress"})
-               .Define("weightPt", getWeightPt, {"GenV_dress_qt"})
-               .Define("weightY", getWeightY, {"GenV_dress_y"});
+    auto d1 = d.Define("weightPt", getWeightPt, {"Wpt_dress"}).Define("weightY", getWeightY, {"Wrap_dress"});
 
     return d1;
 }

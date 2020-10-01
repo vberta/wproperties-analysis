@@ -24,6 +24,6 @@ RNode getMassWeights::run(RNode d)
     return v;
   };
 
-  auto d1 = d.Define("massWeights", getBWVec, {"GenV_preFSR_qt"});
+  auto d1 = d.Define("massWeights", getBWVec, {"Wmass_preFSR"});
   return d1;
 }
