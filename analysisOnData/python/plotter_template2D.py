@@ -13,30 +13,28 @@ ROOT.TH2.AddDirectory(False)
 ROOT.gStyle.SetOptStat(0)
 
 class plotter:
-
+    
     def __init__(self, outDir, inDir = ''):
 
         self.indir = inDir # indir containig the various outputs
         self.outdir = outDir
-
+        
         self.sampleDict = { "WToMu"      :  ('WToMu_plots.root', 2 ),
                             "DYJets"      : ('DYJets_plots.root', 2 ),
                             "WtoTau"      : ('WToTau_plots.root', 2 ),
                             "Top"         : ('TTJets_plots.root', 1),
                             "DiBoson"     : ('Diboson_plots.root', 1),
-                            "Fake" : ('FakeFromData_plots.root', 0),
+                            "Fake" : ('FakeFromData_plots.root', 0), 
                             "Data"        : ('Data_plots.root', 0),
-                            "LowAcc": ('WToMu_plots.root', 2 ),
-                            "templatesAC_Signal" : ('WToMu_plots.root', 2 )
+                            "LowAcc": ('WToMu_plots.root', 2 )
                           }
 
-
-        self.selections =["Signal"]
-        self.selectionFake = ['fakes']
+        self.selections =["Signal"] 
+        self.selectionFake = ['fakes']       
         self.extSyst = copy.deepcopy(bkg_utils.bkg_systematics)
         self.extSyst['Nominal'] = ['']
-        self.histoDict ={}
-
+        self.histoDict ={} 
+    
     def getHistoforSample(self, sample, infile, chargeBin) :
         if not 'Fake' in sample:
             for sKind in self.extSyst:
@@ -44,25 +42,16 @@ class plotter:
                 gap = '' if sKind == 'Nominal' else '_'
                 basepath = 'templates_Signal/' + sKind
                 if 'LowAcc' in sample: basepath = 'templatesLowAcc_Signal/' + sKind
-                if 'templatesAC_Signal' in sample: basepath = 'templatesAC_Signal/' + sKind
                 if infile.GetDirectory(basepath):
                     for key in infile.Get(basepath).GetListOfKeys():
                         th3=infile.Get(basepath+'/'+key.GetName())
-                        if 'templatesAC_Signal' in sample:
-                            for ybin in range(1, 7):
-                                th3.GetZaxis().SetRange(ybin,ybin)
-                                th2=th3.Project3D("yx")
-                                th2.SetDirectory(0)
-                                h3name=th3.GetName()
-                                th2.SetName(h3name[:4] + '_y_' + str(ybin) + h3name[4:])
-                                self.histoDict[sample][sKind].append(th2)
-                        else:
-                            #plus charge bin 2, minus bin 1
-                            th3.GetZaxis().SetRange(chargeBin,chargeBin)
-                            th2=th3.Project3D("yx")
-                            th2.SetDirectory(0)
-                            th2.SetName(th3.GetName())
-                            self.histoDict[sample][sKind].append(th2)
+                        #plus charge bin 2, minus bin 1
+                        th3.GetZaxis().SetRange(chargeBin,chargeBin)
+                        th2=th3.Project3D("yx")
+                        th2.SetDirectory(0)
+                        th2.SetName(th3.GetName())
+                        self.histoDict[sample][sKind].append(th2)
+                        
         else:
             for sKind in self.extSyst:
                 self.histoDict[sample][sKind] = []
@@ -80,7 +69,7 @@ class plotter:
                         th2.SetDirectory(0)
                         th2.SetName(th3.GetName())
                         self.histoDict[sample][sKind].append(th2)
-
+    
     def symmetrisePDF(self,sample):
 
         if not self.histoDict[sample]['LHEPdfWeightVars']==[]:
@@ -105,7 +94,7 @@ class plotter:
                     th2Down.Sumw2()
                     for j in range(1,h.GetNbinsX()+1):
                         for k in range(1,h.GetNbinsY()+1):
-
+                        
                             th2Up.SetBinContent(j,k,h.GetBinContent(j,k)*th2var.GetBinContent(j,k))
                             th2Down.SetBinContent(j,k,h.GetBinContent(j,k)*th2c.GetBinContent(j,k))
                     th2Up.SetName(h.GetName()+ '_LHEPdfWeightHess{}Up'.format(i+1))
@@ -113,7 +102,7 @@ class plotter:
                     aux['LHEPdfWeightVars'].append(th2Up)
                     aux['LHEPdfWeightVars'].append(th2Down)
             self.histoDict[sample].update(aux)
-
+    
     def getHistos(self, chargeBin) :
         for sample,fname in self.sampleDict.iteritems():
             print  "Processing sample:", sample
@@ -127,7 +116,7 @@ class plotter:
             chargeTag='minus' if chargeBin == 1 else 'plus'
             outname = self.outdir  + '/' + sample + '_templates2D' + chargeTag + '.root'
             fout = ROOT.TFile(outname, 'RECREATE')
-            if sample not in  self.histoDict :
+            if sample not in  self.histoDict : 
                 print "No histo dict for sample:", sample, " What have you done??!!!!"
                 continue
             self.symmetrisePDF(sample)
