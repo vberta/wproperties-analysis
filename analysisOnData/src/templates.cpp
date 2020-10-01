@@ -20,7 +20,7 @@ RNode templates::run(RNode d)
 RNode templates::bookNominalhistos(RNode df)
 {
     TH3weightsHelper helper(std::string("templates"), std::string(" ; muon #{eta}; muon p_{T} (Rochester corr.); muon charge"), _etaArr.size() - 1, _etaArr, _pTArr.size() - 1, _pTArr, _chargeArr.size() - 1, _chargeArr, _syst_name);
-    auto h = df.Filter(_filter).Book<float, float, float, float, ROOT::VecOps::RVec<float>>(std::move(helper), {"Mueta_preFSR", "Mupt_preFSR", "Mu1_charge", "weight", _syst_weight});
+    auto h = df.Filter(_filter).Book<float, float, float, float, ROOT::VecOps::RVec<float>>(std::move(helper), {"Mu1_eta", "Mu1_pt", "Mu1_charge", "weight", _syst_weight});
     _h3Group.emplace_back(h);
 
     return df;
@@ -49,11 +49,11 @@ RNode templates::bookJMEvarhistos(RNode df)
 
 void templates::setAxisarrays()
 {
-  for (unsigned int i = 0; i < 81; i++){
-      float binSize = (65. - 25.) / 80;
+  for (unsigned int i = 0; i < 31; i++){
+      float binSize = (55. - 25.) / 30;
       _pTArr[i] = 25. + i*binSize;}
-    for (unsigned int i = 0; i < 101; i++)
-        _etaArr[i] = -2.5 + i * 5./100;
+    for (unsigned int i = 0; i < 49; i++)
+        _etaArr[i] = -2.4 + i * 4.8/48;
     for (int i = 0; i < 3; i++)
       _chargeArr[i] = -2. +  i*2. ;
 }

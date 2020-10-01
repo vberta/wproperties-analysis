@@ -90,8 +90,10 @@ class plotter:
             for iQt in range(1, 9):
                 self.clos.SetBinContent(iY,iQt, self.yields[(iY,iQt)])
 
-        print self.yields
         self.clos.Divide(self.imap)
+        for iY in range(1, 7):
+            for iQt in range(1, 9):
+                print self.clos.GetBinContent(iY,iQt)
     
     def getHistos(self, chargeBin) :
         
@@ -165,8 +167,6 @@ class plotter:
             for h in hlist:
                 h.Write()
         fout.cd("Nominal")
-        self.clos.Write()
-        self.imap.Write()
         fout.Save()
         fout.Close()
 

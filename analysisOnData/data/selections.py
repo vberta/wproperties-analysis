@@ -3,9 +3,8 @@ selections = {
   }
 
 selections_bkg = {
-  #"Signal":         "Vtype==0 && HLT_SingleMu24 && Mu1_pt>25.0 && Mu1_pt<55.0 && MT>=40.0 && MET_filters==1 && nVetoElectrons==0 && 1",
-"Signal": "1.",
- "Signal_aiso":    "Vtype==1 && HLT_SingleMu24 && Mu1_pt>25.0 && Mu1_pt<55.0 && MT>=40.0 && MET_filters==1 && nVetoElectrons==0 && 1",
+  "Signal":         "Vtype==0 && HLT_SingleMu24 && Mu1_pt>25.0 && Mu1_pt<55.0 && MT>=40.0 && MET_filters==1 && nVetoElectrons==0 && 1",
+  "Signal_aiso":    "Vtype==1 && HLT_SingleMu24 && Mu1_pt>25.0 && Mu1_pt<55.0 && MT>=40.0 && MET_filters==1 && nVetoElectrons==0 && 1",
   "Sideband":       "Vtype==0 && HLT_SingleMu24 && Mu1_pt>25.0 && Mu1_pt<55.0 && MT<=30.0 && MET_filters==1 && nVetoElectrons==0 && 1",
   "Sideband_aiso":  "Vtype==1 && HLT_SingleMu24 && Mu1_pt>25.0 && Mu1_pt<55.0 && MT<=30.0 && MET_filters==1 && nVetoElectrons==0 && 1",
   "Sideband15":       "Vtype==0 && HLT_SingleMu24 && Mu1_pt>25.0 && Mu1_pt<55.0 && MT<=15.0 && MET_filters==1 && nVetoElectrons==0 && 1",

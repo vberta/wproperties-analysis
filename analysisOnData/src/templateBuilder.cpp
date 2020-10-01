@@ -59,13 +59,11 @@ RNode templateBuilder::bookNominalhistos(RNode d)
     auto sel = [lowEdgePt, upEdgePt](float pt) { return (pt >lowEdgePt && pt<upEdgePt);};
 
     TH3weightsHelper helperHelXsecs(std::string("qt_")+std::to_string(j)+std::string("_helXsecs_"), std::string("qt_")+std::to_string(j)+std::string("_helXsecs_"), nBinsEta, _etaArr, nBinsPt, _pTArr, nBinsY, _yArr, total);
-    auto htmp = d1.Filter(sel, {"Wpt_preFSR"}).Book<float, float, float, float, ROOT::VecOps::RVec<float>>(std::move(helperHelXsecs), {"Mueta_preFSR", "Mupt_preFSR", "Wrap_preFSR_abs", "lumiweight", "harmonicsWeightsMass"});
+    auto htmp = d1.Filter(sel, {"Wpt_preFSR"}).Book<float, float, float, float, ROOT::VecOps::RVec<float>>(std::move(helperHelXsecs), {"Mu1_eta", "Mu1_pt", "Wrap_preFSR_abs", "weight", "harmonicsWeightsMass"});
     _h3Group.push_back(htmp);
 
   }
 
-  auto test = d1.Histo2D(TH2D("test", "test", nBinsY, 0, 2.4, nBinsQt, 0, 32.), "Wrap_preFSR_abs", "Wpt_preFSR","lumiweight");
-  _h2List.push_back(test);
   return d1;
 }
 
@@ -140,11 +138,11 @@ RNode templateBuilder::bookJMEvarhistos(RNode d)
 
 void templateBuilder::setAxisarrays()
 {
-  for (unsigned int i = 0; i < 81; i++){
-    float binSize = (65. - 25.) / 80;
+  for (unsigned int i = 0; i < 31; i++){
+    float binSize = (55. - 25.) / 30;
     _pTArr[i] = 25. + i*binSize;}
-  for (unsigned int i = 0; i < 101; i++)
-    _etaArr[i] = -2.5 + i * 5./100;
+  for (unsigned int i = 0; i < 49; i++)
+    _etaArr[i] = -2.4 + i * 4.8/48;
   for (unsigned int i=0; i< 7; i++)
     _yArr[i] = 0. + i*2.4/6;
  }

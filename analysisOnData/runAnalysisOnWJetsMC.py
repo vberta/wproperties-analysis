@@ -27,8 +27,8 @@ def RDFprocessWJetsMC(fvec, outputDir, sample, xsec, fileSF, ncores, pretendJob,
     filePt = ROOT.TFile.Open("data/histoUnfoldingSystPt_nsel2_dy3_rebin1_default.root")
     fileY = ROOT.TFile.Open("data/histoUnfoldingSystRap_nsel2_dy3_rebin1_default.root")
     fileAC = ROOT.TFile.Open("../analysisOnGen/genInput.root")
-    #p.branch(nodeToStart = 'input', nodeToEnd = 'defs', modules = [ROOT.reweightFromZ(filePt,fileY),ROOT.baseDefinitions(),ROOT.weightDefinitions(fileSF),getLumiWeight(xsec=xsec, inputFile=fvec),ROOT.Replica2Hessian()])
-    p.branch(nodeToStart = 'input', nodeToEnd = 'defs', modules = [ROOT.reweightFromZ(filePt,fileY),ROOT.baseDefinitions(),getLumiWeight(xsec=xsec, inputFile=fvec),ROOT.Replica2Hessian()])
+    p.branch(nodeToStart = 'input', nodeToEnd = 'defs', modules = [ROOT.reweightFromZ(filePt,fileY),ROOT.baseDefinitions(),ROOT.weightDefinitions(fileSF),getLumiWeight(xsec=xsec, inputFile=fvec),ROOT.Replica2Hessian()])
+    
     for region,cut in selections_bkg.iteritems():
         if not bkg:
             if not region=='Signal': continue
@@ -36,7 +36,7 @@ def RDFprocessWJetsMC(fvec, outputDir, sample, xsec, fileSF, ncores, pretendJob,
             weight = 'float(puWeight*lumiweight*weightPt*weightY)'
         else:
             #weight = 'float(puWeight*lumiweight*WHSF*weightPt*weightY)'
-            weight = 'float(lumiweight)'
+            weight = 'float(puWeight*lumiweight*WHSF)'
         print weight, "NOMINAL WEIGHT"
         
         nom = ROOT.vector('string')()
@@ -168,8 +168,8 @@ def main():
     fvec=ROOT.vector('string')()
     for dirname,fname in direc.iteritems():
         ##check if file exists or not
-        inputFile = '/scratchnvme/emanca/wproperties-analysis/analysisOnGen/test_tree_*.root'
-        #inputFile = '/scratch/wmass/WJetsNoCUT/tree_noCut.root'
+        #inputFile = '/scratchnvme/emanca/wproperties-analysis/analysisOnGen/test_tree_*.root'
+        inputFile = '/scratchnvme/wmass/WJetsNoCUT_v2/tree_*_*.root'
         isFile = os.path.isfile(inputFile)  
         if not isFile:
             print inputFile, " does not exist"
