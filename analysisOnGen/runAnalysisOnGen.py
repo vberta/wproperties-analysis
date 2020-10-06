@@ -18,6 +18,8 @@ ROOT.ROOT.EnableImplicitMT(c)
 
 print "running with {} cores".format(c)
 
+filePt = ROOT.TFile.Open("../analysisOnData/data/histoUnfoldingSystPt_nsel2_dy3_rebin1_default.root")
+fileY = ROOT.TFile.Open("../analysisOnData/data/histoUnfoldingSystRap_nsel2_dy3_rebin1_default.root")
 
 parser = argparse.ArgumentParser('')
 parser.add_argument('-runAC', '--runAC', default=False, action='store_true', help='Use to run the Angular Coefficients with all the variations')
@@ -29,7 +31,7 @@ runTemplates = args.runTemplates
 inputFile = 'test_tree_*.root'
 
 p = RDFtree(outputDir = 'GenInfo', inputFile = inputFile, outputFile="genInfo.root")
-p.branch(nodeToStart = 'input', nodeToEnd = 'basicSelection', modules = [getLumiWeight(xsec=61526.7, inputFile=inputFile), ROOT.baseDefinitions(),ROOT.defineHarmonics(),ROOT.Replica2Hessian(),ROOT.accMap()])
+p.branch(nodeToStart = 'input', nodeToEnd = 'basicSelection', modules = [getLumiWeight(xsec=61526.7, inputFile=inputFile), ROOT.baseDefinitions(),ROOT.defineHarmonics(),ROOT.Replica2Hessian(),ROOT.accMap(),ROOT.reweightFromZ(filePt,fileY)])
 
 if runAC:
     p.branch(nodeToStart = 'basicSelection', nodeToEnd = 'angularCoefficients', modules = [ROOT.AngCoeff()])

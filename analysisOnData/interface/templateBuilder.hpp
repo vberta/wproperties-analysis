@@ -21,9 +21,9 @@ private:
   const int nBinsY = 6;
   const int nBinsQt = 8;
   const int nBinsEta = 48;
-  const int nBinsPt = 30;
+  const int nBinsPt = 60;
   const int nBinsCharge = 2;
-  std::vector<float> _pTArr = std::vector<float>(31);
+  std::vector<float> _pTArr = std::vector<float>(61);
   std::vector<float> _etaArr = std::vector<float>(49);
   std::vector<float> _yArr = std::vector<float>(7);
 
