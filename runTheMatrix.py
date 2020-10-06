@@ -9,7 +9,7 @@ import time
 #
 #  usage: python runTheMatrix.py --inputDir INPUTDIR --outputDir OUTPUT --bkgOutput BKGOUT --ncores 64 --bkgFile MYBKG --bkgPrep 1 --bkgAna 1 --prefit 1 --plotter 1
 #
-#  each parameters is described below in the argparse
+#  each parameters is described below in the argparse (INPUTDIR can be omitted, OUTPUT can be the same of BKGOUT)
 #
 #  NB: if --bkgFile myBKG --> special string to use the file that runTheMatrix produce at step2. 
 #
@@ -30,7 +30,9 @@ parser.add_argument('-c', '--ncores',type=int, default=64, help="number of cores
 parser.add_argument('-q', '--bkgPrep',type=int, default=False, help="run the bkg input preparation")
 parser.add_argument('-w', '--bkgAna',type=int, default=False, help="run the bkg analysis")
 parser.add_argument('-e', '--prefit',type=int, default=False, help="run the prefit hitograms building")
-parser.add_argument('-r', '--plotter',type=int, default=False, help="run the prfit plotter, the result are saved in outputDir/plot/")
+parser.add_argument('-r', '--plotter',type=int, default=False, help="run the prefit plotter, the result are saved in outputDir/plot/")
+parser.add_argument('-sb', '--SBana',type=int, default=False, help="run also on the sideband (clousure test)")
+
 
 args = parser.parse_args()
 inputDir = args.inputDir
@@ -38,6 +40,7 @@ outputDir = args.outputDir
 bkgOutput = args.bkgOutput
 bkgFile = args.bkgFile
 ncores = str(args.ncores)
+SBana = str(args.SBana)
 step1 = args.bkgPrep
 step2 = args.bkgAna
 step3 = args.prefit
@@ -55,7 +58,7 @@ if step1 :
     print "step1: bkg input preparation... "
     os.chdir('./analysisOnData')
     if not os.path.isdir(outputDir): os.system('mkdir '+ outputDir)
-    os.system('python runAnalysis.py -p=0 -b=1 -i='+inputDir+' -c='+ncores+' -o='+outputDir)
+    os.system('python runAnalysis.py -p=0 -b=1 -i='+inputDir+' -c='+ncores+' -o='+outputDir + ' -sb='+SBana)
     os.chdir('../')
     s1end=time.time()
     runTimes.append(s1end - s1start)
@@ -68,7 +71,7 @@ if step2 :
     os.chdir('bkgAnalysis')
     #inputDir for bkgAnalysis is the outputDir of step1
     os.system('python bkg_prepareHistos.py --inputDir ../analysisOnData/'+outputDir+' --outputDir '+bkgOutput+'/bkgInput/')
-    os.system('python bkg_config.py --mainAna 1 --CFAna 1 --inputDir '+bkgOutput+'/bkgInput/hadded/ --outputDir '+bkgOutput+' --syst 1 --compAna 1 --ncores '+ncores)
+    os.system('python bkg_config.py --mainAna 1 --CFAna 1 --inputDir '+bkgOutput+'/bkgInput/hadded/ --outputDir '+bkgOutput+' --syst 1 --compAna 1 --ncores '+ncores+ ' --SBana '+SBana)
     os.chdir('../')
     s2end=time.time()
     runTimes.append(s2end - s2start)
@@ -80,7 +83,7 @@ if step3 :
     os.chdir('analysisOnData')
     if not os.path.isdir(outputDir): os.system('mkdir '+ outputDir)
     #ncores is optimized and set in the config itself, so no need to pass here
-    os.system('python runAnalysis.py -p=0 -b=0 -i='+inputDir+ ' -o=' +outputDir+ ' -f='+bkgFile)
+    os.system('python runAnalysis.py -p=0 -b=0 -i='+inputDir+ ' -o=' +outputDir+ ' -f='+bkgFile + ' -sb='+SBana)
     os.chdir('../')
     s3end=time.time()
     runTimes.append(s3end - s3start)
@@ -91,7 +94,7 @@ if step4 :
     print "step4: plotter..."
     os.chdir('analysisOnData/python')
     if not os.path.isdir('../'+outputDir): os.system('mkdir ../'+outputDir)
-    os.system('python plotter_prefit.py --hadd 1 --output ../'+outputDir+'/plot/ --input ../'+outputDir+' --systComp 1')
+    os.system('python plotter_prefit.py --hadd 1 --output ../'+outputDir+'/plot/ --input ../'+outputDir+' --systComp 1'+' -sb='+SBana)
 
     if not os.path.isdir('../'+outputDir+'/plot/hadded/template2D/'): os.system('mkdir -p ../'+outputDir+'/plot/hadded/template2D/')
     os.system('python plotter_template2D.py -o=../'+outputDir+'/plot/hadded/template2D/ -i=../'+outputDir+'/plot/hadded')
@@ -104,7 +107,7 @@ if step4 :
             if sKindInt==sKind : continue
             else : skipList+= ' '+str(sKindInt)
         print "Skipped systematics:", skipList 
-        os.system('python plotter_prefit.py --hadd 0 --output ../'+outputDir+'/plot_only_'+str(sKind)+' --input ../'+outputDir+'/plot/  --systComp 1 --skipSyst '+skipList)
+        os.system('python plotter_prefit.py --hadd 0 --output ../'+outputDir+'/plot_only_'+str(sKind)+' --input ../'+outputDir+'/plot/  --systComp 1 --skipSyst '+skipList+' -sb='+SBana)
     s4end=time.time()
     runTimes.append(s4end - s4start)
 else :   runTimes.append(0.)

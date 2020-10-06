@@ -47,7 +47,8 @@ class bkg_analyzer:
         #     'Down' : ["LHEScaleWeight_muR0p5_muF0p5", "LHEScaleWeight_muR0p5_muF1p0", "LHEScaleWeight_muR1p0_muF0p5"],
         #     'Up' : ["LHEScaleWeight_muR2p0_muF2p0", "LHEScaleWeight_muR2p0_muF1p0","LHEScaleWeight_muR1p0_muF2p0"]   
         # }
-        
+        if self.nameSuff =='SideBand' :
+            print "WARNING: special name used, SideBand, processed sideband clousure test"
         
     def binNumb_calculator(self,histo, axis, lowEdge) : #axis can be X,Y,Z
         binout = 0
@@ -630,19 +631,26 @@ class bkg_analyzer:
                                                 nomVal = finalHistoDict['nom'+canvas+histo+s+e].GetBinContent(self.ptBinning.index(float(p))+1)
                                                 # if (finalHistoDict[sNameDown+canvas+histo+s+e].GetBinContent(self.ptBinning.index(float(p))+1)<nomVal and finalHistoDict[sName+canvas+histo+s+e].GetBinContent(self.ptBinning.index(float(p))+1)<nomVal) or (finalHistoDict[sNameDown+canvas+histo+s+e].GetBinContent(self.ptBinning.index(float(p))+1)>nomVal and finalHistoDict[sName+canvas+histo+s+e].GetBinContent(self.ptBinning.index(float(p))+1)>nomVal) : #nominal not in between systs
                                                 #         print "WARNING: systematic", sName, canvas,histo," up/down not around nominal in bin", p,e,s, ">>> down,nom,up=",finalHistoDict[sNameDown+canvas+histo+s+e].GetBinContent(self.ptBinning.index(float(p))+1),nomVal,finalHistoDict[sName+canvas+histo+s+e].GetBinContent(self.ptBinning.index(float(p))+1), 'statErr=', finalHistoDict['nom'+canvas+histo+s+e].GetBinError(self.ptBinning.index(float(p))+1)
-                                    deltaSyst = 0.5*math.sqrt(deltaSyst) 
+                                    deltaSyst = 0.25*deltaSyst
                                     
-                                    deltaLHE=0 #LHE variations
+                                    deltaPDF=0 #LHE PDF variations (wrt nominal)
                                     for sKind, sList in systDict.iteritems():
                                         for sName in sList :
-                                            if not 'LHE' in sName: continue 
+                                            if not 'LHEPdf' in sName: continue 
                                             Nrepl=1.
                                             # if sKind=='LHEPdfWeightVars' :
                                             #     Nrepl = float(len(sList))
-                                            deltaLHE += (1/Nrepl)*(finalHistoDict[sName+canvas+histo+s+e].GetBinContent(self.ptBinning.index(float(p))+1)-finalHistoDict['nom'+canvas+histo+s+e].GetBinContent(self.ptBinning.index(float(p))+1))**2
-                                    deltaLHE = math.sqrt(deltaLHE)
-                                    deltaSyst= deltaSyst+deltaLHE
+                                            deltaPDF += (1/Nrepl)*(finalHistoDict[sName+canvas+histo+s+e].GetBinContent(self.ptBinning.index(float(p))+1)-finalHistoDict['nom'+canvas+histo+s+e].GetBinContent(self.ptBinning.index(float(p))+1))**2
                                     
+                                    deltaScale=0 #LHE Scale variations (evelope)
+                                    for sKind, sList in systDict.iteritems():
+                                        for sName in sList :
+                                            if not 'LHEScale' in sName: continue 
+                                            deltaScale_temp =(finalHistoDict[sName+canvas+histo+s+e].GetBinContent(self.ptBinning.index(float(p))+1)-finalHistoDict['nom'+canvas+histo+s+e].GetBinContent(self.ptBinning.index(float(p))+1))**2
+                                            if deltaScale_temp>deltaScale : 
+                                                deltaScale = deltaScale_temp
+                                    
+                                    deltaSyst = math.sqrt(deltaSyst+deltaPDF+deltaScale)
                                     errHigh = deltaSyst
                                     errLow = deltaSyst                                          
                                             
@@ -867,12 +875,19 @@ class bkg_analyzer:
                                     delta = 0.5*math.sqrt(delta)
                                     if sKind=='Nominal' :
                                             delta = finalHistoDict['nom'+canvas+histo+s+e].GetBinError(ipt)/finalHistoDict['nom'+canvas+histo+s+e].GetBinContent(ipt)
-                                    if 'LHE' in sKind :  
+                                    if 'LHEPdf' in sKind :  
                                         delta=0
                                         for sName in sList :                            
                                             delta+= (finalHistoDict[sName+canvas+histo+s+e].GetBinContent(ipt)/finalHistoDict['nom'+canvas+histo+s+e].GetBinContent(ipt)-1)**2
                                         Nrepl=1.#hessian approach
                                         delta = math.sqrt(delta/Nrepl)
+                                    if 'LHEScale' in sKind :  
+                                        delta=0
+                                        for sName in sList :                            
+                                            delta_temp = (finalHistoDict[sName+canvas+histo+s+e].GetBinContent(ipt)/finalHistoDict['nom'+canvas+histo+s+e].GetBinContent(ipt)-1)**2
+                                            if delta_temp> delta :
+                                                delta=delta_temp
+                                        delta = math.sqrt(delta)    
                                     finalHistoDict[sKind+canvas+histo+s+e+'group'].SetBinContent(ipt, delta) 
                                 finalHistoDict[sKind+canvas+histo+s+e+'group'].SetFillStyle(0)
                                 finalHistoDict[sKind+canvas+histo+s+e+'group'].SetFillColor(0)
@@ -1250,7 +1265,7 @@ class bkg_analyzer:
                             for sKind, sList in systDict.iteritems():
                                 for sName in sList :
                                     if 'Down' in sName : continue
-                                    if 'LHEScale' in sName: continue
+                                    if 'LHE' in sName: continue
                                     # if sName in self.LHEdict['Down']: continue
                                     if 'Up' in sName :
                                         sNameDown =  sName.replace("Up","Down")
@@ -1262,20 +1277,26 @@ class bkg_analyzer:
                                         nomVal = finalHistoDict['nom'+kind+par+s].GetBinContent(self.etaBinning.index(float(e))+1)
                                         # if (finalHistoDict[sNameDown+kind+par+s].GetBinContent(self.etaBinning.index(float(e))+1)<nomVal and finalHistoDict[sName+kind+par+s].GetBinContent(self.etaBinning.index(float(e))+1)<nomVal) or (finalHistoDict[sNameDown+kind+par+s].GetBinContent(self.etaBinning.index(float(e))+1)>nomVal and finalHistoDict[sName+kind+par+s].GetBinContent(self.etaBinning.index(float(e))+1)>nomVal) : #nominal not in between systs
                                         #             print "WARNING: systematic (parameters)", sName," up/down not around nominal in bin", p,e,s, ">>> down,nom,up=", finalHistoDict[sNameDown+kind+par+s].GetBinContent(self.etaBinning.index(float(e))+1), nomVal, finalHistoDict[sName+kind+par+s].GetBinContent(self.etaBinning.index(float(e))+1)
-                            deltaSyst = 0.5*math.sqrt(deltaSyst)
+                            deltaSyst = 0.25*deltaSyst
                             
-                            deltaLHE=0 #LHE variations
+                            deltaPDF=0 #LHE PDF variations (wrt nominal)
                             for sKind, sList in systDict.iteritems():
                                 for sName in sList :
-                                    if not 'LHEScale' in sName: continue 
+                                    if not 'LHEPdf' in sName: continue 
                                     Nrepl=1.
                                     # if sKind=='LHEPdfWeightVars' :
                                     #     Nrepl = float(len(sList))                                    
-                                    deltaLHE += (1/Nrepl)*(finalHistoDict[sName+kind+par+s].GetBinContent(self.etaBinning.index(float(e))+1)-finalHistoDict['nom'+kind+par+s].GetBinContent(self.etaBinning.index(float(e))+1))**2
-                            deltaLHE = math.sqrt(deltaLHE)
-                            deltaSyst= deltaSyst+deltaLHE
+                                    deltaPDF += (1/Nrepl)*(finalHistoDict[sName+kind+par+s].GetBinContent(self.etaBinning.index(float(e))+1)-finalHistoDict['nom'+kind+par+s].GetBinContent(self.etaBinning.index(float(e))+1))**2
                             
-                             
+                            deltaScale=0 #LHE Scale variations (evelope)
+                            for sKind, sList in systDict.iteritems():
+                                for sName in sList :
+                                    if not 'LHEScale' in sName: continue                             
+                                    deltaScale_temp = (finalHistoDict[sName+kind+par+s].GetBinContent(self.etaBinning.index(float(e))+1)-finalHistoDict['nom'+kind+par+s].GetBinContent(self.etaBinning.index(float(e))+1))**2
+                                    if deltaScale_temp>deltaScale : 
+                                        deltaScale = deltaScale_temp
+                            
+                            deltaSyst = math.sqrt(deltaSyst+deltaPDF+deltaScale)  
                             errHigh = deltaSyst
                             errLow = deltaSyst
                                                 
@@ -1503,9 +1524,14 @@ class bkg_analyzer:
         
         signBinning = [-2,0,2]
         if kind =='prompt' :
-            h3Num =  histo3D[kindDict[kind]+'D'].Clone(kind+'Num') #D
-            h3Den = histo3D[kindDict[kind]+'D'].Clone(kind+'Den') #D
-            h3Den.Add(histo3D[kindDict[kind]+'B']) #D+B
+            if self.nameSuff !='SideBand' :
+                h3Num =  histo3D[kindDict[kind]+'D'].Clone(kind+'Num') #D
+                h3Den = histo3D[kindDict[kind]+'D'].Clone(kind+'Den') #D
+                h3Den.Add(histo3D[kindDict[kind]+'B']) #D+B
+            else :
+                h3Num =  histo3D[kindDict[kind]+'C'].Clone(kind+'Num') #D
+                h3Den = histo3D[kindDict[kind]+'C'].Clone(kind+'Den') #D
+                h3Den.Add(histo3D[kindDict[kind]+'A']) #D+B
             
         if kind == 'fake' :
             h3Num =  histo3D[kindDict[kind]+'C'].Clone(kind+'Num') #C
@@ -1614,12 +1640,19 @@ class bkg_analyzer:
             for e in self.etaBinningS :
                 if kind =='prompt' :
                     etaBinN= self.binNumb_calculator( histo3D[kindDict[kind]+'D'],'X',self.etaBinning[self.etaBinningS.index(e)])    
-                    h1Dict[s+e] = histo3D[kindDict[kind]+'D'].ProjectionY('htempl_pt_'+kind+'_'+s+'_'+e,etaBinN,etaBinN,binS,binS,"e")
+                    if self.nameSuff !='SideBand' :    
+                        h1Dict[s+e] = histo3D[kindDict[kind]+'D'].ProjectionY('htempl_pt_'+kind+'_'+s+'_'+e,etaBinN,etaBinN,binS,binS,"e")
+                    else :
+                        h1Dict[s+e] = histo3D[kindDict[kind]+'C'].ProjectionY('htempl_pt_'+kind+'_'+s+'_'+e,etaBinN,etaBinN,binS,binS,"e")
 
                 if kind=='fake' :
                     etaBinN= self.binNumb_calculator(histo3D[kindDict[kind]+'D'],'X',self.etaBinning[self.etaBinningS.index(e)]) 
-                    hDregion = histo3D[kindDict[kind]+'D'].ProjectionY('D_pt_'+kind+'_'+s+'_'+e,etaBinN,etaBinN,binS,binS,"e")
-                    hBregion = histo3D[kindDict[kind]+'B'].ProjectionY('B_pt_'+kind+'_'+s+'_'+e,etaBinN,etaBinN,binS,binS,"e")
+                    if self.nameSuff !='SideBand' :
+                        hDregion = histo3D[kindDict[kind]+'D'].ProjectionY('D_pt_'+kind+'_'+s+'_'+e,etaBinN,etaBinN,binS,binS,"e")
+                        hBregion = histo3D[kindDict[kind]+'B'].ProjectionY('B_pt_'+kind+'_'+s+'_'+e,etaBinN,etaBinN,binS,binS,"e")
+                    else :
+                        hDregion = histo3D[kindDict[kind]+'C'].ProjectionY('D_pt_'+kind+'_'+s+'_'+e,etaBinN,etaBinN,binS,binS,"e")
+                        hBregion = histo3D[kindDict[kind]+'A'].ProjectionY('B_pt_'+kind+'_'+s+'_'+e,etaBinN,etaBinN,binS,binS,"e")
 
                     htempl_pt = ROOT.TH1F("htempl_pt_{kind}_{sign}_{eta}".format(kind=kind,sign=s,eta=e),"htempl_pt_{kind}_{sign}_{eta}".format(kind=kind,sign=s,eta=e), len(self.ptBinning)-1, array('f',self.ptBinning) )
                     htempl_fake_pt = ROOT.TH1F("htempl_fake_pt_{kind}_{sign}_{eta}".format(kind=kind,sign=s,eta=e),"htempl_fake_pt_{kind}_{sign}_{eta}".format(kind=kind,sign=s,eta=e), len(self.ptBinning)-1, array('f',self.ptBinning) )

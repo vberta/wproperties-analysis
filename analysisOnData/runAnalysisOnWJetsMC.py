@@ -15,7 +15,7 @@ from getLumiWeight import getLumiWeight
 ROOT.gSystem.Load('bin/libAnalysisOnData.so')
 ROOT.gROOT.ProcessLine("gErrorIgnoreLevel = 2001;");
 
-def RDFprocessWJetsMC(fvec, outputDir, sample, xsec, fileSF, ncores, pretendJob, bkg):
+def RDFprocessWJetsMC(fvec, outputDir, sample, xsec, fileSF, ncores, pretendJob, bkg,SBana=False):
     ROOT.ROOT.EnableImplicitMT(ncores)
     print "running with {} cores for sample:{}".format(ncores, sample) 
     wdecayselections = { 
@@ -47,7 +47,7 @@ def RDFprocessWJetsMC(fvec, outputDir, sample, xsec, fileSF, ncores, pretendJob,
         #Nominal templates
         p.branch(nodeToStart = 'defs', nodeToEnd = '{}/templates_{}/Nominal'.format('WToMu', region), modules = [ROOT.templates(wtomu_cut, weight, nom,"Nom",0)])            
         p.branch(nodeToStart = 'defs', nodeToEnd = '{}/templates_{}/Nominal'.format('WToTau', region), modules = [ROOT.templates(wtotau_cut, weight, nom,"Nom",0)])
-        if region == "Signal":
+        if region == "Signal" or (region=='Sideband' and SBana):
             print "adding muon histo to graph for Signal region"
             p.branch(nodeToStart = 'defs', nodeToEnd = '{}/prefit_{}/Nominal'.format('WToMu', region), modules = [ROOT.muonHistos(wtomu_cut, weight, nom,"Nom",0)])     
             p.branch(nodeToStart = 'defs', nodeToEnd = '{}/prefit_{}/Nominal'.format('WToTau', region), modules = [ROOT.muonHistos(wtotau_cut, weight, nom,"Nom",0)])     
@@ -82,7 +82,7 @@ def RDFprocessWJetsMC(fvec, outputDir, sample, xsec, fileSF, ncores, pretendJob,
             #Template vars
             p.branch(nodeToStart = 'defs'.format(region), nodeToEnd = '{}/templates_{}/{}Vars'.format('WToMu', region,s), modules = [ROOT.templates(wtomu_cut, var_weight,vars_vec,variations[1], 0)])
             p.branch(nodeToStart = 'defs'.format(region), nodeToEnd = '{}/templates_{}/{}Vars'.format('WToTau', region,s), modules = [ROOT.templates(wtotau_cut, var_weight,vars_vec,variations[1], 0)])
-            if region == "Signal": 
+            if region == "Signal" or (region=='Sideband' and SBana):
                 p.branch(nodeToStart = 'defs'.format(region), nodeToEnd = '{}/prefit_{}/{}Vars'.format('WToMu', region,s), modules = [ROOT.muonHistos(wtomu_cut, var_weight,vars_vec,variations[1], 0)])
                 p.branch(nodeToStart = 'defs'.format(region), nodeToEnd = '{}/prefit_{}/{}Vars'.format('WToTau', region,s), modules = [ROOT.muonHistos(wtotau_cut, var_weight,vars_vec,variations[1], 0)])
                 #reco templates with AC reweighting
@@ -114,7 +114,7 @@ def RDFprocessWJetsMC(fvec, outputDir, sample, xsec, fileSF, ncores, pretendJob,
             #templates (integrated over helicity xsecs)
             p.branch(nodeToStart = 'defs', nodeToEnd = '{}/templates_{}/{}Vars'.format('WToMu', region,vartype), modules = [ROOT.templates(wtomu_cut_vec, weight, nom,"Nom",hcat,wtomu_var_vec)])  
             p.branch(nodeToStart = 'defs', nodeToEnd = '{}/templates_{}/{}Vars'.format('WToTau', region,vartype), modules = [ROOT.templates(wtotau_cut_vec, weight, nom,"Nom",hcat,wtotau_var_vec)])  
-            if region == "Signal": 
+            if region == "Signal" or (region=='Sideband' and SBana):
                 p.branch(nodeToStart = 'defs', nodeToEnd = '{}/prefit_{}/{}Vars'.format('WToMu', region,vartype), modules = [ROOT.muonHistos(wtomu_cut_vec, weight, nom,"Nom",hcat,wtomu_var_vec)])  
                 p.branch(nodeToStart = 'defs', nodeToEnd = '{}/prefit_{}/{}Vars'.format('WToTau', region,vartype), modules = [ROOT.muonHistos(wtotau_cut_vec, weight, nom,"Nom",hcat,wtotau_var_vec)])
                 #reco templates with AC reweighting
@@ -147,12 +147,14 @@ def main():
     parser.add_argument('-o', '--outputDir',type=str, default='./output/', help="output dir name")
     parser.add_argument('-i', '--inputDir',type=str, default='/scratch/wmass/NanoAOD2016-V2/', help="input dir name")
     parser.add_argument('-bkg', '--bkg',type=bool, default=False, help="get histograms for bkg analysis")
+    parser.add_argument('-sb', '--SBana',type=int, default=False, help="run also on the sideband (clousure test)")
     args = parser.parse_args()
     pretendJob = args.pretend
     ncores = args.ncores
     outputDir = args.outputDir
     inDir = args.inputDir
     bkg = args.bkg
+    SBana = args.SBana
     if pretendJob:
         print "Running a test job over a few events"
     else:
@@ -179,7 +181,7 @@ def main():
     print fvec 
 
     fileSF = ROOT.TFile.Open("data/ScaleFactors_OnTheFly.root")
-    RDFprocessWJetsMC(fvec, outputDir, sample, xsec, fileSF, ncores, pretendJob, bkg)
+    RDFprocessWJetsMC(fvec, outputDir, sample, xsec, fileSF, ncores, pretendJob, bkg,SBana)
 
 
 if __name__ == "__main__":
