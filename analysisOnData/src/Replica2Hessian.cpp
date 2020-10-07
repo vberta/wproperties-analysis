@@ -32,7 +32,18 @@ RNode Replica2Hessian::run(RNode d)
     return ROOT::VecOps::RVec<float>(raw_Hessweights);
   };
 
-  auto d1 = d.Define("nLHEPdfWeightHess", [this]() { return nPdfEigWeights_ - 1; }).Define("LHEPdfWeightHess", newPDFweights, {"LHEPdfWeight", "LHEWeight_originalXWGTUP", "event"});
+  auto getalphaSvarVec = [this](float wup, float wdown) {
+    ROOT::VecOps::RVec<float> alpS;
+    alpS.emplace_back(wup);
+    alpS.emplace_back(wdown);
+    return alpS;
+  };
+
+  auto d1 = d.Define("nLHEPdfWeightHess", [this]() { return nPdfEigWeights_ - 1; })
+             .Define("LHEPdfWeightHess", newPDFweights, {"LHEPdfWeight", "LHEWeight_originalXWGTUP", "event"})
+             .Define("alphaSUp", [this](ROOT::VecOps::RVec<float> pdfs, unsigned int npdfs) {return pdfs[npdfs-1];}, {"LHEPdfWeight", "nLHEPdfWeight"})
+             .Define("alphaSDown", [this](ROOT::VecOps::RVec<float> pdfs, unsigned int npdfs) {return pdfs[npdfs-2];}, {"LHEPdfWeight", "nLHEPdfWeight"})
+             .Define("alphaSVars", getalphaSvarVec, {"alphaSUp", "alphaSDown"});
 
   return d1;
 }

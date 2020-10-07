@@ -2,7 +2,7 @@ from module import *
 
 class getLumiWeight(module):
    
-    def __init__(self,xsec, inputFile, targetLumi = 35.9):
+    def __init__(self,xsec, inputFile, genEvsbranch = "genEventSumw_", targetLumi = 35.9):
         
         self.myTH1 = []
         self.myTH2 = []
@@ -17,6 +17,7 @@ class getLumiWeight(module):
         self.xsec = xsec / 0.001
         self.inputFile = inputFile
         self.targetLumi = targetLumi
+        self.genEvsbranch = genEvsbranch         
 
     def run(self,d):
 
@@ -25,7 +26,7 @@ class getLumiWeight(module):
         RDF = ROOT.ROOT.RDataFrame
         runs = RDF('Runs', self.inputFile)
          
-        genEventSumw = runs.Sum("genEventSumw").GetValue()
+        genEventSumw = runs.Sum(self.genEvsbranch).GetValue()
 
         #print 'genEventSumw : '+'{:1.1f}'.format(genEventSumw)+' weighted events'
         #print 'xsec         : '+'{:1.1f}'.format(self.xsec)+' fb'
