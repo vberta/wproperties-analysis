@@ -145,7 +145,7 @@ def main():
     parser.add_argument('-c', '--ncores',type=int, default=128, help="number of cores used")
     parser.add_argument('-o', '--outputDir',type=str, default='./output/', help="output dir name")
     parser.add_argument('-i', '--inputDir',type=str, default='/scratch/wmass/NanoAOD2016-V2/', help="input dir name")
-    parser.add_argument('-bkg', '--bkg',type=bool, default=False, help="get histograms for bkg analysis")
+    parser.add_argument('-b', '--bkg',type=bool, default=False, help="get histograms for bkg analysis")
     parser.add_argument('-sb', '--SBana',type=int, default=False, help="run also on the sideband (clousure test)")
     args = parser.parse_args()
     pretendJob = args.pretend
