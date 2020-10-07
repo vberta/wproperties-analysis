@@ -72,7 +72,9 @@ RNode weightDefinitions::run(RNode d)
     auto d1 = d.Define("WHSF", defineWHSF, {"Mu1_pt", "Mu1_eta", "Mu1_charge"})
                .Define("WHSFVars", defineWHSFVars, {"Mu1_pt", "Mu1_eta", "Mu1_charge"})
                .Define("puWeightVars", definePUweights, {"puWeightUp", "puWeightDown"})
-               .Define("PrefireWeightVars", definePUweights, {"PrefireWeight_Up", "PrefireWeight_Down"});//same function can be used since only 2 vars like PU
+               .Alias("PrefireWeightUp", "PrefireWeight_Up")
+               .Alias("PrefireWeightDown", "PrefireWeight_Down")
+               .Define("PrefireWeightVars", definePUweights, {"PrefireWeightUp", "PrefireWeightDown"});//same function can be used since only 2 vars like PU
      
     return d1;
 }
