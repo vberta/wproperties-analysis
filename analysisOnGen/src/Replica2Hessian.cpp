@@ -13,7 +13,7 @@
 RNode Replica2Hessian::run(RNode d)
 {
 
-  auto newPDFweights = [this](rvec_f replicas, float lhenom, unsigned long long ev) {
+  auto newPDFweights = [this](ROOT::VecOps::RVec<float> replicas, float lhenom, unsigned long long ev) {
     std::vector<float> raw_weights;
 
     for (unsigned int i = 0; i < nPdfWeights_; i++)

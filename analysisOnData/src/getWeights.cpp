@@ -37,7 +37,7 @@ RNode getWeights::run(RNode d){
         return (harmonicsVec/norm);
 
     };
-    auto d1 = d.Define("norm", getNorm, {"GenV_preFSR_qt", "GenV_preFSR_yabs", "AngCoeffVec", "harmonicsVec", "totMap"})
+    auto d1 = d.Define("norm", getNorm, {"Wpt_preFSR", "Wrap_preFSR_abs", "AngCoeffVec", "harmonicsVec", "totMap"})
                   .Define("harmonicsWeights", getWeights, {"norm", "harmonicsVec"});
 
     return d1;

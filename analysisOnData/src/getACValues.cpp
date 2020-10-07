@@ -1,6 +1,5 @@
 #include "interface/getACValues.hpp"
 
-
 RNode getACValues::run(RNode d)
 {
 
@@ -28,10 +27,8 @@ RNode getACValues::run(RNode d)
     return totval;
   };
 
-  auto d1 = d.Define("GenV_preFSR_yabs", "TMath::Abs(GenV_preFSR[1])")
-             .Define("GenV_preFSR_qt", "TMath::Abs(GenV_preFSR[0])")
-             .Define("AngCoeffVec", getACValues, {"GenV_preFSR_yabs", "GenV_preFSR_qt"})
-             .Define("totMap", getMapValue, {"GenV_preFSR_yabs", "GenV_preFSR_qt"});
+    auto d1 = d.Define("AngCoeffVec", getACValues, {"Wrap_preFSR_abs", "Wpt_preFSR"})
+             .Define("totMap", getMapValue, {"Wrap_preFSR_abs", "Wpt_preFSR"});
 
-  return d1;
+    return d1;
 }

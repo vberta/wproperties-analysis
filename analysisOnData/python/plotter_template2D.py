@@ -119,7 +119,7 @@ class plotter:
             if sample not in  self.histoDict : 
                 print "No histo dict for sample:", sample, " What have you done??!!!!"
                 continue
-            self.symmetrisePDF(sample)
+            #self.symmetrisePDF(sample)
             for syst, hlist in self.histoDict[sample].iteritems():
                 fout.mkdir(syst)
                 fout.cd(syst)

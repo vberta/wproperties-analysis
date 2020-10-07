@@ -21,9 +21,11 @@ private:
   const int nBinsY = 6;
   const int nBinsQt = 8;
   const int nBinsEta = 48;
-  const int nBinsPt = 30;
+  const int nBinsPt = 60;
   const int nBinsCharge = 2;
-
+  std::vector<float> _pTArr = std::vector<float>(61);
+  std::vector<float> _etaArr = std::vector<float>(49);
+  std::vector<float> _yArr = std::vector<float>(7);
 
 public:
   templateBuilder(std::string filter, std::string weight, std::vector<std::string> syst_name, std::string syst_weight, HistoCategory hcat, std::string colvar = "")
@@ -35,7 +37,7 @@ public:
         _syst_weight = syst_weight;
         _hcat = hcat;
         _colvar = colvar;
-        //setAxisarrays();
+        setAxisarrays();
     };
 
     templateBuilder(std::vector<std::string> filtervec, std::string weight, std::vector<std::string> syst_name, std::string syst_weight, HistoCategory hcat, std::vector<std::string> colvarvec)
@@ -47,7 +49,7 @@ public:
         _syst_weight = syst_weight;
         _hcat = hcat;
         _colvarvec = colvarvec;
-        //setAxisarrays();
+        setAxisarrays();
     };
 
   ~templateBuilder(){};
@@ -56,6 +58,7 @@ public:
   RNode bookJMEvarhistos(RNode);
   RNode bookWeightVariatedhistos(RNode d);
   RNode run(RNode) override;
+  void setAxisarrays();
   std::vector<std::string> stringMultiplication(const std::vector<std::string> &v1, const std::vector<std::string> &v2);
   static ROOT::VecOps::RVec<float> vecMultiplication(const ROOT::VecOps::RVec<float> &v1, const ROOT::VecOps::RVec<float> &v2) {
     ROOT::VecOps::RVec<float> products;
@@ -64,7 +67,7 @@ public:
     for (auto e1 : v1)
       for (auto e2 : v2)
 	products.push_back(e1 * e2);
-    
+
     return products;
   
   }

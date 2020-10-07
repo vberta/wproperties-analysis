@@ -6,6 +6,7 @@ from collections import OrderedDict
 sys.path.append('../../bkgAnalysis')
 import bkg_utils
 import math
+import copy
 
 ROOT.gROOT.SetBatch()
 ROOT.TH1.AddDirectory(False)
@@ -28,7 +29,9 @@ class plotter:
             print self.inFile, ' does not exist'
             sys.exit(1)
         self.ACfile = ROOT.TFile.Open(ACfile)
-        self.imap = self.ACfile.Get("accMaps/mapTot")
+        self.imap = self.ACfile.Get("angularCoefficients/mapTot")
+        self.clos = copy.deepcopy(ROOT.TH2D("clos", "clos", self.imap.GetXaxis().GetNbins(),self.imap.GetXaxis().GetXbins().GetArray(),self.imap.GetYaxis().GetNbins(),self.imap.GetYaxis().GetXbins().GetArray()))
+        self.yields = {}
         
         self.helXsecs = OrderedDict()
         self.helXsecs["L"] = "A0"
@@ -51,35 +54,53 @@ class plotter:
         self.factors["A6"]=2.*math.sqrt(2)
         self.factors["A7"]=4.*math.sqrt(2)
 
-    def makeTH5slices(self, thn5, systname, chargeBin):
-        hname=thn5.GetName()
-        coeff = hname.replace('helXsecs',"")
+    def makeTH3slices(self, th3, systname, chargeBin):
+        
+        hname=th3.GetName()
+        iQt = int(hname.split('_')[1])
+        coeff = hname.split('_')[3]
+        
         try:
-            syst = "_" + coeff.split('_')[1]
-            coeff = coeff.split('_')[0]
+            syst = "_" + hname.split('_')[4]
         except IndexError:
             syst = ""
-        #minus charge
-        thn5.GetAxis(4).SetRange(chargeBin, chargeBin)
+        
+        for iY in range(1, th3.GetNbinsZ()+1):
+            
+            slicename = 'helXsecs'+ coeff + '_y_{}'.format(iY)+'_qt_{}'.format(iQt) + syst
+            th3.GetZaxis().SetRange(iY, iY)
+            
+            th2slice=th3.Project3D("y_{iY}_yxe".format(iY=iY))
+            th2slice.SetName(slicename)
+            #normalise templates to its helicity xsec
+            nsum = (3./16./math.pi)*self.imap.GetBinContent(iY,iQt)
+            if not 'UL' in hname:
+                hAC = self.ACfile.Get("angularCoefficients/harmonics{}".format(self.helXsecs[coeff]))
+                nsum = nsum*hAC.GetBinContent(iY,iQt)/self.factors[self.helXsecs[coeff]]
+            th2slice.Scale(nsum)
+            th2slice.SetDirectory(0)
+            self.histoDict[systname].append(th2slice)
+
+            if syst=="":
+                #print th2slice.GetName(), th2slice.Integral(0,th2slice.GetNbinsX()+2,0,th2slice.GetNbinsY()+2)
+                self.yields[(iY,iQt)]+=th2slice.Integral(0,th2slice.GetNbinsX()+2,0,th2slice.GetNbinsY()+2)
+
+    def closureMap(self):
         for iY in range(1, 7):
             for iQt in range(1, 9):
-                #w_y = 0. + iY*0.4
-                #w_qt = 0 + iQt*4
-                slicename = 'helXsecs'+ coeff + '_y_{}'.format(iY)+'_qt_{}'.format(iQt) + syst
-                thn5.GetAxis(2).SetRange(iY, iY)
-                thn5.GetAxis(3).SetRange(iQt, iQt)
-                th2slice=thn5.Projection(1, 0)
-                th2slice.SetName(slicename)
-                #normalise templates to its helicity xsec
-                nsum = (3./16./math.pi)*self.imap.GetBinContent(iY,iQt)
-                if not 'UL' in hname:
-                    hAC = self.ACfile.Get("angularCoefficients/harmonics{}".format(self.helXsecs[coeff]))
-                    nsum = nsum*hAC.GetBinContent(iY,iQt)/self.factors[self.helXsecs[coeff]]
-                th2slice.Scale(nsum)
-                th2slice.SetDirectory(0)
-                self.histoDict[systname].append(th2slice)
+                self.clos.SetBinContent(iY,iQt, self.yields[(iY,iQt)])
 
+        self.clos.Divide(self.imap)
+        for iY in range(1, 7):
+            for iQt in range(1, 9):
+                print self.clos.GetBinContent(iY,iQt)
+    
     def getHistos(self, chargeBin) :
+        
+        for iY in range(1, 7):
+            for iQt in range(1, 9):
+               self.yields[(iY,iQt)]=0.
+        
         basepath="templatesAC_Signal/"
         #self.chargeBin = 2  if charge == 1 else 1
         for sKind, sList in self.extSyst.iteritems():
@@ -87,13 +108,16 @@ class plotter:
             #print sKind, sList
             for sname in sList:#variations of each sKind
                 for htype in self.clist:
-                    fpath = basepath + sKind + '/helXsecs' + htype + '_'  + sname
-                    if sKind == 'Nominal' and sname == '': 
-                        fpath = basepath + sKind + '/helXsecs' + htype + sname
-                    print "Histo read:", fpath
-                    thn5 = self.inFile.Get(fpath)
-                    self.makeTH5slices(thn5, sKind, chargeBin)
-        self.symmetrisePDF()
+                    for iQt in range(1,9):
+                        fpath = basepath + sKind + '/qt_{}_helXsecs_'.format(iQt) + htype + '_'  + sname
+                        if sKind == 'Nominal' and sname == '': 
+                            fpath = basepath + sKind + '/qt_{}_helXsecs_'.format(iQt) + htype + sname
+                        #print "Histo read:", fpath
+                        th3 = self.inFile.Get(fpath)
+                        if not th3: continue
+                        self.makeTH3slices(th3, sKind, chargeBin)
+        #self.symmetrisePDF()
+        self.closureMap()
         self.writeHistos(chargeBin)
     
     def symmetrisePDF(self):
@@ -142,7 +166,7 @@ class plotter:
             fout.cd(sKind)
             for h in hlist:
                 h.Write()
-            fout.cd()
+        fout.cd("Nominal")
         fout.Save()
         fout.Close()
 
@@ -155,5 +179,5 @@ OUTPUT = args.output
 INPUT = args.input
 ACfile = args.AC
 p=plotter(outDir=OUTPUT, inDir = INPUT, ACfile=ACfile)
-p.getHistos(1)
+#p.getHistos(1)
 p.getHistos(2)
