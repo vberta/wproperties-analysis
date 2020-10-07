@@ -32,9 +32,9 @@ def RDFprocessMC(fvec, outputDir, sample, xsec, fileSF, ncores, systType, preten
         print "running in region {}".format(region)
 
         if 'aiso' in region:
-            weight = 'float(puWeight*lumiweight)'
+            weight = 'float(puWeight*PrefireWeight*lumiweight)'
         else:
-            weight = 'float(puWeight*lumiweight*WHSF)'
+            weight = 'float(puWeight*PrefireWeight*lumiweight*WHSF)'
         
         print weight, "NOMINAL WEIGHT"
 
@@ -51,6 +51,7 @@ def RDFprocessMC(fvec, outputDir, sample, xsec, fileSF, ncores, systType, preten
         for s,variations in systematicsFinal.iteritems():
             if "LHEScaleWeight" in s and systType != 2 :  continue
             if "LHEPdfWeight"   in s and systType != 2 :  continue
+            if "alphaS"         in s and systType != 2 :  continue
 
             if "LHEPdfWeight" in s or "LHEScaleWeight" in s :
                 var_weight = weight
@@ -92,7 +93,7 @@ def main():
     parser.add_argument('-p', '--pretend',type=int, default=False, help="run over a small number of event")
     parser.add_argument('-n', '--ncores',type=int, default=64, help="number of cores used")
     parser.add_argument('-o', '--outputDir',type=str, default='./output/', help="output dir name")
-    parser.add_argument('-i', '--inputDir',type=str, default='/scratchssd/sroychow/NanoAOD2016-V2/', help="input dir name")    
+    parser.add_argument('-i', '--inputDir',type=str, default='/scratchnvme/wmass/NanoAOD2016-V2/', help="input dir name")    
     parser.add_argument('-sb', '--SBana',type=int, default=False, help="run also on the sideband (clousure test)")
     args = parser.parse_args()
     pretendJob = args.pretend

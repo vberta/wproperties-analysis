@@ -27,15 +27,15 @@ def RDFprocessWJetsMC(fvec, outputDir, sample, xsec, fileSF, ncores, pretendJob,
     filePt = ROOT.TFile.Open("data/histoUnfoldingSystPt_nsel2_dy3_rebin1_default.root")
     fileY = ROOT.TFile.Open("data/histoUnfoldingSystRap_nsel2_dy3_rebin1_default.root")
     fileAC = ROOT.TFile.Open("../analysisOnGen/genInput.root")
-    p.branch(nodeToStart = 'input', nodeToEnd = 'defs', modules = [ROOT.reweightFromZ(filePt,fileY),ROOT.baseDefinitions(),ROOT.weightDefinitions(fileSF),getLumiWeight(xsec=xsec, inputFile=fvec),ROOT.Replica2Hessian()])
+    p.branch(nodeToStart = 'input', nodeToEnd = 'defs', modules = [ROOT.reweightFromZ(filePt,fileY),ROOT.baseDefinitions(True, True),ROOT.weightDefinitions(fileSF),getLumiWeight(xsec=xsec, inputFile=fvec, genEvsbranch = "genEventSumw"),ROOT.Replica2Hessian()])
 
     for region,cut in selections_bkg.iteritems():
         if not bkg:
             if not region=='Signal': continue
         if 'aiso' in region:
-            weight = 'float(puWeight*lumiweight*weightPt*weightY)'
+            weight = 'float(puWeight*PrefireWeight*lumiweight*weightPt*weightY)'
         else:
-            weight = 'float(puWeight*lumiweight*WHSF*weightPt*weightY)'
+            weight = 'float(puWeight*PrefireWeight*lumiweight*WHSF*weightPt*weightY)'
             
         print weight, "NOMINAL WEIGHT"
         
@@ -65,7 +65,6 @@ def RDFprocessWJetsMC(fvec, outputDir, sample, xsec, fileSF, ncores, pretendJob,
             mass.push_back("_massDown")
             p.branch(nodeToStart = 'defsAC', nodeToEnd = '{}/templatesLowAcc_{}/Nominal'.format('WToMu', region), modules = [ROOT.templates(wtomu_cut, weight, mass,"massWeights",0)])
             wtomu_cut = cut + wdecayselections['WToMu']        
-        """
         #weight variations
         for s,variations in systematics.iteritems():
             print "branching weight variations", s
@@ -91,7 +90,7 @@ def RDFprocessWJetsMC(fvec, outputDir, sample, xsec, fileSF, ncores, pretendJob,
                 p.branch(nodeToStart = 'defs', nodeToEnd = 'defsAC', modules = steps)
                 p.branch(nodeToStart = 'defsAC', nodeToEnd = '{}/templatesAC_{}/{}Vars'.format('WToMu', region, s), modules = [ROOT.templateBuilder(wtomu_cut, var_weight,vars_vec,variations[1], 3)])
                 #reco templates for out of acceptance events
-                wtomu_cut+= "&& GenV_preFSR_qt>32. && GenV_preFSR_yabs>2.4"
+                wtomu_cut+= "&& Wpt_preFSR>32. && Wrap_preFSR_abs>2.4"
                 p.branch(nodeToStart = 'defsAC', nodeToEnd = '{}/templatesLowAcc_{}/{}Vars'.format('WToMu', region,s), modules = [ROOT.templates(wtomu_cut, var_weight,vars_vec,variations[1], 0)])
                 wtomu_cut = cut + wdecayselections['WToMu'] 
                 
@@ -125,11 +124,10 @@ def RDFprocessWJetsMC(fvec, outputDir, sample, xsec, fileSF, ncores, pretendJob,
                 #reco templates for out of acceptance events
                 print 'low Acc'
                 for cut in wtomu_cut_vec:
-                    cut+= "&& GenV_preFSR_qt>32. && GenV_preFSR_yabs>2.4"
+                    cut+= "&& Wpt_preFSR>32. && Wrap_preFSR_abs>2.4"
                     print cut
                 p.branch(nodeToStart = 'defsAC', nodeToEnd = '{}/templatesLowAcc_{}/{}Vars'.format('WToMu', region,vartype), modules = [ROOT.templates(wtomu_cut_vec, weight, nom,"Nom",hcat,wtomu_var_vec)])
                 wtomu_newcut = cut + wdecayselections['WToMu'] 
-        """
     p.getOutput()
     p.saveGraph()
    
