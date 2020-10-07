@@ -49,10 +49,11 @@ RNode templates::bookJMEvarhistos(RNode df)
 
 void templates::setAxisarrays()
 {
-    for (unsigned int i = 0; i < 31; i++)
-        _pTArr[i] = 25. + i;
+  for (unsigned int i = 0; i < 61; i++){
+      float binSize = (55. - 25.) / 60;
+      _pTArr[i] = 25. + i*binSize;}
     for (unsigned int i = 0; i < 49; i++)
-        _etaArr[i] = -2.4 + i * (4.8) / 48; //eta -2.4 to 2.4
+        _etaArr[i] = -2.4 + i * 4.8/48;
     for (int i = 0; i < 3; i++)
       _chargeArr[i] = -2. +  i*2. ;
 }

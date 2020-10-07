@@ -4,9 +4,9 @@ import math
 from fitUtils import fitUtils
 import os
 
-basepath = '/scratch/emanca/wproperties-analysis/analysisOnData/python/templates2D/'
+basepath = '/scratchnvme/emanca/wproperties-analysis/analysisOnData/python/templates2D/'
 fsig = basepath+'WPlus_2D_ACTemplates.root'
-fmap = '/scratch/emanca/wproperties-analysis/analysisOnGen/genInput.root'
+fmap = '/scratchnvme/emanca/wproperties-analysis/analysisOnGen/genInput.root'
 
 samples = ["DY","Diboson","Top","Fake","Tau","LowAcc","data_obs"]
 
@@ -20,7 +20,7 @@ fbkg_dict["Tau"]=fbkg+'WtoTau_templates2Dplus.root'
 fbkg_dict["LowAcc"]=fbkg+'LowAcc_templates2Dplus.root'
 fbkg_dict["data_obs"]=fbkg+'WToMu_templates2Dplus.root' #placeholder for data
 
-f = fitUtils(fsig, fmap, fbkg_dict, "Wplus")
+f = fitUtils(fsig, fmap, fbkg_dict, "Wplus_reco")
 f.getTemplates()
 f.shapeFile()
 f.fillHelGroup()
@@ -34,7 +34,6 @@ text2hd5f = 'text2hdf5.py --allowNegativeExpectation --maskedChan={}_xsec {}.pkl
 print 'executing', text2hd5f 
 os.system(text2hd5f)
 
-#combinetf = 'combinetf.py --allowNegativePOI --binByBinStat --correlateXsecStat --doImpacts -t-1 {}.pkl.hdf5 -o fit_{}.root'.format(f.channel, f.channel)
-combinetf = 'combinetf.py --allowNegativePOI  --doImpacts -t-1 {}.pkl.hdf5 -o fit_{}.root'.format(f.channel, f.channel)
+combinetf = 'combinetf.py --allowNegativePOI --binByBinStat --correlateXsecStat --doImpacts -t-1 {}.pkl.hdf5 -o fit_{}.root'.format(f.channel, f.channel)
 print 'executing', combinetf
 os.system(combinetf)

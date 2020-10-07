@@ -25,7 +25,7 @@ class getLumiWeight(module):
         RDF = ROOT.ROOT.RDataFrame
         runs = RDF('Runs', self.inputFile)
          
-        genEventSumw = runs.Sum("genEventSumw_").GetValue()
+        genEventSumw = runs.Sum("genEventSumw").GetValue()
 
         #print 'genEventSumw : '+'{:1.1f}'.format(genEventSumw)+' weighted events'
         #print 'xsec         : '+'{:1.1f}'.format(self.xsec)+' fb'

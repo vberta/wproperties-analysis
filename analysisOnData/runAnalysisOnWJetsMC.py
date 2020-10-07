@@ -28,6 +28,7 @@ def RDFprocessWJetsMC(fvec, outputDir, sample, xsec, fileSF, ncores, pretendJob,
     fileY = ROOT.TFile.Open("data/histoUnfoldingSystRap_nsel2_dy3_rebin1_default.root")
     fileAC = ROOT.TFile.Open("../analysisOnGen/genInput.root")
     p.branch(nodeToStart = 'input', nodeToEnd = 'defs', modules = [ROOT.reweightFromZ(filePt,fileY),ROOT.baseDefinitions(),ROOT.weightDefinitions(fileSF),getLumiWeight(xsec=xsec, inputFile=fvec),ROOT.Replica2Hessian()])
+
     for region,cut in selections_bkg.iteritems():
         if not bkg:
             if not region=='Signal': continue
@@ -35,7 +36,7 @@ def RDFprocessWJetsMC(fvec, outputDir, sample, xsec, fileSF, ncores, pretendJob,
             weight = 'float(puWeight*lumiweight*weightPt*weightY)'
         else:
             weight = 'float(puWeight*lumiweight*WHSF*weightPt*weightY)'
-        
+            
         print weight, "NOMINAL WEIGHT"
         
         nom = ROOT.vector('string')()
@@ -49,22 +50,22 @@ def RDFprocessWJetsMC(fvec, outputDir, sample, xsec, fileSF, ncores, pretendJob,
         p.branch(nodeToStart = 'defs', nodeToEnd = '{}/templates_{}/Nominal'.format('WToTau', region), modules = [ROOT.templates(wtotau_cut, weight, nom,"Nom",0)])
         if region == "Signal" or (region=='Sideband' and SBana):
             print "adding muon histo to graph for Signal region"
-            p.branch(nodeToStart = 'defs', nodeToEnd = '{}/prefit_{}/Nominal'.format('WToMu', region), modules = [ROOT.muonHistos(wtomu_cut, weight, nom,"Nom",0)])     
-            p.branch(nodeToStart = 'defs', nodeToEnd = '{}/prefit_{}/Nominal'.format('WToTau', region), modules = [ROOT.muonHistos(wtotau_cut, weight, nom,"Nom",0)])     
+            #p.branch(nodeToStart = 'defs', nodeToEnd = '{}/prefit_{}/Nominal'.format('WToMu', region), modules = [ROOT.muonHistos(wtomu_cut, weight, nom,"Nom",0)])     
+            #p.branch(nodeToStart = 'defs', nodeToEnd = '{}/prefit_{}/Nominal'.format('WToTau', region), modules = [ROOT.muonHistos(wtotau_cut, weight, nom,"Nom",0)])     
             #reco templates with AC reweighting
             steps = [ROOT.getACValues(fileAC),ROOT.defineHarmonics(),ROOT.getMassWeights(),ROOT.getWeights()]
             p.branch(nodeToStart = 'defs', nodeToEnd = 'defsAC', modules = steps)
             p.branch(nodeToStart = 'defsAC', nodeToEnd = '{}/templatesAC_{}/Nominal'.format('WToMu', region), modules = [ROOT.templateBuilder(wtomu_cut, weight,nom,"Nom",0)])
             #reco templates for out of acceptance events
 
-            wtomu_cut+= "&& GenV_preFSR_qt>32. && GenV_preFSR_yabs>2.4"
+            wtomu_cut+= "&& Wpt_preFSR>32. && Wrap_preFSR_abs>2.4"
             p.branch(nodeToStart = 'defsAC', nodeToEnd = '{}/templatesLowAcc_{}/Nominal'.format('WToMu', region), modules = [ROOT.templates(wtomu_cut, weight, nom,"Nom",0)])
             mass = ROOT.vector('string')()
             mass.push_back("_massUp")
             mass.push_back("_massDown")
             p.branch(nodeToStart = 'defsAC', nodeToEnd = '{}/templatesLowAcc_{}/Nominal'.format('WToMu', region), modules = [ROOT.templates(wtomu_cut, weight, mass,"massWeights",0)])
             wtomu_cut = cut + wdecayselections['WToMu']        
-
+        """
         #weight variations
         for s,variations in systematics.iteritems():
             print "branching weight variations", s
@@ -128,7 +129,7 @@ def RDFprocessWJetsMC(fvec, outputDir, sample, xsec, fileSF, ncores, pretendJob,
                     print cut
                 p.branch(nodeToStart = 'defsAC', nodeToEnd = '{}/templatesLowAcc_{}/{}Vars'.format('WToMu', region,vartype), modules = [ROOT.templates(wtomu_cut_vec, weight, nom,"Nom",hcat,wtomu_var_vec)])
                 wtomu_newcut = cut + wdecayselections['WToMu'] 
-
+        """
     p.getOutput()
     p.saveGraph()
    
@@ -169,12 +170,14 @@ def main():
     fvec=ROOT.vector('string')()
     for dirname,fname in direc.iteritems():
         ##check if file exists or not
-        inputFile = '{}/{}/tree.root'.format(inDir, dirname)
+        #inputFile = '/scratchnvme/emanca/wproperties-analysis/analysisOnGen/test_tree_*.root'
+        inputFile = '/scratchnvme/wmass/WJetsNoCUT_v2/tree_*_*.root'
         isFile = os.path.isfile(inputFile)  
         if not isFile:
             print inputFile, " does not exist"
-            continue
+            #continue
         fvec.push_back(inputFile)
+        break
     if fvec.empty():
         print "No files found for directory:", samples[sample], " SKIPPING processing"
         sys.exit(1)

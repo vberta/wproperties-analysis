@@ -1,5 +1,5 @@
 GCC=g++
-CXXFLAGS=`root-config --libs --cflags` -O3 -fPIC -Wall -I../  -I./  -I /scratch/sroychow/eigen-3.3.7/
+CXXFLAGS=`root-config --libs --cflags` -O3 -fPIC -Wall -I../  -I./  -I /scratchnvme/sroychow/eigen-3.3.7/
 SOFLAGS=-shared
 
 SRCDIR=src
@@ -33,7 +33,7 @@ $(OBJ) : $(BINDIR)/%.o : $(SRCDIR)/%.cpp interface/%.hpp | $(BINDIR)
 Dict: $(BINDIR)/dict.o
 
 $(BINDIR)/dict.o: $(SRC) | $(BINDIR)
-	genreflex $(SRCDIR)/classes.h -s $(SRCDIR)/classes_def.xml -o $(BINDIR)/dict.cc --fail_on_warnings --rootmap=$(BINDIR)/dict.rootmap --rootmap-lib=libSignalAnalysis.so -I interface/ -I../ -I /scratch/sroychow/eigen-3.3.7
+	genreflex $(SRCDIR)/classes.h -s $(SRCDIR)/classes_def.xml -o $(BINDIR)/dict.cc --fail_on_warnings --rootmap=$(BINDIR)/dict.rootmap --rootmap-lib=libSignalAnalysis.so -I interface/ -I../ -I /scratchnvme/sroychow/eigen-3.3.7
 	$(GCC) -c -o $(BINDIR)/dict.o $(CXXFLAGS) $(RPATH) -I interface $(BINDIR)/dict.cc
 
 $(BINDIR):
