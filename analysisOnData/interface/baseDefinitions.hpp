@@ -8,10 +8,12 @@ class baseDefinitions : public Module
 
 private:
     bool _isMC;
+    bool _isWjets;
 
 public:
-    baseDefinitions(bool isMC = 1){
+    baseDefinitions(bool isMC = 1, bool isWjets = 0){
       _isMC = isMC;
+      _isWjets = isWjets;
     };
     ~baseDefinitions(){};
 

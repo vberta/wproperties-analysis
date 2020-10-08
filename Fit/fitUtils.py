@@ -5,6 +5,7 @@ import math
 from HiggsAnalysis.CombinedLimit.DatacardParser import *
 from collections import OrderedDict
 import copy
+from systToapply import systematicsDict, systToSampleDict, systTypeDict
 
 class fitUtils:
     def __init__(self, fsig, fmap, fbkg = {}, channel ="WPlus"):
@@ -20,7 +21,11 @@ class fitUtils:
         self.sumGroups = OrderedDict()
         self.helMetaGroups = OrderedDict()
         
-        self.templSystematics = {
+        self.templSystematics = systematicsDict
+        self.systToSampleDict = systToSampleDict
+        self.systTypeDict = systTypeDict
+        '''
+        {
             "Nominal" : [""],
             "mass" : ["mass"],
             #"WHSFVars"  : ["WHSFSyst0", "WHSFSyst1","WHSFSyst2","WHSFSystFlat"],
@@ -29,7 +34,7 @@ class fitUtils:
             #"jmeVars" : ["jesTotal", "unclustEn"],
             #"LHEPdfWeightVars" : ["LHEPdfWeightHess{}".format(i+1) for i in range(60)]
         }
-        
+        '''
         #all the files that are needed
         self.fmap = ROOT.TFile.Open(fmap) #file containing the angular coefficient values and inclusive pt-y map
         self.fbkg = fbkg
@@ -287,6 +292,23 @@ class fitUtils:
         
         #for i in range(60):
             #self.DC.systs.append(('LHEPdfWeightHess{}'.format(i+1), False, 'shape', [], aux))
+        '''
+        #ROUGH IDEA
+        for onesyst,variations in self.templSystematics.iteritems(): #loop over systematics
+            if onesyst == 'mass' or onesyst == 'Nominal' : continue
+            aux1 = {}#each sys will have a separate aux dict
+            aux1[self.channel] = {}
+            aux1[self.channel+'_xsec'] = {}
+            for proc in self.systToSampleDict[onesyst]:
+                if 'hel' in proc or 'LowAcc' in proc:
+                    aux1[self.channel][proc] = 1.0
+                    aux1[self.channel+'_xsec'][proc] = 0.0
+                else:
+                    aux1[self.channel][proc] = 0.0
+                    aux1[self.channel+'_xsec'][proc] = 0.0
+            for var in variations:
+                self.DC.systs.append((var, False, self.systTypeDict[onesyst], aux1))
+        '''
 
         aux2 = {}
         aux2[self.channel] = {}
