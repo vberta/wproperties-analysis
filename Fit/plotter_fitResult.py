@@ -25,6 +25,12 @@ class plotter :
             "_LHEPdfWeight" : ["_LHEPdfWeightHess" + str(i)  for i in range(1, 61)],
         }
         
+        self.vetoScaleList = []
+        for scNum in self.systDict['_LHEScaleWeight'] :
+            for scDen in self.systDict['_LHEScaleWeight'] :
+                if ('0p5' in scNum and '2p0' in scDen) or ('2p0' in scNum and '0p5' in scDen): 
+                    self.vetoScaleList.append([scNum,scDen])        
+        
         self.hels = ['L', 'I', 'T', 'A', 'P', 'UL']
         self.coeffDict = {
             'A0' : 1.,
@@ -239,6 +245,7 @@ class plotter :
                             if sNameDen!=sName and not UNCORR : continue
                             if sNameDen!=sName and 'unpol' in c : continue
                             if sName=='_nom' and sNameDen=='_nom' : continue
+                            if ([sName,sNameDen] in self.vetoScaleList) : continue  #extremal cases
                             if 'unpol' in c:
                                 systVal=self.histos[suff+'MC'+sName+'mapTot'].GetBinContent(i,j)/35.9
                             else:
@@ -799,24 +806,12 @@ class plotter :
             self.leg['comp'+'FitErr'+'UNRyqt'+c].AddEntry(self.histos[suffReco+'FitErr'+'UNRyqt'+c+'4comp'],'Reco Fit Err.')
             self.leg['comp'+'FitErr'+'UNRyqt'+c].Draw("same")
             
-            # outFileName = 'fitResult_asimov'
-            # if not os.path.exists(outFileName): os.system("mkdir -p " + outFileName)                            
-            # self.canvas['comp'+'FitErr'+'UNRqty'+c].SaveAs(outFileName+'/'+self.canvas['comp'+'FitErr'+'UNRqty'+c].GetTitle()+'.pdf')
-            # self.canvas['comp'+'FitErr'+'UNRqty'+c].SaveAs(outFileName+'/'+self.canvas['comp'+'FitErr'+'UNRqty'+c].GetTitle()+'.png')
-            # self.canvas['comp'+'FitErr'+'UNRyqt'+c].SaveAs(outFileName+'/'+self.canvas['comp'+'FitErr'+'UNRyqt'+c].GetTitle()+'.pdf')
-            # self.canvas['comp'+'FitErr'+'UNRyqt'+c].SaveAs(outFileName+'/'+self.canvas['comp'+'FitErr'+'UNRyqt'+c].GetTitle()+'.png')
-            
-                
-        
 
     def makeRootOutput(self,outFileName,SAVE, suffList, comparison) :
 
         outFile = ROOT.TFile(outFileName+".root", "recreate")
         outFile.cd()
         dirFinalDict = {}
-        
-        # if SAVE:
-        #     if not os.path.exists(outFileName): os.system("mkdir -p " + outFileName)
 
         for suff in suffList : 
             dirFinalDict['coeff2D'+suff] = outFile.mkdir('coeff2D_'+suff)
@@ -853,16 +848,10 @@ class plotter :
             for mtx in ['corr','cov'] :
                 for c in self.coeffDict:
                     self.canvas[suff+mtx+'Mat'+c].Write()
-                    # if SAVE : self.canvas[suff+mtx+'Mat'+c].SaveAs(outFileName+'/'+self.canvas[suff+mtx+'Mat'+c].GetTitle()+'.pdf')
-                    # if SAVE : self.canvas[suff+mtx+'Mat'+c].SaveAs(outFileName+'/'+self.canvas[suff+mtx+'Mat'+c].GetTitle()+'.png')
                 for i in range(1, self.histos[suff+'FitACA0'].GetNbinsX()+1):
                     self.canvas[suff+mtx+'Mat'+'y'+str(i)].Write()
-                    # if SAVE : self.canvas[suff+mtx+'Mat'+'y'+str(i)].SaveAs(outFileName+'/'+self.canvas[suff+mtx+'Mat'+'y'+str(i)].GetTitle()+'.pdf')
-                    # if SAVE : self.canvas[suff+mtx+'Mat'+'y'+str(i)].SaveAs(outFileName+'/'+self.canvas[suff+mtx+'Mat'+'y'+str(i)].GetTitle()+'.png')
                 for j in range(1, self.histos[suff+'FitACA0'].GetNbinsY()+1):
                     self.canvas[suff+mtx+'Mat'+'qt'+str(j)].Write()
-                    # if SAVE : self.canvas[suff+mtx+'Mat'+'qt'+str(j)].SaveAs(outFileName+'/'+self.canvas[suff+mtx+'Mat'+'qt'+str(j)].GetTitle()+'.pdf')
-                    # if SAVE : self.canvas[suff+mtx+'Mat'+'qt'+str(j)].SaveAs(outFileName+'/'+self.canvas[suff+mtx+'Mat'+'qt'+str(j)].GetTitle()+'.png')
                   
         if comparison :
             
@@ -886,65 +875,7 @@ class plotter :
         
         outFile.Close()
                 
-                # if SAVE :
-                #     self.canvas['comp'+'FitAC'+'UNRqty'+c].SaveAs(outFileName+'/'+self.canvas['comp'+'FitAC'+'UNRqty'+c].GetTitle()+'.pdf')                                
-                #     self.canvas['comp'+'FitAC'+'UNRqty'+c].SaveAs(outFileName+'/'+self.canvas['comp'+'FitAC'+'UNRqty'+c].GetTitle()+'.png')                                
-                #     self.canvas['comp'+'FitErr'+'UNRqty'+c].SaveAs(outFileName+'/'+self.canvas['comp'+'FitErr'+'UNRqty'+c].GetTitle()+'.pdf')
-                #     self.canvas['comp'+'FitErr'+'UNRqty'+c].SaveAs(outFileName+'/'+self.canvas['comp'+'FitErr'+'UNRqty'+c].GetTitle()+'.png')
-                #     self.canvas['comp'+'FitAC'+'UNRyqt'+c].SaveAs(outFileName+'/'+self.canvas['comp'+'FitAC'+'UNRyqt'+c].GetTitle()+'.pdf')
-                #     self.canvas['comp'+'FitAC'+'UNRyqt'+c].SaveAs(outFileName+'/'+self.canvas['comp'+'FitAC'+'UNRyqt'+c].GetTitle()+'.png')
-                #     self.canvas['comp'+'FitErr'+'UNRyqt'+c].SaveAs(outFileName+'/'+self.canvas['comp'+'FitErr'+'UNRyqt'+c].GetTitle()+'.pdf')
-                #     self.canvas['comp'+'FitErr'+'UNRyqt'+c].SaveAs(outFileName+'/'+self.canvas['comp'+'FitErr'+'UNRyqt'+c].GetTitle()+'.png')
-                    
-                    # self.canvas['comp'+'FitAC'+'UNRqty'+c].Print(outFileName+'/'+self.canvas['comp'+'FitAC'+'UNRqty'+c].GetTitle()+'.pdf','pdf')                                
-                    # self.canvas['comp'+'FitAC'+'UNRqty'+c].Print(outFileName+'/'+self.canvas['comp'+'FitAC'+'UNRqty'+c].GetTitle()+'.png','png')                                
-                    # self.canvas['comp'+'FitErr'+'UNRqty'+c].Print(outFileName+'/'+self.canvas['comp'+'FitErr'+'UNRqty'+c].GetTitle()+'.pdf','pdf')
-                    # self.canvas['comp'+'FitErr'+'UNRqty'+c].Print(outFileName+'/'+self.canvas['comp'+'FitErr'+'UNRqty'+c].GetTitle()+'.png','png')
-                    # self.canvas['comp'+'FitAC'+'UNRyqt'+c].Print(outFileName+'/'+self.canvas['comp'+'FitAC'+'UNRyqt'+c].GetTitle()+'.pdf','pdf')
-                    # self.canvas['comp'+'FitAC'+'UNRyqt'+c].Print(outFileName+'/'+self.canvas['comp'+'FitAC'+'UNRyqt'+c].GetTitle()+'.png','png')
-                    # self.canvas['comp'+'FitErr'+'UNRyqt'+c].Print(outFileName+'/'+self.canvas['comp'+'FitErr'+'UNRyqt'+c].GetTitle()+'.pdf','pdf')
-                    # self.canvas['comp'+'FitErr'+'UNRyqt'+c].Print(outFileName+'/'+self.canvas['comp'+'FitErr'+'UNRyqt'+c].GetTitle()+'.png','png')
-        
-        # if SAVE:
-        #     if not os.path.exists(outFileName): os.system("mkdir -p " + outFileName)
-            
-        #     if comparison :
-        #         for c in self.coeffDict:
-        #             self.canvas['comp'+'FitAC'+'UNRqty'+c].SaveAs(outFileName+'/'+self.canvas['comp'+'FitAC'+'UNRqty'+c].GetTitle()+'.pdf')                                
-        #             self.canvas['comp'+'FitAC'+'UNRqty'+c].SaveAs(outFileName+'/'+self.canvas['comp'+'FitAC'+'UNRqty'+c].GetTitle()+'.png')                                
-        #             self.canvas['comp'+'FitErr'+'UNRqty'+c].SaveAs(outFileName+'/'+self.canvas['comp'+'FitErr'+'UNRqty'+c].GetTitle()+'.pdf')
-        #             self.canvas['comp'+'FitErr'+'UNRqty'+c].SaveAs(outFileName+'/'+self.canvas['comp'+'FitErr'+'UNRqty'+c].GetTitle()+'.png')
-        #             self.canvas['comp'+'FitAC'+'UNRyqt'+c].SaveAs(outFileName+'/'+self.canvas['comp'+'FitAC'+'UNRyqt'+c].GetTitle()+'.pdf')
-        #             self.canvas['comp'+'FitAC'+'UNRyqt'+c].SaveAs(outFileName+'/'+self.canvas['comp'+'FitAC'+'UNRyqt'+c].GetTitle()+'.png')
-        #             self.canvas['comp'+'FitErr'+'UNRyqt'+c].SaveAs(outFileName+'/'+self.canvas['comp'+'FitErr'+'UNRyqt'+c].GetTitle()+'.pdf')
-        #             self.canvas['comp'+'FitErr'+'UNRyqt'+c].SaveAs(outFileName+'/'+self.canvas['comp'+'FitErr'+'UNRyqt'+c].GetTitle()+'.png')
-            
-        #     for suff in suffList : 
-        #         for mtx in ['corr','cov'] :
-        #             for c in self.coeffDict:
-        #                 self.canvas[suff+mtx+'Mat'+c].SaveAs(outFileName+'/'+self.canvas[suff+mtx+'Mat'+c].GetTitle()+'.pdf')
-        #                 self.canvas[suff+mtx+'Mat'+c].SaveAs(outFileName+'/'+self.canvas[suff+mtx+'Mat'+c].GetTitle()+'.png')
-        #             for i in range(1, self.histos[suff+'FitACA0'].GetNbinsX()+1):
-        #                 self.canvas[suff+mtx+'Mat'+'y'+str(i)].SaveAs(outFileName+'/'+self.canvas[suff+mtx+'Mat'+'y'+str(i)].GetTitle()+'.pdf')
-        #                 self.canvas[suff+mtx+'Mat'+'y'+str(i)].SaveAs(outFileName+'/'+self.canvas[suff+mtx+'Mat'+'y'+str(i)].GetTitle()+'.png')
-        #             for j in range(1, self.histos[suff+'FitACA0'].GetNbinsY()+1):
-        #                 self.canvas[suff+mtx+'Mat'+'qt'+str(j)].SaveAs(outFileName+'/'+self.canvas[suff+mtx+'Mat'+'qt'+str(j)].GetTitle()+'.pdf')
-        #                 self.canvas[suff+mtx+'Mat'+'qt'+str(j)].SaveAs(outFileName+'/'+self.canvas[suff+mtx+'Mat'+'qt'+str(j)].GetTitle()+'.png')
-            
-            # dirFinalDict['coeffALL'+suff] = outFile.mkdir('coeffALL_'+suff)
-            # dirFinalDict['coeffALL'+suff].cd()
-            # for c in self.coeffDict:
-            #     for i in range(1, self.histos[suff+'FitAC'+c].GetNbinsX()+1):
-            #         self.histos[suff+'FitAC'+'qt'+str(i)+c].Write()
-            #         self.histos[suff+'FitBand'+'qt'+str(i)+c].Write()
-            #     for j in range(1, self.histos[suff+'FitAC'+c].GetNbinsY()+1):
-            #         self.histos[suff+'FitAC'+'y'+str(j)+c].Write()
-            #         self.histos[suff+'FitBand'+'qt'+str(i)+c].Write()
-            #     self.histos[suff+'FitAC'+'UNRqty'+c].Write()
-            #     self.histos[suff+'FitBand'+'UNRqty'+c].Write()
-            #     self.histos[suff+'FitAC'+'UNRyqt'+c].Write()
-            #     self.histos[suff+'FitBand'+'UNRyqt'+c].Write()
-    
+               
     def getCoeffDict(self) :
         return self.coeffDict
     
@@ -982,6 +913,17 @@ def saver(rootInput, suffList, comparison,coeffDict,yArr,qtArr) :
                 can = FitFile.Get('matrices_'+suff+'/'+suff+'_'+mtx+'Mat_qt'+str(j))
                 can.SaveAs(rootInput+'/'+can.GetTitle()+'.pdf')
                 can.SaveAs(rootInput+'/'+can.GetTitle()+'.png')
+                
+                
+###############################################################################################################################
+#
+#  usage: python plotter_fitResult.py -o OUTNAME -f /scratchnvme/emanca/wproperties-analysis/Fit/fit_Wplus.root -u 1 -c 1 -s 1
+#
+#  all the parameters are described below, but some note:
+#  --uncorrelate: it should be set to True accordingly to theory prescription (31 Scale variation in total)
+#  --comparison: if True expected two files called --fitFile and --FiteFile_reco
+#
+################################################################################################################################
        
 parser = argparse.ArgumentParser("")
 
