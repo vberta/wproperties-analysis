@@ -9,9 +9,9 @@ class TH3weightsHelper : public ROOT::Detail::RDF::RActionImpl<TH3weightsHelper>
 
 public:
    /// This type is a requirement for every helper.
-   using Result_t = std::vector<TH3D>;
+   using Result_t = std::vector<TH3D*>;
 private:
-   std::vector<std::shared_ptr<std::vector<TH3D>>> fHistos; // one per data processing slot
+   std::vector<std::shared_ptr<std::vector<TH3D*>>> fHistos; // one per data processing slot
    std::string _name;
    int _nbinsX;
    std::vector<float> _xbins;
@@ -34,7 +34,7 @@ public:
 
    TH3weightsHelper(TH3weightsHelper &&) = default;
    TH3weightsHelper(const TH3weightsHelper &) = delete;
-   std::shared_ptr<std::vector<TH3D>> GetResultPtr() const;
+   std::shared_ptr<std::vector<TH3D*>> GetResultPtr() const;
    void Initialize();
    void InitTask(TTreeReader *, unsigned int);
    /// This is a method executed at every entry
