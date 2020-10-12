@@ -10,13 +10,15 @@ TH1weightsHelper::TH1weightsHelper(std::string name, std::string title,
    _xbins = xbins;
    _weightNames = weightNames;
 
+   TH1::AddDirectory(false);
+
    const auto nSlots = ROOT::IsImplicitMTEnabled() ? ROOT::GetThreadPoolSize() : 1;
    for (auto slot : ROOT::TSeqU(nSlots))
    {
-      fHistos.emplace_back(std::make_shared<std::vector<TH1D>>());
+      fHistos.emplace_back(std::make_shared<std::vector<TH1D*>>());
       (void)slot;
 
-      std::vector<TH1D> &histos = *fHistos[slot];
+      std::vector<TH1D*> &histos = *fHistos[slot];
       auto n_histos = _weightNames.size();
 
       std::string slotnum = "";
@@ -25,15 +27,15 @@ TH1weightsHelper::TH1weightsHelper(std::string name, std::string title,
       for (unsigned int i = 0; i < n_histos; ++i)
       {
 
-         histos.emplace_back(TH1D(std::string(_name + _weightNames[i] + slotnum).c_str(),
+         histos.emplace_back(new TH1D(std::string(_name + _weightNames[i] + slotnum).c_str(),
                                   std::string(_name + _weightNames[i] + slotnum).c_str(),
                                   _nbinsX, _xbins.data()));
-         histos.back().SetDirectory(nullptr);
+         histos.back()->SetDirectory(nullptr);
       }
    }
 }
 
-std::shared_ptr<std::vector<TH1D>> TH1weightsHelper::GetResultPtr() const { return fHistos[0]; }
+std::shared_ptr<std::vector<TH1D*>> TH1weightsHelper::GetResultPtr() const { return fHistos[0]; }
 void TH1weightsHelper::Initialize() {}
 void TH1weightsHelper::InitTask(TTreeReader *, unsigned int) {}
 /// This is a method executed at every entry
@@ -43,7 +45,7 @@ void TH1weightsHelper::Exec(unsigned int slot, const float &var1, const float &w
    auto &histos = *fHistos[slot];
    const auto n_histos = histos.size();
    for (unsigned int i = 0; i < n_histos; ++i)
-      histos[i].Fill(var1, weight * weights[i]);
+      histos[i]->Fill(var1, weight * weights[i]);
 }
 /// This method is called at the end of the event loop. It is used to merge all the internal THnTs which
 /// were used in each of the data processing slots.
@@ -54,7 +56,7 @@ void TH1weightsHelper::Finalize()
    {
       auto &histo_vec = *fHistos[slot];
       for (auto i : ROOT::TSeqU(0, res_vec.size()))
-         res_vec[i].Add(&histo_vec[i]);
+         res_vec[i]->Add(histo_vec[i]);
    }
 }
 std::string TH1weightsHelper::GetActionName()

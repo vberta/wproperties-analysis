@@ -5,11 +5,12 @@ import math
 from HiggsAnalysis.CombinedLimit.DatacardParser import *
 from collections import OrderedDict
 import copy
-from systToapply import systematicsDict, systToSampleDict, systTypeDict
+from systToapply import systematicsDict
 
 class fitUtils:
-    def __init__(self, fsig, fmap, fbkg = {}, channel ="WPlus"):
+    def __init__(self, fsig, fmap, fbkg = {}, channel ="WPlus", doSyst=False):
         
+        self.doSyst = doSyst
         self.templates2D = {}
         self.processes = []
         self.signals = []
@@ -22,19 +23,16 @@ class fitUtils:
         self.helMetaGroups = OrderedDict()
         
         self.templSystematics = systematicsDict
-        self.systToSampleDict = systToSampleDict
-        self.systTypeDict = systTypeDict
-        '''
-        {
+        self.systGroups = {
             "Nominal" : [""],
             "mass" : ["mass"],
-            #"WHSFVars"  : ["WHSFSyst0", "WHSFSyst1","WHSFSyst2","WHSFSystFlat"],
-            #"LHEScaleWeightVars" : ["LHEScaleWeight_muR0p5_muF0p5", "LHEScaleWeight_muR0p5_muF1p0","LHEScaleWeight_muR1p0_muF0p5","LHEScaleWeight_muR1p0_muF2p0","LHEScaleWeight_muR2p0_muF1p0", "LHEScaleWeight_muR2p0_muF2p0"],
-            #"ptScaleVars" : [ "corrected"], 
-            #"jmeVars" : ["jesTotal", "unclustEn"],
-            #"LHEPdfWeightVars" : ["LHEPdfWeightHess{}".format(i+1) for i in range(60)]
+            #"WHSF"  : ["WHSFSyst0", "WHSFSyst1","WHSFSyst2","WHSFSystFlat"],
+            #"LHEScaleWeight" : ["LHEScaleWeight_muR0p5_muF0p5", "LHEScaleWeight_muR0p5_muF1p0","LHEScaleWeight_muR1p0_muF0p5","LHEScaleWeight_muR1p0_muF2p0","LHEScaleWeight_muR2p0_muF1p0", "LHEScaleWeight_muR2p0_muF2p0"],
+            #"ptScale" : [ "corrected"], 
+            #"jme" : ["jesTotal", "unclustEn"],
+            "LHEPdfWeight" : ["LHEPdfWeightHess{}".format(i+1) for i in range(60)]
         }
-        '''
+
         #all the files that are needed
         self.fmap = ROOT.TFile.Open(fmap) #file containing the angular coefficient values and inclusive pt-y map
         self.fbkg = fbkg
@@ -63,7 +61,7 @@ class fitUtils:
             self.templates2D[proc]['mass'].append(self.fsig.Get("Nominal").Get(proc+'_massDown'))
 
         for proc in self.processes:
-            for syst,variations in self.templSystematics.iteritems():
+            for syst,variations in self.systGroups.iteritems():
                 if 'Nominal' in syst or 'mass' in syst: continue
                 self.templates2D[proc][syst] = []
                 #dive into file and add the relevant histograms
@@ -81,7 +79,7 @@ class fitUtils:
                 print 'copying bkg templates for', proc
                 aux = ROOT.TFile.Open(self.fbkg[proc])
                 self.templates2D[proc] = {}
-                for syst,variations in self.templSystematics.iteritems():
+                for syst,variations in self.systGroups.iteritems():
                     self.templates2D[proc][syst] = []
                     if 'mass' in syst: continue
                     for var in variations:
@@ -117,7 +115,7 @@ class fitUtils:
                 
         for proc in self.processes:
             print 'analysing', proc
-            for syst in self.templSystematics:
+            for syst in self.systGroups:
                 print syst
                 for temp in self.templates2D[proc][syst]:
            
@@ -278,28 +276,30 @@ class fitUtils:
             self.DC.exp[self.channel][proc] = -1.00
             self.DC.exp[self.channel+'_xsec'][proc] = -1.00
         self.DC.systs =  [] # <type 'list'>
-
         ## list of [{bin : {process : [input file, path to shape, path to shape for uncertainty]}}]
-        
-        for syst in self.templSystematics: #loop over systematics
-            if 'Nominal' in syst: continue
-            for var in self.templSystematics[syst][vars]:
-                aux = {}#each sys will have a separate aux dict
-                aux[self.channel] = {}
-                aux[self.channel+'_xsec'] = {}
-                for proc in self.processes: 
-                    if proc in self.templSystematics[syst][procs]:
-                        aux[self.channel][proc] = 1.0
-                        aux[self.channel+'_xsec'][proc] = 0.0
-                    else:
-                        if "Signal" in self.templSystematics[syst][procs] and "hel" in proc:
+        if self.doSyst:
+            for syst in self.templSystematics: #loop over systematics
+                if 'Nominal' in syst: continue
+                for var in self.templSystematics[syst]["vars"]:
+                    aux = {} #each sys will have a separate aux dict
+                    aux[self.channel] = {}
+                    aux[self.channel+'_xsec'] = {}
+                    for proc in self.processes: 
+                        if proc in self.templSystematics[syst]["procs"]:
                             aux[self.channel][proc] = 1.0
                             aux[self.channel+'_xsec'][proc] = 0.0
                         else:
-                            aux[self.channel][proc] = 0.0
-                            aux[self.channel+'_xsec'][proc] = 0.0
+                            if "Signal" in self.templSystematics[syst]["procs"] and "hel" in proc:
+                                aux[self.channel][proc] = 1.0
+                                aux[self.channel+'_xsec'][proc] = 0.0
+                            else:
+                                aux[self.channel][proc] = 0.0
+                                aux[self.channel+'_xsec'][proc] = 0.0
 
-                self.DC.systs.append((var, False, self.templSystematics[syst][type], aux))
+                    self.DC.systs.append((var, False, self.templSystematics[syst]["type"], [], aux))
+        
+        self.DC.groups = {'pdfs': set(['LHEPdfWeightHess{}'.format(i+1) for i in range(60)]),
+                          'mass': ['mass']}  # <type 'dict'>
         
         self.DC.shapeMap = 	{self.channel: {'*': [self.channel+'.root', '$PROCESS', '$PROCESS_$SYSTEMATIC']},\
         self.channel+'_xsec': {'*': [self.channel+'_xsec.root', '$PROCESS', '$PROCESS_$SYSTEMATIC']}} # <type 'dict'>
@@ -311,8 +311,6 @@ class fitUtils:
         self.DC.frozenNuisances  =  set([]) # <type 'set'>
         self.DC.systematicsShapeMap =  {} # <type 'dict'>
         self.DC.nuisanceEditLines    =  [] # <type 'list'>
-        #self.DC.groups   =  {'pdfs': set(['LHEPdfWeightHess{}'.format(i+1) for i in range(60)])} # <type 'dict'>
-        self.DC.groups   =  {} # <type 'dict'>
         self.DC.discretes    =  [] # <type 'list'>
         self.DC.helGroups = self.helGroups
         self.DC.sumGroups = self.sumGroups

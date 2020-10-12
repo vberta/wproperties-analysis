@@ -20,7 +20,7 @@ fbkg_dict["Tau"]=fbkg+'WtoTau_templates2Dplus.root'
 fbkg_dict["LowAcc"]=fbkg+'LowAcc_templates2Dplus.root'
 fbkg_dict["data_obs"]=fbkg+'WToMu_templates2Dplus.root' #placeholder for data
 
-f = fitUtils(fsig, fmap, fbkg_dict, "Wplus_reco")
+f = fitUtils(fsig, fmap, fbkg_dict, "Wplus_reco", doSyst=True)
 f.getTemplates()
 f.shapeFile()
 f.fillHelGroup()
@@ -34,6 +34,6 @@ text2hd5f = 'text2hdf5.py --allowNegativeExpectation --maskedChan={}_xsec {}.pkl
 print 'executing', text2hd5f 
 os.system(text2hd5f)
 
-combinetf = 'combinetf.py --allowNegativePOI --binByBinStat --correlateXsecStat --doImpacts --saveHists -t-1 {}.pkl.hdf5 -o fit_{}.root'.format(f.channel, f.channel)
+combinetf = 'combinetf.py --allowNegativePOI --binByBinStat --correlateXsecStat --doImpacts -t-1 {}.pkl.hdf5 -o fit_{}.root'.format(f.channel, f.channel)
 print 'executing', combinetf
 os.system(combinetf)

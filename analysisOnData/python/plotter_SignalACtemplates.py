@@ -3,8 +3,8 @@ import copy
 import sys
 import argparse
 from collections import OrderedDict
-sys.path.append('../../bkgAnalysis')
-import bkg_utils
+sys.path.append('../data')
+from systematics import systematics
 import math
 import copy
 
@@ -18,9 +18,10 @@ class plotter:
     def __init__(self, outDir, ACfile, inDir = ''):
         self.indir = inDir # indir containig the various outputs
         self.outdir = outDir
-        self.sampleFile = 'WToMu_plots.root'
-        self.extSyst = copy.deepcopy(bkg_utils.bkg_systematics)
-        self.extSyst['Nominal'] =  ['', 'massUp', 'massDown']
+        self.sampleFile = 'WToMu_AC_plots.root'
+        
+        self.extSyst = copy.deepcopy(systematics)
+        self.extSyst['Nominal'] =  (['', '_massUp', '_massDown'],"Nom")
         self.histoDict ={} 
         self.clist = ["L", "I", "T", "A", "P", "7", "8", "9", "UL"]
         self.varName = 'helXsecs'
@@ -106,28 +107,28 @@ class plotter:
         for sKind, sList in self.extSyst.iteritems():
             self.histoDict[sKind]  = []
             #print sKind, sList
-            for sname in sList:#variations of each sKind
+            for sname in sList[0]:#variations of each sKind
                 for htype in self.clist:
                     for iQt in range(1,9):
-                        fpath = basepath + sKind + '/qt_{}_helXsecs_'.format(iQt) + htype + '_'  + sname
+                        fpath = basepath + sKind + '/qt_{}_helXsecs_'.format(iQt) + htype + sname
                         if sKind == 'Nominal' and sname == '': 
                             fpath = basepath + sKind + '/qt_{}_helXsecs_'.format(iQt) + htype + sname
-                        #print "Histo read:", fpath
+                        print "Histo read:", fpath
                         th3 = self.inFile.Get(fpath)
                         if not th3: continue
                         self.makeTH3slices(th3, sKind, chargeBin)
-        #self.symmetrisePDF()
+        self.symmetrisePDF()
         self.closureMap()
         self.writeHistos(chargeBin)
     
     def symmetrisePDF(self):
-        
+
         aux = {}
-        aux['LHEPdfWeightVars']=[]
+        aux['LHEPdfWeight']=[]
         for h in self.histoDict['Nominal']:
             if 'mass' in h.GetName(): continue
             for i in range(60):
-                for hvar in self.histoDict['LHEPdfWeightVars']:
+                for hvar in self.histoDict['LHEPdfWeight']:
                     if hvar.GetName() == h.GetName()+ '_LHEPdfWeightHess{}'.format(i+1):
                         th2var = hvar
                         break
@@ -150,8 +151,8 @@ class plotter:
                 
                 th2Up.SetName(h.GetName()+ '_LHEPdfWeightHess{}Up'.format(i+1))
                 th2Down.SetName(h.GetName()+ '_LHEPdfWeightHess{}Down'.format(i+1))
-                aux['LHEPdfWeightVars'].append(th2Up)
-                aux['LHEPdfWeightVars'].append(th2Down)
+                aux['LHEPdfWeight'].append(th2Up)
+                aux['LHEPdfWeight'].append(th2Down)
 
         self.histoDict.update(aux)
 
