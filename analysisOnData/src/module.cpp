@@ -21,7 +21,7 @@ std::vector<ROOT::RDF::RResultPtr<std::vector<TH2D>>> Module::getGroupTH2()
 {
     return _h2Group;
 }
-std::vector<ROOT::RDF::RResultPtr<std::vector<TH3D>>> Module::getGroupTH3()
+std::vector<ROOT::RDF::RResultPtr<std::vector<TH3D*>>> Module::getGroupTH3()
 {
     return _h3Group;
 }

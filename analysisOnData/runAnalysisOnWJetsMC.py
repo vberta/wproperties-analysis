@@ -114,6 +114,9 @@ def RDFprocessWJetsMC(fvec, outputDir, sample, xsec, fileSF, ncores, pretendJob,
         nom.push_back("")
         wtomu_cut = cut + wdecayselections['WToMu']
         wtotau_cut = cut + wdecayselections['WToTau']
+        print "Region=", region
+        print "WToMu cut=", wtomu_cut
+        print "WToTau cut=", wtotau_cut
         #last argument refers to histo category - 0 = Nominal, 1 = Pt scale , 2 = MET scale
         print "branching nominal for region:", region 
         #Nominal templates
@@ -128,7 +131,7 @@ def RDFprocessWJetsMC(fvec, outputDir, sample, xsec, fileSF, ncores, pretendJob,
         for s,variations in systematics.iteritems():
             print "branching weight variations", s
             #if "LHEScaleWeight" in s and samples[sample]['systematics'] != 2 :  continue
-            if "LHEPdfWeight" in s or "LHEScaleWeight" in s :
+            if "LHEPdfWeight" in s or "LHEScaleWeight" in s or "alphaS" in s:
                 var_weight = weight
                 #        if not "LHEScaleWeight" in s :
             else:
@@ -186,17 +189,18 @@ def main():
     parser.add_argument('-p', '--pretend',type=bool, default=False, help="run over a small number of event")
     parser.add_argument('-c', '--ncores',type=int, default=128, help="number of cores used")
     parser.add_argument('-o', '--outputDir',type=str, default='./output/', help="output dir name")
-    parser.add_argument('-i', '--inputDir',type=str, default='/scratch/wmass/NanoAOD2016-V2/', help="input dir name")
-    parser.add_argument('-b', '--bkg',type=bool, default=False, help="get histograms for bkg analysis")
-    parser.add_argument('-sb', '--SBana',type=bool, default=False, help="run also on the sideband (clousure test)")
+    parser.add_argument('-i', '--inputDir',type=str, default="/scratchnvme/wmass/NanoAOD2016-V2/", help="input dir name")
+    parser.add_argument('-b', '--runBKG', type=bool, default=False, help="get histograms for bkg analysis")
+    parser.add_argument('-s', '--SBana', type=bool, default=False, help="run also on the sideband (clousure test)")
+
     args = parser.parse_args()
     pretendJob = args.pretend
     ncores = args.ncores
     outputDir = args.outputDir
     inDir = args.inputDir
-    bkg = args.bkg
+    bkg = args.runBKG
     SBana = args.SBana
-    print bkg, '\t', pretendJob
+    print bkg, '\t', pretendJob, '\t', SBana
     
     if pretendJob:
         print "Running a test job over a few events"
@@ -214,6 +218,7 @@ def main():
         ##check if file exists or not
         #inputFile = '/scratchnvme/emanca/wproperties-analysis/analysisOnGen/test_tree_*.root'
         inputFile = '/scratchnvme/wmass/WJetsNoCUT_v2/tree_*_*.root'
+        #inputFile = '{}/{}/tree.root'.format(inDir, dirname)
         isFile = os.path.isfile(inputFile)  
         if not isFile:
             print inputFile, " does not exist"

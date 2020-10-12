@@ -48,6 +48,7 @@ class fitUtils:
         
         for key in self.fsig.Get("Nominal").GetListOfKeys():
             if 'clos' in key.GetName() or 'mapTot' in key.GetName(): continue
+            if "helXsecs7" in key.GetName() or "helXsecs8" in key.GetName() or "helXsecs9" in key.GetName(): continue
             if not 'mass' in key.GetName():
                 self.templates2D[key.GetName()] = {}
                 self.templates2D[key.GetName()]['Nominal']=[]
@@ -279,48 +280,26 @@ class fitUtils:
         self.DC.systs =  [] # <type 'list'>
 
         ## list of [{bin : {process : [input file, path to shape, path to shape for uncertainty]}}]
-        aux = {}
-        aux[self.channel] = {}
-        aux[self.channel+'_xsec'] = {}
-        for proc in self.processes:
-            if 'hel' in proc or 'LowAcc' in proc:
-                aux[self.channel][proc] = 1.0
-                aux[self.channel+'_xsec'][proc] = 0.0
-            else:
-                aux[self.channel][proc] = 0.0
-                aux[self.channel+'_xsec'][proc] = 0.0
         
-        #for i in range(60):
-            #self.DC.systs.append(('LHEPdfWeightHess{}'.format(i+1), False, 'shape', [], aux))
-        '''
-        #ROUGH IDEA
-        for onesyst,variations in self.templSystematics.iteritems(): #loop over systematics
-            if onesyst == 'mass' or onesyst == 'Nominal' : continue
-            aux1 = {}#each sys will have a separate aux dict
-            aux1[self.channel] = {}
-            aux1[self.channel+'_xsec'] = {}
-            for proc in self.systToSampleDict[onesyst]:
-                if 'hel' in proc or 'LowAcc' in proc:
-                    aux1[self.channel][proc] = 1.0
-                    aux1[self.channel+'_xsec'][proc] = 0.0
-                else:
-                    aux1[self.channel][proc] = 0.0
-                    aux1[self.channel+'_xsec'][proc] = 0.0
-            for var in variations:
-                self.DC.systs.append((var, False, self.systTypeDict[onesyst], aux1))
-        '''
+        for syst in self.templSystematics: #loop over systematics
+            if 'Nominal' in syst: continue
+            for var in self.templSystematics[syst][vars]:
+                aux = {}#each sys will have a separate aux dict
+                aux[self.channel] = {}
+                aux[self.channel+'_xsec'] = {}
+                for proc in self.processes: 
+                    if proc in self.templSystematics[syst][procs]:
+                        aux[self.channel][proc] = 1.0
+                        aux[self.channel+'_xsec'][proc] = 0.0
+                    else:
+                        if "Signal" in self.templSystematics[syst][procs] and "hel" in proc:
+                            aux[self.channel][proc] = 1.0
+                            aux[self.channel+'_xsec'][proc] = 0.0
+                        else:
+                            aux[self.channel][proc] = 0.0
+                            aux[self.channel+'_xsec'][proc] = 0.0
 
-        aux2 = {}
-        aux2[self.channel] = {}
-        aux2[self.channel+'_xsec'] = {}
-        for proc in self.processes:
-            if 'hel' in proc or 'LowAcc' in proc:
-                aux2[self.channel][proc] = 1.0
-            else:
-                aux2[self.channel][proc] = 0.0
-            aux2[self.channel+'_xsec'][proc] = 0.0
-        
-        self.DC.systs.append(('mass', False, 'shape', [], aux2))
+                self.DC.systs.append((var, False, self.templSystematics[syst][type], aux))
         
         self.DC.shapeMap = 	{self.channel: {'*': [self.channel+'.root', '$PROCESS', '$PROCESS_$SYSTEMATIC']},\
         self.channel+'_xsec': {'*': [self.channel+'_xsec.root', '$PROCESS', '$PROCESS_$SYSTEMATIC']}} # <type 'dict'>

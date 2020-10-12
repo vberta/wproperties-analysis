@@ -40,7 +40,7 @@ def RDFprocessfakefromData(fvec, outputDir, bkgFile, ncores, pretendJob=True, SB
     weight = 'float(1)'
     #in case we want pdf variations for fakes
     #systematics.update({ "LHEPdfWeight" : ( ["_LHEPdfWeight" + str(i)  for i in range(0, 100)], "LHEPdfWeight" ) } )
-    print systematics
+    #print systematics
     p = RDFtree(outputDir = outputDir, inputFile = fvec, outputFile=outF, pretend=pretendJob)
     for region,cut in selections_fakes.iteritems(): 
         if 'SideBand' in region and (not SBana) : continue 
@@ -60,6 +60,7 @@ def RDFprocessfakefromData(fvec, outputDir, bkgFile, ncores, pretendJob=True, SB
         #now add fake variations
         for s,variations in systematics.iteritems():
             if "LHEPdfWeight" in s : continue
+            if "alphaS" in s : continue
             print "branching weight variations", s
             vars_vec = ROOT.vector('string')()
             for var in variations[0]:
@@ -85,13 +86,13 @@ def RDFprocessfakefromData(fvec, outputDir, bkgFile, ncores, pretendJob=True, SB
 
 def main():
     parser = argparse.ArgumentParser("")
-    parser.add_argument('-p', '--pretend',type=int, default=False, help="run over a small number of event")
-    parser.add_argument('-b', '--runBKG',type=int, default=False, help="prepare the input of the bkg analysis, if =false run the prefit Plots")
+    parser.add_argument('-p', '--pretend',type=bool, default=False, help="run over a small number of event")
+    parser.add_argument('-b', '--runBKG',type=bool, default=False, help="prepare the input of the bkg analysis, if =false run the prefit Plots")
     parser.add_argument('-c', '--ncores',type=int, default=64, help="number of cores used")
     parser.add_argument('-o', '--outputDir',type=str, default='./output/', help="output dir name")
     parser.add_argument('-f', '--bkgFile',type=str, default='/scratch/bertacch/wmass/wproperties-analysis/bkgAnalysis/TEST_runTheMatrix/bkg_parameters_CFstatAna.root', help="bkg parameters file path/name.root")
     parser.add_argument('-i', '--inputDir',type=str, default='/scratchssd/sroychow/NanoAOD2016-V2/', help="input dir name")
-    parser.add_argument('-sb', '--SBana',type=int, default=False, help="run also on the sideband (clousure test)")
+    parser.add_argument('-s', '--SBana',type=bool, default=False, help="run also on the sideband (clousure test)")
 
     args = parser.parse_args()
     pretendJob = args.pretend
