@@ -17,12 +17,14 @@
       _zbins = zbins;
       _weightNames = weightNames;
 
+      TH1::AddDirectory(false);
+
       const auto nSlots = ROOT::IsImplicitMTEnabled() ? ROOT::GetThreadPoolSize() : 1;
       for (auto slot : ROOT::TSeqU(nSlots)) {
-         fHistos.emplace_back(std::make_shared<std::vector<TH3D>>());
+         fHistos.emplace_back(std::make_shared<std::vector<TH3D*>>());
          (void)slot;
 
-         std::vector<TH3D>& histos = *fHistos[slot];
+         std::vector<TH3D*>& histos = *fHistos[slot];
          auto n_histos = _weightNames.size();
 
          std::string slotnum = "";
@@ -30,19 +32,19 @@
 
          for (unsigned int i = 0; i < n_histos; ++i){
 
-            histos.emplace_back(TH3D(std::string(_name + _weightNames[i] + slotnum).c_str(),
+            histos.emplace_back(new TH3D(std::string(_name + _weightNames[i] + slotnum).c_str(),
                                      std::string(_name + _weightNames[i] + slotnum).c_str(),
                                      _nbinsX, _xbins.data(),
                                      _nbinsY, _ybins.data(),
                                      _nbinsZ, _zbins.data()));
 
-            histos.back().SetDirectory(nullptr);
+            histos.back()->SetDirectory(nullptr);
         }
 
       }
    }
   
-   std::shared_ptr<std::vector<TH3D>> TH3weightsHelper::GetResultPtr() const { return fHistos[0]; }
+   std::shared_ptr<std::vector<TH3D*>> TH3weightsHelper::GetResultPtr() const { return fHistos[0]; }
    void TH3weightsHelper::Initialize() {}
    void TH3weightsHelper::InitTask(TTreeReader *, unsigned int) {}
    /// This is a method executed at every entry
@@ -52,7 +54,7 @@
     auto& histos = *fHistos[slot];
     const auto n_histos = histos.size();
     for (unsigned int i = 0; i < n_histos; ++i)
-       histos[i].Fill(var1, var2, var3, weight * weights[i]);
+       histos[i]->Fill(var1, var2, var3, weight * weights[i]);
 }
    /// This method is called at the end of the event loop. It is used to merge all the internal THnTs which
    /// were used in each of the data processing slots.
@@ -62,7 +64,7 @@
       for (auto slot : ROOT::TSeqU(1, fHistos.size())) {
          auto& histo_vec = *fHistos[slot];
          for (auto i : ROOT::TSeqU(0, res_vec.size()))
-           res_vec[i].Add(&histo_vec[i]);
+           res_vec[i]->Add(histo_vec[i]);
       }
    }
    std::string TH3weightsHelper::GetActionName(){

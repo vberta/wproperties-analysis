@@ -2,6 +2,7 @@
 #include "ROOT/RVec.hxx"
 #include "ROOT/RDF/RInterface.hxx"
 #include "interface/TH2weightsHelper.hpp"
+#include "interface/TH1weightsHelper.hpp"
 #include "interface/AngCoeff.hpp"
 
 std::vector<std::string> AngCoeff::stringMultiplication(const std::vector<std::string> &v1, const std::vector<std::string> &v2)
@@ -43,58 +44,71 @@ RNode AngCoeff::run(RNode d)
 
         return products;
     };
-
+    // systematic variations
     if (_syst_name.size() > 0)
     {
-        auto d1 = d.Define("weight", "lumiweight*weightPt*weightY").Define(Form("%sharmonicsVec", _syst_weight.c_str()), vecMultiplication, {_syst_weight, "harmonicsVec"});
+        auto d1 = d.Define("weight", "lumiweight*weightPt*weightY")
+                   .Define(Form("%sharmonicsVec", _syst_weight.c_str()), vecMultiplication, {_syst_weight, "harmonicsVec"})
+                   .Define(Form("%sharmonicsVecSq", _syst_weight.c_str()), vecMultiplication, {_syst_weight, "harmonicsVecSq"});
 
         TH2weightsHelper helper(std::string("harmonics"), std::string("harmonics"), _nBinsY, _yArr, _nBinsPt, _ptArr, total);
         auto helXsecs = d1.Book<float, float, float, ROOT::VecOps::RVec<float>>(std::move(helper), { "Wrap_preFSR_abs", "Wpt_preFSR", "weight", Form("%sharmonicsVec", _syst_weight.c_str()) });
         _h2Group.push_back(helXsecs);
-	
-	TH2weightsHelper mapTothelper(std::string("mapTot"), std::string("mapTot"), _nBinsY, _yArr, _nBinsPt, _ptArr, _syst_name);
+
+        TH2weightsHelper helperSq(std::string("harmonicsSq"), std::string("harmonicsSq"), _nBinsY, _yArr, _nBinsPt, _ptArr, total);
+        auto helXsecsSq = d1.Book<float, float, float, ROOT::VecOps::RVec<float>>(std::move(helperSq), {"Wrap_preFSR_abs", "Wpt_preFSR", "weight", Form("%sharmonicsVecSq", _syst_weight.c_str())});
+        _h2Group.push_back(helXsecsSq);
+
+        TH2weightsHelper mapTothelper(std::string("mapTot"), std::string("mapTot"), _nBinsY, _yArr, _nBinsPt, _ptArr, _syst_name);
         auto mapTot = d1.Book<float, float, float, ROOT::VecOps::RVec<float>>(std::move(mapTothelper), { "Wrap_preFSR_abs", "Wpt_preFSR", "weight", _syst_weight });
         _h2Group.push_back(mapTot);
 
-        //TH1weightsHelper helperPt(std::string("harmonicsPt"), std::string("harmonicsPt"), _nBinsPt, _ptArr, total);
-        //auto helXsecsPt = d1.Book<float, float, ROOT::VecOps::RVec<float>>(std::move(helperPt), { "Wpt_preFSR", "weight", Form("%sharmonicsVec", _syst_weight.c_str()) });
-        //_h1Group.push_back(helXsecsPt);
+        TH1weightsHelper helperPt(std::string("harmonicsPt"), std::string("harmonicsPt"), _nBinsPt, _ptArr, total);
+        auto helXsecsPt = d1.Book<float, float, ROOT::VecOps::RVec<float>>(std::move(helperPt), {"Wpt_preFSR", "weight", Form("%sharmonicsVec", _syst_weight.c_str())});
+        _h1Group.push_back(helXsecsPt);
 
-        //TH1weightsHelper helperY(std::string("harmonicsY"), std::string("harmonicsY"), _nBinsY, _yArr, total);
-        //auto helXsecsY = d1.Book<float, float, ROOT::VecOps::RVec<float>>(std::move(helperY), { "Wrap_preFSR_abs", "weight", Form("%sharmonicsVec", _syst_weight.c_str()) });
-        //_h1Group.push_back(helXsecsY);
+        TH1weightsHelper helperY(std::string("harmonicsY"), std::string("harmonicsY"), _nBinsY, _yArr, total);
+        auto helXsecsY = d1.Book<float, float, ROOT::VecOps::RVec<float>>(std::move(helperY), {"Wrap_preFSR_abs", "weight", Form("%sharmonicsVec", _syst_weight.c_str())});
+        _h1Group.push_back(helXsecsY);
 
-        //TH1weightsHelper Pthelper(std::string("Pt"), std::string("Pt"), _nBinsPt, _ptArr, _syst_name);
-        //auto Pt = d1.Book<float, float, ROOT::VecOps::RVec<float>>(std::move(Pthelper), { "Wpt_preFSR", "weight", _syst_weight });
-        //_h1Group.push_back(Pt);
+        TH1weightsHelper helperMapPt(std::string("Pt"), std::string("Pt"), _nBinsPt, _ptArr, _syst_name);
+        auto Pt = d1.Book<float, float, ROOT::VecOps::RVec<float>>(std::move(helperMapPt), {"Wpt_preFSR", "weight", _syst_weight});
+        _h1Group.push_back(Pt);
 
-        //TH1weightsHelper Yhelper(std::string("Y"), std::string("Y"), _nBinsY, _yArr, _syst_name);
-        //auto Y = d1.Book<float, float, ROOT::VecOps::RVec<float>>(std::move(Yhelper), { "Wrap_preFSR_abs", "weight", _syst_weight });
-        //_h1Group.push_back(Y);
+        TH1weightsHelper helperMapY(std::string("Y"), std::string("Y"), _nBinsY, _yArr, _syst_name);
+        auto Y = d1.Book<float, float, ROOT::VecOps::RVec<float>>(std::move(helperMapY), {"Wrap_preFSR", "weight", _syst_weight});
+        _h1Group.push_back(Y);
 
     }
+    // nominal
     else
     {
+        auto d1 = d.Define("weight", "lumiweight*weightPt*weightY");
+        
         TH2weightsHelper helper(std::string("harmonics"), std::string("harmonics"), _nBinsY, _yArr, _nBinsPt, _ptArr, total);
-        auto helXsecs = d.Define("weight", "lumiweight*weightPt*weightY").Book<float, float, float, ROOT::VecOps::RVec<float>>(std::move(helper), {"Wrap_preFSR_abs", "Wpt_preFSR", "weight", Form("%sharmonicsVec", _syst_weight.c_str())});
+        auto helXsecs = d1.Book<float, float, float, ROOT::VecOps::RVec<float>>(std::move(helper), {"Wrap_preFSR_abs", "Wpt_preFSR", "weight", Form("%sharmonicsVec", _syst_weight.c_str())});
         _h2Group.push_back(helXsecs);
 
-        auto mapTot = d.Define("weight", "lumiweight*weightPt*weightY").Histo2D(TH2D("mapTot", "mapTot", _nBinsY, _yArr.data(), _nBinsPt, _ptArr.data()), "Wrap_preFSR_abs", "Wpt_preFSR", "weight");
+        TH2weightsHelper helperSq(std::string("harmonicsSq"), std::string("harmonicsSq"), _nBinsY, _yArr, _nBinsPt, _ptArr, total);
+        auto helXsecsSq = d1.Book<float, float, float, ROOT::VecOps::RVec<float>>(std::move(helperSq), {"Wrap_preFSR_abs", "Wpt_preFSR", "weight", Form("%sharmonicsVecSq", _syst_weight.c_str())});
+        _h2Group.push_back(helXsecsSq);
+
+        auto mapTot = d1.Histo2D(TH2D("mapTot", "mapTot", _nBinsY, _yArr.data(), _nBinsPt, _ptArr.data()), "Wrap_preFSR_abs", "Wpt_preFSR", "weight");
         _h2List.push_back(mapTot);
 
-        //TH1weightsHelper helperPt(std::string("harmonicsPt"), std::string("harmonicsPt"), _nBinsPt, _ptArr, total);
-        //auto helXsecsPt = d.Book<float, float, ROOT::VecOps::RVec<float>>(std::move(helperPt), { "Wpt_preFSR", "weight", Form("%sharmonicsVec", _syst_weight.c_str()) });
-        //_h1Group.push_back(helXsecsPt);
+        TH1weightsHelper helperPt(std::string("harmonicsPt"), std::string("harmonicsPt"), _nBinsPt, _ptArr, total);
+        auto helXsecsPt = d1.Book<float, float, ROOT::VecOps::RVec<float>>(std::move(helperPt), { "Wpt_preFSR", "weight", Form("%sharmonicsVec", _syst_weight.c_str()) });
+        _h1Group.push_back(helXsecsPt);
 
-        //TH1weightsHelper helperY(std::string("harmonicsY"), std::string("harmonicsY"), _nBinsY, _yArr, total);
-        //auto helXsecsY = d.Book<float, float, ROOT::VecOps::RVec<float>>(std::move(helperY), { "Wrap_preFSR_abs", "weight", Form("%sharmonicsVec", _syst_weight.c_str()) });
-        //_h1Group.push_back(helXsecsY);
+        TH1weightsHelper helperY(std::string("harmonicsY"), std::string("harmonicsY"), _nBinsY, _yArr, total);
+        auto helXsecsY = d1.Book<float, float, ROOT::VecOps::RVec<float>>(std::move(helperY), { "Wrap_preFSR_abs", "weight", Form("%sharmonicsVec", _syst_weight.c_str()) });
+        _h1Group.push_back(helXsecsY);
 
-        //auto Pt = d.Histo1D(TH1D("Pt", "Pt", _nBinsPt, _ptArr.data()), "Wpt_preFSR", "weight");
-        //_h1List.push_back(Pt);
+        auto Pt = d1.Histo1D(TH1D("Pt", "Pt", _nBinsPt, _ptArr.data()), "Wpt_preFSR", "weight");
+        _h1List.push_back(Pt);
 
-        //auto Y = d.Histo1D(TH1D("Y", "Y", _nBinsY, _yArr.data()), "Wrap_preFSR_abs", "weight");
-        //_h1List.push_back(Y);
+        auto Y = d1.Histo1D(TH1D("Y", "Y", _nBinsY, _yArr.data()), "Wrap_preFSR_abs", "weight");
+        _h1List.push_back(Y);
 
     }
 

@@ -63,9 +63,9 @@ def RDFprocessWJetsMCSignalACtempl(fvec, outputDir, sample, xsec, fileSF, ncores
             vars_vec.push_back(var)
             print weight,"\t",var_weight, "MODIFIED WEIGHT"
         #reco templates with AC reweighting
-        p.branch(nodeToStart = 'defsAC', nodeToEnd = 'templatesAC_{}/{}Vars'.format(region, s), modules = [ROOT.templateBuilder(wtomu_cut, var_weight,vars_vec,variations[1], 3)])
+        p.branch(nodeToStart = 'defsAC', nodeToEnd = 'templatesAC_{}/{}'.format(region, s), modules = [ROOT.templateBuilder(wtomu_cut, var_weight,vars_vec,variations[1], 3)])
         #reco templates for out of acceptance events
-        p.branch(nodeToStart = 'defsAC', nodeToEnd = 'templatesLowAcc_{}/{}Vars'.format(region,s), modules = [ROOT.templates(wtomu_lowAcc_cut, var_weight,vars_vec,variations[1], 0)])
+        p.branch(nodeToStart = 'defsAC', nodeToEnd = 'templatesLowAcc_{}/{}'.format(region,s), modules = [ROOT.templates(wtomu_lowAcc_cut, var_weight,vars_vec,variations[1], 0)])
 
     #column variations#weight will be nominal, cut will vary
     for vartype, vardict in selectionVars.iteritems():
@@ -79,13 +79,13 @@ def RDFprocessWJetsMCSignalACtempl(fvec, outputDir, sample, xsec, fileSF, ncores
             wtomu_var_vec.push_back(selvar)
             print "branching column variations:", vartype, " for region:", region, "\tvariations:", wtomu_var_vec
         #reco templates with AC reweighting
-        p.branch(nodeToStart = 'defsAC', nodeToEnd = 'templatesAC_{}/{}Vars'.format(region, vartype), modules = [ROOT.templateBuilder(wtomu_cut_vec, weight, nom,"Nom",hcat,wtomu_var_vec)])
+        p.branch(nodeToStart = 'defsAC', nodeToEnd = 'templatesAC_{}/{}'.format(region, vartype), modules = [ROOT.templateBuilder(wtomu_cut_vec, weight, nom,"Nom",hcat,wtomu_var_vec)])
         #reco templates for out of acceptance events
         print 'low Acc'
         for cut in wtomu_cut_vec:
             cut+= "&& Wpt_preFSR>32. && Wrap_preFSR_abs>2.4"
         print "Low acc cut vec vars:", wtomu_cut_vec
-        p.branch(nodeToStart = 'defsAC', nodeToEnd = 'templatesLowAcc_{}/{}Vars'.format(region,vartype), modules = [ROOT.templates(wtomu_cut_vec, weight, nom,"Nom",hcat,wtomu_var_vec)])
+        p.branch(nodeToStart = 'defsAC', nodeToEnd = 'templatesLowAcc_{}/{}'.format(region,vartype), modules = [ROOT.templates(wtomu_cut_vec, weight, nom,"Nom",hcat,wtomu_var_vec)])
 
     p.getOutput()
     p.saveGraph()
@@ -142,11 +142,11 @@ def RDFprocessWJetsMC(fvec, outputDir, sample, xsec, fileSF, ncores, pretendJob,
                 vars_vec.push_back(var)
             print weight,"\t",var_weight, "MODIFIED WEIGHT"
             #Template vars
-            p.branch(nodeToStart = 'defs'.format(region), nodeToEnd = '{}/templates_{}/{}Vars'.format('WToMu', region,s), modules = [ROOT.templates(wtomu_cut, var_weight,vars_vec,variations[1], 0)])
-            p.branch(nodeToStart = 'defs'.format(region), nodeToEnd = '{}/templates_{}/{}Vars'.format('WToTau', region,s), modules = [ROOT.templates(wtotau_cut, var_weight,vars_vec,variations[1], 0)])
+            p.branch(nodeToStart = 'defs'.format(region), nodeToEnd = '{}/templates_{}/{}'.format('WToMu', region,s), modules = [ROOT.templates(wtomu_cut, var_weight,vars_vec,variations[1], 0)])
+            p.branch(nodeToStart = 'defs'.format(region), nodeToEnd = '{}/templates_{}/{}'.format('WToTau', region,s), modules = [ROOT.templates(wtotau_cut, var_weight,vars_vec,variations[1], 0)])
             if region == "Signal" or (region=='Sideband' and SBana):
-                p.branch(nodeToStart = 'defs'.format(region), nodeToEnd = '{}/prefit_{}/{}Vars'.format('WToMu', region,s), modules = [ROOT.muonHistos(wtomu_cut, var_weight,vars_vec,variations[1], 0)])
-                p.branch(nodeToStart = 'defs'.format(region), nodeToEnd = '{}/prefit_{}/{}Vars'.format('WToTau', region,s), modules = [ROOT.muonHistos(wtotau_cut, var_weight,vars_vec,variations[1], 0)])
+                p.branch(nodeToStart = 'defs'.format(region), nodeToEnd = '{}/prefit_{}/{}'.format('WToMu', region,s), modules = [ROOT.muonHistos(wtomu_cut, var_weight,vars_vec,variations[1], 0)])
+                p.branch(nodeToStart = 'defs'.format(region), nodeToEnd = '{}/prefit_{}/{}'.format('WToTau', region,s), modules = [ROOT.muonHistos(wtotau_cut, var_weight,vars_vec,variations[1], 0)])
                 
         #column variations#weight will be nominal, cut will vary
         for vartype, vardict in selectionVars.iteritems():
@@ -166,11 +166,11 @@ def RDFprocessWJetsMC(fvec, outputDir, sample, xsec, fileSF, ncores, pretendJob,
                 wtotau_var_vec.push_back(selvar)
                 print "branching column variations:", vartype, " for region:", region, "\tvariations:", wtomu_var_vec
             #templates (integrated over helicity xsecs)
-            p.branch(nodeToStart = 'defs', nodeToEnd = '{}/templates_{}/{}Vars'.format('WToMu', region,vartype), modules = [ROOT.templates(wtomu_cut_vec, weight, nom,"Nom",hcat,wtomu_var_vec)])  
-            p.branch(nodeToStart = 'defs', nodeToEnd = '{}/templates_{}/{}Vars'.format('WToTau', region,vartype), modules = [ROOT.templates(wtotau_cut_vec, weight, nom,"Nom",hcat,wtotau_var_vec)])  
+            p.branch(nodeToStart = 'defs', nodeToEnd = '{}/templates_{}/{}'.format('WToMu', region,vartype), modules = [ROOT.templates(wtomu_cut_vec, weight, nom,"Nom",hcat,wtomu_var_vec)])  
+            p.branch(nodeToStart = 'defs', nodeToEnd = '{}/templates_{}/{}'.format('WToTau', region,vartype), modules = [ROOT.templates(wtotau_cut_vec, weight, nom,"Nom",hcat,wtotau_var_vec)])  
             if region == "Signal" or (region=='Sideband' and SBana):
-                p.branch(nodeToStart = 'defs', nodeToEnd = '{}/prefit_{}/{}Vars'.format('WToMu', region,vartype), modules = [ROOT.muonHistos(wtomu_cut_vec, weight, nom,"Nom",hcat,wtomu_var_vec)])  
-                p.branch(nodeToStart = 'defs', nodeToEnd = '{}/prefit_{}/{}Vars'.format('WToTau', region,vartype), modules = [ROOT.muonHistos(wtotau_cut_vec, weight, nom,"Nom",hcat,wtotau_var_vec)])
+                p.branch(nodeToStart = 'defs', nodeToEnd = '{}/prefit_{}/{}'.format('WToMu', region,vartype), modules = [ROOT.muonHistos(wtomu_cut_vec, weight, nom,"Nom",hcat,wtomu_var_vec)])  
+                p.branch(nodeToStart = 'defs', nodeToEnd = '{}/prefit_{}/{}'.format('WToTau', region,vartype), modules = [ROOT.muonHistos(wtotau_cut_vec, weight, nom,"Nom",hcat,wtotau_var_vec)])
    
     p.getOutput()
     p.saveGraph()

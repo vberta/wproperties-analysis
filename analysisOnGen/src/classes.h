@@ -6,7 +6,6 @@
 #include "interface/dataObs.hpp"
 #include "interface/accMap.hpp"
 #include "interface/defineHarmonics.hpp"
-#include "interface/getACValues.hpp"
 #include "interface/getAccMap.hpp"
 #include "interface/getWeights.hpp"
 #include "interface/getMassWeights.hpp"
@@ -14,3 +13,4 @@
 #include "interface/baseDefinitions.hpp"
 #include "interface/PDFWeightsHelper.hpp"
 #include "interface/Replica2Hessian.hpp"
+#include "interface/reweightFromZ.hpp"

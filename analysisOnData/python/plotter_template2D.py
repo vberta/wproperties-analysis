@@ -2,11 +2,11 @@ import os
 import ROOT
 import copy
 import sys
+sys.path.append('../data')
+from systematics import systematics
 import argparse
 import math
 
-sys.path.append('../../bkgAnalysis')
-import bkg_utils
 ROOT.gROOT.SetBatch()
 ROOT.TH1.AddDirectory(False)
 ROOT.TH2.AddDirectory(False)
@@ -26,12 +26,12 @@ class plotter:
                             "DiBoson"     : ('Diboson_plots.root', 1),
                             "Fake" : ('FakeFromData_plots.root', 0), 
                             "Data"        : ('Data_plots.root', 0),
-                            "LowAcc": ('WToMu_AC_plots.root', 2 ),
-        }
+                            "LowAcc": ('WToMu_AC_plots.root', 2)
+                          }
 
         self.selections =["Signal"] 
         self.selectionFake = ['fakes']       
-        self.extSyst = copy.deepcopy(bkg_utils.bkg_systematics)
+        self.extSyst = copy.deepcopy(systematics)
         self.extSyst['Nominal'] = ['']
         self.histoDict ={} 
     
@@ -39,7 +39,6 @@ class plotter:
         if not 'Fake' in sample:
             for sKind in self.extSyst:
                 self.histoDict[sample][sKind] = []
-                gap = '' if sKind == 'Nominal' else '_'
                 basepath = 'templates_Signal/' + sKind
                 if 'LowAcc' in sample: basepath = 'templatesLowAcc_Signal/' + sKind
                 if infile.GetDirectory(basepath):
@@ -55,7 +54,6 @@ class plotter:
         else:
             for sKind in self.extSyst:
                 self.histoDict[sample][sKind] = []
-                gap = '' if sKind == 'Nominal' else '_'
                 basepath = 'templates_fakes/' + sKind
                 if infile.GetDirectory(basepath):
                     print basepath
@@ -72,13 +70,13 @@ class plotter:
     
     def symmetrisePDF(self,sample):
 
-        if not self.histoDict[sample]['LHEPdfWeightVars']==[]:
+        if not self.histoDict[sample]['LHEPdfWeight']==[]:
             aux = {}
-            aux['LHEPdfWeightVars']=[]
+            aux['LHEPdfWeight']=[]
             for h in self.histoDict[sample]['Nominal']:
                 if 'mass' in h.GetName(): continue
                 for i in range(60):
-                    for hvar in self.histoDict[sample]['LHEPdfWeightVars']:
+                    for hvar in self.histoDict[sample]['LHEPdfWeight']:
                         if hvar.GetName() == h.GetName()+ '_LHEPdfWeightHess{}'.format(i+1):
                             th2var = hvar
                             break
@@ -99,8 +97,8 @@ class plotter:
                             th2Down.SetBinContent(j,k,h.GetBinContent(j,k)*th2c.GetBinContent(j,k))
                     th2Up.SetName(h.GetName()+ '_LHEPdfWeightHess{}Up'.format(i+1))
                     th2Down.SetName(h.GetName()+ '_LHEPdfWeightHess{}Down'.format(i+1))
-                    aux['LHEPdfWeightVars'].append(th2Up)
-                    aux['LHEPdfWeightVars'].append(th2Down)
+                    aux['LHEPdfWeight'].append(th2Up)
+                    aux['LHEPdfWeight'].append(th2Down)
             self.histoDict[sample].update(aux)
     
     def getHistos(self, chargeBin) :
@@ -119,7 +117,7 @@ class plotter:
             if sample not in  self.histoDict : 
                 print "No histo dict for sample:", sample, " What have you done??!!!!"
                 continue
-            #self.symmetrisePDF(sample)
+            self.symmetrisePDF(sample)
             for syst, hlist in self.histoDict[sample].iteritems():
                 fout.mkdir(syst)
                 fout.cd(syst)
