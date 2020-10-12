@@ -22,12 +22,12 @@ class plotter:
         self.sampleDict = { "WToMu"      :  ('WToMu_plots.root', 2 ),
                             "DYJets"      : ('DYJets_plots.root', 2 ),
                             "WtoTau"      : ('WToTau_plots.root', 2 ),
-                            "Top"         : ('TTJets_plots.root', 1),
+                            "Top"         : ('Top_plots.root', 1),
                             "DiBoson"     : ('Diboson_plots.root', 1),
                             "Fake" : ('FakeFromData_plots.root', 0), 
                             "Data"        : ('Data_plots.root', 0),
-                            "LowAcc": ('WToMu_plots.root', 2 )
-                          }
+                            "LowAcc": ('WToMu_AC_plots.root', 2 ),
+        }
 
         self.selections =["Signal"] 
         self.selectionFake = ['fakes']       
