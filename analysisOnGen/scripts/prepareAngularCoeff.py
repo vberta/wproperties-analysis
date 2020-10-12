@@ -110,7 +110,7 @@ for sKind, sList in systDict.iteritems():
                                 f2w = hDict[sName+coeff+'Err'].GetBinContent(xx,yy)/hDict[sNameDen+'mapTot'].GetBinContent(xx,yy)
                                 fw2 = (hDict[sName+coeff].GetBinContent(xx,yy)/hDict[sName+'mapTot'].GetBinContent(xx,yy))**2
                                 A_err = math.sqrt(f2w - fw2)/math.sqrt(N_eff)
-                                A_err = A_err/div
+                                A_err = A_err*div
                                 if coeff=='A0' :
                                     A_err = 20./3*(A_err+1./10.)
                                 hist.SetBinError(xx,yy, A_err )
