@@ -1,11 +1,12 @@
 #include "interface/fakeRate.hpp"
-
+#include<iostream>
 RNode fakeRate::run(RNode d)
 {
 
   RNode d1(d);
   for (auto s : _variations)
   {
+    std::cout << "Variation:" << s << std::endl;
     d1 = d1.Define(Form("fakeRate_%s", s.c_str()), [this, s](float pt, float eta, float charge, int vtype) {
       int binX = charge > 0. ? 1 : 2;
       int binY = _FR["fake_offset_" + s]->GetYaxis()->FindBin(eta);
@@ -70,7 +71,14 @@ RNode fakeRate::run(RNode d)
                   return fR;
                 },
                         // {"fakeRate_jmeVars_jerUp", "fakeRate_jmeVars_jerDown", "fakeRate_jmeVars_jesTotalUp", "fakeRate_jmeVars_jesTotalDown", "fakeRate_jmeVars_unclustEnUp", "fakeRate_jmeVars_unclustEnDown"});
-                        {"fakeRate_jmeVars_jesTotalUp", "fakeRate_jmeVars_jesTotalDown", "fakeRate_jmeVars_unclustEnUp", "fakeRate_jmeVars_unclustEnDown"});
+		  {"fakeRate_jmeVars_jesTotalUp", "fakeRate_jmeVars_jesTotalDown", "fakeRate_jmeVars_unclustEnUp", "fakeRate_jmeVars_unclustEnDown"})
+                .Define("fakeRate_PrefireWeightVars", [](float f1, float f2) {
+                  ROOT::VecOps::RVec<float> fR;
+                  fR.emplace_back(f1);
+                  fR.emplace_back(f2);
+                  return fR;
+		  }, {"fakeRate_PrefireWeightVars_PrefireWeightUp","fakeRate_PrefireWeightVars_PrefireWeightDown"});
+  
 
   return d2;
 }
