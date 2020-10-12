@@ -71,9 +71,10 @@ RNode muonHistos::bookJMEvarhistos(RNode df)
 
 void muonHistos::setAxisarrays()
 {
+  
+  for (int i = 0; i < 61; i++)
+    _pTArr[i] = 25. + (55.-25.)/60.;
   /*
-  for (int i = 0; i < 31; i++)
-    _pTArr[i] = 25. + i;
   for (int i = 0; i < 49; i++)
     _etaArr[i] = -2.4 + i * (4.8) / 48; //eta -2.4 to 2.4
   */
