@@ -49,12 +49,13 @@ inFile = ROOT.TFile.Open(INPUT)
 for sKind, sList in systDict.iteritems():
     for sName in sList :
         hDict[sName+'mapTot'] =  inFile.Get('angularCoefficients'+sKind+'/mapTot'+sName)
-        #hDict[sName+'Y'] =  inFile.Get('angularCoefficients'+sKind+'/Y'+sName)
-        #hDict[sName+'Pt'] =  inFile.Get('angularCoefficients'+sKind+'/Pt'+sName)
+        hDict[sName+'Y'] =  inFile.Get('angularCoefficients'+sKind+'/Y'+sName)
+        hDict[sName+'Pt'] =  inFile.Get('angularCoefficients'+sKind+'/Pt'+sName)
         for coeff,div in coeffDict.iteritems() :
             hDict[sName+coeff] =  inFile.Get('angularCoefficients'+sKind+'/harmonics'+coeff+sName)
-            #hDict[sName+coeff+'Y'] =  inFile.Get('angularCoefficients'+sKind+'/harmonicsY'+coeff+sName)
-            #hDict[sName+coeff+'Pt'] =  inFile.Get('angularCoefficients'+sKind+'/harmonicsPt'+coeff+sNamep)
+            hDict[sName+coeff+'Err'] =  inFile.Get('angularCoefficients'+sKind+'/harmonicsSq'+coeff+sName)
+            hDict[sName+coeff+'Y'] =  inFile.Get('angularCoefficients'+sKind+'/harmonicsY'+coeff+sName)
+            hDict[sName+coeff+'Pt'] =  inFile.Get('angularCoefficients'+sKind+'/harmonicsPt'+coeff+sName)
 # get maps
 mapTot = inFile.Get('basicSelection/mapTot')
 mapAccEta = inFile.Get('basicSelection/mapAccEta')
@@ -79,37 +80,74 @@ for sKind, sList in systDict.iteritems():
                     continue 
                 for coeff,div in coeffDict.iteritems() :
                     hist = hDict[sName+coeff].Clone()
-                    #histY = hDict[sName+coeff+'Y'].Clone()
-                    #histPt = hDict[sName+coeff+'Pt'].Clone()
+                    histY = hDict[sName+coeff+'Y'].Clone()
+                    histPt = hDict[sName+coeff+'Pt'].Clone()
                     if coeff!='AUL' : 
                         hist.Divide(hDict[sNameDen+'mapTot'])
-                        #histY.Divide(hDict[sName+'Y'])
-                        #histPt.Divide(hDict[sName+'Pt'])
+                        histY.Divide(hDict[sNameDen+'Y'])
+                        histPt.Divide(hDict[sNameDen+'Pt'])
                         hist.Scale(div)
-                        #histY.Scale(div)
-                        #histPt.Scale(div)
+                        histY.Scale(div)
+                        histPt.Scale(div)
                     if coeff=='A0' :
                         for xx in range(1,hist.GetNbinsX()+1) :
                             for yy in range(1,hist.GetNbinsY()+1) :
                                 content = hist.GetBinContent(xx,yy)
                                 hist.SetBinContent(xx,yy,20./3*(content+1./10.))
-                        """
                         for xx in range(1,histY.GetNbinsX()+1):
-                            content = histY.GetBinContent(xx)
-                            histY.SetBinContent(xx,20./3*(content+1./10.))
+                                content = histY.GetBinContent(xx)
+                                histY.SetBinContent(xx,20./3*(content+1./10.))
                         for xx in range(1,histPt.GetNbinsX()+1):
-                            content = histPt.GetBinContent(xx)
-                            histPt.SetBinContent(xx,20./3*(content+1./10.))
-                        """
+                                content = histPt.GetBinContent(xx)
+                                histPt.SetBinContent(xx,20./3*(content+1./10.))
+                        
+                    
+                    #error assignment                    
+                    if coeff!='AUL' : 
+                        for xx in range(1,hist.GetNbinsX()+1) :
+                            for yy in range(1,hist.GetNbinsY()+1) :
+                                N_eff = hDict[sNameDen+'mapTot'].GetBinContent(xx,yy)**2/(hDict[sNameDen+'mapTot'].GetBinError(xx,yy)**2)
+                                f2w = hDict[sName+coeff+'Err'].GetBinContent(xx,yy)/hDict[sNameDen+'mapTot'].GetBinContent(xx,yy)
+                                fw2 = (hDict[sName+coeff].GetBinContent(xx,yy)/hDict[sName+'mapTot'].GetBinContent(xx,yy))**2
+                                A_err = math.sqrt(f2w - fw2)/math.sqrt(N_eff)
+                                A_err = A_err*div
+                                if coeff=='A0' :
+                                    A_err = 20./3*(A_err+1./10.)
+                                hist.SetBinError(xx,yy, A_err )
+                    
+                    # if sKind=="" :
+                    #     for xx in range(1,histPt.GetNbinsX()+1) :
+                    #         N_eff = hDict[sNameDen+'mapTot'].GetBinContent(xx)**2/(hDict[sNameDen+'mapTot'].GetBinError(xx)**2)
+                    #         f2w = hDict[sName+coeff+'Err'].GetBinContent(xx)/hDict[sNameDen+'mapTot'].GetBinContent(xx)
+                    #         fw2 = (histPt.GetBinContent(xx))**2
+                    #         A_err = math.sqrt(f2w - fw2)/math.sqrt(N_eff)
+                    #         A_err = A_err/div
+                    #         if coeff=='A0' :
+                    #             A_err = 20./3*(A_err+1./10.)
+                    #         histPt.SetBinError(i,j, A_err )
+                    #     for xx in range(1,histY.GetNbinsX()+1):
+                    #         N_eff = hDict[sNameDen+'mapTot'].GetBinContent(xx)**2/(hDict[sNameDen+'mapTot'].GetBinError(xx)**2)
+                    #         f2w = hDict[sName+coeff+'Err'].GetBinContent(xx)/hDict[sNameDen+'mapTot'].GetBinContent(xx)
+                    #         fw2 = (histY.GetBinContent(xx))**2
+                    #         A_err = math.sqrt(f2w - fw2)/math.sqrt(N_eff)
+                    #         A_err = A_err/div
+                    #         if coeff=='A0' :
+                    #             A_err = 20./3*(A_err+1./10.)
+                    #         histY.SetBinError(i,j, A_err )
+                            
                     suff = ''
                     suffDen = ''
                     if sName == "" : suff = '_nom'
-                    if sNameDen == '' : suffDen = '_nom'
+                    if sNameDen == '' : suffDen = '_nom'                    
                     hist.SetName(hist.GetName()+suff+sNameDen+suffDen)
                     hist.SetTitle(hist.GetTitle()+suff+sNameDen+suffDen)
                     hist.Write()
-                    #histY.Write()
-                    #histPt.Write()
+                    histY.SetName(histY.GetName()+suff+sNameDen+suffDen)
+                    histY.SetTitle(histY.GetTitle()+suff+sNameDen+suffDen)
+                    histY.Write()
+                    histPt.SetName(histPt.GetName()+suff+sNameDen+suffDen)
+                    histPt.SetTitle(histPt.GetTitle()+suff+sNameDen+suffDen)
+                    histPt.Write()
         
 outFile.mkdir('accMaps')
 outFile.cd('accMaps')
