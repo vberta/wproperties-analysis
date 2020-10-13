@@ -19,7 +19,7 @@ class plotter:
         self.indir = inDir # indir containig the various outputs
         self.outdir = outDir
         self.sampleFile = 'WToMu_AC_plots.root'
-        
+
         self.extSyst = copy.deepcopy(systematics)
         self.extSyst['Nominal'] =  (['', '_massUp', '_massDown'],"Nom")
         self.histoDict ={} 

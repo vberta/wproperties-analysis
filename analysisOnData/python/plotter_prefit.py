@@ -72,7 +72,8 @@ class plotter:
             "ptScaleVars" : [ROOT.kBlue-4, 'pT Scale'],
             "jmeVars" : [ROOT.kAzure+10, 'MET'],
             "LHEPdfWeightVars" : [ROOT.kRed+1, 'PDF'],
-            "Nominal" : [1, 'Stat. Unc.']
+            "Nominal" : [1, 'Stat. Unc.'],
+            "PrefireWeightVars" : [ROOT.kSpring+10, 'Prefire']
         }
 
 

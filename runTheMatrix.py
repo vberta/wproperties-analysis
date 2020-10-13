@@ -22,7 +22,7 @@ import time
 #         yield
 
 parser = argparse.ArgumentParser("")
-parser.add_argument('-i', '--inputDir',type=str, default='/scratch/wmass/NanoAOD2016-V2/', help="input dir name with the trees")
+parser.add_argument('-i', '--inputDir',type=str, default='/scratchnvme/wmass/NanoAOD2016-V2/', help="input dir name with the trees")
 parser.add_argument('-o', '--outputDir',type=str, default='output/', help="output dir name of step1 and step3 (inside analysisOnData/)")
 parser.add_argument('-t', '--bkgOutput',type=str, default='bkg/', help="output dir name for bkgAna (inside bkgAnalysis/)")
 parser.add_argument('-f', '--bkgFile',type=str, default='/scratch/bertacch/wmass/wproperties-analysis/bkgAnalysis/TEST_runTheMatrix/bkg_parameters_CFstatAna.root', help="bkg parameters file path/name.root, or the special 'MYBKG' for the one produced in the same loop")
@@ -31,7 +31,7 @@ parser.add_argument('-q', '--bkgPrep',type=int, default=False, help="run the bkg
 parser.add_argument('-w', '--bkgAna',type=int, default=False, help="run the bkg analysis")
 parser.add_argument('-e', '--prefit',type=int, default=False, help="run the prefit hitograms building")
 parser.add_argument('-r', '--plotter',type=int, default=False, help="run the prefit plotter, the result are saved in outputDir/plot/")
-parser.add_argument('-sb', '--SBana',type=int, default=False, help="run also on the sideband (clousure test)")
+parser.add_argument('-sb', '--SBana',type=int, default=0, help="run also on the sideband (clousure test)")
 
 
 args = parser.parse_args()
@@ -83,7 +83,7 @@ if step3 :
     os.chdir('analysisOnData')
     if not os.path.isdir(outputDir): os.system('mkdir '+ outputDir)
     #ncores is optimized and set in the config itself, so no need to pass here
-    os.system('python runAnalysis.py -p=0 -b=0 -i='+inputDir+ ' -o=' +outputDir+ ' -f='+bkgFile + ' -sb='+SBana)
+    os.system('python runAnalysis.py -b=0 -i='+inputDir+ ' -o=' +outputDir+ ' -f='+bkgFile + ' -sb='+SBana)
     os.chdir('../')
     s3end=time.time()
     runTimes.append(s3end - s3start)

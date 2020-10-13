@@ -261,7 +261,7 @@ class bkg_analyzer:
                                             deltaPP = abs(histo_fake_dict['nom'+s+e+'reb'].GetBinContent(pp+1)-histo_fake_dict[systUp+s+e+'reb'].GetBinContent(pp+1))
                                             deltaP2 = abs(histo_fake_dict['nom'+s+e+'reb'].GetBinContent(p2+1)-histo_fake_dict[systUp+s+e+'reb'].GetBinContent(p2+1))
                                         # erv = (histo_fake_dict['nom'+s+e+'reb'].GetBinContent(pp+1)-histo_fake_dict[systList[syst]+s+e].GetBinContent(pp+1))*(histo_fake_dict['nom'+s+e+'reb'].GetBinContent(p2+1)-histo_fake_dict[systList[syst]+s+e].GetBinContent(p2+1))
-                                        if deltaPP !=0 and deltaP2!=0 :
+                                        if deltaPP > 1e-7 and deltaP2 > 1e-7 :
                                             signPP = (histo_fake_dict['nom'+s+e+'reb'].GetBinContent(pp+1)-histo_fake_dict[systUp+s+e+'reb'].GetBinContent(pp+1))/abs(histo_fake_dict['nom'+s+e+'reb'].GetBinContent(pp+1)-histo_fake_dict[systUp+s+e+'reb'].GetBinContent(pp+1))#Chosen the UP sign!
                                             signP2 = (histo_fake_dict['nom'+s+e+'reb'].GetBinContent(p2+1)-histo_fake_dict[systUp+s+e+'reb'].GetBinContent(p2+1))/abs(histo_fake_dict['nom'+s+e+'reb'].GetBinContent(p2+1)-histo_fake_dict[systUp+s+e+'reb'].GetBinContent(p2+1))#Chosen the UP sign!
                                         else :
@@ -524,7 +524,8 @@ class bkg_analyzer:
             "ptScaleVars" : [ROOT.kBlue-4, 'pT Scale'],
             "jmeVars" : [ROOT.kAzure+10, 'MET'],
             "LHEPdfWeightVars" : [ROOT.kRed+1, 'PDF'],
-            "Nominal" : [1, 'Stat. Unc.']
+            "Nominal" : [1, 'Stat. Unc.'],
+            "PrefireWeightVars" : [ROOT.kSpring+10, 'Prefire']
         }
             
         #getting canvas and histoss

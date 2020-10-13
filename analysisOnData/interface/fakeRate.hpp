@@ -17,7 +17,7 @@ private:
                                          "LHEScaleWeightVars_LHEScaleWeight_muR0p5_muF1p0", "LHEScaleWeightVars_LHEScaleWeight_muR1p0_muF0p5",
                                          "LHEScaleWeightVars_LHEScaleWeight_muR1p0_muF2p0", "LHEScaleWeightVars_LHEScaleWeight_muR2p0_muF1p0",
                                          "LHEScaleWeightVars_LHEScaleWeight_muR2p0_muF2p0", "ptScaleVars_correctedUp", "ptScaleVars_correctedDown",
-                                         "jmeVars_jerUp", "jmeVars_jerDown", "jmeVars_jesTotalUp", "jmeVars_jesTotalDown", "jmeVars_unclustEnUp", "jmeVars_unclustEnDown"};
+					  "jmeVars_jerUp", "jmeVars_jerDown", "jmeVars_jesTotalUp", "jmeVars_jesTotalDown", "jmeVars_unclustEnUp", "jmeVars_unclustEnDown", "PrefireWeightVars_PrefireWeightUp", "PrefireWeightVars_PrefireWeightDown"};
 
 public:
   fakeRate(TFile *SF)
