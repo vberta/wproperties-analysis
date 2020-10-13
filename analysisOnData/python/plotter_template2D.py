@@ -68,6 +68,30 @@ class plotter:
                         th2.SetName(th3.GetName())
                         self.histoDict[sample][sKind].append(th2)
     
+    def uncorrelateEff(self,sample):
+        if not self.histoDict[sample]['WHSF'] == []:
+            aux = {}
+            aux['WHSF'] = []
+            for h in self.histoDict[sample]['Nominal']:
+                if 'mass' in h.GetName():
+                    continue
+                for i in range(3):
+                    for hvar in self.histoDict[sample]['WHSF']:
+                        if 'Flat' in hvar.GetName(): #leave syst uncertainty as it is
+                            aux['WHSF'].append(hvar)
+                        for updown in ['Up', 'Down']:
+                            if hvar.GetName() == h.GetName() + 'WHSFSyst{}{}'.format(i,updown):
+                                for j in range(1,hvar.GetNbinsX()+1): #loop over eta bins
+                                    #create one histogram per eta bin
+                                    haux = h.Clone()
+                                    haux.SetName(h.GetName() + 'WHSFSyst{}Eta{}{}'.format(i,j,updown))
+                                    for k in range(1, hvar.GetNbinsY()+1):  # loop over pt bins
+                                        bin1D = hvar.GetBin(j,k)
+                                        varcont = hvar.GetBinContent(bin1D)
+                                        haux.SetBinContent(bin1D,varcont)
+                                    aux['WHSF'].append(haux)
+            self.histoDict[sample].update(aux)
+
     def symmetrisePDF(self,sample):
 
         if not self.histoDict[sample]['LHEPdfWeight']==[]:
@@ -117,7 +141,8 @@ class plotter:
             if sample not in  self.histoDict : 
                 print "No histo dict for sample:", sample, " What have you done??!!!!"
                 continue
-            self.symmetrisePDF(sample)
+            #self.symmetrisePDF(sample)
+            self.uncorrelateEff(sample)
             for syst, hlist in self.histoDict[sample].iteritems():
                 fout.mkdir(syst)
                 fout.cd(syst)
