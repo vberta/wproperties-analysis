@@ -117,10 +117,34 @@ class plotter:
                         th3 = self.inFile.Get(fpath)
                         if not th3: continue
                         self.makeTH3slices(th3, sKind, chargeBin)
-        self.symmetrisePDF()
+        #self.uncorrelateEff()
+        #self.symmetrisePDF()
         self.closureMap()
         self.writeHistos(chargeBin)
     
+    def uncorrelateEff(self):
+        aux = {}
+        aux['WHSF'] = []
+        for h in self.histoDict['Nominal']:
+            if 'mass' in h.GetName():
+                continue
+            for i in range(3):
+                for hvar in self.histoDict['WHSF']:
+                    if 'Flat' in hvar.GetName():  # leave syst uncertainty as it is
+                        aux['WHSF'].append(hvar)
+                    for updown in ['Up', 'Down']:
+                        if hvar.GetName() == h.GetName() + 'WHSFSyst{}{}'.format(i, updown):
+                            for j in range(1, hvar.GetNbinsX()+1):  # loop over eta bins
+                                #create one histogram per eta bin
+                                haux = h.Clone()
+                                haux.SetName(
+                                    h.GetName() + 'WHSFSyst{}Eta{}{}'.format(i, j, updown))
+                                for k in range(1, hvar.GetNbinsY()+1):  # loop over pt bins
+                                    bin1D = hvar.GetBin(j, k)
+                                    varcont = hvar.GetBinContent(bin1D)
+                                    haux.SetBinContent(bin1D, varcont)
+                                aux['WHSF'].append(haux)
+        self.histoDict.update(aux)
     def symmetrisePDF(self):
 
         aux = {}
