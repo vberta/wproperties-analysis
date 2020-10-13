@@ -17,16 +17,16 @@ from getLumiWeight import getLumiWeight
 ROOT.gSystem.Load('bin/libAnalysisOnData.so')
 ROOT.gROOT.ProcessLine("gErrorIgnoreLevel = 2001;");
 
-def RDFprocessMC(fvec, outputDir, sample, xsec, fileSF, ncores, systType, pretendJob=True,SBana=False):
+def RDFprocessMC(fvec, outputDir, sample, xsec, fileSF, fileScale, ncores, systType, pretendJob=True,SBana=False):
     ROOT.ROOT.EnableImplicitMT(ncores)
     print "running with {} cores".format(ncores)
     p = RDFtree(outputDir = outputDir, inputFile = fvec, outputFile="{}_plots.root".format(sample), pretend=pretendJob)
     #sample specific systematics
     systematicsFinal=copy.deepcopy(systematics)
     if systType != 2:
-        p.branch(nodeToStart = 'input', nodeToEnd = 'defs', modules = [ROOT.baseDefinitions(True, False),ROOT.weightDefinitions(fileSF),getLumiWeight(xsec=xsec, inputFile=fvec)])
+        p.branch(nodeToStart = 'input', nodeToEnd = 'defs', modules = [ROOT.baseDefinitions(True, False),ROOT.rochesterVariations(fileScale),ROOT.weightDefinitions(fileSF),getLumiWeight(xsec=xsec, inputFile=fvec)])
     else:
-        p.branch(nodeToStart = 'input', nodeToEnd = 'defs', modules = [ROOT.baseDefinitions(True, False),ROOT.weightDefinitions(fileSF),getLumiWeight(xsec=xsec, inputFile=fvec),ROOT.Replica2Hessian()])
+        p.branch(nodeToStart = 'input', nodeToEnd = 'defs', modules = [ROOT.baseDefinitions(True, False),ROOT.rochesterVariations(fileScale),ROOT.weightDefinitions(fileSF),getLumiWeight(xsec=xsec, inputFile=fvec),ROOT.Replica2Hessian()])
     #selections bkg also includes Signal
     for region,cut in selections_bkg.iteritems():
         print "running in region {}".format(region)
@@ -76,10 +76,16 @@ def RDFprocessMC(fvec, outputDir, sample, xsec, fileSF, ncores, systType, preten
                 newcut = cut.replace('MT', 'MT'+selvar)
                 if 'corrected' in selvar:
                     newcut = newcut.replace('Mu1_pt', 'Mu1_pt'+selvar)
-
                 cut_vec.push_back(newcut)
                 var_vec.push_back(selvar)
-
+                '''
+            if vartype == 'ptScale':
+                for idx in range(0, 104):
+                    newcut = cut.replace('MT', 'MT_roccoCorrectedVars{}'.format(idx))
+                    newcut = newcut.replace('Mu1_pt', 'Mu1_pt_roccoCorrectedVars{}'.format(idx))
+                    cut_vec.push_back(newcut)
+                    var_vec.push_back('_roccoCorrectedVars{}'.format(idx))
+            '''
             if region == "Signal" or (region=='Sideband' and SBana):
                 p.branch(nodeToStart = 'defs', nodeToEnd = 'prefit_{}/{}Vars'.format(region,vartype), modules = [ROOT.muonHistos(cut_vec, weight, nom,"Nom",hcat,var_vec)])  
             p.branch(nodeToStart = 'defs', nodeToEnd = 'templates_{}/{}Vars'.format(region,vartype), modules = [ROOT.templates(cut_vec, weight, nom,"Nom",hcat,var_vec)])  
@@ -132,8 +138,9 @@ def main():
             continue
         print fvec 
         fileSF = ROOT.TFile.Open("data/ScaleFactors_OnTheFly.root")
+        fileScale = ROOT.TFile.Open("data/muscales_extended.root")
         systType = samples[sample]['systematics']
-        RDFprocessMC(fvec, outputDir, sample, xsec, fileSF, cores, systType, pretendJob,SBana)
+        RDFprocessMC(fvec, outputDir, sample, xsec, fileSF, fileScale, cores, systType, pretendJob,SBana)
 
 if __name__ == "__main__":
     main()
