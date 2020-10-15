@@ -15,7 +15,7 @@ from getLumiWeight import getLumiWeight
 ROOT.gSystem.Load('bin/libAnalysisOnData.so')
 ROOT.gROOT.ProcessLine("gErrorIgnoreLevel = 2001;");
 
-def RDFprocessWJetsMCSignalACtempl(fvec, outputDir, sample, xsec, fileSF, ncores, pretendJob):
+def RDFprocessWJetsMCSignalACtempl(fvec, outputDir, sample, xsec, fileSF, fileScale, ncores, pretendJob):
     ROOT.ROOT.EnableImplicitMT(ncores)
     print "running with {} cores for sample:{}".format(ncores, sample) 
     wdecayselections = { 
@@ -36,7 +36,7 @@ def RDFprocessWJetsMCSignalACtempl(fvec, outputDir, sample, xsec, fileSF, ncores
 
 
     p = RDFtree(outputDir = outputDir, inputFile = fvec, outputFile="{}_AC_plots.root".format('WToMu'), pretend=pretendJob)
-    p.branch(nodeToStart = 'input', nodeToEnd = 'defs', modules = [ROOT.reweightFromZ(filePt,fileY),ROOT.baseDefinitions(True,True),ROOT.weightDefinitions(fileSF),getLumiWeight(xsec=xsec, inputFile=fvec, genEvsbranch = "genEventSumw"),ROOT.Replica2Hessian()])
+    p.branch(nodeToStart = 'input', nodeToEnd = 'defs', modules = [ROOT.reweightFromZ(filePt,fileY),ROOT.baseDefinitions(True,True),ROOT.rochesterVariations(fileScale),ROOT.weightDefinitions(fileSF),getLumiWeight(xsec=xsec, inputFile=fvec, genEvsbranch = "genEventSumw"),ROOT.Replica2Hessian()])
 
     steps = [ROOT.getACValues(fileAC),ROOT.defineHarmonics(),ROOT.getMassWeights(),ROOT.getWeights()]
     p.branch(nodeToStart = 'defs', nodeToEnd = 'defsAC', modules = steps)
@@ -48,7 +48,6 @@ def RDFprocessWJetsMCSignalACtempl(fvec, outputDir, sample, xsec, fileSF, ncores
     mass.push_back("_massUp")
     mass.push_back("_massDown")
     p.branch(nodeToStart = 'defsAC', nodeToEnd = 'templatesLowAcc_{}/Nominal'.format(region), modules = [ROOT.templates(wtomu_lowAcc_cut, weight, mass,"massWeights",0)])
-
     #weight variations
     for s,variations in systematics.iteritems():
         print "branching weight variations", s
@@ -66,7 +65,6 @@ def RDFprocessWJetsMCSignalACtempl(fvec, outputDir, sample, xsec, fileSF, ncores
         p.branch(nodeToStart = 'defsAC', nodeToEnd = 'templatesAC_{}/{}'.format(region, s), modules = [ROOT.templateBuilder(wtomu_cut, var_weight,vars_vec,variations[1], 3)])
         #reco templates for out of acceptance events
         p.branch(nodeToStart = 'defsAC', nodeToEnd = 'templatesLowAcc_{}/{}'.format(region,s), modules = [ROOT.templates(wtomu_lowAcc_cut, var_weight,vars_vec,variations[1], 0)])
-
     #column variations#weight will be nominal, cut will vary
     for vartype, vardict in selectionVars.iteritems():
         wtomu_cut_vec = ROOT.vector('string')()
@@ -86,12 +84,11 @@ def RDFprocessWJetsMCSignalACtempl(fvec, outputDir, sample, xsec, fileSF, ncores
             cut+= "&& Wpt_preFSR>32. && Wrap_preFSR_abs>2.4"
         print "Low acc cut vec vars:", wtomu_cut_vec
         p.branch(nodeToStart = 'defsAC', nodeToEnd = 'templatesLowAcc_{}/{}'.format(region,vartype), modules = [ROOT.templates(wtomu_cut_vec, weight, nom,"Nom",hcat,wtomu_var_vec)])
-
     p.getOutput()
     p.saveGraph()
 
 
-def RDFprocessWJetsMC(fvec, outputDir, sample, xsec, fileSF, ncores, pretendJob, bkg,SBana=False):
+def RDFprocessWJetsMC(fvec, outputDir, sample, xsec, fileSF, fileScale, ncores, pretendJob, bkg,SBana=False):
     ROOT.ROOT.EnableImplicitMT(ncores)
     print "running with {} cores for sample:{}".format(ncores, sample) 
     wdecayselections = { 
@@ -102,7 +99,7 @@ def RDFprocessWJetsMC(fvec, outputDir, sample, xsec, fileSF, ncores, pretendJob,
     filePt = ROOT.TFile.Open("data/histoUnfoldingSystPt_nsel2_dy3_rebin1_default.root")
     fileY = ROOT.TFile.Open("data/histoUnfoldingSystRap_nsel2_dy3_rebin1_default.root")
     fileAC = ROOT.TFile.Open("../analysisOnGen/genInput.root")
-    p.branch(nodeToStart = 'input', nodeToEnd = 'defs', modules = [ROOT.reweightFromZ(filePt,fileY),ROOT.baseDefinitions(True, True),ROOT.weightDefinitions(fileSF),getLumiWeight(xsec=xsec, inputFile=fvec, genEvsbranch = "genEventSumw"),ROOT.Replica2Hessian()])
+    p.branch(nodeToStart = 'input', nodeToEnd = 'defs', modules = [ROOT.reweightFromZ(filePt,fileY),ROOT.baseDefinitions(True, True),ROOT.rochesterVariations(fileScale), ROOT.weightDefinitions(fileSF),getLumiWeight(xsec=xsec, inputFile=fvec, genEvsbranch = "genEventSumw"),ROOT.Replica2Hessian()])
     for region,cut in selections_bkg.iteritems():
         if 'aiso' in region:
             weight = 'float(puWeight*lumiweight*weightPt*weightY)'
@@ -230,11 +227,26 @@ def main():
         sys.exit(1)
     print fvec 
 
+
+    selectionVars['ptScale'].update( {"_zptsystUp" : 1, "_zptsystDown" : 1,
+                                      "_EwksystUp" : 1, "_EwksystDown" : 1,
+                                      "_deltaMsystUp" : 1, "_deltaMsystDown" : 1,
+                                      "_Ewk2systUp" : 1, "_Ewk2systDown" : 1} )
+
+    
+    #for idx in range(0, 5):
+    #    upName = "_stateig" + str(idx) + "Up"
+    #    selectionVars["ptScale"].update({upName : 1})
+    #    downName = "_stateig" + str(idx) + "Down"
+    #    selectionVars["ptScale"].update({downName : 1})
+    
+
     fileSF = ROOT.TFile.Open("data/ScaleFactors_OnTheFly.root")
+    fileScale = ROOT.TFile.Open("data/muscales_extended.root")
     if bkg: 
-        RDFprocessWJetsMC(fvec, outputDir, sample, xsec, fileSF, ncores, pretendJob, bkg,SBana)
+        RDFprocessWJetsMC(fvec, outputDir, sample, xsec, fileSF, fileScale, ncores, pretendJob, bkg,SBana)
     else:
-        RDFprocessWJetsMCSignalACtempl(fvec, outputDir, sample, xsec, fileSF, ncores, pretendJob)
+        RDFprocessWJetsMCSignalACtempl(fvec, outputDir, sample, xsec, fileSF, fileScale, ncores, pretendJob)
     
 if __name__ == "__main__":
     main()

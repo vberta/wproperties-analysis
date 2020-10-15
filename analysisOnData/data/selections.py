@@ -21,20 +21,9 @@ selections_fakes = {
   }
 
 selectionVars = { 
-    "ptScale" : { "_correctedUp" : 1, "_correctedDown" : 1, 
-                  "_zptsystUp" : 1, "_zptsystDown" : 1,
-                  "_EwksystUp" : 1, "_EwksystDown" : 1,
-                  "_deltaMsystUp" : 1, "_deltaMsystDown" : 1,
-                  "_Ewk2systUp" : 1, "_Ewk2systDown" : 1
-              }, 
-  # "jme" : { "_jerUp" : 2, "_jerDown" : 2 , "_jesTotalUp" : 2, "_jesTotalDown" : 2, "_unclustEnUp" : 2,"_unclustEnDown" : 2}
-  "jme" : {"_jesTotalUp" : 2, "_jesTotalDown" : 2, "_unclustEnUp" : 2,"_unclustEnDown" : 2}
+    "ptScale" : { "_correctedUp" : 1, "_correctedDown" : 1 }, 
+   "jme" : {"_jesTotalUp" : 2, "_jesTotalDown" : 2, "_unclustEnUp" : 2,"_unclustEnDown" : 2}
 }
-for idx in range(0, 99):
-   upName = "_stateig" + str(idx) + "Up"
-   selectionVars["ptScale"].update({upName : 1})
-   #downName = "_stateig" + str(idx) + "Down"
-   #selectionVars["ptScale"].update({downName : 1})
 
 ##Selections as in WHelicity analysis
 selections_whelicity = {
