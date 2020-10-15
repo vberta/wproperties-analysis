@@ -19,7 +19,7 @@ class plotter:
         self.indir = inDir # indir containig the various outputs
         self.outdir = outDir
         
-        self.sampleDict = { "WToMu"      :  ('WToMu_plots.root', 2 ),
+        self.sampleDict = { "data_obs"      :  ('WToMu_plots.root', 2 ),
                             "DYJets"      : ('DYJets_plots.root', 2 ),
                             "WtoTau"      : ('WToTau_plots.root', 2 ),
                             "Top"         : ('Top_plots.root', 1),
@@ -48,7 +48,8 @@ class plotter:
                         th3.GetZaxis().SetRange(chargeBin,chargeBin)
                         th2=th3.Project3D("yx")
                         th2.SetDirectory(0)
-                        th2.SetName(th3.GetName())
+                        th2.SetName(th3.GetName().replace('templates',sample))
+                        print th2.GetName()
                         self.histoDict[sample][sKind].append(th2)
                         
         else:
@@ -68,30 +69,32 @@ class plotter:
                         th2.SetName(th3.GetName())
                         self.histoDict[sample][sKind].append(th2)
     
-    def uncorrelateEff(self,sample):
-        if not self.histoDict[sample]['WHSF'] == []:
-            aux = {}
-            aux['WHSF'] = []
-            for h in self.histoDict[sample]['Nominal']:
-                if 'mass' in h.GetName():
-                    continue
-                for i in range(3):
-                    for hvar in self.histoDict[sample]['WHSF']:
-                        if 'Flat' in hvar.GetName(): #leave syst uncertainty as it is
-                            aux['WHSF'].append(hvar)
-                        for updown in ['Up', 'Down']:
-                            if hvar.GetName() == h.GetName() + 'WHSFSyst{}{}'.format(i,updown):
-                                for j in range(1,hvar.GetNbinsX()+1): #loop over eta bins
-                                    #create one histogram per eta bin
-                                    haux = h.Clone()
-                                    haux.SetName(h.GetName() + 'WHSFSyst{}Eta{}{}'.format(i,j,updown))
-                                    for k in range(1, hvar.GetNbinsY()+1):  # loop over pt bins
-                                        bin1D = hvar.GetBin(j,k)
-                                        varcont = hvar.GetBinContent(bin1D)
-                                        haux.SetBinContent(bin1D,varcont)
-                                    aux['WHSF'].append(haux)
-            self.histoDict[sample].update(aux)
-
+    def uncorrelateEff(self, sample):
+        aux = {}
+        aux['WHSF'] = []
+        for h in self.histoDict[sample]['Nominal']:
+            if 'mass' in h.GetName():
+                continue
+            for i in range(3):
+                for hvar in self.histoDict[sample]['WHSF']:
+                    for updown in ['Up', 'Down']:
+                        #print h.GetName() + 'WHSFSyst{}{}'.format(i, updown), "match"
+                        if hvar.GetName() == h.GetName() + '_WHSFSyst{}{}'.format(i, updown):
+                            for j in range(1, hvar.GetNbinsX()+1):  # loop over eta bins
+                                #create one histogram per eta bin
+                                haux = h.Clone()
+                                haux.SetName(
+                                    h.GetName() + '_WHSFSyst{}Eta{}{}'.format(i, j, updown))
+                                #print haux.GetName()
+                                for k in range(1, hvar.GetNbinsY()+1):  # loop over pt bins
+                                    bin1D = hvar.GetBin(j, k)
+                                    varcont = hvar.GetBinContent(bin1D)
+                                    haux.SetBinContent(bin1D, varcont)
+                                aux['WHSF'].append(haux)
+        for hvar in self.histoDict[sample]['WHSF']:
+            if 'Flat' in hvar.GetName():  # leave syst uncertainty as it is
+                aux['WHSF'].append(hvar)
+        self.histoDict[sample].update(aux)
     def symmetrisePDF(self,sample):
 
         if not self.histoDict[sample]['LHEPdfWeight']==[]:
@@ -126,7 +129,13 @@ class plotter:
             self.histoDict[sample].update(aux)
     
     def getHistos(self, chargeBin) :
+        print 'writing histograms'
+        foutName = 'Wplus_reco' if chargeBin == 2 else 'Wminus_reco'
+        foutName += '.root'
+        fout = ROOT.TFile.Open(self.outdir + '/' + foutName, "UPDATE")
         for sample,fname in self.sampleDict.iteritems():
+            if not 'LowAcc' in sample and not 'data_obs' in sample:
+                continue
             print  "Processing sample:", sample
             infile = ROOT.TFile(self.indir + '/' + fname[0])
             systType = fname[1]
@@ -135,22 +144,20 @@ class plotter:
                 continue
             self.histoDict[sample] = {}
             self.getHistoforSample(sample,infile, chargeBin)
-            chargeTag='minus' if chargeBin == 1 else 'plus'
-            outname = self.outdir  + '/' + sample + '_templates2D' + chargeTag + '.root'
-            fout = ROOT.TFile(outname, 'RECREATE')
             if sample not in  self.histoDict : 
                 print "No histo dict for sample:", sample, " What have you done??!!!!"
                 continue
             #self.symmetrisePDF(sample)
-            self.uncorrelateEff(sample)
+            #self.uncorrelateEff(sample)
             for syst, hlist in self.histoDict[sample].iteritems():
-                fout.mkdir(syst)
-                fout.cd(syst)
+                #fout.mkdir(syst)
+                #fout.cd(syst)
+                fout.cd()
                 for h in hlist:
                     h.Write()
-                fout.cd()
-            fout.Save()
-            fout.Write()
+                #fout.cd()
+        fout.Save()
+        fout.Write()
 
 parser = argparse.ArgumentParser("")
 parser.add_argument('-o','--output', type=str, default='./',help="name of the output directory")
