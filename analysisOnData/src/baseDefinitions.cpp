@@ -41,7 +41,7 @@ RNode baseDefinitions::run(RNode d)
 
     if(_isWjets)  {
       d1withCompvar = d1withCompvar.Define("Wrap_preFSR_abs", "TMath::Abs(Wrap_preFSR)")
-	//.Filter("GenPart_pdgId[GenPart_preFSRMuonIdx]<0")
+	.Filter("GenPart_pdgId[GenPart_preFSRMuonIdx]<0")
 	.Define("Mupt_preFSR", "GenPart_pt[GenPart_preFSRMuonIdx]")
 	.Define("Mueta_preFSR", "GenPart_eta[GenPart_preFSRMuonIdx]")
 	.Define("Mupt_bare", "GenPart_pt[GenPart_bareMuonIdx]")

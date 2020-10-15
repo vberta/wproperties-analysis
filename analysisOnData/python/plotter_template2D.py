@@ -34,7 +34,21 @@ class plotter:
         self.extSyst = copy.deepcopy(systematics)
         self.extSyst['Nominal'] = ['']
         self.histoDict ={} 
-    
+
+    def unroll2D(self, th2):
+
+        nbins = th2.GetNbinsX()*th2.GetNbinsY()
+        #th2.Sumw2() #don't think it's necessary
+        new = th2.GetName()
+        old = new + '_roll'
+        th2.SetName(old)
+        unrolledth2 = ROOT.TH1F(new, '', nbins, 1., nbins+1)
+        for ibin in range(1, th2.GetNbinsX()+1):
+            for jbin in range(1, th2.GetNbinsY()+1):
+                bin1D = th2.GetBin(ibin, jbin)
+                unrolledth2.SetBinContent(bin1D, th2.GetBinContent(ibin, jbin))
+                unrolledth2.SetBinError(bin1D, th2.GetBinError(ibin, jbin))
+        return unrolledth2
     def getHistoforSample(self, sample, infile, chargeBin) :
         if not 'Fake' in sample:
             for sKind in self.extSyst:
@@ -68,7 +82,6 @@ class plotter:
                         th2.SetDirectory(0)
                         th2.SetName(th3.GetName())
                         self.histoDict[sample][sKind].append(th2)
-    
     def uncorrelateEff(self, sample):
         aux = {}
         aux['WHSF'] = []
@@ -154,6 +167,7 @@ class plotter:
                 #fout.cd(syst)
                 fout.cd()
                 for h in hlist:
+                    #th1=self.unroll2D(h)
                     h.Write()
                 #fout.cd()
         fout.Save()

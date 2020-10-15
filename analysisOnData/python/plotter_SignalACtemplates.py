@@ -54,7 +54,20 @@ class plotter:
         self.factors["A5"]=2.
         self.factors["A6"]=2.*math.sqrt(2)
         self.factors["A7"]=4.*math.sqrt(2)
+    def unroll2D(self, th2):
 
+        nbins = th2.GetNbinsX()*th2.GetNbinsY()
+        #th2.Sumw2() #don't think it's necessary
+        new = th2.GetName()
+        old = new + '_roll'
+        th2.SetName(old)
+        unrolledth2 = ROOT.TH1F(new, '', nbins, 1., nbins+1)
+        for ibin in range(1, th2.GetNbinsX()+1):
+            for jbin in range(1, th2.GetNbinsY()+1):
+                bin1D = th2.GetBin(ibin, jbin)
+                unrolledth2.SetBinContent(bin1D, th2.GetBinContent(ibin, jbin))
+                unrolledth2.SetBinError(bin1D, th2.GetBinError(ibin, jbin))
+        return unrolledth2
     def makeTH3slices(self, th3, systname, chargeBin):
         
         hname=th3.GetName()
@@ -195,6 +208,7 @@ class plotter:
             #fout.cd(sKind)
             fout.cd()
             for h in hlist:
+                #th1=self.unroll2D(h)
                 h.Write()
         fout.cd()
         fout.Save()
