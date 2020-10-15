@@ -234,11 +234,11 @@ def main():
                                       "_Ewk2systUp" : 1, "_Ewk2systDown" : 1} )
 
     
-    #for idx in range(0, 5):
-    #    upName = "_stateig" + str(idx) + "Up"
-    #    selectionVars["ptScale"].update({upName : 1})
-    #    downName = "_stateig" + str(idx) + "Down"
-    #    selectionVars["ptScale"].update({downName : 1})
+    for idx in range(0, 99):
+        upName = "_stateig" + str(idx) + "Up"
+        selectionVars["ptScale"].update({upName : 1})
+        downName = "_stateig" + str(idx) + "Down"
+        selectionVars["ptScale"].update({downName : 1})
     
 
     fileSF = ROOT.TFile.Open("data/ScaleFactors_OnTheFly.root")

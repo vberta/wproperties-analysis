@@ -26,10 +26,11 @@ private:
   std::vector<TH2D*> _Ewkcorv;
   std::vector<TH2D*> _deltaMcorv;
   std::vector<TH2D*> _Ewk2corv;
-  std::vector<TH2D*> _statEigenplusv;
-  std::vector<TH2D*> _statEigenminusv;
+  //std::vector<TH2D*> _statEigenplusv;
+  //std::vector<TH2D*> _statEigenminusv;
   float getCorrfromhisto(std::vector<TH2D*> hvec, float pt, float eta, unsigned int idx);
-
+  TH2D* _hUp;
+  TH2D* _hDown;
 public:
   rochesterVariations(TFile* cf){
     _corrF = cf;
@@ -45,23 +46,17 @@ public:
     _Ewk2corv.emplace_back(static_cast<TH2D*>(_corrF->Get("systhist_plus_5")));
     _Ewk2corv.emplace_back(static_cast<TH2D*>(_corrF->Get("systhist_minus_5")));
 
-    for(unsigned int idx = 0; idx < 99; idx++) {
-      std::string up = "stathis_eig_plus_" + std::to_string(idx);
-      TH2D* hup = static_cast<TH2D*>(_corrF->Get(up.c_str()));
-      if(hup) _statEigenplusv.emplace_back(hup);
-
-      std::string down = "stathis_eig_minus_" + std::to_string(idx);
-      TH2D* hdown = static_cast<TH2D*>(_corrF->Get(down.c_str()));
-      if(hdown) _statEigenminusv.emplace_back(hdown);
-    }
-    // std::cout << "Eigen plus size:" << _statEigenplusv.size() << std::endl;
-    //std::cout << "Eigen minus size:" << _statEigenminusv.size() << std::endl;
+    //for(unsigned int idx = 0; idx < 2; idx++) {
+      //std::string up = "stathis_eig_plus_" + std::to_string(idx);
+      // _statEigenplusv.emplace_back(static_cast<TH2D*>(_corrF->Get(up.c_str())));
+ 
+      //std::string down = "stathis_eig_minus_" + std::to_string(idx);
+      // _statEigenminusv.emplace_back(static_cast<TH2D*>(_corrF->Get(down.c_str())) );
+    // }
   }
 
   
-  ~rochesterVariations(){
-    _corrF->Close();    
-  }
+  ~rochesterVariations(){}
   
   RNode run(RNode) override;
   
