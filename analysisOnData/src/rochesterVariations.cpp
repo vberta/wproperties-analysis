@@ -41,7 +41,7 @@ RNode rochesterVariations::run(RNode d)
     };
 
     std::string down = "stathis_eig_minus_" + std::to_string(idx);
-    _hDown = (TH2D*)_corrF->Get(up.c_str());
+    _hDown = (TH2D*)_corrF->Get(down.c_str());
     auto cDown = [this](float pt, float eta) {
       float cpt = 1.;
       if(_hDown) {
