@@ -1,3 +1,4 @@
+from time import time
 import ROOT
 import copy
 import sys
@@ -11,7 +12,6 @@ import copy
 ROOT.gROOT.SetBatch()
 ROOT.TH1.AddDirectory(False)
 ROOT.TH2.AddDirectory(False)
-
 
 class plotter:
     
@@ -54,7 +54,20 @@ class plotter:
         self.factors["A5"]=2.
         self.factors["A6"]=2.*math.sqrt(2)
         self.factors["A7"]=4.*math.sqrt(2)
+    def unroll2D(self, th2):
 
+        nbins = th2.GetNbinsX()*th2.GetNbinsY()
+        #th2.Sumw2() #don't think it's necessary
+        new = th2.GetName()
+        old = new + '_roll'
+        th2.SetName(old)
+        unrolledth2 = ROOT.TH1F(new, '', nbins, 1., nbins+1)
+        for ibin in range(1, th2.GetNbinsX()+1):
+            for jbin in range(1, th2.GetNbinsY()+1):
+                bin1D = th2.GetBin(ibin, jbin)
+                unrolledth2.SetBinContent(bin1D, th2.GetBinContent(ibin, jbin))
+                unrolledth2.SetBinError(bin1D, th2.GetBinError(ibin, jbin))
+        return unrolledth2
     def makeTH3slices(self, th3, systname, chargeBin):
         
         hname=th3.GetName()
@@ -85,7 +98,6 @@ class plotter:
             if syst=="":
                 #print th2slice.GetName(), th2slice.Integral(0,th2slice.GetNbinsX()+2,0,th2slice.GetNbinsY()+2)
                 self.yields[(iY,iQt)]+=th2slice.Integral(0,th2slice.GetNbinsX()+2,0,th2slice.GetNbinsY()+2)
-
     def closureMap(self):
         for iY in range(1, 7):
             for iQt in range(1, 9):
@@ -95,7 +107,10 @@ class plotter:
         for iY in range(1, 7):
             for iQt in range(1, 9):
                 print self.clos.GetBinContent(iY,iQt)
-    
+        fout = ROOT.TFile("accMap.root","recreate")
+        fout.cd()
+        self.clos.Write()
+        fout.Close()
     def getHistos(self, chargeBin) :
         
         for iY in range(1, 7):
@@ -117,10 +132,36 @@ class plotter:
                         th3 = self.inFile.Get(fpath)
                         if not th3: continue
                         self.makeTH3slices(th3, sKind, chargeBin)
-        self.symmetrisePDF()
+        self.uncorrelateEff()
+        #self.symmetrisePDF()
         self.closureMap()
-        self.writeHistos(chargeBin)
-    
+        self.writeHistos(chargeBin)   
+    def uncorrelateEff(self):
+        aux = {}
+        aux['WHSF'] = []
+        for h in self.histoDict['Nominal']:
+            if 'mass' in h.GetName():
+                continue
+            for i in range(3):
+                for hvar in self.histoDict['WHSF']:
+                    for updown in ['Up', 'Down']:
+                        #print h.GetName() + 'WHSFSyst{}{}'.format(i, updown), "match"
+                        if hvar.GetName() == h.GetName() + '_WHSFSyst{}{}'.format(i, updown):
+                            for j in range(1, hvar.GetNbinsX()+1):  # loop over eta bins
+                                #create one histogram per eta bin
+                                haux = h.Clone()
+                                haux.SetName(
+                                    h.GetName() + '_WHSFSyst{}Eta{}{}'.format(i, j, updown))
+                                #print haux.GetName()
+                                for k in range(1, hvar.GetNbinsY()+1):  # loop over pt bins
+                                    bin1D = hvar.GetBin(j, k)
+                                    varcont = hvar.GetBinContent(bin1D)
+                                    haux.SetBinContent(bin1D, varcont)
+                                aux['WHSF'].append(haux)
+        for hvar in self.histoDict['WHSF']:
+            if 'Flat' in hvar.GetName():  # leave syst uncertainty as it is
+                aux['WHSF'].append(hvar)
+        self.histoDict.update(aux)
     def symmetrisePDF(self):
 
         aux = {}
@@ -155,21 +196,25 @@ class plotter:
                 aux['LHEPdfWeight'].append(th2Down)
 
         self.histoDict.update(aux)
-
     def writeHistos(self, chargeBin):
-        print 'writing histogram'
-        foutName = 'WPlus' if chargeBin == 2 else 'WMinus'
-        foutName += '_2D_ACTemplates.root'
+        print 'writing histograms'
+        foutName = 'Wplus_reco' if chargeBin == 2 else 'Wminus_reco'
+        foutName += '.root'
         fout = ROOT.TFile.Open(self.outdir + '/' + foutName, "RECREATE")
         fout.cd()
+        start = time()
         for sKind, hlist in self.histoDict.iteritems():
-            fout.mkdir(sKind)
-            fout.cd(sKind)
+            #fout.mkdir(sKind)
+            #fout.cd(sKind)
+            fout.cd()
             for h in hlist:
+                #th1=self.unroll2D(h)
                 h.Write()
-        fout.cd("Nominal")
+        fout.cd()
         fout.Save()
         fout.Close()
+        end = time()
+        print "time: {}".format(end - start)
 
 parser = argparse.ArgumentParser("")
 parser.add_argument('-o','--output', type=str, default='./',help="name of the output directory")

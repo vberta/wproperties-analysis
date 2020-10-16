@@ -27,10 +27,14 @@ systematicsDict = {
         "procs": ["Signal", "LowAcc"],
         "type":"shape"
     },
-    #"WHSF"  : {
-    #    "vars":["WHSFSyst0", "WHSFSyst1","WHSFSyst2","WHSFSystFlat"],
-    #    "procs": ["Signal", "DY","Diboson","Top","Tau","LowAcc","Fakes"],
-    #    "type":"shape"},
+    "WHSFStat"  : {
+        "vars": ["WHSFSyst0Eta{}".format(i) for i in range(1, 49)]+["WHSFSyst1Eta{}".format(i) for i in range(1, 49)]+["WHSFSyst2Eta{}".format(i) for i in range(1, 49)],
+        "procs": ["Signal", "LowAcc"],
+        "type":"shape"},
+    "WHSFSyst":{
+        "vars": ["WHSFSystFlat"],
+        "procs": ["Signal","LowAcc"],
+        "type": "shape"},
     #"ptScale" : {
     #    "vars":["corrected"], 
     #    "procs": ["Signal", "DY","Diboson","Top","Tau","LowAcc","Fakes"],
@@ -46,11 +50,11 @@ systematicsDict = {
     #    "procs": ["Signal", "DY","Diboson","Top","Tau","LowAcc","Fakes"],
     #    "type": "shape"
     #}
-    "LHEPdfWeight" : {
-        "vars":["LHEPdfWeightHess{}".format(i+1) for i in range(60)],
-        "procs": ["Signal", "LowAcc"],
-        "type": "shape"
-    },
+    #"LHEPdfWeight" : {
+    #    "vars":["LHEPdfWeightHess{}".format(i+1) for i in range(60)],
+    #    "procs": ["Signal", "LowAcc"],
+    #    "type": "shape"
+    #},
     #"alphaS" :{
     #    "vars": ["alphaS"],
     #    "procs": ["Signal", "DY","Tau","LowAcc"],

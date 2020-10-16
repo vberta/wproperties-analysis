@@ -4,24 +4,10 @@ import math
 from fitUtils import fitUtils
 import os
 
-basepath = '/scratchnvme/emanca/wproperties-analysis/analysisOnData/python/templates2D/'
-fsig = basepath+'WPlus_2D_ACTemplates.root'
 fmap = '/scratchnvme/emanca/wproperties-analysis/analysisOnGen/genInput.root'
 
-samples = ["DY","Diboson","Top","Fake","Tau","LowAcc","data_obs"]
-
-fbkg = basepath
-fbkg_dict = {}
-fbkg_dict["Top"]=fbkg+'TTbar_templates2Dplus.root'
-fbkg_dict["DY"]=fbkg+'DYJets_templates2Dplus.root'
-fbkg_dict["Diboson"]=fbkg+'DiBoson_templates2Dplus.root'
-fbkg_dict["Fake"]=fbkg+'Fake_templates2Dplus.root'
-fbkg_dict["Tau"]=fbkg+'WtoTau_templates2Dplus.root'
-fbkg_dict["LowAcc"]=fbkg+'LowAcc_templates2Dplus.root'
-fbkg_dict["data_obs"]=fbkg+'WToMu_templates2Dplus.root' #placeholder for data
-
-f = fitUtils(fsig, fmap, fbkg_dict, "Wplus_reco", doSyst=True)
-f.getTemplates()
+f = fitUtils(fmap, channel="Wplus_reco", doSyst=True)
+f.fillProcessList()
 f.shapeFile()
 f.fillHelGroup()
 f.fillSumGroup()
