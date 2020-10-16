@@ -132,7 +132,7 @@ class plotter:
                         th3 = self.inFile.Get(fpath)
                         if not th3: continue
                         self.makeTH3slices(th3, sKind, chargeBin)
-        #self.uncorrelateEff()
+        self.uncorrelateEff()
         #self.symmetrisePDF()
         self.closureMap()
         self.writeHistos(chargeBin)   

@@ -161,7 +161,7 @@ class plotter:
                 print "No histo dict for sample:", sample, " What have you done??!!!!"
                 continue
             #self.symmetrisePDF(sample)
-            #self.uncorrelateEff(sample)
+            self.uncorrelateEff(sample)
             for syst, hlist in self.histoDict[sample].iteritems():
                 #fout.mkdir(syst)
                 #fout.cd(syst)
@@ -175,7 +175,7 @@ class plotter:
 
 parser = argparse.ArgumentParser("")
 parser.add_argument('-o','--output', type=str, default='./',help="name of the output directory")
-parser.add_argument('-i','--input', type=str, default='./',help="name of the input direcory root file")
+parser.add_argument('-i','--input', type=str, default='./',help="name of the input directory root file")
 
 args = parser.parse_args()
 OUTPUT = args.output
