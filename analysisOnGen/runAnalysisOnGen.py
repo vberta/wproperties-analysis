@@ -28,7 +28,7 @@ args = parser.parse_args()
 runAC = args.runAC
 runTemplates = args.runTemplates
 
-inputFile = 'test_tree_*.root'
+inputFile = '/scratchnvme/wmass/WJetsNoCUT_v2/tree_*_*.root'
 
 p = RDFtree(outputDir = 'GenInfo', inputFile = inputFile, outputFile="genInfo.root")
 p.branch(nodeToStart='input', nodeToEnd='basicSelection', modules=[getLumiWeight(xsec=61526.7, inputFile=inputFile), ROOT.reweightFromZ(filePt, fileY),ROOT.baseDefinitions(), ROOT.defineHarmonics(), ROOT.Replica2Hessian(), ROOT.accMap()])

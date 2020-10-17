@@ -75,6 +75,8 @@ for sKind, sList in systDict.iteritems():
         
     for sName in sListMod :
             hDict[sName+'mapTot'].Write()
+            hDict[sName+'Y'].Write()
+            hDict[sName+'Pt'].Write()
             for sNameDen in sListMod :
                 if sNameDen!=sName and not (sKind=='_LHEScaleWeight' and UNCORR) : #PDF or correlated Scale
                     continue 
@@ -112,7 +114,7 @@ for sKind, sList in systDict.iteritems():
                                 A_err = math.sqrt(f2w - fw2)/math.sqrt(N_eff)
                                 A_err = A_err*div
                                 if coeff=='A0' :
-                                    A_err = 20./3*(A_err+1./10.)
+                                    A_err = 20./3*(A_err)
                                 hist.SetBinError(xx,yy, A_err )
                     
                     # if sKind=="" :
@@ -155,8 +157,7 @@ mapTot.Write()
 mapAccEta.Write()
 mapAcc.Write()
 sumw.Write()
-#hDict[sName+'Y'].Write()
-#hDict[sName+'Pt'].Write()
+
 
 outFile.Close()
 
