@@ -31,7 +31,7 @@ runTemplates = args.runTemplates
 inputFile = 'test_tree_*.root'
 
 p = RDFtree(outputDir = 'GenInfo', inputFile = inputFile, outputFile="genInfo.root")
-p.branch(nodeToStart = 'input', nodeToEnd = 'basicSelection', modules = [getLumiWeight(xsec=61526.7, inputFile=inputFile), ROOT.baseDefinitions(),ROOT.defineHarmonics(),ROOT.Replica2Hessian(),ROOT.accMap(),ROOT.reweightFromZ(filePt,fileY)])
+p.branch(nodeToStart='input', nodeToEnd='basicSelection', modules=[getLumiWeight(xsec=61526.7, inputFile=inputFile), ROOT.reweightFromZ(filePt, fileY),ROOT.baseDefinitions(), ROOT.defineHarmonics(), ROOT.Replica2Hessian(), ROOT.accMap()])
 
 if runAC:
     p.branch(nodeToStart = 'basicSelection', nodeToEnd = 'angularCoefficients', modules = [ROOT.AngCoeff()])

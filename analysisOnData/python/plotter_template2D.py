@@ -161,7 +161,7 @@ class plotter:
                 print "No histo dict for sample:", sample, " What have you done??!!!!"
                 continue
             #self.symmetrisePDF(sample)
-            self.uncorrelateEff(sample)
+            #self.uncorrelateEff(sample)
             for syst, hlist in self.histoDict[sample].iteritems():
                 #fout.mkdir(syst)
                 #fout.cd(syst)

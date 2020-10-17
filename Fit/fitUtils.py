@@ -89,7 +89,7 @@ class fitUtils:
                 nsum = (3./16./math.pi)
                 
                 if not "UL" in proc: #rescale for the releative xsec
-                    hAC = self.fmap.Get("angularCoefficients/harmonics{}".format(self.helXsecs[coeff]))
+                    hAC = self.fmap.Get("angularCoefficients/harmonics{}_nom_nom".format(self.helXsecs[coeff]))
                     nsum = nsum*hAC.GetBinContent(iY,iQt)/self.factors[self.helXsecs[coeff]]
                 tmp.Scale(nsum)
                 shapeOutxsec.cd()
@@ -136,6 +136,7 @@ class fitUtils:
         
             if self.helMetaGroups[s] == []:
                     del self.helMetaGroups[s]
+        #print self.helMetaGroups
     def fillSumGroup(self):
 
         for i in range(1, 7):
@@ -159,6 +160,7 @@ class fitUtils:
                             #print i, signal, 'helXsecs'+hel+'_'+'y_{i}_pt_{j}'.format(i=i,j=j)
                             #print 'append', 'helXsecs'+hel+'_y_{i}_'.format(i=i)+s, 'to', 'helXsecs'+hel+'_'+s
                                 self.sumGroups['helXsecs'+hel+'_'+s].append('helXsecs'+hel+'_y_{i}_'.format(i=i)+s)
+        print self.sumGroups
     def makeDatacard(self):
 
         self.DC = Datacard()
@@ -207,10 +209,10 @@ class fitUtils:
         
         #self.DC.groups = {'pdfs': set(['LHEPdfWeightHess{}'.format(i+1) for i in range(60)]),
         #                  'mass': ['mass']}  # <type 'dict'>
-        self.DC.groups = {'WHSFStat': set(["WHSFSyst0Eta{}".format(i) for i in range(1, 49)]+["WHSFSyst1Eta{}".format(i) for i in range(1, 49)]+["WHSFSyst2Eta{}".format(i) for i in range(1, 49)]), 
-                          'WHSFSyst': ['WHSFSystFlat'],
-                          'mass': ['mass']}
-        #self.DC.groups = {'mass': ['mass']}
+        #self.DC.groups = {'WHSFStat': set(["WHSFSyst0Eta{}".format(i) for i in range(1, 49)]+["WHSFSyst1Eta{}".format(i) for i in range(1, 49)]+["WHSFSyst2Eta{}".format(i) for i in range(1, 49)]), 
+        #                  'WHSFSyst': ['WHSFSystFlat'],
+        #                  'mass': ['mass']}
+        self.DC.groups = {'mass': ['mass']}
         self.DC.shapeMap = 	{self.channel: {'*': [self.channel+'.root', '$PROCESS', '$PROCESS_$SYSTEMATIC']},\
         self.channel+'_xsec': {'*': [self.channel+'_xsec.root', '$PROCESS', '$PROCESS_$SYSTEMATIC']}} # <type 'dict'>
         self.DC.hasShapes =  True # <type 'bool'>

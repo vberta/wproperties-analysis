@@ -27,14 +27,14 @@ systematicsDict = {
         "procs": ["Signal", "LowAcc"],
         "type":"shape"
     },
-    "WHSFStat"  : {
-        "vars": ["WHSFSyst0Eta{}".format(i) for i in range(1, 49)]+["WHSFSyst1Eta{}".format(i) for i in range(1, 49)]+["WHSFSyst2Eta{}".format(i) for i in range(1, 49)],
-        "procs": ["Signal", "LowAcc"],
-        "type":"shape"},
-    "WHSFSyst":{
-        "vars": ["WHSFSystFlat"],
-        "procs": ["Signal","LowAcc"],
-        "type": "shape"},
+    #"WHSFStat"  : {
+    #    "vars": ["WHSFSyst0Eta{}".format(i) for i in range(1, 49)]+["WHSFSyst1Eta{}".format(i) for i in range(1, 49)]+["WHSFSyst2Eta{}".format(i) for i in range(1, 49)],
+    #    "procs": ["Signal", "LowAcc"],
+    #    "type":"shape"},
+    #"WHSFSyst":{
+    #    "vars": ["WHSFSystFlat"],
+    #    "procs": ["Signal","LowAcc"],
+    #    "type": "shape"},
     #"ptScale" : {
     #    "vars":["corrected"], 
     #    "procs": ["Signal", "DY","Diboson","Top","Tau","LowAcc","Fakes"],

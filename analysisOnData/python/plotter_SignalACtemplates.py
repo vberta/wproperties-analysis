@@ -89,7 +89,7 @@ class plotter:
             #normalise templates to its helicity xsec
             nsum = (3./16./math.pi)*self.imap.GetBinContent(iY,iQt)
             if not 'UL' in hname:
-                hAC = self.ACfile.Get("angularCoefficients/harmonics{}".format(self.helXsecs[coeff]))
+                hAC = self.ACfile.Get("angularCoefficients/harmonics{}_nom_nom".format(self.helXsecs[coeff]))
                 nsum = nsum*hAC.GetBinContent(iY,iQt)/self.factors[self.helXsecs[coeff]]
             th2slice.Scale(nsum)
             th2slice.SetDirectory(0)
@@ -132,7 +132,7 @@ class plotter:
                         th3 = self.inFile.Get(fpath)
                         if not th3: continue
                         self.makeTH3slices(th3, sKind, chargeBin)
-        self.uncorrelateEff()
+        #self.uncorrelateEff()
         #self.symmetrisePDF()
         self.closureMap()
         self.writeHistos(chargeBin)   
