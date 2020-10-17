@@ -59,7 +59,7 @@ RNode AngCoeff::run(RNode d)
         _h2Group.push_back(helXsecsSq);
 
         TH2weightsHelper mapTothelper(std::string("mapTot"), std::string("mapTot"), _nBinsY, _yArr, _nBinsPt, _ptArr, _syst_name);
-        auto mapTot = d1.Book<float, float, float, ROOT::VecOps::RVec<float>>(std::move(mapTothelper), { "Wrap_preFSR_abs", "Wpt_preFSR", "weight", _syst_weight });
+        auto mapTot = d1.Book<float, float, float, ROOT::VecOps::RVec<float>>(std::move(mapTothelper), {"Wrap_preFSR_abs", "Wpt_preFSR", "weight", _syst_weight });
         _h2Group.push_back(mapTot);
 
         TH1weightsHelper helperPt(std::string("harmonicsPt"), std::string("harmonicsPt"), _nBinsPt, _ptArr, total);

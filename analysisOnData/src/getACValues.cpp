@@ -3,32 +3,46 @@
 RNode getACValues::run(RNode d)
 {
 
-  auto getACValues = [this](float y, float pt) mutable {
+  auto getACValues = [this](float y, float pt, float charge) mutable {
         
     ROOT::VecOps::RVec<float> AngCoeff;
 
-    int bin = _hA0->FindBin(y, pt);
-    AngCoeff.push_back(_hA0->GetBinContent(bin));
-    AngCoeff.push_back(_hA1->GetBinContent(bin));
-    AngCoeff.push_back(_hA2->GetBinContent(bin));
-    AngCoeff.push_back(_hA3->GetBinContent(bin));
-    AngCoeff.push_back(_hA4->GetBinContent(bin));
-    AngCoeff.push_back(_hA5->GetBinContent(bin));
-    AngCoeff.push_back(_hA6->GetBinContent(bin));
-    AngCoeff.push_back(_hA7->GetBinContent(bin));
-    AngCoeff.push_back(_hAUL->GetBinContent(bin));
-
+    int bin = _hA0_plus->FindBin(y, pt);
+    if(charge>0){
+      AngCoeff.push_back(_hA0_plus->GetBinContent(bin));
+      AngCoeff.push_back(_hA1_plus->GetBinContent(bin));
+      AngCoeff.push_back(_hA2_plus->GetBinContent(bin));
+      AngCoeff.push_back(_hA3_plus->GetBinContent(bin));
+      AngCoeff.push_back(_hA4_plus->GetBinContent(bin));
+      AngCoeff.push_back(_hA5_plus->GetBinContent(bin));
+      AngCoeff.push_back(_hA6_plus->GetBinContent(bin));
+      AngCoeff.push_back(_hA7_plus->GetBinContent(bin));
+      AngCoeff.push_back(_hAUL_plus->GetBinContent(bin));
+    }
+    else{
+      AngCoeff.push_back(_hA0_minus->GetBinContent(bin));
+      AngCoeff.push_back(_hA1_minus->GetBinContent(bin));
+      AngCoeff.push_back(_hA2_minus->GetBinContent(bin));
+      AngCoeff.push_back(_hA3_minus->GetBinContent(bin));
+      AngCoeff.push_back(_hA4_minus->GetBinContent(bin));
+      AngCoeff.push_back(_hA5_minus->GetBinContent(bin));
+      AngCoeff.push_back(_hA6_minus->GetBinContent(bin));
+      AngCoeff.push_back(_hA7_minus->GetBinContent(bin));
+      AngCoeff.push_back(_hAUL_minus->GetBinContent(bin));
+    }
     return AngCoeff;
   };
 
-  auto getMapValue = [this](float y, float pt) mutable  {
-    int bin = _htotMap->FindBin(y, pt);
-    float totval = _htotMap->GetBinContent(bin);
+  auto getMapValue = [this](float y, float pt, float charge) mutable {
+    int bin = _htotMap_plus->FindBin(y, pt);
+    float totval=-99.;
+    if(charge>0) totval = _htotMap_plus->GetBinContent(bin);
+    else totval = _htotMap_minus->GetBinContent(bin);
     return totval;
   };
 
-    auto d1 = d.Define("AngCoeffVec", getACValues, {"Wrap_preFSR_abs", "Wpt_preFSR"})
-             .Define("totMap", getMapValue, {"Wrap_preFSR_abs", "Wpt_preFSR"});
+  auto d1 = d.Define("AngCoeffVec", getACValues, {"Wrap_preFSR_abs", "Wpt_preFSR", "Mu1_charge"})
+                .Define("totMap", getMapValue, {"Wrap_preFSR_abs", "Wpt_preFSR", "Mu1_charge"});
 
-    return d1;
+  return d1;
 }
