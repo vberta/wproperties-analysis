@@ -41,6 +41,10 @@ class plotter:
         self.yields = {}
         self.yields["Wplus"] = {}
         self.yields["Wminus"] = {}
+        for iY in range(1, 7):
+            for iQt in range(1, 9):
+                self.yields["Wplus"][(iY, iQt)] = 0.
+                self.yields["Wminus"][(iY, iQt)] = 0.
         
         self.helXsecs = OrderedDict()
         self.helXsecs["L"] = "A0"
@@ -79,10 +83,10 @@ class plotter:
     def normaliseYields(self, th2, coeff, iY, iQt, imap, fAC):
         #normalise templates to its helicity xsec
         nsum = (3./16./math.pi)*imap.GetBinContent(iY, iQt)
-        if not 'UL' in th2.GetName():
+        if not 'UL' in coeff:
             hAC = fAC.Get("angularCoefficients/harmonics{}_nom_nom".format(self.helXsecs[coeff]))
             nsum = nsum * hAC.GetBinContent(iY, iQt)/self.factors[self.helXsecs[coeff]]
-            th2.Scale(nsum)
+        th2.Scale(nsum)
         return th2
     def makeTH3slices(self, th3, systname):
         
@@ -111,30 +115,25 @@ class plotter:
             self.histoDict[charge][systname].append(th2slice)
 
             if syst=="":
-                #print th2slice.GetName(), th2slice.Integral(0,th2slice.GetNbinsX()+2,0,th2slice.GetNbinsY()+2)
                 self.yields[charge][(iY,iQt)]+=th2slice.Integral(0,th2slice.GetNbinsX()+2,0,th2slice.GetNbinsY()+2)
     def closureMap(self):
         for iY in range(1, 7):
             for iQt in range(1, 9):
                 self.closPlus.SetBinContent(iY,iQt, self.yields["Wplus"][(iY,iQt)])
-                self.closMinus.SetBinContent(iY, iQt, self.yields["Wminus"][(iY, iQt)])
+                self.closMinus.SetBinContent(iY,iQt, self.yields["Wminus"][(iY, iQt)])
         self.closPlus.Divide(self.imapPlus)
         self.closMinus.Divide(self.imapMinus)
         for iY in range(1, 7):
             for iQt in range(1, 9):
-                print self.closPlus.GetBinContent(iY,iQt)
-                print self.closMinus.GetBinContent(iY, iQt)
+                print colored(self.closPlus.GetBinContent(iY,iQt),'magenta')
         fout = ROOT.TFile("accMap.root","recreate")
         fout.cd()
         self.closPlus.Write()
         self.closMinus.Write()
+        self.imapPlus.Write()
+        self.imapMinus.Write()
         fout.Close()
     def getHistos(self) :
-        
-        for iY in range(1, 7):
-            for iQt in range(1, 9):
-                self.yields["Wplus"][(iY,iQt)]=0.
-                self.yields["Wminus"][(iY, iQt)] = 0.
 
         basepath="templatesAC_Signal/"
         charges = ["Wplus","Wminus"]
@@ -149,7 +148,6 @@ class plotter:
                             print "Histo read:", fpath
                             th3 = self.inFile.Get(fpath)
                             if not th3: print colored('fpath not found', 'red')
-                            print colored(th3.Integral(), "yellow")
                             self.makeTH3slices(th3, sKind)
         #self.uncorrelateEff()
         #self.symmetrisePDF()
