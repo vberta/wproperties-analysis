@@ -58,10 +58,10 @@ for charge in Wcharge:
                 hDict[sName+coeff+'Y'] =  inFile.Get('angularCoefficients'+charge+sKind+'/harmonicsY'+coeff+sName)
                 hDict[sName+coeff+'Pt'] =  inFile.Get('angularCoefficients'+charge+sKind+'/harmonicsPt'+coeff+sName)
     # get maps
-    mapTot = inFile.Get('basicSelection/mapTot')
-    mapAccEta = inFile.Get('basicSelection/mapAccEta')
-    mapAcc = inFile.Get('basicSelection/mapAcc')
-    sumw = inFile.Get('basicSelection/sumw')
+    mapTot = inFile.Get('angularCoefficients'+charge+'/mapTot')
+    mapAccEta = inFile.Get('angularCoefficients'+charge+'/mapAccEta')
+    mapAcc = inFile.Get('angularCoefficients'+charge+'/mapAcc')
+    sumw = inFile.Get('angularCoefficients'+charge+'/sumw')
 
     #BUILD OUTPUT
     outFile = ROOT.TFile(OUTPUT+charge+'.root', "RECREATE")

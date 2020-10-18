@@ -87,7 +87,7 @@ class plotter:
             hAC = fAC.Get("angularCoefficients/harmonics{}_nom_nom".format(self.helXsecs[coeff]))
             nsum = nsum * hAC.GetBinContent(iY, iQt)/self.factors[self.helXsecs[coeff]]
         th2.Scale(nsum)
-        return th2
+        return
     def makeTH3slices(self, th3, systname):
         
         hname=th3.GetName()

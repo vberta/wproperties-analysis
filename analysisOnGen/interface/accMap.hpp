@@ -11,8 +11,12 @@ private:
 
   int _nBinsY = 8;
   int _nBinsPt = 12;
-
+  std::string _filter;
 public:
+  
+  accMap(std::string filter){
+    _filter = filter;
+  };
   ~accMap(){};
 
   RNode run(RNode) override;

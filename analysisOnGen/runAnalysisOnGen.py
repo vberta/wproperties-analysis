@@ -31,13 +31,12 @@ runTemplates = args.runTemplates
 inputFile = '/scratchnvme/wmass/WJetsNoCUT_v2/tree_*_*.root'
 
 p = RDFtree(outputDir = 'GenInfo', inputFile = inputFile, outputFile="genInfo.root")
-p.branch(nodeToStart='input', nodeToEnd='basicSelection', modules=[getLumiWeight(xsec=61526.7, inputFile=inputFile), ROOT.reweightFromZ(filePt, fileY),ROOT.baseDefinitions(), ROOT.defineHarmonics(), ROOT.Replica2Hessian(), ROOT.accMap()])
+p.branch(nodeToStart='input', nodeToEnd='basicSelection', modules=[getLumiWeight(xsec=61526.7, inputFile=inputFile), ROOT.reweightFromZ(filePt, fileY),ROOT.baseDefinitions(), ROOT.defineHarmonics(), ROOT.Replica2Hessian()])
 
 Wcharge = {"Wplus":"GenPart_pdgId[GenPart_preFSRMuonIdx]<0","Wminus":"GenPart_pdgId[GenPart_preFSRMuonIdx]>0"}
 if runAC:
     for charge,filter in Wcharge.iteritems():
-        p.branch(nodeToStart='basicSelection', nodeToEnd='angularCoefficients_{}'.format(
-            charge), modules=[ROOT.AngCoeff(filter)])
+        p.branch(nodeToStart='basicSelection', nodeToEnd='angularCoefficients_{}'.format(charge), modules=[ROOT.accMap(filter), ROOT.AngCoeff(filter)])
 
         #weight variations
         for s,variations in systematics.iteritems():
@@ -46,7 +45,7 @@ if runAC:
             for var in variations[0]:
                 vars_vec.push_back(var)
         
-            p.branch(nodeToStart='basicSelection', nodeToEnd='angularCoefficients_{}_{}'.format(charge, s), modules=[ROOT.AngCoeff(filter,vars_vec, variations[1])])
+            p.branch(nodeToStart='basicSelection', nodeToEnd='angularCoefficients_{}_{}'.format(charge, s), modules=[ROOT.accMap(filter),ROOT.AngCoeff(filter, vars_vec, variations[1])])
 
     p.getOutput()
 
