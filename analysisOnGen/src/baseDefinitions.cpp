@@ -23,8 +23,7 @@ RNode baseDefinitions::run(RNode d)
   };
 
   //define all nominal quantities // true for data and MC
-  auto d1 = d.Filter("GenPart_pdgId[GenPart_preFSRMuonIdx]<0")
-                .Define("Mupt_preFSR", "GenPart_pt[GenPart_preFSRMuonIdx]")
+  auto d1 = d.Define("Mupt_preFSR", "GenPart_pt[GenPart_preFSRMuonIdx]")
                 .Define("Mueta_preFSR", "GenPart_eta[GenPart_preFSRMuonIdx]")
                 .Define("Wrap_preFSR_abs", "TMath::Abs(Wrap_preFSR)")
                 .Define("Nom", defineNomweight)

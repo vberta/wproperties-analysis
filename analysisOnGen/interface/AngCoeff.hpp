@@ -18,18 +18,21 @@ private:
 
   std::vector<std::string> _syst_name;
   std::string _syst_weight;
+  std::string _filter;
 
 public:
-  AngCoeff()
+  AngCoeff(std::string filter)
   {
     _syst_weight = "";
+    _filter = filter;
   };
 
-  AngCoeff(std::vector<std::string> syst_name, std::string syst_weight)
+  AngCoeff(std::string filter,std::vector<std::string> syst_name, std::string syst_weight)
   {
 
     _syst_name = syst_name;
     _syst_weight = syst_weight;
+    _filter = filter;
   };
 
   ~AngCoeff(){};

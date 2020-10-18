@@ -1219,7 +1219,7 @@ parser = argparse.ArgumentParser("")
 
 parser.add_argument('-o','--output', type=str, default='fitResult',help="name of the output file")
 parser.add_argument('-f','--fitFile', type=str, default='fit_Wplus.root',help="name of the fit result root file. If comparison active the name must be: NAME.root, NAME_reco.root")
-parser.add_argument('-i','--input', type=str, default='../analysisOnGen/genInput.root',help="name of the input root file")
+parser.add_argument('-i','--input', type=str, default='../analysisOnGen/genInput_Wplus.root',help="name of the input root file")
 parser.add_argument('-u','--uncorrelate', type=int, default=True,help="if true uncorrelate num and den of Angular Coeff in MC scale variation")
 parser.add_argument('-c','--comparison', type=int, default=True,help="comparison between reco and gen fit")
 parser.add_argument('-s','--save', type=int, default=False,help="save .png and .pdf canvas")

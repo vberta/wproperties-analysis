@@ -160,7 +160,7 @@ class fitUtils:
                             #print i, signal, 'helXsecs'+hel+'_'+'y_{i}_pt_{j}'.format(i=i,j=j)
                             #print 'append', 'helXsecs'+hel+'_y_{i}_'.format(i=i)+s, 'to', 'helXsecs'+hel+'_'+s
                                 self.sumGroups['helXsecs'+hel+'_'+s].append('helXsecs'+hel+'_y_{i}_'.format(i=i)+s)
-        print self.sumGroups
+        #print self.sumGroups
     def makeDatacard(self):
 
         self.DC = Datacard()
