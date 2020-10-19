@@ -227,7 +227,6 @@ def main():
         sys.exit(1)
     print fvec 
 
-
     selectionVars['ptScale'].update( 
         {"_zptsystUp" : 1, "_zptsystDown" : 1, "_EwksystUp" : 1, "_EwksystDown" : 1,
          "_deltaMsystUp" : 1, "_deltaMsystDown" : 1, "_Ewk2systUp" : 1, "_Ewk2systDown" : 1,
