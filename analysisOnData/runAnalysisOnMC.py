@@ -76,10 +76,8 @@ def RDFprocessMC(fvec, outputDir, sample, xsec, fileSF, ncores, systType, preten
                 newcut = cut.replace('MT', 'MT'+selvar)
                 if 'corrected' in selvar:
                     newcut = newcut.replace('Mu1_pt', 'Mu1_pt'+selvar)
-
                 cut_vec.push_back(newcut)
                 var_vec.push_back(selvar)
-
             if region == "Signal" or (region=='Sideband' and SBana):
                 p.branch(nodeToStart = 'defs', nodeToEnd = 'prefit_{}/{}Vars'.format(region,vartype), modules = [ROOT.muonHistos(cut_vec, weight, nom,"Nom",hcat,var_vec)])  
             p.branch(nodeToStart = 'defs', nodeToEnd = 'templates_{}/{}Vars'.format(region,vartype), modules = [ROOT.templates(cut_vec, weight, nom,"Nom",hcat,var_vec)])  
