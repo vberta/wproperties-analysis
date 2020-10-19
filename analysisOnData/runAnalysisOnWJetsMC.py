@@ -13,7 +13,7 @@ from selections import selections, selectionVars, selections_bkg
 from getLumiWeight import getLumiWeight
 
 ROOT.gSystem.Load('bin/libAnalysisOnData.so')
-ROOT.gROOT.ProcessLine("gErrorIgnoreLevel = 2001;");
+ROOT.gROOT.ProcessLine("gErrorIgnoreLevel = 2001;")
 
 def RDFprocessWJetsMCSignalACtempl(fvec, outputDir, sample, xsec, fileSF, ncores, pretendJob):
     ROOT.ROOT.EnableImplicitMT(ncores)
@@ -24,7 +24,8 @@ def RDFprocessWJetsMCSignalACtempl(fvec, outputDir, sample, xsec, fileSF, ncores
     }
     filePt = ROOT.TFile.Open("data/histoUnfoldingSystPt_nsel2_dy3_rebin1_default.root")
     fileY = ROOT.TFile.Open("data/histoUnfoldingSystRap_nsel2_dy3_rebin1_default.root")
-    fileAC = ROOT.TFile.Open("../analysisOnGen/genInput.root")
+    fileACplus = ROOT.TFile.Open("../analysisOnGen/genInput_Wplus.root")
+    fileACminus = ROOT.TFile.Open("../analysisOnGen/genInput_Wminus.root")
     #Will only ber run on signal region
     region = 'Signal'
     weight = 'float(puWeight*lumiweight*WHSF*weightPt*weightY)'
@@ -38,7 +39,7 @@ def RDFprocessWJetsMCSignalACtempl(fvec, outputDir, sample, xsec, fileSF, ncores
     p = RDFtree(outputDir = outputDir, inputFile = fvec, outputFile="{}_AC_plots.root".format('WToMu'), pretend=pretendJob)
     p.branch(nodeToStart = 'input', nodeToEnd = 'defs', modules = [ROOT.reweightFromZ(filePt,fileY),ROOT.baseDefinitions(True,True),ROOT.weightDefinitions(fileSF),getLumiWeight(xsec=xsec, inputFile=fvec, genEvsbranch = "genEventSumw"),ROOT.Replica2Hessian()])
 
-    steps = [ROOT.getACValues(fileAC),ROOT.defineHarmonics(),ROOT.getMassWeights(),ROOT.getWeights()]
+    steps = [ROOT.getACValues(fileACplus,fileACminus), ROOT.defineHarmonics(), ROOT.getMassWeights(), ROOT.getWeights()]
     p.branch(nodeToStart = 'defs', nodeToEnd = 'defsAC', modules = steps)
     #reco templates with AC reweighting
     p.branch(nodeToStart = 'defsAC', nodeToEnd = 'templatesAC_{}/Nominal'.format(region), modules = [ROOT.templateBuilder(wtomu_cut, weight,nom,"Nom",0)])

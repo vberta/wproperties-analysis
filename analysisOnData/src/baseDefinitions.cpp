@@ -40,12 +40,11 @@ RNode baseDefinitions::run(RNode d)
       .Define("MT_unclustEnDown", W_mt, {"Mu1_pt", "Mu1_phi", "MET_pt_unclustEnDown", "MET_phi_unclustEnDown"});
 
     if(_isWjets)  {
-      d1withCompvar = d1withCompvar.Define("Wrap_preFSR_abs", "TMath::Abs(Wrap_preFSR)")
-	//.Filter("GenPart_pdgId[GenPart_preFSRMuonIdx]<0")
-	.Define("Mupt_preFSR", "GenPart_pt[GenPart_preFSRMuonIdx]")
-	.Define("Mueta_preFSR", "GenPart_eta[GenPart_preFSRMuonIdx]")
-	.Define("Mupt_bare", "GenPart_pt[GenPart_bareMuonIdx]")
-	.Define("Mueta_bare", "GenPart_eta[GenPart_bareMuonIdx]");
+        d1withCompvar = d1withCompvar.Define("Wrap_preFSR_abs", "TMath::Abs(Wrap_preFSR)")
+        .Define("Mupt_preFSR", "GenPart_pt[GenPart_preFSRMuonIdx]")
+        .Define("Mueta_preFSR", "GenPart_eta[GenPart_preFSRMuonIdx]")
+        .Define("Mupt_bare", "GenPart_pt[GenPart_bareMuonIdx]")
+        .Define("Mueta_bare", "GenPart_eta[GenPart_bareMuonIdx]");
     }
     //   .Define("Recoil_pt_correctedUp", W_hpt, {"Mu1_pt_correctedUp", "Mu1_phi", "MET_pt_nom", "MET_phi_nom"})
     //   .Define("Recoil_pt_correctedDown", W_hpt, {"Mu1_pt_correctedDown", "Mu1_phi", "MET_pt_nom", "MET_phi_nom"})
