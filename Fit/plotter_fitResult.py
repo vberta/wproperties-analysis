@@ -275,10 +275,15 @@ class plotter :
                 for j in range(1, self.histos[suff+'FitAC'+c].GetNbinsY()+1): #loop over pt bins
                 
                     #debug unclousure
-                    if self.histos[suff+'FitBand'+c].GetBinContent(i,j)!=  self.histos[suff+'FitAC'+c].GetBinContent(i,j) :
+                    if abs(self.histos[suff+'FitBand'+c].GetBinContent(i,j)-self.histos[suff+'FitAC'+c].GetBinContent(i,j))/self.histos[suff+'FitBand'+c].GetBinContent(i,j)>0.0000001 :
                             print "not clousure of", c, i, j , ",   (fitted-mc)/fitted=", (self.histos[suff+'FitBand'+c].GetBinContent(i,j)-self.histos[suff+'FitAC'+c].GetBinContent(i,j))/self.histos[suff+'FitAC'+c].GetBinContent(i,j)
-                
-                
+                    if i==1 :
+                        if abs(self.histos[suff+'FitBandqt'+c].GetBinContent(j)-self.histos[suff+'FitACqt'+c].GetBinContent(j))/self.histos[suff+'FitBandqt'+c].GetBinContent(j)>0.0000001 :
+                            print "not clousure of", c, j , "(qT),   (fitted-mc)/fitted=", (self.histos[suff+'FitBandqt'+c].GetBinContent(j)-self.histos[suff+'FitACqt'+c].GetBinContent(j))/self.histos[suff+'FitBandqt'+c].GetBinContent(j)
+                    if j==1 : 
+                        if abs(self.histos[suff+'FitBandy'+c].GetBinContent(i)-self.histos[suff+'FitACy'+c].GetBinContent(i))/self.histos[suff+'FitBandqt'+c].GetBinContent(i)>0.0000001 :
+                            print "not clousure of", c, i , "(y),   (fitted-mc)/fitted=", (self.histos[suff+'FitBandy'+c].GetBinContent(i)-self.histos[suff+'FitACy'+c].GetBinContent(i))/self.histos[suff+'FitBandy'+c].GetBinContent(i)
+                    
                     errPDF = 0.
                     if i==1 : errPDFqt = 0.
                     if j==1 : errPDFy = 0.
