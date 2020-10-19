@@ -22,18 +22,20 @@ pp = pprint.PrettyPrinter(indent=2)
 
 parser = argparse.ArgumentParser("")
 parser.add_argument('-o', '--output_dir',type=str, default='TEST', help="")
+parser.add_argument('-i', '--input_gen',type=str, default='../analysisOnGen/genInputUncorrErr.root', help="")
 parser.add_argument('-validation_only', '--validation_only',type=int, default=False, help="False: skip fit and do validation only")
-parser.add_argument('-input_name', '--input_name',type=str, default='regularizationFit', help="Name of the input file for validation_only")
+parser.add_argument('-input_reg', '--input_reg',type=str, default='regularizationFit', help="Name of the input file for validation_only")
 parser.add_argument('-map01', '--map01',type=int, default=False, help="if true map the polynomial between 0 and 1, otherwise between -1,1")
 parser.add_argument('-suffix', '--suffix',type=str, default='', help="suffix for output file")
-parser.add_argument('-syst_kind', '--syst_kind',type=str, default='nominal', help="name of the kind of syst empty=nominal")
-parser.add_argument('-syst_name', '--syst_name',type=str, default='', help="name of the particular syst empty=nominal")
+parser.add_argument('-syst_kind', '--syst_kind',type=str, default='', help="name of the kind of syst empty=nominal")
+parser.add_argument('-syst_name', '--syst_name',type=str, default='_nom_nom', help="name of the particular syst empty=nominal")
 parser.add_argument('-syst_val', '--syst_val',type=int, default=False, help="activate the systs validation, using all the syst of the dictionary")
 
 args = parser.parse_args()
 output_dir = args.output_dir
 VALONLY = args.validation_only
-IN_NAME = args.input_name
+IN_REG = args.input_reg
+IN_GEN = args.input_gen
 SUFFIX = args.suffix
 MAP01 = args.map01
 SYST_kind= args.syst_kind
@@ -49,29 +51,32 @@ if MAP01 :
 else :
     SUFFIX = 'range11_'+SUFFIX
 
-if not SYST_VALIDATION :
+# if not SYST_VALIDATION :
     SUFFIX = SUFFIX+'_'+SYST_kind+'_'+SYST_name
 
 
 def buildSystDict() :
     outDict = {}
-    
-    tempDict ={}
-    tempDict['nominal'] = ["",""]
-    tempDict['LHEScaleWeight'] = ["__GenV_preFSR_absy_GenV_preFSR_qt__LHEScaleWeight_", "muR0p5_muF0p5", "muR0p5_muF1p0", "muR1p0_muF0p5","muR1p0_muF2p0","muR2p0_muF1p0","muR2p0_muF2p0"]
-    tempDict['LHEPdfWeight'] = ["__GenV_preFSR_absy_GenV_preFSR_qt__LHEPdfWeight_NNPDF_",'alphaSDown','alphaSUp']
-    for i in range(1,100) :
-         tempDict['LHEPdfWeight'].append(str(i)+'replica') 
-    for key, val in tempDict.iteritems() :
-        for i in val[1:] :
-            outDict[key+'_'+i] = val[0]+i
+        
+    outDict[''] = ['_nom_nom'] 
+    outDict["_LHEPdfWeight"] = ["_LHEPdfWeightHess" + str(i) +'_LHEPdfWeightHess'+str(i) for i in range(1, 61)]
+    scaleList = ["_nom", "muR0p5_muF0p5", "muR0p5_muF1p0", "muR1p0_muF0p5","muR1p0_muF2p0","muR2p0_muF1p0","muR2p0_muF2p0"]
+    uncorrList = []
+    for sName in scaleList :
+        if sName!='_nom' : sName = '_LHEScaleWeight_'+sName
+        for sNameDen in scaleList :    
+            if sName==sNameDen and sName=='_nom' : continue
+            if sNameDen!='_nom' : sNameDen = '_LHEScaleWeight_'+sNameDen
+            uncorrList.append(sName+sNameDen)
+    outDict["_LHEScaleWeight"] = uncorrList 
     return outDict
-
+    
+    
 systDict  = buildSystDict()
 
 signDict = {
         'Plus' : 'WtoMuP',
-        'Minus' : 'WtoMuN'
+        # 'Minus' : 'WtoMuN'
         }
         
 coeffDict = {
@@ -87,11 +92,20 @@ degreeYList = [2,3,4,5,6,7]
 degreeQtList = [2,3,4,5,6,7]
 # degreeYList = [2,3]
 # degreeQtList = [2,3]
+degreeYList = [2,3,4,5]
+degreeQtList = [2,3,4,5]
 
 
 # ROOT.Math.MinimizerOptions.SetDefaultMinimizer("Minuit2")
 
-
+groupedSystColors = {
+        # "WHSFVars"  : [ROOT.kGreen+1, 'Scale Factors'],
+        "_LHEScaleWeight" : [ROOT.kViolet-2, 'MC Scale'],
+        # "ptScaleVars" : [ROOT.kBlue-4, 'pT Scale'],
+        # "jmeVars" : [ROOT.kAzure+10, 'MET'],
+        "_LHEPdfWeight" : [ROOT.kRed+1, 'PDF'],
+        "" : [1, 'Stat Unc.']
+        }
 
 
 
@@ -235,39 +249,42 @@ class fit_func:
 
 
 
-def fit_coeff(fname="WJets_PDF.root", charge="WtoMuP", coeff="A4", constraint='y->0', qt_max = 24., y_max = 2.5, degreeY=4,degreeQt=3,Map01=False): #fname="WJets_LHE.root"
+def fit_coeff(fname="genInput.root", charge="WtoMuP", coeff="A4", constraint='y->0', qt_max = 24., y_max = 2.5, degreeY=4,degreeQt=3,Map01=False): #fname="WJets_LHE.root"
 
     print "Coeff=",coeff, "charge=",charge," (ydeg, qtdeg)=, ",degreeY,degreeQt
     # -------------- prepare the histos for the fit ----------------------- #
     
-    inputFile   = ROOT.TFile.Open(output_dir+'/hadded/'+fname)
-    hA    = ROOT.gDirectory.Get("GENINCLUSIVE_"+charge+"_"+SYST_kind+"/GENINCLUSIVE_"+charge+"_"+coeff+systDict[SYST_kind+'_'+SYST_name])
-    hAErr = ROOT.gDirectory.Get("GENINCLUSIVE_"+charge+"_nominal/GENINCLUSIVE_"+charge+"_"+coeff+"Err")
-    hMC   = ROOT.gDirectory.Get("GENINCLUSIVE_"+charge+"_"+SYST_kind+"/GENINCLUSIVE_"+charge+"_MC"+systDict[SYST_kind+'_'+SYST_name])
+    inputFile   = ROOT.TFile.Open(fname)
+    hA    = ROOT.gDirectory.Get('angularCoefficients'+SYST_kind+'/harmonics'+coeff+SYST_name)
+    # print hA, 
+    # print 'angularCoefficients'+SYST_kind+'/harmonics'+coeff+SYST_name
+    # print fname, inputFile
+    # hAErr = ROOT.gDirectory.Get("angularCoefficient_"_nominal/GENINCLUSIVE_"+charge+"_"+coeff+"Err")
+    # hMC   = ROOT.gDirectory.Get("angularCoefficient_"_"+SYST_kind+"/GENINCLUSIVE_"+charge+"_MC"+systDict[SYST_kind+'_'+SYST_name])
         
     #settings for the output 
     hA.SetTitle('coeff_'+charge+'_'+coeff)
-    hAErr.SetTitle('coeffErr_'+charge+'_'+coeff)
-    hMC.SetTitle('MC_'+charge+'_'+coeff)
+    # hAErr.SetTitle('coeffErr_'+charge+'_'+coeff)
+    # hMC.SetTitle('MC_'+charge+'_'+coeff)
     hA.SetName('coeff_'+charge+'_'+coeff)
-    hAErr.SetName('coeffErr_'+charge+'_'+coeff)
-    hMC.SetName('MC_'+charge+'_'+coeff)
+    # hAErr.SetName('coeffErr_'+charge+'_'+coeff)
+    # hMC.SetName('MC_'+charge+'_'+coeff)
     
     hA.GetXaxis().SetTitle('Y')
     hA.GetYaxis().SetTitle('q_{T} [GeV]')
-    hAErr.GetXaxis().SetTitle('Y')
-    hAErr.GetYaxis().SetTitle('q_{T} [GeV]')
-    hMC.GetXaxis().SetTitle('Y')
-    hMC.GetYaxis().SetTitle('q_{T} [GeV]')
+    # hAErr.GetXaxis().SetTitle('Y')
+    # hAErr.GetYaxis().SetTitle('q_{T} [GeV]')
+    # hMC.GetXaxis().SetTitle('Y')
+    # hMC.GetYaxis().SetTitle('q_{T} [GeV]')
     
-    y_max_bin  = hMC.GetXaxis().FindBin( y_max )
-    y_min_bin  = hMC.GetXaxis().FindBin( 0.0 )
-    y_max_cut  = hMC.GetXaxis().GetBinLowEdge(y_max_bin+1)        
+    y_max_bin  = hA.GetXaxis().FindBin( y_max )
+    y_min_bin  = hA.GetXaxis().FindBin( 0.0 )
+    y_max_cut  = hA.GetXaxis().GetBinLowEdge(y_max_bin+1)        
     y_min_cut  = 0.0   #hMC.GetXaxis().GetBinCenter(y_min_bin)        
 
-    qt_max_bin = hMC.GetYaxis().FindBin( qt_max )
-    qt_min_bin = hMC.GetYaxis().FindBin( 0.0 )
-    qt_max_cut = hMC.GetYaxis().GetBinLowEdge(qt_max_bin+1)        
+    qt_max_bin = hA.GetYaxis().FindBin( qt_max )
+    qt_min_bin = hA.GetYaxis().FindBin( 0.0 )
+    qt_max_cut = hA.GetYaxis().GetBinLowEdge(qt_max_bin+1)        
     qt_min_cut = 0.0    #hMC.GetYaxis().GetBinCenter(qt_min_bin)        
     
     # print qt_max_bin,qt_min_bin,qt_max_cut,qt_min_cut
@@ -275,11 +292,11 @@ def fit_coeff(fname="WJets_PDF.root", charge="WtoMuP", coeff="A4", constraint='y
  
     x,y = [], []
     if Map01 :
-        for i in range(y_min_bin, y_max_bin+1):   x.append( (hMC.GetXaxis().GetBinCenter(i)- y_min_cut)/(y_max_cut-  y_min_cut)) #range between 0,1
-        for i in range(qt_min_bin, qt_max_bin+1): y.append( (hMC.GetYaxis().GetBinCenter(i)-qt_min_cut)/(qt_max_cut-qt_min_cut)) #range between 0,1
+        for i in range(y_min_bin, y_max_bin+1):   x.append( (hA.GetXaxis().GetBinCenter(i)- y_min_cut)/(y_max_cut-  y_min_cut)) #range between 0,1
+        for i in range(qt_min_bin, qt_max_bin+1): y.append( (hA.GetYaxis().GetBinCenter(i)-qt_min_cut)/(qt_max_cut-qt_min_cut)) #range between 0,1
     else :
-        for i in range(y_min_bin, y_max_bin+1):   x.append( 2*(hMC.GetXaxis().GetBinCenter(i)- y_min_cut)/(y_max_cut-  y_min_cut) - 1.) #range between -1,1
-        for i in range(qt_min_bin, qt_max_bin+1): y.append( 2*(hMC.GetYaxis().GetBinCenter(i)-qt_min_cut)/(qt_max_cut-qt_min_cut) - 1.) #range between -1,1 
+        for i in range(y_min_bin, y_max_bin+1):   x.append( 2*(hA.GetXaxis().GetBinCenter(i)- y_min_cut)/(y_max_cut-  y_min_cut) - 1.) #range between -1,1
+        for i in range(qt_min_bin, qt_max_bin+1): y.append( 2*(hA.GetYaxis().GetBinCenter(i)-qt_min_cut)/(qt_max_cut-qt_min_cut) - 1.) #range between -1,1 
 
     xx = array('f', x)
     yy = array('f', y)
@@ -292,41 +309,9 @@ def fit_coeff(fname="WJets_PDF.root", charge="WtoMuP", coeff="A4", constraint='y
     
     for i in range(1, hA_cut.GetXaxis().GetNbins()+1):
         for j in range(1, hA_cut.GetYaxis().GetNbins()+1):
+            hA_cut.SetBinContent(i,j, hA.GetBinContent(i,j) )
+            hA_cut.SetBinError(i,j, hA.GetBinError(i,j) )
             
-            
-            # Lorenzo's Method
-            mc_eff = hMC.GetBinContent(i,j)**2/hMC.GetBinError(i,j)**2
-            A = hA.GetBinContent(i,j)/hMC.GetBinContent(i,j)
-            A2 = hAErr.GetBinContent(i,j)/hMC.GetBinContent(i,j)
-            A_err = math.sqrt(A2 - A**2)/math.sqrt(mc_eff)
-            hA_cut.SetBinContent(i,j, A )
-            hA_cut.SetBinError(i,j, A_err )
-            
-            # # num and den not correlated
-            # hNum = hA.GetBinContent(i,j)
-            # hDen = hMC.GetBinContent(i,j)
-            # hNumErr = hAErr.GetBinContent(i,j)
-            # hDenErr = hMC.GetBinError(i,j)
-            # hA_cut_val = hNum/hDen
-            # hA_cut_err = 1/(hDen)*math.sqrt(hNum*hDenErr+hDen*hNumErr)
-            # hA_cut.SetBinContent(i,j, hA_cut_val )
-            # hA_cut.SetBinError(i,j, hA_cut_err )
-            
-            #num and den correlated (efficiency like)
-            # hNum = hA.GetBinContent(i,j)
-            # hDen = hMC.GetBinContent(i,j)
-            # hNumErr = hAErr.GetBinContent(i,j)
-            # hDenErr = hMC.GetBinError(i,j)
-            # hAntiNum = hDen-hNum
-            # print hNum, math.sqrt(hNum), hDen, math.sqrt(hDen), hDenErr, hNumErr
-            # hAntiNumErr=  math.sqrt(hDenErr**2-hNumErr**2)
-            # hA_cut_val = hNum/hDen
-            # hA_cut_err = 1/(hDen)*math.sqrt(hNum**2*hAntiNumErr**2+hAntiNum**2*hNumErr**2)
-            # hA_cut.SetBinContent(i,j, hA_cut_val )
-            # hA_cut.SetBinError(i,j, hA_cut_err )
-            
-            
-    
     #hA_cut.Draw("colz")
     
     # id_y = [0,1,2] #3 poly in y
@@ -397,12 +382,17 @@ def fit_coeff(fname="WJets_PDF.root", charge="WtoMuP", coeff="A4", constraint='y
     
 
     #DEBUG block------------------------------------#
-    # print "Post fit debug:"
+    # print "-------------------- Post fit debug:"
     # res.Print()
-    # for i in range(nparams) :
-        # print "par", i, "=",fit.GetParameter(i), "+/-",fit.GetParError(i) 
-    # print coeff, degreeQt, degreeY, charge, fit.GetNDF()
-    # print ">>> chi2 reduced:", fit.GetChisquare()/fit.GetNDF(), "+/-", math.sqrt(2*fit.GetNDF())/fit.GetNDF()
+    print coeff, degreeQt, degreeY, charge, fit.GetNDF()
+    for i in range(nparams) :
+        print "par", i, fit.GetParName(i), "=",fit.GetParameter(i), "+/-",fit.GetParError(i), 
+        if fit.GetParameter(i)!=0 : print ", deltaPar/par=",  fit.GetParError(i)/fit.GetParameter(i)
+        else : print ""
+    print res.GetCorrelationMatrix()
+    print res.GetCovarianceMatrix()
+    print "chi2 reduced:", fit.GetChisquare()/fit.GetNDF(), "+/-", math.sqrt(2*fit.GetNDF())/fit.GetNDF()
+    print "-------------------- "
     #------------------------------------------------#
 
     #addittional debug ---------------#
@@ -442,7 +432,11 @@ def fit_coeff(fname="WJets_PDF.root", charge="WtoMuP", coeff="A4", constraint='y
     hPulls1D.Fit("gaus", "Q", "", -4,4)
     gaus = hPulls1D.GetFunction("gaus")
     hPulls1D.DrawCopy("hist")
-    gaus.Draw("same")
+    # if hPulls1D.GetBinContent(0)+hPulls1D.GetBinContent(hPulls1D.GetNbinsX()+1)>=hPulls1D.GetEntries() : #there are entry instide the histogram
+    try :
+        gaus.Draw("same")
+    except :
+        print "empty pulls"
     # hPulls1D.SetStats()
     # stats = hPulls1D.FindObject("stats")
     ROOT.gStyle.SetOptFit()
@@ -462,8 +456,8 @@ def fit_coeff(fname="WJets_PDF.root", charge="WtoMuP", coeff="A4", constraint='y
    
     outDict ={}
     outDict['hh'+charge+coeff] = hA
-    outDict['hh'+charge+coeff+'Err'] = hAErr
-    outDict['hh'+charge+coeff+'MC'] = hMC
+    # outDict['hh'+charge+coeff+'Err'] = hAErr
+    # outDict['hh'+charge+coeff+'MC'] = hMC
     outDict['fit'+charge+coeff] = hA_cut
     outDict['fit'+'Res'+charge+coeff] = res
     outDict['fit'+'Err'+charge+coeff] = h_fitError
@@ -491,12 +485,13 @@ class fit_func_unpol:
             val+= parameters[iy]*scipy.special.eval_chebyt(vy, y) 
         return val
 
-def fit_unpol(fname="WJets_PDF.root", charge="WtoMuP", qt_max = 24., y_max = 2.5, degreeY=4,Map01=True) : #fname="WJets_LHE.root
+def fit_unpol(fname="genInput.root", charge="WtoMuP", qt_max = 24., y_max = 2.5, degreeY=4,Map01=True,coeff='AUL') : #fname="WJets_LHE.root
     
     print "unpol cross sec, charge=", charge, " ydeg=, ",degreeY
     
-    inputFile   = ROOT.TFile.Open(output_dir+'/hadded/'+fname)
-    hMC   = ROOT.gDirectory.Get("GENINCLUSIVE_"+charge+"_"+SYST_kind+"/GENINCLUSIVE_"+charge+"_MC"+systDict[SYST_kind+'_'+SYST_name])
+    inputFile   = ROOT.TFile.Open(fname)
+    hMC   = ROOT.gDirectory.Get('angularCoefficients'+SYST_kind+'/harmonics'+coeff+SYST_name)
+
 
     hMC.SetTitle('MC_'+charge+'_unpol')
     hMC.SetName('MC_'+charge+'_unpol')
@@ -624,18 +619,18 @@ def fit_unpol(fname="WJets_PDF.root", charge="WtoMuP", qt_max = 24., y_max = 2.5
             
     
 def rebuildHistoDict(charge="WtoMuP", coeff="A4", degreeY=4,degreeQt=3):
-    inputFile   = ROOT.TFile.Open(output_dir+'/'+IN_NAME+'.root')
+    inputFile   = ROOT.TFile.Open(output_dir+'/'+IN_REG+'.root')
     
     path = 'Y'+str(degreeY)+'_Qt'+str(degreeQt)+'/'
   
     nameDict = { #name inside : [prefix, suffix,degSuffixFlag]
-        'MC_' : ['hh','MC',False],
+        # 'MC_' : ['hh','MC',False],
         'hPulls2D_' : ['pull2D','',True], #True
         'hPulls1D_' : ['pull1D','',True], #add _
         'hfit_' : ['fit','',True],
         'hfitErr_' :['fitErr','',True],
         'coeff_' : ['hh','',False],
-        'coeffErr_' : ['hh','Err',False],
+        # 'coeffErr_' : ['hh','Err',False],
         'c_pull_' : ['pullc','',True]
     }
     
@@ -684,11 +679,15 @@ def F_test(hdict,valDict,signDict, degreeYList, degreeQtList,Npt,VALONLY,   s,co
         chi2Max =  valDict['h2_chi2'+s+coeff].GetBinContent(binYmax,qtMax)*NDFMax
         chi2Min =  valDict['h2_chi2'+s+coeff].GetBinContent(binYmin,qtMin)*NDFMin
     
-    Fobs = (chi2Min-chi2Max)*(Npt-parMax)/(chi2Max*(parMax-parMin))
-    if Fobs>0 :
-        pvalue=1-scipy.stats.f.cdf(Fobs,1,(Npt-parMax))
-    else :
-        pvalue=1
+    try : 
+        Fobs = (chi2Min-chi2Max)*(Npt-parMax)/(chi2Max*(parMax-parMin))
+        if Fobs>0 :
+            pvalue=1-scipy.stats.f.cdf(Fobs,1,(Npt-parMax))
+        else :
+            pvalue=1
+    except :
+        print "WARNING: issue in F-test evaluation"
+        pvalue = 1
         
     return pvalue
 
@@ -887,10 +886,18 @@ def Validation(hdict, signDict, coeffDict, degreeYList,degreeQtList) :
                 binN=1
                 for coeff,constr in coeffDict.iteritems() :
                     if not VALONLY :
-                        valDict[str(yDeg)+str(qtDeg)+'chi2'+s].SetBinContent(binN,hdict[str(yDeg)+str(qtDeg)+s+coeff]['fit'+'Res'+sName+coeff].Chi2()/hdict[str(yDeg)+str(qtDeg)+s+coeff]['fit'+'Res'+sName+coeff].Ndf())
+                        if hdict[str(yDeg)+str(qtDeg)+s+coeff]['fit'+'Res'+sName+coeff].Ndf()>0 :
+                            valDict[str(yDeg)+str(qtDeg)+'chi2'+s].SetBinContent(binN,hdict[str(yDeg)+str(qtDeg)+s+coeff]['fit'+'Res'+sName+coeff].Chi2()/hdict[str(yDeg)+str(qtDeg)+s+coeff]['fit'+'Res'+sName+coeff].Ndf())
+                        else :
+                            print "WARNING: NDF=0 for", coeff, s, " y=",yDeg, " qt=",qtDeg
+                            valDict[str(yDeg)+str(qtDeg)+'chi2'+s].SetBinContent(binN,0)
                         valDict[str(yDeg)+str(qtDeg)+'chi2'+s].SetBinError(binN,math.sqrt(2*hdict[str(yDeg)+str(qtDeg)+s+coeff]['fit'+'Res'+sName+coeff].Ndf())/hdict[str(yDeg)+str(qtDeg)+s+coeff]['fit'+'Res'+sName+coeff].Chi2())
                     else :
-                        valDict[str(yDeg)+str(qtDeg)+'chi2'+s].SetBinContent(binN,hdict[str(yDeg)+str(qtDeg)+s+coeff]['fit'+'Res'+sName+coeff].GetChisquare()/hdict[str(yDeg)+str(qtDeg)+s+coeff]['fit'+'Res'+sName+coeff].GetNDF())
+                        if hdict[str(yDeg)+str(qtDeg)+s+coeff]['fit'+'Res'+sName+coeff].GetNDF() >0 :  
+                            valDict[str(yDeg)+str(qtDeg)+'chi2'+s].SetBinContent(binN,hdict[str(yDeg)+str(qtDeg)+s+coeff]['fit'+'Res'+sName+coeff].GetChisquare()/hdict[str(yDeg)+str(qtDeg)+s+coeff]['fit'+'Res'+sName+coeff].GetNDF())
+                        else :
+                            print "WARNING: NDF=0 for", coeff, s, " y=",yDeg, " qt=",qtDeg
+                            valDict[str(yDeg)+str(qtDeg)+'chi2'+s].SetBinContent(binN,0)
                         valDict[str(yDeg)+str(qtDeg)+'chi2'+s].SetBinError(binN,math.sqrt(2*hdict[str(yDeg)+str(qtDeg)+s+coeff]['fit'+'Res'+sName+coeff].GetNDF())/hdict[str(yDeg)+str(qtDeg)+s+coeff]['fit'+'Res'+sName+coeff].GetChisquare())
 
                     binN+=1
@@ -900,9 +907,9 @@ def Validation(hdict, signDict, coeffDict, degreeYList,degreeQtList) :
             valDict[str(yDeg)+str(qtDeg)+'chi2_c'].SetGridx()
             valDict[str(yDeg)+str(qtDeg)+'chi2_c'].SetGridy()
             valDict[str(yDeg)+str(qtDeg)+'chi2'+'Plus'].SetLineColor(1)
-            valDict[str(yDeg)+str(qtDeg)+'chi2'+'Minus'].SetLineColor(2)
+            # valDict[str(yDeg)+str(qtDeg)+'chi2'+'Minus'].SetLineColor(2)
             valDict[str(yDeg)+str(qtDeg)+'chi2'+'Plus'].Draw()
-            valDict[str(yDeg)+str(qtDeg)+'chi2'+'Minus'].Draw("SAME")
+            # valDict[str(yDeg)+str(qtDeg)+'chi2'+'Minus'].Draw("SAME")
             valDict[str(yDeg)+str(qtDeg)+'chi2_leg'] = ROOT.TLegend(0.7,0.8,0.95,0.95)
             for s,sname in signDict.iteritems() : 
                 valDict[str(yDeg)+str(qtDeg)+'chi2_leg'].AddEntry(valDict[str(yDeg)+str(qtDeg)+'chi2'+s],s)
@@ -934,11 +941,19 @@ def Validation(hdict, signDict, coeffDict, degreeYList,degreeQtList) :
                     for qtDeg in degreeQtList : 
                        binQt+=1
                        if not VALONLY :
-                           valDict['h2_chi2'+s+coeff].SetBinContent(binY,binQt,hdict[str(yDeg)+str(qtDeg)+s+coeff]['fit'+'Res'+sName+coeff].Chi2()/hdict[str(yDeg)+str(qtDeg)+s+coeff]['fit'+'Res'+sName+coeff].Ndf())   
-                           valDict['h2_chi2'+s+coeff].SetBinError(binY,binQt,math.sqrt(2*hdict[str(yDeg)+str(qtDeg)+s+coeff]['fit'+'Res'+sName+coeff].Ndf())/hdict[str(yDeg)+str(qtDeg)+s+coeff]['fit'+'Res'+sName+coeff].Chi2())
+                            if hdict[str(yDeg)+str(qtDeg)+s+coeff]['fit'+'Res'+sName+coeff].Ndf()>0 :   
+                                valDict['h2_chi2'+s+coeff].SetBinContent(binY,binQt,hdict[str(yDeg)+str(qtDeg)+s+coeff]['fit'+'Res'+sName+coeff].Chi2()/hdict[str(yDeg)+str(qtDeg)+s+coeff]['fit'+'Res'+sName+coeff].Ndf())   
+                            else :
+                                print "WARNING: NDF=0 for", coeff, s, " y=",yDeg, " qt=",qtDeg
+                                valDict['h2_chi2'+s+coeff].SetBinContent(binY,binQt,0)
+                            valDict['h2_chi2'+s+coeff].SetBinError(binY,binQt,math.sqrt(2*hdict[str(yDeg)+str(qtDeg)+s+coeff]['fit'+'Res'+sName+coeff].Ndf())/hdict[str(yDeg)+str(qtDeg)+s+coeff]['fit'+'Res'+sName+coeff].Chi2())
                        else :
-                           valDict['h2_chi2'+s+coeff].SetBinContent(binY,binQt,hdict[str(yDeg)+str(qtDeg)+s+coeff]['fit'+'Res'+sName+coeff].GetChisquare()/hdict[str(yDeg)+str(qtDeg)+s+coeff]['fit'+'Res'+sName+coeff].GetNDF())   
-                           valDict['h2_chi2'+s+coeff].SetBinError(binY,binQt,math.sqrt(2*hdict[str(yDeg)+str(qtDeg)+s+coeff]['fit'+'Res'+sName+coeff].GetNDF())/hdict[str(yDeg)+str(qtDeg)+s+coeff]['fit'+'Res'+sName+coeff].GetChisquare())
+                            if hdict[str(yDeg)+str(qtDeg)+s+coeff]['fit'+'Res'+sName+coeff].GetNDF()>0 :  
+                                valDict['h2_chi2'+s+coeff].SetBinContent(binY,binQt,hdict[str(yDeg)+str(qtDeg)+s+coeff]['fit'+'Res'+sName+coeff].GetChisquare()/hdict[str(yDeg)+str(qtDeg)+s+coeff]['fit'+'Res'+sName+coeff].GetNDF())   
+                            else :
+                                print "WARNING: NDF=0 for", coeff, s, " y=",yDeg, " qt=",qtDeg
+                                valDict['h2_chi2'+s+coeff].SetBinContent(binY,binQt,0)
+                            valDict['h2_chi2'+s+coeff].SetBinError(binY,binQt,math.sqrt(2*hdict[str(yDeg)+str(qtDeg)+s+coeff]['fit'+'Res'+sName+coeff].GetNDF())/hdict[str(yDeg)+str(qtDeg)+s+coeff]['fit'+'Res'+sName+coeff].GetChisquare())
     
     #summary of width of the pulls
     for var in ['h2_pullsSigma', 'h2_pullsSigmaFit'] : #direct from histo o gaussian fit
@@ -954,8 +969,12 @@ def Validation(hdict, signDict, coeffDict, degreeYList,degreeQtList) :
                     for qtDeg in degreeQtList : 
                         binQt+=1
                         if 'Fit' in var :
-                            valDict[var+s+coeff].SetBinContent(binY,binQt,hdict[str(yDeg)+str(qtDeg)+s+coeff]['pull1D'+sName+coeff].GetFunction("gaus").GetParameter(2))
-                            valDict[var+s+coeff].SetBinError(binY,binQt,hdict[str(yDeg)+str(qtDeg)+s+coeff]['pull1D'+sName+coeff].GetFunction("gaus").GetParError(2))  
+                            try :
+                                valDict[var+s+coeff].SetBinContent(binY,binQt,hdict[str(yDeg)+str(qtDeg)+s+coeff]['pull1D'+sName+coeff].GetFunction("gaus").GetParameter(2))
+                                valDict[var+s+coeff].SetBinError(binY,binQt,hdict[str(yDeg)+str(qtDeg)+s+coeff]['pull1D'+sName+coeff].GetFunction("gaus").GetParError(2))  
+                            except :
+                                valDict[var+s+coeff].SetBinContent(binY,binQt,0)
+                                valDict[var+s+coeff].SetBinError(binY,binQt,0) 
                         else :
                             valDict[var+s+coeff].SetBinContent(binY,binQt,hdict[str(yDeg)+str(qtDeg)+s+coeff]['pull1D'+sName+coeff].GetStdDev())   
                             valDict[var+s+coeff].SetBinError(binY,binQt,hdict[str(yDeg)+str(qtDeg)+s+coeff]['pull1D'+sName+coeff].GetStdDevError())
@@ -1091,7 +1110,11 @@ def Validation(hdict, signDict, coeffDict, degreeYList,degreeQtList) :
         for yDeg in degreeYList :
             binY +=1 
             for iq in range(1, NbinsQt+1) :
-                valDict['h2_chi2'+s+'unpol'].SetBinContent(binY,iq, hdict[str(yDeg)+s+'unpol']["fitRes"+sName+'unpol'+str(iq)].Chi2()/hdict[str(yDeg)+s+'unpol']["fitRes"+sName+'unpol'+str(iq)].Ndf())
+                if hdict[str(yDeg)+s+'unpol']["fitRes"+sName+'unpol'+str(iq)].Ndf()>0 :
+                    valDict['h2_chi2'+s+'unpol'].SetBinContent(binY,iq, hdict[str(yDeg)+s+'unpol']["fitRes"+sName+'unpol'+str(iq)].Chi2()/hdict[str(yDeg)+s+'unpol']["fitRes"+sName+'unpol'+str(iq)].Ndf())
+                else :
+                    print "WARNING: NDF=0 for, unpol ",s, " y=",binY, " qt=",iq
+                    valDict['h2_chi2'+s+'unpol'].SetBinContent(binY,iq, 0)
                 valDict['h2_chi2'+s+'unpol'].SetBinError(binY,iq,math.sqrt(2*hdict[str(yDeg)+s+'unpol']["fitRes"+sName+'unpol'+str(iq)].Ndf())/hdict[str(yDeg)+s+'unpol']["fitRes"+sName+'unpol'+str(iq)].Chi2())
 
     #F-Test plots
@@ -1245,34 +1268,40 @@ def systComparison(bestCombDict, saveRoot=True,saveFig=False,excludeSyst='',stat
     systFileDict = {}
     systCanvasDict = {}
     systLegDict = {}
-    
+    rebSuffix = ''
     #open files and get histos
-    for key, val in systDict.iteritems() :
-        # if key =='nominal_' or 'Scale' in key :
-        if 'Scale' in key :
-            rebSuffix = 'rebuild_'
-        else :
+    for sKind, sList in systDict.iteritems() :
+        for key in sList : 
+            fileSuff = SUFFIX.replace('_'+SYST_kind+'_'+SYST_name,'_'+sKind+'_'+key)
+            if key == '_nom_nom' : key='nominal_'
+            # if key =='nominal_' or 'Scale' in key :
+            # if 'Scale' in key :
+            #     rebSuffix = 'rebuild_'
+            # else :
+            #     rebSuffix = ''
+            systFileDict[key]=ROOT.TFile.Open(output_dir+"/regularizationFit_"+fileSuff+rebSuffix+".root")
+            # systFileDict[key]=ROOT.TFile.Open(output_dir+"/regularizationFit_"+SUFFIX+".root")
+            
+            # systFileDict[key]=ROOT.TFile.Open(output_dir+"/regularizationFit_"+SUFFIX+"rebuild__"+key+".root")
             rebSuffix = ''
-        systFileDict[key]=ROOT.TFile.Open(output_dir+"/regularizationFit_"+SUFFIX+rebSuffix+"_"+key+".root")
-        # systFileDict[key]=ROOT.TFile.Open(output_dir+"/regularizationFit_"+SUFFIX+"rebuild__"+key+".root")
-        rebSuffix = ''
-        for s, sName in signDict.iteritems() :
-            for coeff,constr in coeffDict.iteritems() :  
-                systHistoDict['chi2'+s+coeff+key] = systFileDict[key].Get('h2_chi2_'+s+'_'+coeff)
-                for yDeg in degreeYList :
-                    for qtDeg in degreeQtList :
-                        systHistoDict['coeff'+s+coeff+key+str(yDeg)+str(qtDeg)] = systFileDict[key].Get('Y'+str(yDeg)+'_Qt'+str(qtDeg)+'/hfit_'+sName+'_'+coeff+'_'+str(yDeg)+str(qtDeg))
-                        systHistoDict['coeffErr'+s+coeff+key+str(yDeg)+str(qtDeg)] = systFileDict[key].Get('Y'+str(yDeg)+'_Qt'+str(qtDeg)+'/hfitErr_'+sName+'_'+coeff+'_'+str(yDeg)+str(qtDeg))
-                        # systHistoDict['coeffUnfit'+s+coeff+key+str(yDeg)+str(qtDeg)] = systFileDict[key].Get('Y'+str(yDeg)+'_Qt'+str(qtDeg)+'/coeff_'+sName+'_'+coeff)
-                        # systHistoDict['coeffErrUnfit'+s+coeff+key+str(yDeg)+str(qtDeg)] = systFileDict[key].Get('Y'+str(yDeg)+'_Qt'+str(qtDeg)+'/coeffErr_'+sName+'_'+coeff)
+            for s, sName in signDict.iteritems() :
+                for coeff,constr in coeffDict.iteritems() :  
+                    systHistoDict['chi2'+s+coeff+key] = systFileDict[key].Get('h2_chi2_'+s+'_'+coeff)
+                    for yDeg in degreeYList :
+                        for qtDeg in degreeQtList :
+                            systHistoDict['coeff'+s+coeff+key+str(yDeg)+str(qtDeg)] = systFileDict[key].Get('Y'+str(yDeg)+'_Qt'+str(qtDeg)+'/hfit_'+sName+'_'+coeff+'_'+str(yDeg)+str(qtDeg))
+                            systHistoDict['coeffErr'+s+coeff+key+str(yDeg)+str(qtDeg)] = systFileDict[key].Get('Y'+str(yDeg)+'_Qt'+str(qtDeg)+'/hfitErr_'+sName+'_'+coeff+'_'+str(yDeg)+str(qtDeg))
+                            # systHistoDict['coeffUnfit'+s+coeff+key+str(yDeg)+str(qtDeg)] = systFileDict[key].Get('Y'+str(yDeg)+'_Qt'+str(qtDeg)+'/coeff_'+sName+'_'+coeff)
+                            # systHistoDict['coeffErrUnfit'+s+coeff+key+str(yDeg)+str(qtDeg)] = systFileDict[key].Get('Y'+str(yDeg)+'_Qt'+str(qtDeg)+'/coeffErr_'+sName+'_'+coeff)
+                            
 
-            #unpol
-            NbinsQt = systHistoDict['coeff'+s+coeff+key+str(yDeg)+str(qtDeg)].GetYaxis().GetNbins()
-            systHistoDict['chi2'+s+'unpol'+key] = systFileDict[key].Get('h2_chi2_'+s+'_'+'unpol')
-            for yDeg in degreeYList :
-                for i in range(1, NbinsQt+1) :
-                    systHistoDict['coeff'+s+'unpol'+key+str(yDeg)+str(i)] = systFileDict[key].Get('unpol_Y'+str(yDeg)+'/hfit_'+sName+'_'+'unpol'+'_'+str(yDeg)+'_'+str(i))
-                    systHistoDict['coeffErr'+s+'unpol'+key+str(yDeg)+str(i)] = systFileDict[key].Get('unpol_Y'+str(yDeg)+'/hfitErr_'+sName+'_'+'unpol'+'_'+str(yDeg)+'_'+str(i))
+                #unpol
+                NbinsQt = systHistoDict['coeff'+s+coeff+key+str(yDeg)+str(qtDeg)].GetYaxis().GetNbins()
+                systHistoDict['chi2'+s+'unpol'+key] = systFileDict[key].Get('h2_chi2_'+s+'_'+'unpol')
+                for yDeg in degreeYList :
+                    for i in range(1, NbinsQt+1) :
+                        systHistoDict['coeff'+s+'unpol'+key+str(yDeg)+str(i)] = systFileDict[key].Get('unpol_Y'+str(yDeg)+'/hfit_'+sName+'_'+'unpol'+'_'+str(yDeg)+'_'+str(i))
+                        systHistoDict['coeffErr'+s+'unpol'+key+str(yDeg)+str(i)] = systFileDict[key].Get('unpol_Y'+str(yDeg)+'/hfitErr_'+sName+'_'+'unpol'+'_'+str(yDeg)+'_'+str(i))
 
     #unrolled binning creation: ydeg-qtdeg
     degreeYBins_temp = []
@@ -1595,7 +1624,7 @@ def systComparison(bestCombDict, saveRoot=True,saveFig=False,excludeSyst='',stat
                     
                     
                 colorNumber = 0
-                replicaDrawnFlag = False #to draw only a replica
+                # replicaDrawnFlag = False #to draw only a replica
                 systCanvasDict[kind+s+coeff] = ROOT.TCanvas(kind+'_'+s+"_"+coeff, kind+'_'+s+"_"+coeff, 800,600)
                 systCanvasDict[kind+s+coeff].cd()
                 systCanvasDict[kind+s+coeff].SetGridx()
@@ -1610,7 +1639,7 @@ def systComparison(bestCombDict, saveRoot=True,saveFig=False,excludeSyst='',stat
                 systHistoDict[kind+s+coeff+'nominal_'].GetYaxis().SetTitle(prop[1])
                 systHistoDict[kind+s+coeff+'nominal_'].SetLineWidth(prop[2])
                 systHistoDict[kind+s+coeff+'nominal_'].SetFillColor(1)
-                systHistoDict[kind+s+coeff+'nominal_'].SetFillStyle(3002)
+                systHistoDict[kind+s+coeff+'nominal_'].SetFillStyle(3001)
                 
                 systHistoDict[kind+s+coeff+'nominal_'+'unfitted'] = systHistoDict[kind+s+coeff+'nominal_'].Clone(systHistoDict[kind+s+coeff+'nominal_'].GetName()+'_unfitted')
                 systHistoDict[kind+s+coeff+'nominal_'+'unfitted'].SetLineColor(922)#gray
@@ -1732,131 +1761,167 @@ def systComparison(bestCombDict, saveRoot=True,saveFig=False,excludeSyst='',stat
                 for q in qtLoop[:-1] :
                         for y in yLoop[:-1] :
                             hReplicasDict[str(q)+str(y)] = ROOT.TH1F("hReplicas"+str(q)+str(y),"hReplicas"+str(q)+str(y),10000,-10000,10000)
-                for key, val in systDict.iteritems() :
-                    if key=='nominal_' : continue
-                    systHistoDict[kind+s+coeff+key] = ROOT.TH1F(kind+'_'+s+'_'+coeff+'_'+key,kind+'_'+s+'_'+coeff+'_'+key, len(unrolledBinning)-1, array('f',unrolledBinning))
-                    if 'replica' in key :
-                        systHistoDict[kind+s+coeff+key].SetLineColor(30) #light green
-                        # systHistoDict[kind+s+coeff+key].SetLineColorAlpha(30,0.8) #light green
-                        systHistoDict[kind+s+coeff+key].SetLineWidth(1)
-                    else :
-                        systHistoDict[kind+s+coeff+key].SetLineColor(colorList[colorNumber])
-                        systHistoDict[kind+s+coeff+key].SetLineWidth(3)        
-                    systHistoDict[kind+s+coeff+key].SetTitle(kind+" "+s+" " +coeff+" "+key)
-                    systHistoDict[kind+s+coeff+key].GetXaxis().SetTitle("Unrolled (y=fine,q_{T}=large)")
-                    systHistoDict[kind+s+coeff+'nominal_'].GetYaxis().SetTitle(prop[1])
-                    for q in qtLoop[:-1] :
-                        for y in yLoop[:-1] :
-                            # indexUNR = yLoop.index(y)*(len(qtLoop)-1)+qtLoop.index(q)+1
-                            indexUNR = qtLoop.index(q)*(len(yLoop)-1)+yLoop.index(y)+1
-                            nbinY = yLoop.index(y)+1
-                            nbinQt = qtLoop.index(q)+1
-                            if kind=='chi2_ratio_unrolled' :
-                                # systHistoDict[kind+s+coeff+key].SetBinContent(indexUNR,systHistoDict['chi2'+s+coeff+key].GetBinContent(nbinY,nbinQt)/systHistoDict['chi2'+s+coeff+'nominal_'].GetBinContent(nbinY,nbinQt))
-                                BinContentValue = systHistoDict['chi2'+s+coeff+key].GetBinContent(nbinY,nbinQt)/systHistoDict['chi2'+s+coeff+'nominal_'].GetBinContent(nbinY,nbinQt)
-                            if kind=='chi2_unrolled' :
-                                # systHistoDict[kind+s+coeff+key].SetBinContent(indexUNR,systHistoDict['chi2'+s+coeff+key].GetBinContent(nbinY,nbinQt))
-                                BinContentValue = systHistoDict['chi2'+s+coeff+key].GetBinContent(nbinY,nbinQt)
-                            if kind=='chi2_sumOfPulls' :
-                                if coeff != 'unpol' :
-                                    counterNDF=0
-                                    chi2_sumOfPulls=0
-                                    for qq in qtBinning[:-1] :
-                                        for yy in yBinning[:-1] :
+                for sKind, sList in systDict.iteritems() :
+                    if sKind=='' : continue 
+                    for key in sList : 
+                        if key == '_nom_nom' : key='nominal_'
+                        if key=='nominal_' : continue
+                        systHistoDict[kind+s+coeff+key] = ROOT.TH1F(kind+'_'+s+'_'+coeff+'_'+key,kind+'_'+s+'_'+coeff+'_'+key, len(unrolledBinning)-1, array('f',unrolledBinning))
+                        if 'Pdf' in key :
+                            systHistoDict[kind+s+coeff+key].SetLineColor(30) #light green
+                            # systHistoDict[kind+s+coeff+key].SetLineColorAlpha(30,0.8) #light green
+                            systHistoDict[kind+s+coeff+key].SetLineWidth(1)
+                        else :
+                            # systHistoDict[kind+s+coeff+key].SetLineColor(colorList[colorNumber])
+                            systHistoDict[kind+s+coeff+key].SetLineWidth(3)        
+                        systHistoDict[kind+s+coeff+key].SetTitle(kind+" "+s+" " +coeff+" "+key)
+                        systHistoDict[kind+s+coeff+key].GetXaxis().SetTitle("Unrolled (y=fine,q_{T}=large)")
+                        systHistoDict[kind+s+coeff+'nominal_'].GetYaxis().SetTitle(prop[1])
+                        for q in qtLoop[:-1] :
+                            for y in yLoop[:-1] :
+                                # indexUNR = yLoop.index(y)*(len(qtLoop)-1)+qtLoop.index(q)+1
+                                indexUNR = qtLoop.index(q)*(len(yLoop)-1)+yLoop.index(y)+1
+                                nbinY = yLoop.index(y)+1
+                                nbinQt = qtLoop.index(q)+1
+                                if kind=='chi2_ratio_unrolled' :
+                                    # systHistoDict[kind+s+coeff+key].SetBinContent(indexUNR,systHistoDict['chi2'+s+coeff+key].GetBinContent(nbinY,nbinQt)/systHistoDict['chi2'+s+coeff+'nominal_'].GetBinContent(nbinY,nbinQt))
+                                    BinContentValue = systHistoDict['chi2'+s+coeff+key].GetBinContent(nbinY,nbinQt)/systHistoDict['chi2'+s+coeff+'nominal_'].GetBinContent(nbinY,nbinQt)
+                                if kind=='chi2_unrolled' :
+                                    # systHistoDict[kind+s+coeff+key].SetBinContent(indexUNR,systHistoDict['chi2'+s+coeff+key].GetBinContent(nbinY,nbinQt))
+                                    BinContentValue = systHistoDict['chi2'+s+coeff+key].GetBinContent(nbinY,nbinQt)
+                                if kind=='chi2_sumOfPulls' :
+                                    if coeff != 'unpol' :
+                                        counterNDF=0
+                                        chi2_sumOfPulls=0
+                                        for qq in qtBinning[:-1] :
+                                            for yy in yBinning[:-1] :
+                                                counterNDF+=1
+                                                nbinYY = yBinning.index(yy)+1
+                                                nbinQtt = qtBinning.index(qq)+1
+                                                yVal = systHistoDict['coeff'+s+coeff+key+str(degreeYList[degreeYBins_temp.index(y)])+str(degreeQtList[degreeQtBins_temp.index(q)])].GetXaxis().GetBinCenter(nbinYY)
+                                                qtVal = systHistoDict['coeff'+s+coeff+key+str(degreeYList[degreeYBins_temp.index(y)])+str(degreeQtList[degreeQtBins_temp.index(q)])].GetYaxis().GetBinCenter(nbinQtt)
+                                                nominalFitVal = systHistoDict['coeff'+s+coeff+'nominal_'+str(degreeYList[degreeYBins_temp.index(y)])+str(degreeQtList[degreeQtBins_temp.index(q)])].GetFunction("fit_"+sName+"_"+coeff).Eval(yVal,qtVal)
+                                                pull_fNom_hVar = nominalFitVal-systHistoDict['coeff'+s+coeff+key+str(degreeYList[degreeYBins_temp.index(y)])+str(degreeQtList[degreeQtBins_temp.index(q)])].GetBinContent(nbinYY,nbinQtt)
+                                                pull_fNom_hVar = pull_fNom_hVar/systHistoDict['coeff'+s+coeff+key+str(degreeYList[degreeYBins_temp.index(y)])+str(degreeQtList[degreeQtBins_temp.index(q)])].GetBinError(nbinYY,nbinQtt)
+                                                pull_fNom_hVar = pull_fNom_hVar**2
+                                                chi2_sumOfPulls+=pull_fNom_hVar
+                                        chi2_sumOfPulls=chi2_sumOfPulls/counterNDF
+                                        # systHistoDict[kind+s+coeff+key].SetBinContent(indexUNR,chi2_sumOfPulls)
+                                        BinContentValue = chi2_sumOfPulls
+                                    else : #unpol 
+                                        counterNDF=0
+                                        chi2_sumOfPulls=0
+                                        for yy in yBinning_unpol[:-1] :
                                             counterNDF+=1
-                                            nbinYY = yBinning.index(yy)+1
-                                            nbinQtt = qtBinning.index(qq)+1
-                                            yVal = systHistoDict['coeff'+s+coeff+key+str(degreeYList[degreeYBins_temp.index(y)])+str(degreeQtList[degreeQtBins_temp.index(q)])].GetXaxis().GetBinCenter(nbinYY)
-                                            qtVal = systHistoDict['coeff'+s+coeff+key+str(degreeYList[degreeYBins_temp.index(y)])+str(degreeQtList[degreeQtBins_temp.index(q)])].GetYaxis().GetBinCenter(nbinQtt)
-                                            nominalFitVal = systHistoDict['coeff'+s+coeff+'nominal_'+str(degreeYList[degreeYBins_temp.index(y)])+str(degreeQtList[degreeQtBins_temp.index(q)])].GetFunction("fit_"+sName+"_"+coeff).Eval(yVal,qtVal)
-                                            pull_fNom_hVar = nominalFitVal-systHistoDict['coeff'+s+coeff+key+str(degreeYList[degreeYBins_temp.index(y)])+str(degreeQtList[degreeQtBins_temp.index(q)])].GetBinContent(nbinYY,nbinQtt)
-                                            pull_fNom_hVar = pull_fNom_hVar/systHistoDict['coeff'+s+coeff+key+str(degreeYList[degreeYBins_temp.index(y)])+str(degreeQtList[degreeQtBins_temp.index(q)])].GetBinError(nbinYY,nbinQtt)
+                                            nbinYY = yBinning_unpol.index(yy)+1
+                                            nbinQtt = qtBinning_unpol.index(q)+1
+                                            yVal = systHistoDict['coeff'+s+coeff+key+str(degreeYList[degreeYBins_temp.index(y)])+str(nbinQtt)].GetXaxis().GetBinCenter(nbinYY)
+                                            nominalFitVal = systHistoDict['coeff'+s+coeff+'nominal_'+str(degreeYList[degreeYBins_temp.index(y)])+str(nbinQtt)].GetFunction("fit_"+sName+"_"+coeff).Eval(yVal)
+                                            pull_fNom_hVar = nominalFitVal-systHistoDict['coeff'+s+coeff+key+str(degreeYList[degreeYBins_temp.index(y)])+str(nbinQtt)].GetBinContent(nbinYY)
+                                            pull_fNom_hVar = pull_fNom_hVar/systHistoDict['coeff'+s+coeff+key+str(degreeYList[degreeYBins_temp.index(y)])+str(nbinQtt)].GetBinError(nbinYY)
                                             pull_fNom_hVar = pull_fNom_hVar**2
                                             chi2_sumOfPulls+=pull_fNom_hVar
-                                    chi2_sumOfPulls=chi2_sumOfPulls/counterNDF
-                                    # systHistoDict[kind+s+coeff+key].SetBinContent(indexUNR,chi2_sumOfPulls)
-                                    BinContentValue = chi2_sumOfPulls
-                                else : #unpol 
-                                    counterNDF=0
-                                    chi2_sumOfPulls=0
-                                    for yy in yBinning_unpol[:-1] :
-                                        counterNDF+=1
-                                        nbinYY = yBinning_unpol.index(yy)+1
-                                        nbinQtt = qtBinning_unpol.index(q)+1
-                                        yVal = systHistoDict['coeff'+s+coeff+key+str(degreeYList[degreeYBins_temp.index(y)])+str(nbinQtt)].GetXaxis().GetBinCenter(nbinYY)
-                                        nominalFitVal = systHistoDict['coeff'+s+coeff+'nominal_'+str(degreeYList[degreeYBins_temp.index(y)])+str(nbinQtt)].GetFunction("fit_"+sName+"_"+coeff).Eval(yVal)
-                                        pull_fNom_hVar = nominalFitVal-systHistoDict['coeff'+s+coeff+key+str(degreeYList[degreeYBins_temp.index(y)])+str(nbinQtt)].GetBinContent(nbinYY)
-                                        pull_fNom_hVar = pull_fNom_hVar/systHistoDict['coeff'+s+coeff+key+str(degreeYList[degreeYBins_temp.index(y)])+str(nbinQtt)].GetBinError(nbinYY)
-                                        pull_fNom_hVar = pull_fNom_hVar**2
-                                        chi2_sumOfPulls+=pull_fNom_hVar
-                                    chi2_sumOfPulls=chi2_sumOfPulls/counterNDF   
-                                    # systHistoDict[kind+s+coeff+key].SetBinContent(indexUNR,chi2_sumOfPulls)
-                                    BinContentValue = chi2_sumOfPulls
-                            if prop[0] == 'y_qt' :
-                                if coeff != 'unpol' : 
-                                    yVal = systHistoDict['coeff'+s+coeff+key+str(bestCombDict[s+coeff][0])+str(bestCombDict[s+coeff][1])].GetXaxis().GetBinCenter(nbinY)
-                                    qtVal = systHistoDict['coeff'+s+coeff+key+str(bestCombDict[s+coeff][0])+str(bestCombDict[s+coeff][1])].GetYaxis().GetBinCenter(nbinQt)
-                                    varFitVal = systHistoDict['coeff'+s+coeff+key+str(bestCombDict[s+coeff][0])+str(bestCombDict[s+coeff][1])].GetFunction("fit_"+sName+"_"+coeff).Eval(yVal,qtVal)
-                                    nominalFitVal = systHistoDict['coeff'+s+coeff+'nominal_'+str(bestCombDict[s+coeff][0])+str(bestCombDict[s+coeff][1])].GetFunction("fit_"+sName+"_"+coeff).Eval(yVal,qtVal) 
-                                else : #unpol 
-                                    yVal = systHistoDict['coeff'+s+coeff+key+str(bestCombDict[s+coeff])+str(qtBinning_unpol.index(q)+1)].GetXaxis().GetBinCenter(nbinY)
-                                    varFitVal = systHistoDict['coeff'+s+coeff+key+str(bestCombDict[s+coeff])+str(qtBinning_unpol.index(q)+1)].GetFunction("fit_"+sName+"_"+coeff).Eval(yVal)
-                                    nominalFitVal = systHistoDict['coeff'+s+coeff+'nominal_'+str(bestCombDict[s+coeff])+str(qtBinning_unpol.index(q)+1)].GetFunction("fit_"+sName+"_"+coeff).Eval(yVal) 
-                                    # print yVal, varFitVal, nominalFitVal, nbinY, qtBinning.index(q)+1
-                            if kind=='coeff_ratio_unrolled' : 
-                                if nominalFitVal==0 :
-                                    nominalFitVal = 1 
-                                    print "WARNING, nominalFitVal==0, set to 1", s, coeff, "qt=",q, " y=", y
-                                # print kind+s+coeff+key
-                                # systHistoDict[kind+s+coeff+key].SetBinContent(indexUNR,varFitVal/nominalFitVal)
-                                BinContentValue = varFitVal/nominalFitVal
-                            if kind=='coeff_unrolled' : 
-                                # systHistoDict[kind+s+coeff+key].SetBinContent(indexUNR,varFitVal)
-                                BinContentValue = varFitVal
-                            if kind=='pull_fNom_hVar' :
-                                if coeff != 'unpol' :  
-                                    pull_fNom_hVar = nominalFitVal-systHistoDict['coeff'+s+coeff+key+str(bestCombDict[s+coeff][0])+str(bestCombDict[s+coeff][1])].GetBinContent(nbinY,nbinQt)
-                                    pull_fNom_hVar = pull_fNom_hVar/systHistoDict['coeff'+s+coeff+key+str(bestCombDict[s+coeff][0])+str(bestCombDict[s+coeff][1])].GetBinError(nbinY,nbinQt)
-                                else : #unpol 
-                                    pull_fNom_hVar = nominalFitVal-systHistoDict['coeff'+s+coeff+key+str(bestCombDict[s+coeff])+str(qtBinning_unpol.index(q)+1)].GetBinContent(nbinY)
-                                    pull_fNom_hVar = pull_fNom_hVar/systHistoDict['coeff'+s+coeff+key+str(bestCombDict[s+coeff])+str(qtBinning_unpol.index(q)+1)].GetBinError(nbinY)
-                                # systHistoDict[kind+s+coeff+key].SetBinContent(indexUNR,pull_fNom_hVar)
-                                BinContentValue = pull_fNom_hVar
-                            systHistoDict[kind+s+coeff+key].SetBinContent(indexUNR,BinContentValue)
-                            if 'replica' in key :
-                                hReplicasDict[str(q)+str(y)].Fill(BinContentValue)
-                    if not 'replica' in key : 
-                        systHistoDict[kind+s+coeff+key].Draw("SAME hist")  
-                    if 'replica' in key :
-                        continue #not drawn replica lines, comment this line to add them 
-                        systHistoDict[kind+s+coeff+key].Draw("SAME hist")
-                        if not replicaDrawnFlag :
-                            systLegDict[kind+s+coeff].AddEntry(systHistoDict[kind+s+coeff+key], 'PDF replicas')
-                            replicaDrawnFlag = True
-                    else :
-                        colorNumber += 1
-                        systLegDict[kind+s+coeff].AddEntry(systHistoDict[kind+s+coeff+key], key)
+                                        chi2_sumOfPulls=chi2_sumOfPulls/counterNDF   
+                                        # systHistoDict[kind+s+coeff+key].SetBinContent(indexUNR,chi2_sumOfPulls)
+                                        BinContentValue = chi2_sumOfPulls
+                                if prop[0] == 'y_qt' :
+                                    if coeff != 'unpol' : 
+                                        yVal = systHistoDict['coeff'+s+coeff+key+str(bestCombDict[s+coeff][0])+str(bestCombDict[s+coeff][1])].GetXaxis().GetBinCenter(nbinY)
+                                        qtVal = systHistoDict['coeff'+s+coeff+key+str(bestCombDict[s+coeff][0])+str(bestCombDict[s+coeff][1])].GetYaxis().GetBinCenter(nbinQt)
+                                        varFitVal = systHistoDict['coeff'+s+coeff+key+str(bestCombDict[s+coeff][0])+str(bestCombDict[s+coeff][1])].GetFunction("fit_"+sName+"_"+coeff).Eval(yVal,qtVal)
+                                        nominalFitVal = systHistoDict['coeff'+s+coeff+'nominal_'+str(bestCombDict[s+coeff][0])+str(bestCombDict[s+coeff][1])].GetFunction("fit_"+sName+"_"+coeff).Eval(yVal,qtVal) 
+                                    else : #unpol 
+                                        yVal = systHistoDict['coeff'+s+coeff+key+str(bestCombDict[s+coeff])+str(qtBinning_unpol.index(q)+1)].GetXaxis().GetBinCenter(nbinY)
+                                        varFitVal = systHistoDict['coeff'+s+coeff+key+str(bestCombDict[s+coeff])+str(qtBinning_unpol.index(q)+1)].GetFunction("fit_"+sName+"_"+coeff).Eval(yVal)
+                                        nominalFitVal = systHistoDict['coeff'+s+coeff+'nominal_'+str(bestCombDict[s+coeff])+str(qtBinning_unpol.index(q)+1)].GetFunction("fit_"+sName+"_"+coeff).Eval(yVal) 
+                                        # print yVal, varFitVal, nominalFitVal, nbinY, qtBinning.index(q)+1
+                                if kind=='coeff_ratio_unrolled' : 
+                                    if nominalFitVal==0 :
+                                        nominalFitVal = 1 
+                                        print "WARNING, nominalFitVal==0, set to 1", s, coeff, "qt=",q, " y=", y
+                                    # print kind+s+coeff+key
+                                    # systHistoDict[kind+s+coeff+key].SetBinContent(indexUNR,varFitVal/nominalFitVal)
+                                    BinContentValue = varFitVal/nominalFitVal
+                                if kind=='coeff_unrolled' : 
+                                    # systHistoDict[kind+s+coeff+key].SetBinContent(indexUNR,varFitVal)
+                                    BinContentValue = varFitVal
+                                if kind=='pull_fNom_hVar' :
+                                    if coeff != 'unpol' :  
+                                        pull_fNom_hVar = nominalFitVal-systHistoDict['coeff'+s+coeff+key+str(bestCombDict[s+coeff][0])+str(bestCombDict[s+coeff][1])].GetBinContent(nbinY,nbinQt)
+                                        pull_fNom_hVar = pull_fNom_hVar/systHistoDict['coeff'+s+coeff+key+str(bestCombDict[s+coeff][0])+str(bestCombDict[s+coeff][1])].GetBinError(nbinY,nbinQt)
+                                    else : #unpol 
+                                        pull_fNom_hVar = nominalFitVal-systHistoDict['coeff'+s+coeff+key+str(bestCombDict[s+coeff])+str(qtBinning_unpol.index(q)+1)].GetBinContent(nbinY)
+                                        pull_fNom_hVar = pull_fNom_hVar/systHistoDict['coeff'+s+coeff+key+str(bestCombDict[s+coeff])+str(qtBinning_unpol.index(q)+1)].GetBinError(nbinY)
+                                    # systHistoDict[kind+s+coeff+key].SetBinContent(indexUNR,pull_fNom_hVar)
+                                    BinContentValue = pull_fNom_hVar
+                                systHistoDict[kind+s+coeff+key].SetBinContent(indexUNR,BinContentValue)
+                                if 'Pdf' in key :
+                                    hReplicasDict[str(q)+str(y)].Fill(BinContentValue)
+                        # if not 'Pdf' in key : 
+                        #     systHistoDict[kind+s+coeff+key].Draw("SAME hist")  
+                        # if 'Pdf' in key :
+                        #     continue #not drawn replica lines, comment this line to add them 
+                        #     systHistoDict[kind+s+coeff+key].Draw("SAME hist")
+                        #     if not replicaDrawnFlag :
+                        #         systLegDict[kind+s+coeff].AddEntry(systHistoDict[kind+s+coeff+key], 'PDF replicas')
+                        #         replicaDrawnFlag = True
+                        # else :
+                        #     colorNumber += 1
+                        #     systLegDict[kind+s+coeff].AddEntry(systHistoDict[kind+s+coeff+key], key)
                 
-                #replica hist:
-                directions = ['Up','Down']
-                for direc in directions :
-                    systHistoDict[kind+s+coeff+'replicaAverage'+direc] = ROOT.TH1F(kind+'_'+s+'_'+coeff+'_'+'replicaAverage'+direc,kind+'_'+s+'_'+coeff+'_'+'replicaAverage'+direc, len(unrolledBinning)-1, array('f',unrolledBinning))
-                    systHistoDict[kind+s+coeff+'replicaAverage'+direc].SetLineColor(30)
-                    systHistoDict[kind+s+coeff+'replicaAverage'+direc].SetLineWidth(3)
-                    for q in qtLoop[:-1] :
-                        for y in yLoop[:-1] :
-                            indexUNR = qtLoop.index(q)*(len(yLoop)-1)+yLoop.index(y)+1
-                            if direc =='Up' :
-                                BinContentValue = hReplicasDict[str(q)+str(y)].GetMean()+ hReplicasDict[str(q)+str(y)].GetStdDev()
-                            if direc =='Down' :
-                                BinContentValue = hReplicasDict[str(q)+str(y)].GetMean()- hReplicasDict[str(q)+str(y)].GetStdDev() 
-                            BinContentErr = math.sqrt(hReplicasDict[str(q)+str(y)].GetStdDevError()**2+ hReplicasDict[str(q)+str(y)].GetMeanError()**2)
-                            systHistoDict[kind+s+coeff+'replicaAverage'+direc].SetBinContent(indexUNR,BinContentValue)
-                            systHistoDict[kind+s+coeff+'replicaAverage'+direc].SetBinError(indexUNR,BinContentErr)
-                    systHistoDict[kind+s+coeff+'replicaAverage'+direc].Draw("SAME hist")
-                    systLegDict[kind+s+coeff].AddEntry(systHistoDict[kind+s+coeff+'replicaAverage'+direc], 'PDF replicas, '+ direc) 
+
+                    #band hist:
+                    directions = ['Up','Down']
+                    if sKind=='' : continue 
+                    for direc in directions :
+                        systHistoDict[kind+s+coeff+'band'+sKind+direc] = ROOT.TH1F(kind+'_'+s+'_'+coeff+'_'+'band'+sKind+'_'+direc,kind+'_'+s+'_'+coeff+'_'+'band'+sKind+'_'+direc, len(unrolledBinning)-1, array('f',unrolledBinning))
+                        systHistoDict[kind+s+coeff+'band'+sKind+direc].SetLineColor(groupedSystColors[sKind][0])
+                        systHistoDict[kind+s+coeff+'band'+sKind+direc].SetLineWidth(3)
+                        for q in qtLoop[:-1] :
+                            for y in yLoop[:-1] :
+                                indexUNR = qtLoop.index(q)*(len(yLoop)-1)+yLoop.index(y)+1
+                                valBand = 0
+                                
+                                if 'Pdf' in sKind :
+                                    for key in sList : 
+                                        valBand+= (systHistoDict[kind+s+coeff+'nominal_'].GetBinContent(indexUNR)-systHistoDict[kind+s+coeff+key].GetBinContent(indexUNR))**2
+                                if 'Scale' in sKind :
+                                    for key in sList : 
+                                        deltaScale = (systHistoDict[kind+s+coeff+'nominal_'].GetBinContent(indexUNR)-systHistoDict[kind+s+coeff+key].GetBinContent(indexUNR))**2
+                                        if deltaScale > valBand :
+                                            valBand = deltaScale
+                                valBand = math.sqrt(valBand)
+                        
+                                if direc =='Up' :
+                                    BinContentValue = systHistoDict[kind+s+coeff+'nominal_'].GetBinContent(indexUNR)+ valBand
+                                if direc =='Down' :
+                                    BinContentValue = systHistoDict[kind+s+coeff+'nominal_'].GetBinContent(indexUNR)- valBand
+                                systHistoDict[kind+s+coeff+'band'+sKind+direc].SetBinContent(indexUNR,BinContentValue)
+                        systHistoDict[kind+s+coeff+'band'+sKind+direc].Draw("SAME hist")
+                    systLegDict[kind+s+coeff].AddEntry(systHistoDict[kind+s+coeff+'band'+sKind+'Up'],groupedSystColors[sKind][1]) 
+                    systLegDict[kind+s+coeff].Draw("SAME")
                 
-                systLegDict[kind+s+coeff].Draw("SAME")
+                
+                # #replica hist:
+                # directions = ['Up','Down']
+                # for direc in directions :
+                #     systHistoDict[kind+s+coeff+'replicaAverage'+direc] = ROOT.TH1F(kind+'_'+s+'_'+coeff+'_'+'replicaAverage'+direc,kind+'_'+s+'_'+coeff+'_'+'replicaAverage'+direc, len(unrolledBinning)-1, array('f',unrolledBinning))
+                #     systHistoDict[kind+s+coeff+'replicaAverage'+direc].SetLineColor(30)
+                #     systHistoDict[kind+s+coeff+'replicaAverage'+direc].SetLineWidth(3)
+                #     for q in qtLoop[:-1] :
+                #         for y in yLoop[:-1] :
+                #             indexUNR = qtLoop.index(q)*(len(yLoop)-1)+yLoop.index(y)+1
+                #             if direc =='Up' :
+                #                 BinContentValue = hReplicasDict[str(q)+str(y)].GetMean()+ hReplicasDict[str(q)+str(y)].GetStdDev()
+                #             if direc =='Down' :
+                #                 BinContentValue = hReplicasDict[str(q)+str(y)].GetMean()- hReplicasDict[str(q)+str(y)].GetStdDev() 
+                #             BinContentErr = math.sqrt(hReplicasDict[str(q)+str(y)].GetStdDevError()**2+ hReplicasDict[str(q)+str(y)].GetMeanError()**2)
+                #             systHistoDict[kind+s+coeff+'replicaAverage'+direc].SetBinContent(indexUNR,BinContentValue)
+                #             systHistoDict[kind+s+coeff+'replicaAverage'+direc].SetBinError(indexUNR,BinContentErr)
+                #     systHistoDict[kind+s+coeff+'replicaAverage'+direc].Draw("SAME hist")
+                #     systLegDict[kind+s+coeff].AddEntry(systHistoDict[kind+s+coeff+'replicaAverage'+direc], 'PDF replicas, '+ direc) 
+                
+                # systLegDict[kind+s+coeff].Draw("SAME")
     
     
     if saveRoot :
@@ -1893,13 +1958,13 @@ if __name__ == "__main__":
                 for s,sname in signDict.iteritems() :
                     for coeff,constr in coeffDict.iteritems() :
                         if not VALONLY :
-                            tempDict = fit_coeff(charge=sname,coeff=coeff,constraint=constr,degreeY=yDeg,degreeQt=qtDeg,Map01=MAP01,y_max=2.5)
+                            tempDict = fit_coeff(fname=IN_GEN, charge=sname,coeff=coeff,constraint=constr,degreeY=yDeg,degreeQt=qtDeg,Map01=MAP01,y_max=2.4,qt_max=32 )
                         else : #skip analyisis, do validation only
                             tempDict = rebuildHistoDict(charge=sname,coeff=coeff,degreeY=yDeg,degreeQt=qtDeg)    
                         cumulativeDict[str(yDeg)+str(qtDeg)+s+coeff] = tempDict
         for yDeg in degreeYList :
             for s,sname in signDict.iteritems() :
-                tempDict = fit_unpol(charge=sname,degreeY=yDeg,Map01=True,y_max=2.5,qt_max=24.) #Map01 should be ALWAYS true to remove odd degree easily
+                tempDict = fit_unpol(fname=IN_GEN,coeff='AUL',charge=sname,degreeY=yDeg,Map01=True,y_max=2.4,qt_max=32.) #Map01 should be ALWAYS true to remove odd degree easily
                 cumulativeDict[str(yDeg)+s+'unpol'] = tempDict
             
     
@@ -1910,6 +1975,7 @@ if __name__ == "__main__":
 
         #writing
         print "writing..."
+        if not os.path.isdir(output_dir): os.system('mkdir '+output_dir)
         output = ROOT.TFile(output_dir+"/regularizationFit_"+SUFFIX+".root", "recreate")
         output.cd()
         
@@ -1943,7 +2009,7 @@ if __name__ == "__main__":
                         for ind,val in cumulativeDict[str(yDeg)+str(qtDeg)+s+coeff].iteritems() :
                             if 'Res' in ind : continue #do not write the fit result (used in validation)
                             # print "ind", ind, SYST_kind
-                            if SYST_kind != 'nominal' :
+                            if SYST_kind != '' : #nominal
                                 if 'fitErr' in ind : 
                                     'fitErr skipped in', SYST_kind, SYST_name
                                     continue 
@@ -1967,33 +2033,35 @@ if __name__ == "__main__":
         
     if SYST_VALIDATION : #systematic comparison
         
-        bestCombDict = {
-            'PlusA0' : [3,4],
-            'PlusA1' : [5,4],
-            'PlusA2' : [2,4],
-            'PlusA3' : [5,3],
-            'PlusA4' : [7,3],
-            'MinusA0' : [2,5],
-            'MinusA1' : [5,4],
-            'MinusA2' : [2,3],
-            'MinusA3' : [7,3],
-            'MinusA4' : [5,3],
-            'Plusunpol' : 3,
-            'Minusunpol' : 3
-        }
-        
         # bestCombDict = {
-        #     'PlusA0' : [3,3],
-        #     'PlusA1' : [3,3],
-        #     'PlusA2' : [2,3],
-        #     'PlusA3' : [3,3],
-        #     'PlusA4' : [3,3],
-        #     'MinusA0' : [2,3],
-        #     'MinusA1' : [3,3],
+        #     'PlusA0' : [3,4],
+        #     'PlusA1' : [5,4],
+        #     'PlusA2' : [2,4],
+        #     'PlusA3' : [5,3],
+        #     'PlusA4' : [7,3],
+        #     'MinusA0' : [2,5],
+        #     'MinusA1' : [5,4],
         #     'MinusA2' : [2,3],
-        #     'MinusA3' : [3,3],
-        #     'MinusA4' : [3,3]
+        #     'MinusA3' : [7,3],
+        #     'MinusA4' : [5,3],
+        #     'Plusunpol' : 3,
+        #     'Minusunpol' : 3
         # }
+        bestCombDict = {
+            'PlusA0' : [2,3],
+            'PlusA1' : [5,4],
+            'PlusA2' : [2,3],
+            'PlusA3' : [4,3],
+            'PlusA4' : [5,3],
+            'MinusA0' : [2,3],#not really fitted! 
+            'MinusA1' : [5,4],#not really fitted! 
+            'MinusA2' : [2,3],#not really fitted! 
+            'MinusA3' : [4,3],#not really fitted! 
+            'MinusA4' : [5,3],#not really fitted! 
+            'Plusunpol' : 3,
+            'Minusunpol' : 3#not really fitted! 
+        }
+
         
         
         print "WARNING: harcoded best combination for syst comparsion"
