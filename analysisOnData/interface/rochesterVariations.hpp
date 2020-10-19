@@ -27,7 +27,7 @@ private:
   std::vector<TH2D*> _Ewkcorv;
   std::vector<TH2D*> _deltaMcorv;
   std::vector<TH2D*> _Ewk2corv;
-  std::shared_ptr<std::vector<TH2D*>> _statUpv;
+  //std::vector<TH2D*> _statUpv;
   //std::vector<TH2D*> _statEigenminusv;
   float getCorrfromhisto(std::vector<TH2D*> hvec, float pt, float eta, unsigned int idx);
   TH2D* _hUp;
@@ -47,16 +47,6 @@ public:
     _Ewk2corv.emplace_back(static_cast<TH2D*>(_corrF->Get("systhist_plus_5")));
     _Ewk2corv.emplace_back(static_cast<TH2D*>(_corrF->Get("systhist_minus_5")));
 
-    std::vector<TH2D*> htemp;
-    //_statUpv = std::make_shared(new std::vector<TH2D*>());
-    for(unsigned int idx = 0; idx < 2; idx++) {
-      std::string up = "stathis_eig_plus_" + std::to_string(idx);
-      htemp.emplace_back( (TH2D*)_corrF->Get(up.c_str()) );
- 
-       //std::string down = "stathis_eig_minus_" + std::to_string(idx);
-       //_statEigenminusv.emplace_back(static_cast<TH2D*>(_corrF->Get(down.c_str())) );
-     }
-    _statUpv = std::make_shared<std::vector<TH2D*>>(htemp);
   }
 
   
