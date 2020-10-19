@@ -28,7 +28,7 @@ RNode rochesterVariations::run(RNode d)
     std::string mtDown = "MT_stateig" + std::to_string(idx) + "Down";
     std::string ptUp = "Mu1_pt_stateig" + std::to_string(idx) + "Up";
     std::string mtUp = "MT_stateig" + std::to_string(idx) + "Up";
-
+    
     std::string up = "stathis_eig_plus_" + std::to_string(idx);
     _hUp = (TH2D*)_corrF->Get(up.c_str());
     auto cUp = [this](float pt, float eta) {
@@ -50,7 +50,6 @@ RNode rochesterVariations::run(RNode d)
       }
       return cpt;
     };
-    
 
     df = df.Define(ptDown, cUp,  {"Mu1_pt", "Mu1_eta"})
       .Define(mtDown, W_mt, {ptDown, "Mu1_phi", "MET_pt_nom", "MET_phi_nom"})
@@ -66,3 +65,15 @@ float rochesterVariations::getCorrfromhisto(std::vector<TH2D*> hvec, float pt, f
   return cpt;
 };
 
+/*
+//This did not work - figure out why
+  auto& _hUp = _statUpv.get()->at(idx);
+  auto cUp = [this, _hUp](float pt, float eta) {
+  float cpt = 1.;
+  if(_hUp) {
+  int bin = _hUp->FindBin(eta, pt);
+  cpt = pt*_hUp->GetBinContent(bin);
+  }
+  return cpt;
+  };
+*/
