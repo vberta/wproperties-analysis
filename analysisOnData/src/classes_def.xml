@@ -12,4 +12,5 @@
   <class name="getWeights"/>
   <class name="templateBuilder"/>
   <class name="defineHarmonics"/>
+  <class name="rochesterVariations"/>
 </lcgdict>
