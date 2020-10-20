@@ -27,31 +27,32 @@ private:
   std::vector<TH2D*> _Ewkcorv;
   std::vector<TH2D*> _deltaMcorv;
   std::vector<TH2D*> _Ewk2corv;
-  //std::vector<TH2D*> _statUpv;
-  //std::vector<TH2D*> _statEigenminusv;
+  std::vector<TH2D*> _statUpv;
+  std::vector<TH2D*> _statDownv;
   float getCorrfromhisto(std::vector<TH2D*> hvec, float pt, float eta, unsigned int idx);
-  TH2D* _hUp;
-  TH2D* _hDown;
 public:
   rochesterVariations(TFile* cf){
     _corrF = cf;
-    _Zptcorv.emplace_back(static_cast<TH2D*>(_corrF->Get("systhist_plus_2")));
-    _Zptcorv.emplace_back(static_cast<TH2D*>(_corrF->Get("systhist_minus_2")));
+    _Zptcorv.emplace_back((TH2D *)_corrF->Get("systhist_plus_2"));
+    _Zptcorv.emplace_back((TH2D *)_corrF->Get("systhist_minus_2"));
 
-    _Ewkcorv.emplace_back(static_cast<TH2D*>(_corrF->Get("systhist_plus_3")));
-    _Ewkcorv.emplace_back(static_cast<TH2D*>(_corrF->Get("systhist_minus_3")));
+    _Ewkcorv.emplace_back((TH2D *)_corrF->Get("systhist_plus_3"));
+    _Ewkcorv.emplace_back((TH2D *)_corrF->Get("systhist_minus_3"));
 
-    _deltaMcorv.emplace_back(static_cast<TH2D*>(_corrF->Get("systhist_plus_4")));
-    _deltaMcorv.emplace_back(static_cast<TH2D*>(_corrF->Get("systhist_minus_4")));
+    _deltaMcorv.emplace_back((TH2D *)_corrF->Get("systhist_plus_4"));
+    _deltaMcorv.emplace_back((TH2D *)_corrF->Get("systhist_minus_4"));
 
-    _Ewk2corv.emplace_back(static_cast<TH2D*>(_corrF->Get("systhist_plus_5")));
-    _Ewk2corv.emplace_back(static_cast<TH2D*>(_corrF->Get("systhist_minus_5")));
+    _Ewk2corv.emplace_back((TH2D *)_corrF->Get("systhist_plus_5"));
+    _Ewk2corv.emplace_back((TH2D *)_corrF->Get("systhist_minus_5"));
+
+    for(unsigned int i=0; i<99; i++){
+      _statUpv.emplace_back((TH2D *)_corrF->Get(Form("stathis_eig_plus_%d",i)));
+      _statDownv.emplace_back((TH2D *)_corrF->Get(Form("stathis_eig_minus_%d", i)));
+    }
 
   }
 
-  
   ~rochesterVariations(){}
-  
   RNode run(RNode) override;
   
 

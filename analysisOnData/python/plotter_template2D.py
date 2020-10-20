@@ -156,7 +156,7 @@ class plotter:
         foutName += '.root'
         fout = ROOT.TFile.Open(self.outdir + '/' + foutName, "UPDATE")
         for sample,fname in self.sampleDict.iteritems():
-            if not 'LowAcc' in sample and not 'data_obs' in sample:
+            if 'LowAcc' in sample or 'data_obs' in sample or 'DiBoson' in sample or 'Top' in sample:
                 continue
             print  "Processing sample:", sample
             infile = ROOT.TFile(self.indir + '/' + fname[0])
@@ -169,9 +169,9 @@ class plotter:
             if sample not in  self.histoDict : 
                 print "No histo dict for sample:", sample, " What have you done??!!!!"
                 continue
-            self.symmetrisePDF(sample)
-            self.uncorrelateEff(sample)
-            self.alphaVariations(sample)
+            #self.symmetrisePDF(sample)
+            #self.uncorrelateEff(sample)
+            #self.alphaVariations(sample)
             for syst, hlist in self.histoDict[sample].iteritems():
                 #fout.mkdir(syst)
                 #fout.cd(syst)
