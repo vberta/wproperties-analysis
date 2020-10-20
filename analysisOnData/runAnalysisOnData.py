@@ -26,8 +26,8 @@ def RDFprocessData(fvec, outputDir, ncores, pretendJob=True, SBana=False, outF="
         nom.push_back("")
         #last argument refers to histo category - 0 = Nominal, 1 = Pt scale , 2 = MET scale
         print "branching nominal"
-        if region == "Signal" or (region=='Sideband' and SBana):
-            p.branch(nodeToStart = 'defs', nodeToEnd = 'prefit_{}/Nominal'.format(region), modules = [ROOT.muonHistos(cut, weight, nom,"Nom",0)]) 
+        #if region == "Signal" or (region=='Sideband' and SBana):
+        #    p.branch(nodeToStart = 'defs', nodeToEnd = 'prefit_{}/Nominal'.format(region), modules = [ROOT.muonHistos(cut, weight, nom,"Nom",0)]) 
         #nominal templates
         p.branch(nodeToStart = 'defs', nodeToEnd = 'templates_{}/Nominal'.format(region), modules = [ROOT.templates(cut, weight, nom,"Nom",0)])       
     p.getOutput()
@@ -54,13 +54,13 @@ def RDFprocessfakefromData(fvec, outputDir, bkgFile, ncores, pretendJob=True, SB
         weight = "float(fakeRate_Nominal_)"
         #last argument refers to histo category - 0 = Nominal, 1 = Pt scale , 2 = MET scale
         print "branching nominal"
-        p.branch(nodeToStart = 'defs', nodeToEnd = 'prefit_{}/Nominal'.format(region), modules = [ROOT.muonHistos(cut, weight, nom,"Nom",0)]) 
+        #p.branch(nodeToStart = 'defs', nodeToEnd = 'prefit_{}/Nominal'.format(region), modules = [ROOT.muonHistos(cut, weight, nom,"Nom",0)]) 
         p.branch(nodeToStart = 'defs', nodeToEnd = 'templates_{}/Nominal'.format(region), modules = [ROOT.templates(cut, weight, nom,"Nom",0)])       
 
         #now add fake variations
         for s,variations in systematics.iteritems():
-            if "LHEPdfWeight" in s : continue
-            if "alphaS" in s : continue
+            #only required systs
+            if "LHEPdfWeight" not in s and "LHEScaleWeight" not in s: continue
             print "branching weight variations", s
             vars_vec = ROOT.vector('string')()
             for var in variations[0]:
@@ -68,17 +68,18 @@ def RDFprocessfakefromData(fvec, outputDir, bkgFile, ncores, pretendJob=True, SB
                 weight="float(1)"
             print "fakeRate_"+variations[1]
             print vars_vec
-            p.branch(nodeToStart = 'defs'.format(region), nodeToEnd = 'prefit_{}/{}Vars'.format(region,s), modules = [ROOT.muonHistos(cut,weight,vars_vec,"fakeRate_"+variations[1], 0)])
-            p.branch(nodeToStart = 'defs'.format(region), nodeToEnd = 'templates_{}/{}Vars'.format(region,s), modules = [ROOT.templates(cut,weight,vars_vec,"fakeRate_"+variations[1], 0)])
+            #p.branch(nodeToStart = 'defs'.format(region), nodeToEnd = 'prefit_{}/{}'.format(region,s), modules = [ROOT.muonHistos(cut,weight,vars_vec,"fakeRate_"+variations[1], 0)])
+            p.branch(nodeToStart = 'defs'.format(region), nodeToEnd = 'templates_{}/{}'.format(region,s), modules = [ROOT.templates(cut,weight,vars_vec,"fakeRate_"+variations[1], 0)])
         
         #fake column variations since the cut won't change in data
         for vartype, vardict in selectionVars.iteritems():
+            if vartype != 'jme' : continue
             vars_vec = ROOT.vector('string')()
             for selvar, hcat in vardict.iteritems() :
                 vars_vec.push_back(selvar)
             print "branching fake column variations", vartype
-            p.branch(nodeToStart = 'defs'.format(region), nodeToEnd = 'prefit_{}/{}Vars'.format(region,vartype), modules = [ROOT.muonHistos(cut,weight,vars_vec,"fakeRate_"+vartype, 0)])
-            p.branch(nodeToStart = 'defs'.format(region), nodeToEnd = 'templates_{}/{}Vars'.format(region,vartype), modules = [ROOT.templates(cut,weight,vars_vec,"fakeRate_"+vartype, 0)])
+            #p.branch(nodeToStart = 'defs'.format(region), nodeToEnd = 'prefit_{}/{}'.format(region,vartype), modules = [ROOT.muonHistos(cut,weight,vars_vec,"fakeRate_"+vartype, 0)])
+            p.branch(nodeToStart = 'defs'.format(region), nodeToEnd = 'templates_{}/{}'.format(region,vartype), modules = [ROOT.templates(cut,weight,vars_vec,"fakeRate_"+vartype, 0)])
 
     #save output
     p.getOutput()
