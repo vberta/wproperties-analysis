@@ -1122,6 +1122,7 @@ class plotter :
             dirFinalDict['matrices'+suff] = outFile.mkdir('matrices_'+suff)
             dirFinalDict['matrices'+suff].cd()
             for mtx in ['corr','cov'] :
+                self.histos[suff+mtx+'Mat'].Write()
                 for c in self.coeffDict:
                     self.canvas[suff+mtx+'Mat'+c].Write()
                 for i in range(1, self.histos[suff+'FitACA0'].GetNbinsX()+1):

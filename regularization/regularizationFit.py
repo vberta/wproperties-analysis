@@ -251,7 +251,7 @@ class fit_func:
 
 def fit_coeff(fname="genInput.root", charge="WtoMuP", coeff="A4", constraint='y->0', qt_max = 24., y_max = 2.5, degreeY=4,degreeQt=3,Map01=False): #fname="WJets_LHE.root"
 
-    print "Coeff=",coeff, "charge=",charge," (ydeg, qtdeg)=, ",degreeY,degreeQt
+    print "Coeff=",coeff, "charge=",charge," (ydeg, qtdeg)= ",degreeY,degreeQt
     # -------------- prepare the histos for the fit ----------------------- #
     
     inputFile   = ROOT.TFile.Open(fname)
@@ -384,7 +384,7 @@ def fit_coeff(fname="genInput.root", charge="WtoMuP", coeff="A4", constraint='y-
     #DEBUG block------------------------------------#
     # print "-------------------- Post fit debug:"
     # res.Print()
-    print coeff, degreeQt, degreeY, charge, fit.GetNDF()
+    print coeff, "(qt,y)=", degreeQt, degreeY, charge, fit.GetNDF()
     for i in range(nparams) :
         print "par", i, fit.GetParName(i), "=",fit.GetParameter(i), "+/-",fit.GetParError(i), 
         if fit.GetParameter(i)!=0 : print ", deltaPar/par=",  fit.GetParError(i)/fit.GetParameter(i)
@@ -2047,7 +2047,7 @@ if __name__ == "__main__":
         #     'Plusunpol' : 3,
         #     'Minusunpol' : 3
         # }
-        bestCombDict = {
+        bestCombDict = { #[y,qt]
             'PlusA0' : [2,3],
             'PlusA1' : [5,4],
             'PlusA2' : [2,3],
