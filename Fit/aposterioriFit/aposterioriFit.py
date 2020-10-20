@@ -87,16 +87,8 @@ def getRegFunc(inFile, coeffList) :
      
 def chi2PostReg(modelPars,npFitRes, npCovMatInv, coeffList, npBinCenters,parNum) :
     
-    # 1) prodotto di flatten parametri (per ogni coeff separato) * griglia di 1,0 in base a coefficiente
-    # 2) applico vincoli con operazioni di slicing per ogni coefficiente
-    # 3) flatteno tutto
-    
-    # modelPars.reshape()#messo in forma sensata per il building (oppure no?)
-    # buildfunc(modelParsReshaped) #costruisi la funzione usando i parametri
-    # flatten(buildfunc)#allinea struttura di invcov e npFitRes
     
     # interPars = modelPars.copy()
-    print parNum
     interPars = np.split(modelPars,parNum)
     
     fitModelList = []
