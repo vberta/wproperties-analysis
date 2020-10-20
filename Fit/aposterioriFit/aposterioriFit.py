@@ -7,21 +7,25 @@ import os
 import numpy as np 
 from obsminimization import pmin
 import root_numpy as rootnp
-
+import ctypes
+import scipy
+ROOT.gROOT.SetBatch(True)
+ROOT.TH1.AddDirectory(False)
+ROOT.TH2.AddDirectory(False)
 
 
 #def of the chi2
-def chi2LBins(x, binScaleSq, binSigmaSq, hScaleSqSigmaSq, etas,*args):
-https://github.com/emanca/scipy-MuCal/blob/master/fittingFunctionsBinned.py#L223
-scaleSqSigmaSqModel / scaleSqBinned --> mia funzione di fit 
-scaleSqSigmaSqBinned / sigmaSqBinned --> valore parametri  
-hScaleSqSigmaSq-->cov matrix inverse, hessian 
+# def chi2LBins(x, binScaleSq, binSigmaSq, hScaleSqSigmaSq, etas,*args):
+# https://github.com/emanca/scipy-MuCal/blob/master/fittingFunctionsBinned.py#L223
+# scaleSqSigmaSqModel / scaleSqBinned --> mia funzione di fit 
+# scaleSqSigmaSqBinned / sigmaSqBinned --> valore parametri  
+# hScaleSqSigmaSq-->cov matrix inverse, hessian 
 
 
-scaleSqBinned --> binScaleSq --> scaleSqSigmaSqBinned --> parametri? -->valori della grid in uscita dal fit
-sigmaSqBinned --> binSigmaSq --> scaleSqSigmaSqBinned --> parametri?
-NULLA         --> scaleSqSigmaSqModel --> funzione?
-hScaleSqSigmaSqBinned / hScaleSqSigmaSq 
+# scaleSqBinned --> binScaleSq --> scaleSqSigmaSqBinned --> parametri? -->valori della grid in uscita dal fit
+# sigmaSqBinned --> binSigmaSq --> scaleSqSigmaSqBinned --> parametri?
+# NULLA         --> scaleSqSigmaSqModel --> funzione?
+# hScaleSqSigmaSqBinned / hScaleSqSigmaSq 
 
 
 # coeffDict = { #y plus, qt plus, y minus, qt minus, constraint y, constraint qt
@@ -52,29 +56,31 @@ def parPerCoeff(coeffList) :
             NparPlus = li[1]/2
             NparMinus = li[1]/2
             if li[1]%2!=0 :
-                NparPlus = NparPlus+=1
+                NparPlus+=1
             if li[2]%2!=0 :
-                NparMinus = NparMinus+=1
+                NparMinus+=1
         coeffList[coeffList.index(li)].append(NparPlus)
         coeffList[coeffList.index(li)].append(NparMinus)    
         
         
 def getFitRes(inFile, coeffList) :
     outDict = {}
+    openFile = ROOT.TFile.Open(inFile)
     for li in coeffList :
-        outDict[li[0]] = inFile.Get('coeff2D_reco/recoFitAC'+li[0])
-    outDict['cov']=inFile.Get('matrices_reco/covariance_matix_channelhelpois')
+        outDict[li[0]] = openFile.Get('coeff2D_reco/recoFitAC'+li[0])
+    outDict['cov']=openFile.Get('matrices_reco/covariance_matrix_channelhelpois')
     return outDict 
     
 def getRegFunc(inFile, coeffList) :
     outDict = {}
+    openFile = ROOT.TFile.Open(inFile)
     for li in coeffList :
         if li[0]!='unpolarizedxsec' : 
-            outDict[li[0]] = inFile.Get('Y'+str(li[1])+'_Qt'+str(li[2])+'/hfit_WToMuP_'+li[0]+'_'+str(li[1])+str(li[2]))
+            outDict[li[0]] = openFile.Get('Y'+str(li[1])+'_Qt'+str(li[2])+'/hfit_WtoMuP_'+li[0]+'_'+str(li[1])+str(li[2]))
         else :
-            temph = inFile.Get('unpol_Y3/hfit_WToMuP_unpol_3_1')
-            for qt in range(1, temph.GetNBinsX()+1) :
-                outDict[c+str(qt)] = inFile.Get('unpol_'+str(li[1])+'/hfit_WToMuP_unpol_3_'+qt)
+            temph = openFile.Get('unpol_Y3/hfit_WtoMuP_unpol_3')
+            for qt in range(1, temph.GetNbinsY()+1) :
+                outDict[li[0]+str(qt)] = openFile.Get('unpol_Y'+str(li[1])+'/hfit_WtoMuP_unpol_3_'+str(qt))
             print "WARNING: unpolarized qt binning must be aligned to the fit!"
     return outDict
 
@@ -89,8 +95,9 @@ def chi2PostReg(modelPars,npFitRes, npCovMatInv, coeffList, npBinCenters,parNum)
     # buildfunc(modelParsReshaped) #costruisi la funzione usando i parametri
     # flatten(buildfunc)#allinea struttura di invcov e npFitRes
     
-    interPars = modelPars.copy()
-    interPars = np.split(interPars,parNum)
+    # interPars = modelPars.copy()
+    print parNum
+    interPars = np.split(modelPars,parNum)
     
     fitModelList = []
     for li in coeffList :
@@ -101,7 +108,7 @@ def chi2PostReg(modelPars,npFitRes, npCovMatInv, coeffList, npBinCenters,parNum)
         
         fitModelC = np.zeros(np.shape(npBinCenters)[0]) # list of  (y,qt), with lenght (Ny*Nqt) 
 
-        if li[0]!='unpolarizedxsec' : 
+        if li[0]!=5 : 
             parsCoeff = interPars[coeffList.index[li]]
 
             if li[5] : #contraint on y=0
@@ -236,7 +243,7 @@ def fitPostReg(fitRes,regFunc, coeffList) :
     dimY = fitRes['A0'].GetNbinsX()
     dimQt = fitRes['A0'].GetNbinsY()
     # dimC = 5
-    
+
     npCovMat = rootnp.hist2array(fitRes['cov'])
     npCovMat = npCovMat[:-1,:-1] #remove mass
     npCovMatInv = np.linalg.inv(npCovMat)
@@ -245,14 +252,14 @@ def fitPostReg(fitRes,regFunc, coeffList) :
     #build the bin centers list
 
     binY,binQt = [], []
-    for i in range(1, dimY+1):  binY.append( 2*(fitRes['A0'].GetXaxis().GetBinCenter(i)- 0.)/(fitRes['A0'].GetXaxis().GetBinLowerEdge(dimY+1)-0.) - 1.) #range between -1,1
-    for i in range(1, dimQt+1): binQt.append( 2*(fitRes['A0'].GetYaxis().GetBinCenter(i)- 0.)/(fitRes['A0'].GetYAxis().GetBinLowerEdge(dimQt+1)-0.) - 1.) #range between -1,1 
+    for i in range(1, dimY+1):  binY.append( 2*(fitRes['A0'].GetXaxis().GetBinCenter(i)- 0.)/(fitRes['A0'].GetXaxis().GetBinLowEdge(dimY+1)-0.) - 1.) #range between -1,1
+    for i in range(1, dimQt+1): binQt.append( 2*(fitRes['A0'].GetYaxis().GetBinCenter(i)- 0.)/(fitRes['A0'].GetYaxis().GetBinLowEdge(dimQt+1)-0.) - 1.) #range between -1,1 
     xx = array('f', binY)
     yy = array('f', binQt)
     
-    npBinCenters = np.zeros(binY*binQt,2)
+    npBinCenters = np.zeros((dimY*dimQt,2))
             
-    hreb = ROOT.TH2F('hreb'+c, 'hreb'+c, len(xx)-1, xx, len(yy)-1, yy)
+    hreb = ROOT.TH2F('hreb', 'hreb', len(xx)-1, xx, len(yy)-1, yy)
     for i in range(1, hreb.GetXaxis().GetNbins()+1): #y
         for j in range(1, hreb.GetYaxis().GetNbins()+1):#qt
             npBinCenters[(i-1)*(j-1)] = hreb.GetXaxis().GetBinCenter(i), hreb.GetYaxis().GetBinCenter(j)
@@ -276,9 +283,7 @@ def fitPostReg(fitRes,regFunc, coeffList) :
             func = regFunc[li[0]].GetFunction('fit_WtoMuP_'+li[0])
             modelParsC=np.zeros(func.GetNpar())
             for i in range(func.GetNpar()) :
-                par = ctypes.c_double(0.)
-                func.GetParameter(i,par)
-                modelParsC[itot] = func.value
+                modelParsC[i] = func.GetParameter(i)
             modelParsList.append(modelParsC.copy())
             
             if len(parNum) >0 :
@@ -286,23 +291,26 @@ def fitPostReg(fitRes,regFunc, coeffList) :
             else :
                 parNum.append(li[1]*li[2])
         else :
-            for qt in range(1, dimregFunc[c+str(qt)].Qt.GetNBinsX()+1) :
+            for qt in range(1, regFunc['A0'].GetNbinsY()+1) :
                 if qt%2==0 : continue # to allign skipped one bin every two the binning: quite bad approach, but it's relevant for init. val. only
-                func = regFunc[c+str(qt)].GetFunction('fit_WtoMuP_unpol')
+                func = regFunc[li[0]+str(qt)].GetFunction('fit_WtoMuP_unpol')
                 # modelParsC=np.zeros(func.GetNpar())
                 for i in range(func.GetNpar()) :
-                    par = ctypes.c_double(0.)
-                    func.GetParameter(i,par)
-                    modelParsC[i] = func.value
+                    modelParsC[i] = func.GetParameter(i)
                 modelParsList.append(modelParsC.copy())
                 parNum.append(li[1]+parNum[-1])
 
     # modelPars = np.stack(modelParsList,0) 
     modelPars = np.concatenate(modelParsList) #already flat
     
-    
+    print "everything initialized"
     #call of the minimizer, 
-    modelPars = pmin(chi2PostReg, modelPars.flatten(), args=(npFitRes, npCovMatInv, coeffDict, npBinCenters,parNum), doParallel=False)
+    coeffListJAX = copy.deepcopy(coeffList)
+    for li in coeffListJAX :
+        li[0] = coeffListJAX.index(li)
+    print "PAR NUM",
+    print parNum
+    modelPars = pmin(chi2PostReg, modelPars.flatten(), args=(npFitRes, npCovMatInv, coeffListJAX, npBinCenters,parNum), doParallel=False)
 
 
 
@@ -310,9 +318,9 @@ def fitPostReg(fitRes,regFunc, coeffList) :
 
 parser = argparse.ArgumentParser("")
 
-parser.add_argument('-o','--output', type=str, default='fitResult',help="name of the output file")
+parser.add_argument('-o','--output', type=str, default='aposterioriFit',help="name of the output file")
 parser.add_argument('-f','--fitInput', type=str, default='fitResult.root',help="name of the fit result root file, after plotter_fitResult")
-parser.add_argument('-r','--regInput', type=str, default='../regularization/TEST_syst/regularizationFit_range11____nom_nom.root .root',help="name of the regularization study result root file")
+parser.add_argument('-r','--regInput', type=str, default='../../regularization/TEST_syst/regularizationFit_range11____nom_nom.root',help="name of the regularization study result root file")
 parser.add_argument('-s','--save', type=int, default=False,help="save .png and .pdf canvas")
 
 args = parser.parse_args()
@@ -332,7 +340,8 @@ coeffList.append(['unpolarizedxsec', 3,3])
 parPerCoeff(coeffList=coeffList) #add number of free par per coeff to coeffList
 fitResDict = getFitRes(inFile=FITINPUT, coeffList=coeffList)
 regFuncDict = getRegFunc(inFile=REGINPUT, coeffList=coeffList)
-QUALCOSA = fitPostReg(fitRes=fitResDict, regFunc=regFuncDict, coeffList=coeffList)
+print "pre-fit call"
+fitPostReg(fitRes=fitResDict, regFunc=regFuncDict, coeffList=coeffList)
 
 
 
