@@ -13,6 +13,11 @@ ROOT.gROOT.SetBatch(True)
 ROOT.TH1.AddDirectory(False)
 ROOT.TH2.AddDirectory(False)
 
+import jax
+import jax.numpy as jnp
+# import numpy as onp
+# from jax import grad, hessian, jacobian, config
+
 
 #def of the chi2
 # def chi2LBins(x, binScaleSq, binSigmaSq, hScaleSqSigmaSq, etas,*args):
@@ -37,7 +42,7 @@ ROOT.TH2.AddDirectory(False)
 #     'unpolarizedxsec':[3,3]
 # }
 
-def countPar(ny,nqt,ky,kqt) :
+def countPar(ny,nqt,ky,kqt) : #NOT USED
         Npar=ny*nqt
         if kqt :
             Npar-= ny
@@ -47,7 +52,7 @@ def countPar(ny,nqt,ky,kqt) :
             Npar+=1 #the overlap between previous two loop
         return Npar 
             
-def parPerCoeff(coeffList) :
+def parPerCoeff(coeffList) : #NOT USED
     for li in coeffList :
         if li[0]!='unpolarizedxsec' : 
             NparPlus = countPar(li[1],li[2],li[5],li[6])
@@ -81,70 +86,80 @@ def getRegFunc(inFile, coeffList) :
             temph = openFile.Get('unpol_Y3/hfit_WtoMuP_unpol_3')
             for qt in range(1, temph.GetNbinsY()+1) :
                 outDict[li[0]+str(qt)] = openFile.Get('unpol_Y'+str(li[1])+'/hfit_WtoMuP_unpol_3_'+str(qt))
-            print "WARNING: unpolarized qt binning must be aligned to the fit!"
+            print "WARNING: unpolarized qt binning must be aligned to the fit qt binning!"
     return outDict
 
      
 def chi2PostReg(modelPars,npFitRes, npCovMatInv, coeffList, npBinCenters,parNum) :
-    
     
     # interPars = modelPars.copy()
     interPars = np.split(modelPars,parNum)
     
     fitModelList = []
     for li in coeffList :
-        # parsTotCoeff = np.zeros(li[1]*li[2])
-        # for iqt in range(li[2]) :
-        #         for iy in range(li[1]) :
-        #             parsTotCoeff
         
-        fitModelC = np.zeros(np.shape(npBinCenters)[0]) # list of  (y,qt), with lenght (Ny*Nqt) 
+        fitModelList.append(np.zeros(np.shape(npBinCenters)[0])) # list of  (y,qt), with lenght (Ny*Nqt) 
 
-        if li[0]!=5 : 
-            parsCoeff = interPars[coeffList.index[li]]
+        if li[0]!=5 : #not unpol
+            # parsCoeff = interPars[coeffList.index[li]]#not working
+            # parsCoeff = interPars[li[0]]#working
+            parsCoeffList = [] #last element must be used
+            parsCoeffList.append(interPars[li[0]])
 
             if li[5] : #contraint on y=0
                 for iqt in range(li[2]) :
                     itot = iqt*(li[1])+li[1]
                     constr = 0.0
                     for k in range(0, li[1]-1): 
-                        constr += np.power(-1., li[1]+k+1)*parsCoeff[iqt*li[1]+k]
-                    parsCoeff[itot] = constr
+                        constr += np.power(-1., li[1]+k+1)*parsCoeffList[-1][iqt*li[1]+k]
+                    # parsCoeff[itot] = constr
+                    parsCoeffList.append(jax.ops.index_update(parsCoeffList[-1], jax.ops.index[itot],constr))
                     
             if li[6] : #contraint on qt=0
                 for iy in range(li[1]):
-                    itot = iqt*(li[1])+iy
+                    itot = li[2]*(li[1])+iy
                     constr = 0.0
                     for k in range(0, li[2]-1): 
-                        constr += np.power(-1., li[2]+k+1)*parsCoeff[ k*li[1]+iy]
-                    parsCoeff[itot] = constr 
+                        constr += np.power(-1., li[2]+k+1)*parsCoeffList[-1][ k*li[1]+iy]
+                    # parsCoeff[itot] = constr 
+                    parsCoeffList.append(jax.ops.index_update(parsCoeffList[-1], jax.ops.index[itot],constr))
             
             for iy in range(li[1]) :
                 for iqt in range(li[2]) :
                     itot = iqt*(li[1])+iy
-                    fitModelC += parsCoeff[itot]*scipy.special.eval_chebyt(iy, npBinCenters[:,0])*scipy.special.eval_chebyt(iqt,npBinCenters[:,1]) 
+                    # fitModelC += parsCoeff[itot]*scipy.special.eval_chebyt(iy, npBinCenters[:,0])*scipy.special.eval_chebyt(iqt,npBinCenters[:,1]) 
+                    fitModelList[-1] += parsCoeffList[-1][itot]*scipy.special.eval_chebyt(iy, npBinCenters[:,0])*scipy.special.eval_chebyt(iqt,npBinCenters[:,1]) 
         
         else : #unpol
-            parsCoeff = interPars[coeffList.index[li]:]
+            # parsCoeff = interPars[coeffList.index[li]:]
+            # parsCoeff = interPars[li[0]:]#working
+            parsCoeffList = []
+            
+            parsCoeffList.append(interPars[li[0]:])
+            
             
             for iy in range(li[1]) : #contraint on odd degrees
                 if iy%2!=0 :
                     for iqt in range(np.shape(npFitRes)[2]) : #binQt
-                        parsCoeff[iqt][iy] = 0
+                        # parsCoeff[iqt][iy] = 0
+                        parsCoeffList.append(jax.ops.index_update(parsCoeffList[-1], jax.ops.index[iqt,iy],0))
                         
             for iy in range(li[1]) :
                 for iqt in range(np.shape(npFitRes)[2]) : #binQt
-                    fitModelC += parsCoeff[iqt][iy]*scipy.special.eval_chebyt(iy,npBinsCenters[:0]) 
+                    # fitModelList[-1] += parsCoeff[iqt][iy]*scipy.special.eval_chebyt(iy,2*npBinsCenters[:0]-1)
+                    fitModelList[-1] += parsCoeffList[-1][iqt][iy]*scipy.special.eval_chebyt(iy,2*npBinCenters[:,0]-1)
 
-
-        fitModelC.reshape(np.shape(npFitRes)[1],np.shape(npFitRes)[2]) # reshape to (Ny x Nqt), like the fitRes histogram
-        fitModelList.append(fitModelC.copy())
+        # jnp.reshape(fitModelList[-1],(jnp.shape(npFitRes)[1],jnp.shape(npFitRes)[2])) # reshape to (Ny x Nqt), like the fitRes histogram
+        fitModelList[-1] = fitModelList[-1].reshape((jnp.shape(npFitRes)[1],jnp.shape(npFitRes)[2])) # reshape to (Ny x Nqt), like the fitRes histogram
+        # fitModelList.append(fitModelC.copy())
         
-    fitModel = np.stack(fitModelList,0)
+    fitModel = jnp.stack(fitModelList,0)
+
  
     diff = npFitRes-fitModel
     diff = diff.flatten() #check that the order is the same of invCov! 
-    chi2 = np.linalg.multi_dot( [diff.T, invCov, diff] )
+    # chi2 = jnp.linalg.multi_dot( [diff.T, npCovMatInv, diff] )
+    chi2 = jnp.matmul(diff.T, jnp.matmul(npCovMatInv, diff) )
     return chi2
     
 
@@ -231,10 +246,8 @@ def chi2PostReg(modelPars,npFitRes, npCovMatInv, coeffList, npBinCenters,parNum)
 def fitPostReg(fitRes,regFunc, coeffList) :
     
     #prepare fitRes
-    # dimFlat= fitRes['cov'].getNbinsX()
     dimY = fitRes['A0'].GetNbinsX()
     dimQt = fitRes['A0'].GetNbinsY()
-    # dimC = 5
 
     npCovMat = rootnp.hist2array(fitRes['cov'])
     npCovMat = npCovMat[:-1,:-1] #remove mass
@@ -258,13 +271,10 @@ def fitPostReg(fitRes,regFunc, coeffList) :
             
     
     npFitResList = []
-    for li in coeffList :   
-        #         hreb.SetBinContent(i,j, fitRes[c].GetBinContent(i,j) )
-        #         hreb.SetBinError(i,j, fitRes[c].GetBinError(i,j) )        
-        # npFitResList.append(rootnp.hist2array(hreb))
-        
+    for li in coeffList :           
         npFitResList.append(rootnp.hist2array(fitRes[li[0]])) #consider that the bin edges --> xx,yy
-    npFitRes = np.stack(npFitResList,0)  #dimensions: coeff, y, qt
+    npFitRes = np.stack(npFitResList,0)  #dimensions: coeff, y, qt = (6,6,8). if flatten--> q0y0a0...qNy0a0, q0y1a0....qNy1a0, ....
+    
     
     
     #model init
@@ -286,24 +296,23 @@ def fitPostReg(fitRes,regFunc, coeffList) :
             for qt in range(1, regFunc['A0'].GetNbinsY()+1) :
                 if qt%2==0 : continue # to allign skipped one bin every two the binning: quite bad approach, but it's relevant for init. val. only
                 func = regFunc[li[0]+str(qt)].GetFunction('fit_WtoMuP_unpol')
-                # modelParsC=np.zeros(func.GetNpar())
+                modelParsC=np.zeros(func.GetNpar())
                 for i in range(func.GetNpar()) :
                     modelParsC[i] = func.GetParameter(i)
                 modelParsList.append(modelParsC.copy())
                 parNum.append(li[1]+parNum[-1])
 
     # modelPars = np.stack(modelParsList,0) 
+    parNum = parNum[:-1]
     modelPars = np.concatenate(modelParsList) #already flat
     
-    print "everything initialized"
-    #call of the minimizer, 
     coeffListJAX = copy.deepcopy(coeffList)
     for li in coeffListJAX :
         li[0] = coeffListJAX.index(li)
-    print "PAR NUM",
-    print parNum
-    modelPars = pmin(chi2PostReg, modelPars.flatten(), args=(npFitRes, npCovMatInv, coeffListJAX, npBinCenters,parNum), doParallel=False)
 
+    print "everything initialized, minimizer call..."
+    # modelPars = pmin(chi2PostReg, modelPars.flatten(), args=(npFitRes, npCovMatInv, coeffListJAX, npBinCenters,parNum), doParallel=False)
+    print modelPars 
 
 
 
@@ -329,10 +338,9 @@ coeffList.append(['A3', 4,3,4,3, 1,1])
 coeffList.append(['A4', 5,3,5,3, 1,0])
 coeffList.append(['unpolarizedxsec', 3,3])
 
-parPerCoeff(coeffList=coeffList) #add number of free par per coeff to coeffList
+# parPerCoeff(coeffList=coeffList) #add number of free par per coeff to coeffList
 fitResDict = getFitRes(inFile=FITINPUT, coeffList=coeffList)
 regFuncDict = getRegFunc(inFile=REGINPUT, coeffList=coeffList)
-print "pre-fit call"
 fitPostReg(fitRes=fitResDict, regFunc=regFuncDict, coeffList=coeffList)
 
 
