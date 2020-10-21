@@ -109,7 +109,6 @@ class plotter:
                 aux['WHSF'].append(hvar)
         self.histoDict[sample].update(aux)
     def symmetrisePDF(self,sample):
-
         if not self.histoDict[sample]['LHEPdfWeight']==[]:
             aux = {}
             aux['LHEPdfWeight']=[]
@@ -140,14 +139,24 @@ class plotter:
                     aux['LHEPdfWeight'].append(th2Up)
                     aux['LHEPdfWeight'].append(th2Down)
             self.histoDict[sample].update(aux)
-    
+    def alphaVariations(self,sample):
+        aux = {}
+        aux['alphaS'] = []
+        for h in self.histoDict[sample]['Nominal']:
+            if 'mass' in h.GetName():
+                continue
+            for hvar in self.histoDict[sample]['alphaS']:
+                if hvar.GetName() == h.GetName() + '_alphaSUp' or hvar.GetName() == h.GetName() + '_alphaSDown':
+                    hvar.Divide(h)
+                    aux['alphaS'].append(hvar)
+        self.histoDict[sample].update(aux)
     def getHistos(self, chargeBin) :
         print 'writing histograms'
         foutName = 'Wplus_reco' if chargeBin == 2 else 'Wminus_reco'
         foutName += '.root'
         fout = ROOT.TFile.Open(self.outdir + '/' + foutName, "UPDATE")
         for sample,fname in self.sampleDict.iteritems():
-            if not 'LowAcc' in sample and not 'data_obs' in sample:
+            if 'LowAcc' in sample or 'data_obs' in sample or 'DiBoson' in sample or 'Top' in sample:
                 continue
             print  "Processing sample:", sample
             infile = ROOT.TFile(self.indir + '/' + fname[0])
@@ -162,6 +171,7 @@ class plotter:
                 continue
             #self.symmetrisePDF(sample)
             #self.uncorrelateEff(sample)
+            #self.alphaVariations(sample)
             for syst, hlist in self.histoDict[sample].iteritems():
                 #fout.mkdir(syst)
                 #fout.cd(syst)

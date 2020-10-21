@@ -22,15 +22,6 @@ class fitUtils:
         self.helMetaGroups = OrderedDict()
         
         self.templSystematics = systematicsDict
-        self.systGroups = {
-            "Nominal" : [""],
-            "mass" : ["mass"],
-            "WHSF"  : ["WHSFSyst0", "WHSFSyst1","WHSFSyst2","WHSFSystFlat"],
-            #"LHEScaleWeight" : ["LHEScaleWeight_muR0p5_muF0p5", "LHEScaleWeight_muR0p5_muF1p0","LHEScaleWeight_muR1p0_muF0p5","LHEScaleWeight_muR1p0_muF2p0","LHEScaleWeight_muR2p0_muF1p0", "LHEScaleWeight_muR2p0_muF2p0"],
-            #"ptScale" : [ "corrected"], 
-            #"jme" : ["jesTotal", "unclustEn"],
-            #"LHEPdfWeight" : ["LHEPdfWeightHess{}".format(i+1) for i in range(60)]
-        }
 
         #all the files that are needed
         self.fmap = ROOT.TFile.Open(fmap) #file containing the angular coefficient values and inclusive pt-y map
@@ -207,12 +198,12 @@ class fitUtils:
 
                     self.DC.systs.append((var, False, self.templSystematics[syst]["type"], [], aux))
         
-        #self.DC.groups = {'pdfs': set(['LHEPdfWeightHess{}'.format(i+1) for i in range(60)]),
-        #                  'mass': ['mass']}  # <type 'dict'>
-        #self.DC.groups = {'WHSFStat': set(["WHSFSyst0Eta{}".format(i) for i in range(1, 49)]+["WHSFSyst1Eta{}".format(i) for i in range(1, 49)]+["WHSFSyst2Eta{}".format(i) for i in range(1, 49)]), 
-        #                  'WHSFSyst': ['WHSFSystFlat'],
-        #                  'mass': ['mass']}
-        self.DC.groups = {'mass': ['mass']}
+        self.DC.groups = {'mass': ['mass'], 
+                          'pdfs': set(['LHEPdfWeightHess{}'.format(i+1) for i in range(60)]),
+                          'alphaS': ['alphaS'],
+                          'WHSFStat': set(["WHSFSyst0Eta{}".format(i) for i in range(1, 49)]+["WHSFSyst1Eta{}".format(i) for i in range(1, 49)]+["WHSFSyst2Eta{}".format(i) for i in range(1, 49)]),
+                          'WHSFSyst': ['WHSFSystFlat']}  # <type 'dict'>
+        
         self.DC.shapeMap = 	{self.channel: {'*': [self.channel+'.root', '$PROCESS', '$PROCESS_$SYSTEMATIC']},\
         self.channel+'_xsec': {'*': [self.channel+'_xsec.root', '$PROCESS', '$PROCESS_$SYSTEMATIC']}} # <type 'dict'>
         self.DC.hasShapes =  True # <type 'bool'>
