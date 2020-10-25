@@ -19,6 +19,8 @@ class plotter :
         self.qtArr = [0., 4., 8., 12., 16., 20., 24., 28., 32.]
         self.coeffArr = [0,1,2,3,4,5,6]
         self.nuisArr = ['mass']
+        self.dirList = ['up','down']
+        self.RatioPadYcut = 1.
         
         self.systDict = {
             "_LHEScaleWeight" : ["_LHEScaleWeight_muR0p5_muF0p5", "_LHEScaleWeight_muR0p5_muF1p0","_LHEScaleWeight_muR1p0_muF0p5","_LHEScaleWeight_muR1p0_muF2p0","_LHEScaleWeight_muR2p0_muF1p0", "_LHEScaleWeight_muR2p0_muF2p0"],
@@ -40,9 +42,9 @@ class plotter :
             'A4' : 4.,
             'unpolarizedxsec' : 1
         }
-        self.coeffList = []
-        for ind,val in self.coeffDict.iteritems() :
-            self.coeffList.append(ind)
+        self.coeffList = ['A0','A1','A2','A3','A4','unpolarizedxsec' ]
+        # for ind,val in self.coeffDict.iteritems() :
+        #     self.coeffList.append(ind)
         
         self.histos = {}
         self.canvas = {}
@@ -50,12 +52,12 @@ class plotter :
         
         self.groupedSystColors = {
             # "WHSFVars"  : [ROOT.kGreen+1, 'Scale Factors'],
-            "LHEScaleWeightVars" : [ROOT.kViolet-2, 'MC Scale'],
-            # "LHEScaleWeightVars" : [ROOT.kGreen-2, 'MC Scale'],
+            # "LHEScaleWeightVars" : [ROOT.kViolet-2, 'MC Scale'],
+            "LHEScaleWeightVars" : [ROOT.kGreen-3, 'QCD Scales'],
             # "ptScaleVars" : [ROOT.kBlue-4, 'pT Scale'],
             # "jmeVars" : [ROOT.kAzure+10, 'MET'],
-            "LHEPdfWeightVars" : [ROOT.kRed+1, 'PDF'],
-            # "LHEPdfWeightVars" : [ROOT.kBlue+1, 'PDF'],
+            "LHEPdfWeightVars" : [ROOT.kRed+1, 'NNPDF3.0'],
+            # "LHEPdfWeightVars" : [ROOT.kBlue-4, 'NNPDF3.0'],
             "Nominal" : [1, 'Fit Unc.']
         }
         
@@ -413,6 +415,9 @@ class plotter :
             self.histos[suff+'FitRatio'+c] = self.histos[suff+'FitBand'+c].Clone('FitRatio'+c)
             self.histos[suff+'FitRatioPDF'+c] = self.histos[suff+'FitBandPDF'+c].Clone('FitRatioPDF'+c) 
             self.histos[suff+'FitRatioScale'+c] = self.histos[suff+'FitBandScale'+c].Clone('FitRatioScale'+c) 
+            for d in self.dirList : 
+                self.histos[suff+'FitRatioPDF'+d+c] = self.histos[suff+'FitBandPDF'+c].Clone('FitRatioPDF'+c) 
+                self.histos[suff+'FitRatioScale'+d+c] = self.histos[suff+'FitBandScale'+c].Clone('FitRatioScale'+c) 
             for i in range(1, self.histos[suff+'FitAC'+c].GetNbinsX()+1): 
                 for j in range(1, self.histos[suff+'FitAC'+c].GetNbinsY()+1):
                     if not "unpol" in c:   
@@ -428,6 +433,13 @@ class plotter :
                     self.histos[suff+'FitRatio'+c].SetBinError(i,j,self.histos[suff+'FitRatio'+c].GetBinError(i,j)/valCentral)
                     self.histos[suff+'FitRatioPDF'+c].SetBinError(i,j,self.histos[suff+'FitRatioPDF'+c].GetBinError(i,j)/valCentral)
                     self.histos[suff+'FitRatioScale'+c].SetBinError(i,j,self.histos[suff+'FitRatioScale'+c].GetBinError(i,j)/valCentral) 
+                    for d in self.dirList :
+                        for var in ['PDF','Scale'] :
+                            if d=='up' :
+                                self.histos[suff+'FitRatio'+var+d+c].SetBinContent(i,j,self.histos[suff+'FitBand'+var+c].GetBinContent(i,j)/valCentral+abs(self.histos[suff+'FitBand'+var+c].GetBinError(i,j)/valCentral))
+                            else :
+                                self.histos[suff+'FitRatio'+var+d+c].SetBinContent(i,j,self.histos[suff+'FitBand'+var+c].GetBinContent(i,j)/valCentral-abs(self.histos[suff+'FitBand'+var+c].GetBinError(i,j)/valCentral))
+                            self.histos[suff+'FitRatio'+var+c].SetBinError(i,j,0)
                 
             
             #--------------- build the ratio plots  Y trends -----------------------#
@@ -435,6 +447,9 @@ class plotter :
             self.histos[suff+'FitRatioy'+c] = self.histos[suff+'FitBand'+'y'+c].Clone('FitRatioy'+c)
             self.histos[suff+'FitRatioPDFy'+c] = self.histos[suff+'FitBandPDF'+'y'+c].Clone('FitRatioPDFy'+c)
             self.histos[suff+'FitRatioScaley'+c] = self.histos[suff+'FitBandScale'+'y'+c].Clone('FitRatioScaley'+c)
+            for d in self.dirList : 
+                self.histos[suff+'FitRatioPDF'+'y'+d+c] = self.histos[suff+'FitBandPDF'+'y'+c].Clone('FitRatioPDF'+c) 
+                self.histos[suff+'FitRatioScale'+'y'+d+c] = self.histos[suff+'FitBandScale'+'y'+c].Clone('FitRatioScale'+c) 
             for i in range(1, self.histos[suff+'FitAC'+c].GetNbinsX()+1): 
                 if not "unpol" in c:   
                     valCentral = self.histos[suff+'MC'+'y'+c].GetBinContent(i)
@@ -449,6 +464,14 @@ class plotter :
                 self.histos[suff+'FitRatio'+'y'+c].SetBinError(i,self.histos[suff+'FitRatio'+'y'+c].GetBinError(i)/valCentral)
                 self.histos[suff+'FitRatioPDF'+'y'+c].SetBinError(i,self.histos[suff+'FitRatioPDF'+'y'+c].GetBinError(i)/valCentral)
                 self.histos[suff+'FitRatioScale'+'y'+c].SetBinError(i,self.histos[suff+'FitRatioScale'+'y'+c].GetBinError(i,j)/valCentral) 
+                for d in self.dirList :
+                    for var in ['PDF','Scale'] :
+                        if d=='up' :
+                            self.histos[suff+'FitRatio'+var+'y'+d+c].SetBinContent(i,j,self.histos[suff+'FitBand'+var+'y'+c].GetBinContent(i,j)/valCentral+abs(self.histos[suff+'FitBand'+var+'y'+c].GetBinError(i,j)/valCentral))
+                        else :
+                            self.histos[suff+'FitRatio'+var+'y'+d+c].SetBinContent(i,j,self.histos[suff+'FitBand'+var+'y'+c].GetBinContent(i,j)/valCentral-abs(self.histos[suff+'FitBand'+var+'y'+c].GetBinError(i,j)/valCentral))
+                        self.histos[suff+'FitRatio'+var+'y'+c].SetBinError(i,j,0)
+
             
             
             #--------------- build the ratio plots  qt trends -----------------------#
@@ -456,6 +479,9 @@ class plotter :
             self.histos[suff+'FitRatioqt'+c] = self.histos[suff+'FitBand'+'qt'+c].Clone('FitRatioqt'+c)
             self.histos[suff+'FitRatioPDFqt'+c] = self.histos[suff+'FitBandPDF'+'qt'+c].Clone('FitRatioPDFqt'+c)
             self.histos[suff+'FitRatioScaleqt'+c] = self.histos[suff+'FitBandScale'+'qt'+c].Clone('FitBandScaleqt'+c)
+            for d in self.dirList : 
+                self.histos[suff+'FitRatioPDF'+'qt'+d+c] = self.histos[suff+'FitBandPDF'+'qt'+c].Clone('FitRatioPDF'+c) 
+                self.histos[suff+'FitRatioScale'+'qt'+d+c] = self.histos[suff+'FitBandScale'+'qt'+c].Clone('FitRatioScale'+c) 
             for i in range(1, self.histos[suff+'FitAC'+c].GetNbinsY()+1): 
                 if not "unpol" in c:   
                     valCentral = self.histos[suff+'MC'+'qt'+c].GetBinContent(i)
@@ -470,6 +496,14 @@ class plotter :
                 self.histos[suff+'FitRatio'+'qt'+c].SetBinError(i,self.histos[suff+'FitRatio'+'qt'+c].GetBinError(i)/valCentral)
                 self.histos[suff+'FitRatioPDF'+'qt'+c].SetBinError(i,self.histos[suff+'FitRatioPDF'+'qt'+c].GetBinError(i)/valCentral)
                 self.histos[suff+'FitRatioScale'+'qt'+c].SetBinError(i,self.histos[suff+'FitRatioScale'+'qt'+c].GetBinError(i,j)/valCentral) 
+                for d in self.dirList :
+                    for var in ['PDF','Scale'] :
+                        if d=='up' :
+                            self.histos[suff+'FitRatio'+var+'qt'+d+c].SetBinContent(i,j,self.histos[suff+'FitBand'+var+'qt'+c].GetBinContent(i,j)/valCentral+abs(self.histos[suff+'FitBand'+var+'qt'+c].GetBinError(i,j)/valCentral))
+                        else :
+                            self.histos[suff+'FitRatio'+var+'qt'+d+c].SetBinContent(i,j,self.histos[suff+'FitBand'+var+'qt'+c].GetBinContent(i,j)/valCentral-abs(self.histos[suff+'FitBand'+var+'qt'+c].GetBinError(i,j)/valCentral))
+                        self.histos[suff+'FitRatio'+var+'qt'+c].SetBinError(i,j,0)
+
         
                 
                     
@@ -577,89 +611,239 @@ class plotter :
         #--------------- Ai 1D canvas -------------------#
         for c in self.coeffDict:
             for i in range(1, self.histos[suff+'FitAC'+c].GetNbinsX()+1): #loop over rapidity bins
-                self.canvas[suff+'FitAC'+'qt'+str(i)+c] = ROOT.TCanvas(suff+"_c_projQt{}_{}".format(i,c),suff+"_c_projQt{}_{}".format(i,c))
-                self.canvas[suff+'FitAC'+'qt'+str(i)+c].SetGridx()
-                self.canvas[suff+'FitAC'+'qt'+str(i)+c].SetGridy()
+                self.canvas[suff+'FitAC'+'qt'+str(i)+c] = ROOT.TCanvas(suff+"_c_projQt{}_{}".format(i,c),suff+"_c_projQt{}_{}".format(i,c),1200,1050)
+                self.leg[suff+'FitAC'+'qt'+str(i)+c] = ROOT.TLegend(0.6,0.75,0.9,0.9)
+                self.canvas[suff+'FitAC'+'qt'+str(i)+c].cd()
+                self.canvas['ph'+suff+'FitAC'+'qt'+str(i)+c] = ROOT.TPad('ph'+suff+"_c_projQt{}_{}".format(i,c), 'ph'+suff+"_c_projQt{}_{}".format(i,c),0,0.2,1,1)
+                self.canvas['pr'+suff+'FitAC'+'qt'+str(i)+c] = ROOT.TPad('pr'+suff+"_c_projQt{}_{}".format(i,c),  'pr'+suff+"_c_projQt{}_{}".format(i,c), 0,0,1,0.2)
+                self.canvas['ph'+suff+'FitAC'+'qt'+str(i)+c].SetBottomMargin(0.02)
+                self.canvas['ph'+suff+'FitAC'+'qt'+str(i)+c].Draw()
+                self.canvas['pr'+suff+'FitAC'+'qt'+str(i)+c].SetTopMargin(0)
+                self.canvas['pr'+suff+'FitAC'+'qt'+str(i)+c].SetBottomMargin(0.25)
+                self.canvas['pr'+suff+'FitAC'+'qt'+str(i)+c].Draw()
+                
+                self.canvas['ph'+suff+'FitAC'+'qt'+str(i)+c].cd()
+                self.canvas['ph'+suff+'FitAC'+'qt'+str(i)+c].SetGridx()
+                self.canvas['ph'+suff+'FitAC'+'qt'+str(i)+c].SetGridy()
                 self.histos[suff+'FitAC'+'qt'+str(i)+c] = self.histos[suff+'FitAC'+c].ProjectionY("projQt{}_{}".format(i,c),i,i)
                 self.histos[suff+'FitBand'+'qt'+str(i)+c] = self.histos[suff+'FitBand'+c].ProjectionY("projQt{}_{}_err".format(i,c),i,i)
-                self.histos[suff+'FitBandPDF'+'qt'+str(i)+c] = self.histos[suff+'FitBandPDF'+c].ProjectionY("projQt{}_{}_errPDF".format(i,c),i,i)
-                self.histos[suff+'FitBandScale'+'qt'+str(i)+c] = self.histos[suff+'FitBandScale'+c].ProjectionY("projQt{}_{}_errScale".format(i,c),i,i)
+                # self.histos[suff+'FitBandPDF'+'qt'+str(i)+c] = self.histos[suff+'FitBandPDF'+c].ProjectionY("projQt{}_{}_errPDF".format(i,c),i,i)
+                # self.histos[suff+'FitBandScale'+'qt'+str(i)+c] = self.histos[suff+'FitBandScale'+c].ProjectionY("projQt{}_{}_errScale".format(i,c),i,i)
                 self.histos[suff+'FitAC'+'qt'+str(i)+c].SetTitle(suff+' '+c+" vs W transverse momentum, "+str(self.yArr[i-1])+"<Y_{W}<"+str(self.yArr[i]))
-                self.canvas[suff+'FitAC'+'qt'+str(i)+c].cd()
                 self.histos[suff+'FitAC'+'qt'+str(i)+c].GetXaxis().SetTitle('q_{T}^{W} [GeV]')
-                self.histos[suff+'FitAC'+'qt'+str(i)+c].GetYaxis().SetTitle(c)
                 self.histos[suff+'FitAC'+'qt'+str(i)+c].SetLineWidth(2)
+                self.histos[suff+'FitAC'+'qt'+str(i)+c].SetLineColor(1)
                 self.histos[suff+'FitAC'+'qt'+str(i)+c].SetStats(0)
+                self.histos[suff+'FitAC'+'qt'+str(i)+c].SetMarkerStyle(20)
+                self.histos[suff+'FitAC'+'qt'+str(i)+c].SetMarkerSize(0.5)
                 self.histos[suff+'FitAC'+'qt'+str(i)+c].Draw()
+                self.histos[suff+'FitAC'+'qt'+str(i)+c].GetYaxis().SetTitleSize(0.06)
                 if not 'unpol' in c :
-                    self.histos[suff+'FitAC'+'qt'+str(i)+c].GetYaxis().SetRangeUser(-4,4)
-                self.histos[suff+'FitBand'+'qt'+str(i)+c].SetFillColor(ROOT.kOrange-3)
+                    # self.histos[suff+'FitAC'+'qt'+str(i)+c].GetYaxis().SetRangeUser(-4,4)
+                    self.histos[suff+'FitAC'+'qt'+str(i)+c].GetYaxis().SetTitle(c)
+                else :
+                    self.histos[suff+'FitAC'+'qt'+str(i)+c].GetYaxis().SetTitle('#sigma^{U+L} [fb]')
+                self.histos[suff+'FitBand'+'qt'+str(i)+c].SetFillColor(ROOT.kOrange)
                 self.histos[suff+'FitBand'+'qt'+str(i)+c].SetFillStyle(0)
-                self.histos[suff+'FitBand'+'qt'+str(i)+c].SetLineColor(ROOT.kOrange-3)
+                self.histos[suff+'FitBand'+'qt'+str(i)+c].SetLineColor(ROOT.kOrange)
                 self.histos[suff+'FitBand'+'qt'+str(i)+c].SetLineWidth(2)
+                self.histos[suff+'FitAC'+'qt'+str(i)+c].GetYaxis().SetTitleOffset(0.7)
+                self.histos[suff+'FitAC'+'qt'+str(i)+c].GetXaxis().SetTitleOffset(3)
+                self.histos[suff+'FitAC'+'qt'+str(i)+c].GetXaxis().SetLabelOffset(3)
                 self.histos[suff+'FitBand'+'qt'+str(i)+c].DrawCopy("E2 same")
                 self.histos[suff+'FitBand'+'qt'+str(i)+c].SetFillStyle(3001)
                 self.histos[suff+'FitBand'+'qt'+str(i)+c].Draw("E2 same")
+                self.histos[suff+'FitAC'+'qt'+str(i)+c].DrawCopy("same") #to have foreground
+                self.leg[suff+'FitAC'+'qt'+str(i)+c].Draw("same")
+   
+                
+                self.canvas['pr'+suff+'FitAC'+'qt'+str(i)+c].cd()
+                self.canvas['pr'+suff+'FitAC'+'qt'+str(i)+c].SetGridx()
+                self.canvas['pr'+suff+'FitAC'+'qt'+str(i)+c].SetGridy()
+                self.histos[suff+'FitRatioAC'+'qt'+str(i)+c] = self.histos[suff+'FitRatioAC'+c].ProjectionY("projQt{}_{}_RatioAC".format(i,c),i,i)
+                self.histos[suff+'FitRatio'+'qt'+str(i)+c] = self.histos[suff+'FitRatio'+c].ProjectionY("projQt{}_{}_Ratio".format(i,c),i,i)
+                for d in self.dirList :
+                    self.histos[suff+'FitRatioPDF'+'qt'+str(i)+d+c] = self.histos[suff+'FitRatioPDF'+d+c].ProjectionY("projQt{}_{}_RatioPDF".format(i,c)+d,i,i)
+                    self.histos[suff+'FitRatioScale'+'qt'+str(i)+d+c] = self.histos[suff+'FitRatioScale'+d+c].ProjectionY("projQt{}_{}_RatioScale".format(i,c)+d,i,i)
+                self.histos[suff+'FitRatioAC'+'qt'+str(i)+c].GetXaxis().SetTitle('q_{T}^{W} [GeV]')
+                self.histos[suff+'FitRatioAC'+'qt'+str(i)+c].GetYaxis().SetTitle('Pred./Theory')
+                self.histos[suff+'FitRatioAC'+'qt'+str(i)+c].SetMarkerStyle(20)
+                self.histos[suff+'FitRatioAC'+'qt'+str(i)+c].SetMarkerSize(0.5)
+                self.histos[suff+'FitRatioAC'+'qt'+str(i)+c].SetLineWidth(2)
+                self.histos[suff+'FitRatio'+'qt'+str(i)+c].SetLineWidth(2)
+                self.histos[suff+'FitRatioAC'+'qt'+str(i)+c].SetTitle("")
+                self.histos[suff+'FitRatioAC'+'qt'+str(i)+c].GetYaxis().SetTitleOffset(0.25)
+                self.histos[suff+'FitRatioAC'+'qt'+str(i)+c].SetTitleSize(0.15,'y')
+                self.histos[suff+'FitRatioAC'+'qt'+str(i)+c].SetLabelSize(0.12,'y')
+                self.histos[suff+'FitRatioAC'+'qt'+str(i)+c].GetXaxis().SetTitleOffset(1.)
+                self.histos[suff+'FitRatioAC'+'qt'+str(i)+c].SetTitleSize(0.12,'x')
+                self.histos[suff+'FitRatioAC'+'qt'+str(i)+c].SetLabelSize(0.15,'x')
+                self.histos[suff+'FitRatioAC'+'qt'+str(i)+c].SetStats(0)
+                for d in self.dirList :
+                    self.histos[suff+'FitRatioPDF'+'qt'+str(i)+d+c].SetLineWidth(2)
+                    self.histos[suff+'FitRatioScale'+'qt'+str(i)+d+c].SetLineWidth(2)
+                self.histos[suff+'FitRatio'+'qt'+str(i)+c].SetLineColor(ROOT.kOrange)
+                for d in self.dirList :
+                    self.histos[suff+'FitRatioPDF'+'qt'+str(i)+d+c].SetLineColor(self.groupedSystColors['LHEPdfWeightVars'][0])
+                    self.histos[suff+'FitRatioScale'+'qt'+str(i)+d+c].SetLineColor(self.groupedSystColors['LHEScaleWeightVars'][0])
+                self.histos[suff+'FitRatio'+'qt'+str(i)+c].SetFillColor(ROOT.kOrange)
+                self.histos[suff+'FitRatio'+'qt'+str(i)+c].SetFillStyle(3001)
+                
+                maxvalRatio=0
+                for xx in range(1,self.histos[suff+'FitRatioAC'+'qt'+str(i)+c].GetNbinsX()+1) :
+                    if self.histos[suff+'FitRatio'+'qt'+str(i)+c].GetBinError(xx)>maxvalRatio :
+                        maxvalRatio= self.histos[suff+'FitRatio'+'qt'+str(i)+c].GetBinError(xx)
+                    self.histos[suff+'FitRatioAC'+'qt'+str(i)+c].SetBinError(xx,0)
+                if maxvalRatio>self.RatioPadYcut :
+                    maxvalRatio=self.RatioPadYcut
+                self.histos[suff+'FitRatioAC'+'qt'+str(i)+c].GetYaxis().SetRangeUser(-maxvalRatio*1.1+1,maxvalRatio*1.1+1)
+                
+                self.histos[suff+'FitRatioAC'+'qt'+str(i)+c].Draw("EX0")
+                self.histos[suff+'FitRatio'+'qt'+str(i)+c].DrawCopy("same E2")
+                for d in self.dirList :
+                    self.histos[suff+'FitRatioPDF'+'qt'+str(i)+d+c].Draw("hist same")
+                    self.histos[suff+'FitRatioScale'+'qt'+str(i)+d+c].Draw("hist same")
+                self.histos[suff+'FitRatioAC'+'qt'+str(i)+c].Draw("EX0 same") #to have foreground
+                
+                self.leg[suff+'FitAC'+'qt'+str(i)+c].AddEntry(self.histos[suff+'FitAC'+'qt'+str(i)+c], "Fit")
+                self.leg[suff+'FitAC'+'qt'+str(i)+c].AddEntry(self.histos[suff+'FitBand'+'qt'+str(i)+c], "MC Syst. Unc.")
+                self.leg[suff+'FitAC'+'qt'+str(i)+c].AddEntry(self.histos[suff+'FitRatioPDF'+'qt'+str(i)+'up'+c], self.groupedSystColors['LHEPdfWeightVars'][1])
+                self.leg[suff+'FitAC'+'qt'+str(i)+c].AddEntry(self.histos[suff+'FitRatioScale'+'qt'+str(i)+'up'+c], self.groupedSystColors['LHEScaleWeightVars'][1])
                 
                 #Additional block for scale-pdf splitted
-                self.histos[suff+'FitBandPDF'+'qt'+str(i)+c].SetFillColor(self.groupedSystColors['LHEPdfWeightVars'][0])
-                self.histos[suff+'FitBandPDF'+'qt'+str(i)+c].SetFillStyle(0)
-                self.histos[suff+'FitBandPDF'+'qt'+str(i)+c].SetLineColor(self.groupedSystColors['LHEPdfWeightVars'][0])
-                self.histos[suff+'FitBandPDF'+'qt'+str(i)+c].SetLineWidth(2)
-                self.histos[suff+'FitBandPDF'+'qt'+str(i)+c].DrawCopy("E2 same")
-                self.histos[suff+'FitBandPDF'+'qt'+str(i)+c].SetFillStyle(3004)
-                self.histos[suff+'FitBandPDF'+'qt'+str(i)+c].Draw("E2 same")
-                self.histos[suff+'FitBandScale'+'qt'+str(i)+c].SetFillColor(self.groupedSystColors['LHEScaleWeightVars'][0])
-                self.histos[suff+'FitBandScale'+'qt'+str(i)+c].SetFillStyle(0)
-                self.histos[suff+'FitBandScale'+'qt'+str(i)+c].SetLineColor(self.groupedSystColors['LHEScaleWeightVars'][0])
-                self.histos[suff+'FitBandScale'+'qt'+str(i)+c].SetLineWidth(2)
-                self.histos[suff+'FitBandScale'+'qt'+str(i)+c].DrawCopy("E2 same")
-                self.histos[suff+'FitBandScale'+'qt'+str(i)+c].SetFillStyle(3005)
-                self.histos[suff+'FitBandScale'+'qt'+str(i)+c].Draw("E2 same")
+                # self.histos[suff+'FitBandPDF'+'qt'+str(i)+c].SetFillColor(self.groupedSystColors['LHEPdfWeightVars'][0])
+                # self.histos[suff+'FitBandPDF'+'qt'+str(i)+c].SetFillStyle(0)
+                # self.histos[suff+'FitBandPDF'+'qt'+str(i)+c].SetLineColor(self.groupedSystColors['LHEPdfWeightVars'][0])
+                # self.histos[suff+'FitBandPDF'+'qt'+str(i)+c].SetLineWidth(2)
+                # self.histos[suff+'FitBandPDF'+'qt'+str(i)+c].DrawCopy("E2 same")
+                # self.histos[suff+'FitBandPDF'+'qt'+str(i)+c].SetFillStyle(3004)
+                # self.histos[suff+'FitBandPDF'+'qt'+str(i)+c].Draw("E2 same")
+                # self.histos[suff+'FitBandScale'+'qt'+str(i)+c].SetFillColor(self.groupedSystColors['LHEScaleWeightVars'][0])
+                # self.histos[suff+'FitBandScale'+'qt'+str(i)+c].SetFillStyle(0)
+                # self.histos[suff+'FitBandScale'+'qt'+str(i)+c].SetLineColor(self.groupedSystColors['LHEScaleWeightVars'][0])
+                # self.histos[suff+'FitBandScale'+'qt'+str(i)+c].SetLineWidth(2)
+                # self.histos[suff+'FitBandScale'+'qt'+str(i)+c].DrawCopy("E2 same")
+                # self.histos[suff+'FitBandScale'+'qt'+str(i)+c].SetFillStyle(3005)
+                # self.histos[suff+'FitBandScale'+'qt'+str(i)+c].Draw("E2 same")
                 
-                self.histos[suff+'FitAC'+'qt'+str(i)+c].DrawCopy("same") #to have foreground
+                
             for j in range(1, self.histos[suff+'FitAC'+c].GetNbinsY()+1): #loop over pt bins
-                self.canvas[suff+'FitAC'+'y'+str(j)+c] = ROOT.TCanvas(suff+"_c_projY{}_{}".format(j,c),suff+"_c_projY{}_{}".format(j,c))
-                self.canvas[suff+'FitAC'+'y'+str(j)+c].SetGridx()
-                self.canvas[suff+'FitAC'+'y'+str(j)+c].SetGridy()
+                self.canvas[suff+'FitAC'+'y'+str(j)+c] = ROOT.TCanvas(suff+"_c_projY{}_{}".format(j,c),suff+"_c_projY{}_{}".format(j,c),1200,1050)
+                self.leg[suff+'FitAC'+'y'+str(j)+c] = ROOT.TLegend(0.6,0.75,0.9,0.9)
+                self.canvas[suff+'FitAC'+'y'+str(j)+c].cd()
+                self.canvas['ph'+suff+'FitAC'+'y'+str(j)+c] = ROOT.TPad('ph'+suff+"_c_projY{}_{}".format(i,c), 'ph'+suff+"_c_projY{}_{}".format(i,c),0,0.2,1,1)
+                self.canvas['pr'+suff+'FitAC'+'y'+str(j)+c] = ROOT.TPad('pr'+suff+"_c_projY{}_{}".format(i,c),  'pr'+suff+"_c_projY{}_{}".format(i,c), 0,0,1,0.2)
+                self.canvas['ph'+suff+'FitAC'+'y'+str(j)+c].SetBottomMargin(0.02)
+                self.canvas['ph'+suff+'FitAC'+'y'+str(j)+c].Draw()
+                self.canvas['pr'+suff+'FitAC'+'y'+str(j)+c].SetTopMargin(0)
+                self.canvas['pr'+suff+'FitAC'+'y'+str(j)+c].SetBottomMargin(0.25)
+                self.canvas['pr'+suff+'FitAC'+'y'+str(j)+c].Draw()
+                
+                self.canvas['ph'+suff+'FitAC'+'y'+str(j)+c].cd()
+                self.canvas['ph'+suff+'FitAC'+'y'+str(j)+c].SetGridx()
+                self.canvas['ph'+suff+'FitAC'+'y'+str(j)+c].SetGridy()
                 self.histos[suff+'FitAC'+'y'+str(j)+c] = self.histos[suff+'FitAC'+c].ProjectionX("projY{}_{}".format(j,c),j,j)
                 self.histos[suff+'FitBand'+'y'+str(j)+c] = self.histos[suff+'FitBand'+c].ProjectionX("projY{}_{}_err".format(j,c),j,j)
-                self.histos[suff+'FitBandPDF'+'y'+str(j)+c] = self.histos[suff+'FitBandPDF'+c].ProjectionX("projY{}_{}_errPDF".format(j,c),j,j)
-                self.histos[suff+'FitBandScale'+'y'+str(j)+c] = self.histos[suff+'FitBandScale'+c].ProjectionX("projY{}_{}_errScale".format(j,c),j,j)
+                # self.histos[suff+'FitBandPDF'+'y'+str(j)+c] = self.histos[suff+'FitBandPDF'+c].ProjectionX("projY{}_{}_errPDF".format(j,c),j,j)
+                # self.histos[suff+'FitBandScale'+'y'+str(j)+c] = self.histos[suff+'FitBandScale'+c].ProjectionX("projY{}_{}_errScale".format(j,c),j,j)
                 self.histos[suff+'FitAC'+'y'+str(j)+c].SetTitle(suff+' '+c+" vs W rapidity, "+str(self.qtArr[j-1])+"<q_{T}^{W}<"+str(self.qtArr[j]))
-                self.canvas[suff+'FitAC'+'y'+str(j)+c].cd()
                 self.histos[suff+'FitAC'+'y'+str(j)+c].GetXaxis().SetTitle('Y_{W}')
-                self.histos[suff+'FitAC'+'y'+str(j)+c].GetYaxis().SetTitle(c)
                 self.histos[suff+'FitAC'+'y'+str(j)+c].SetLineWidth(2)
+                self.histos[suff+'FitAC'+'y'+str(j)+c].SetLineColor(1)
                 self.histos[suff+'FitAC'+'y'+str(j)+c].SetStats(0)
+                self.histos[suff+'FitAC'+'y'+str(j)+c].SetMarkerStyle(20)
+                self.histos[suff+'FitAC'+'y'+str(j)+c].SetMarkerSize(0.5)
                 self.histos[suff+'FitAC'+'y'+str(j)+c].Draw()
+                self.histos[suff+'FitAC'+'y'+str(j)+c].GetYaxis().SetTitleSize(0.06)
                 if not 'unpol' in c :
-                    self.histos[suff+'FitAC'+'y'+str(j)+c].GetYaxis().SetRangeUser(-4,4)
-                self.histos[suff+'FitBand'+'y'+str(j)+c].SetFillColor(ROOT.kOrange-3)#kMagenta-7)
+                    # self.histos[suff+'FitAC'+'y'+str(j)+c].GetYaxis().SetRangeUser(-4,4)
+                    self.histos[suff+'FitAC'+'y'+str(j)+c].GetYaxis().SetTitle(c)
+                else :
+                    self.histos[suff+'FitAC'+'y'+str(j)+c].GetYaxis().SetTitle('#sigma^{U+L} [fb]')
+                self.histos[suff+'FitBand'+'y'+str(j)+c].SetFillColor(ROOT.kOrange)#kMagenta-7)
                 self.histos[suff+'FitBand'+'y'+str(j)+c].SetFillStyle(0)
-                self.histos[suff+'FitBand'+'y'+str(j)+c].SetLineColor(ROOT.kOrange-3)#kMagenta-7)
+                self.histos[suff+'FitBand'+'y'+str(j)+c].SetLineColor(ROOT.kOrange)#kMagenta-7)
                 self.histos[suff+'FitBand'+'y'+str(j)+c].SetLineWidth(2)
+                self.histos[suff+'FitAC'+'y'+str(j)+c].GetYaxis().SetTitleOffset(0.7)
+                self.histos[suff+'FitAC'+'y'+str(j)+c].GetXaxis().SetTitleOffset(3)
+                self.histos[suff+'FitAC'+'y'+str(j)+c].GetXaxis().SetLabelOffset(3)
                 self.histos[suff+'FitBand'+'y'+str(j)+c].DrawCopy("E2 same")
                 self.histos[suff+'FitBand'+'y'+str(j)+c].SetFillStyle(3001)
                 self.histos[suff+'FitBand'+'y'+str(j)+c].Draw("E2 same")
+                self.histos[suff+'FitAC'+'y'+str(j)+c].DrawCopy("same") #to have foreground   
+                self.leg[suff+'FitAC'+'y'+str(j)+c].Draw("same")
+                
+                self.canvas['pr'+suff+'FitAC'+'y'+str(j)+c].cd()
+                self.canvas['pr'+suff+'FitAC'+'y'+str(j)+c].SetGridx()
+                self.canvas['pr'+suff+'FitAC'+'y'+str(j)+c].SetGridy()
+                self.histos[suff+'FitRatioAC'+'y'+str(j)+c] = self.histos[suff+'FitRatioAC'+c].ProjectionX("projY{}_{}_RatioAC".format(j,c),j,j)
+                self.histos[suff+'FitRatio'+'y'+str(j)+c] = self.histos[suff+'FitRatio'+c].ProjectionX("projY{}_{}_Ratio".format(j,c),j,j)
+                for d in self.dirList :
+                    self.histos[suff+'FitRatioPDF'+'y'+str(j)+d+c] = self.histos[suff+'FitRatioPDF'+d+c].ProjectionX("projY{}_{}_RatioPDF".format(j,c)+d,j,j)
+                    self.histos[suff+'FitRatioScale'+'y'+str(j)+d+c] = self.histos[suff+'FitRatioScale'+d+c].ProjectionX("projY{}_{}_RatioScale".format(j,c)+d,j,j)
+                self.histos[suff+'FitRatioAC'+'y'+str(j)+c].GetXaxis().SetTitle('Y_{W}')
+                self.histos[suff+'FitRatioAC'+'y'+str(j)+c].GetYaxis().SetTitle('Pred./Theory')
+                self.histos[suff+'FitRatioAC'+'y'+str(j)+c].SetMarkerStyle(20)
+                self.histos[suff+'FitRatioAC'+'y'+str(j)+c].SetMarkerSize(0.5)
+                self.histos[suff+'FitRatioAC'+'y'+str(j)+c].SetLineWidth(2)
+                self.histos[suff+'FitRatio'+'y'+str(j)+c].SetLineWidth(2)
+                self.histos[suff+'FitRatioAC'+'y'+str(j)+c].SetTitle("")
+                self.histos[suff+'FitRatioAC'+'y'+str(j)+c].GetYaxis().SetTitleOffset(0.25)
+                self.histos[suff+'FitRatioAC'+'y'+str(j)+c].SetTitleSize(0.15,'y')
+                self.histos[suff+'FitRatioAC'+'y'+str(j)+c].SetLabelSize(0.12,'y')
+                self.histos[suff+'FitRatioAC'+'y'+str(j)+c].GetXaxis().SetTitleOffset(1.)
+                self.histos[suff+'FitRatioAC'+'y'+str(j)+c].SetTitleSize(0.12,'x')
+                self.histos[suff+'FitRatioAC'+'y'+str(j)+c].SetLabelSize(0.15,'x')
+                self.histos[suff+'FitRatioAC'+'y'+str(j)+c].SetStats(0)
+                for d in self.dirList :
+                    self.histos[suff+'FitRatioPDF'+'y'+str(j)+d+c].SetLineWidth(2)
+                    self.histos[suff+'FitRatioScale'+'y'+str(j)+d+c].SetLineWidth(2)
+                self.histos[suff+'FitRatio'+'y'+str(j)+c].SetLineColor(ROOT.kOrange)
+                for d in self.dirList :
+                    self.histos[suff+'FitRatioPDF'+'y'+str(j)+d+c].SetLineColor(self.groupedSystColors['LHEPdfWeightVars'][0])
+                    self.histos[suff+'FitRatioScale'+'y'+str(j)+d+c].SetLineColor(self.groupedSystColors['LHEScaleWeightVars'][0])
+                self.histos[suff+'FitRatio'+'y'+str(j)+c].SetFillColor(ROOT.kOrange)
+                self.histos[suff+'FitRatio'+'y'+str(j)+c].SetFillStyle(3001)
+                
+                maxvalRatio=0
+                for xx in range(1,self.histos[suff+'FitRatioAC'+'y'+str(j)+c].GetNbinsX()+1) :
+                    if self.histos[suff+'FitRatio'+'y'+str(j)+c].GetBinError(xx)>maxvalRatio :
+                        maxvalRatio= self.histos[suff+'FitRatio'+'y'+str(j)+c].GetBinError(xx)
+                    self.histos[suff+'FitRatioAC'+'y'+str(j)+c].SetBinError(xx,0)
+                if maxvalRatio>self.RatioPadYcut :
+                    maxvalRatio=self.RatioPadYcut
+                self.histos[suff+'FitRatioAC'+'y'+str(j)+c].GetYaxis().SetRangeUser(-maxvalRatio*1.1+1,maxvalRatio*1.1+1)
+                
+                self.histos[suff+'FitRatioAC'+'y'+str(j)+c].Draw("EX0")
+                self.histos[suff+'FitRatio'+'y'+str(j)+c].DrawCopy("same E2")
+                for d in self.dirList :
+                    self.histos[suff+'FitRatioPDF'+'y'+str(j)+d+c].Draw("hist same")
+                    self.histos[suff+'FitRatioScale'+'y'+str(j)+d+c].Draw("hist same")
+                self.histos[suff+'FitRatioAC'+'y'+str(j)+c].Draw("EX0 same") #to have foreground
+                
+                self.leg[suff+'FitAC'+'y'+str(j)+c].AddEntry(self.histos[suff+'FitAC'+'y'+str(j)+c], "Fit")
+                self.leg[suff+'FitAC'+'y'+str(j)+c].AddEntry(self.histos[suff+'FitBand'+'y'+str(j)+c], "MC Syst. Unc.")
+                self.leg[suff+'FitAC'+'y'+str(j)+c].AddEntry(self.histos[suff+'FitRatioPDF'+'y'+str(j)+'up'+c], self.groupedSystColors['LHEPdfWeightVars'][1])
+                self.leg[suff+'FitAC'+'y'+str(j)+c].AddEntry(self.histos[suff+'FitRatioScale'+'y'+str(j)+'up'+c], self.groupedSystColors['LHEScaleWeightVars'][1])
+                
                 
                 #Additional block for scale-pdf splitted
-                self.histos[suff+'FitBandPDF'+'y'+str(j)+c].SetFillColor(self.groupedSystColors['LHEPdfWeightVars'][0])#kMagenta-7)
-                self.histos[suff+'FitBandPDF'+'y'+str(j)+c].SetFillStyle(0)
-                self.histos[suff+'FitBandPDF'+'y'+str(j)+c].SetLineColor(self.groupedSystColors['LHEPdfWeightVars'][0])#kMagenta-7)
-                self.histos[suff+'FitBandPDF'+'y'+str(j)+c].SetLineWidth(2)
-                self.histos[suff+'FitBandPDF'+'y'+str(j)+c].DrawCopy("E2 same")
-                self.histos[suff+'FitBandPDF'+'y'+str(j)+c].SetFillStyle(3001)
-                self.histos[suff+'FitBandPDF'+'y'+str(j)+c].Draw("E2 same")
-                self.histos[suff+'FitBandScale'+'y'+str(j)+c].SetFillColor(self.groupedSystColors['LHEScaleWeightVars'][0])#kMagenta-7)
-                self.histos[suff+'FitBandScale'+'y'+str(j)+c].SetFillStyle(0)
-                self.histos[suff+'FitBandScale'+'y'+str(j)+c].SetLineColor(self.groupedSystColors['LHEScaleWeightVars'][0])#kMagenta-7)
-                self.histos[suff+'FitBandScale'+'y'+str(j)+c].SetLineWidth(2)
-                self.histos[suff+'FitBandScale'+'y'+str(j)+c].DrawCopy("E2 same")
-                self.histos[suff+'FitBandScale'+'y'+str(j)+c].SetFillStyle(3001)
-                self.histos[suff+'FitBandScale'+'y'+str(j)+c].Draw("E2 same")
+                # self.histos[suff+'FitBandPDF'+'y'+str(j)+c].SetFillColor(self.groupedSystColors['LHEPdfWeightVars'][0])#kMagenta-7)
+                # self.histos[suff+'FitBandPDF'+'y'+str(j)+c].SetFillStyle(0)
+                # self.histos[suff+'FitBandPDF'+'y'+str(j)+c].SetLineColor(self.groupedSystColors['LHEPdfWeightVars'][0])#kMagenta-7)
+                # self.histos[suff+'FitBandPDF'+'y'+str(j)+c].SetLineWidth(2)
+                # self.histos[suff+'FitBandPDF'+'y'+str(j)+c].DrawCopy("E2 same")
+                # self.histos[suff+'FitBandPDF'+'y'+str(j)+c].SetFillStyle(3001)
+                # self.histos[suff+'FitBandPDF'+'y'+str(j)+c].Draw("E2 same")
+                # self.histos[suff+'FitBandScale'+'y'+str(j)+c].SetFillColor(self.groupedSystColors['LHEScaleWeightVars'][0])#kMagenta-7)
+                # self.histos[suff+'FitBandScale'+'y'+str(j)+c].SetFillStyle(0)
+                # self.histos[suff+'FitBandScale'+'y'+str(j)+c].SetLineColor(self.groupedSystColors['LHEScaleWeightVars'][0])#kMagenta-7)
+                # self.histos[suff+'FitBandScale'+'y'+str(j)+c].SetLineWidth(2)
+                # self.histos[suff+'FitBandScale'+'y'+str(j)+c].DrawCopy("E2 same")
+                # self.histos[suff+'FitBandScale'+'y'+str(j)+c].SetFillStyle(3001)
+                # self.histos[suff+'FitBandScale'+'y'+str(j)+c].Draw("E2 same")
                 
-                self.histos[suff+'FitAC'+'y'+str(j)+c].DrawCopy("same") #to have foreground        
+                     
         
           
 
@@ -667,77 +851,167 @@ class plotter :
             #-------------- unrolled: qt large, y small ----------------- #
             self.histos[suff+'FitAC'+'UNRqty'+c] = ROOT.TH1F(suff+'_coeff_UNRqty'+c,suff+'_coeff_UNRqty'+c,len(self.unrolledQtY)-1, array('f',self.unrolledQtY))
             self.histos[suff+'FitBand'+'UNRqty'+c] = ROOT.TH1F(suff+'_coeff_UNRqty_syst'+c,suff+'_coeff_UNRqty_syst'+c,len(self.unrolledQtY)-1, array('f',self.unrolledQtY))
-            self.histos[suff+'FitBandScale'+'UNRqty'+c] = ROOT.TH1F(suff+'_coeff_UNRqty_systPDF'+c,suff+'_coeff_UNRqty_systPDF'+c,len(self.unrolledQtY)-1, array('f',self.unrolledQtY))
-            self.histos[suff+'FitBandPDF'+'UNRqty'+c] = ROOT.TH1F(suff+'_coeff_UNRqty_systScale'+c,suff+'_coeff_UNRqty_systScale'+c,len(self.unrolledQtY)-1, array('f',self.unrolledQtY))
+            # self.histos[suff+'FitBandScale'+'UNRqty'+c] = ROOT.TH1F(suff+'_coeff_UNRqty_systPDF'+c,suff+'_coeff_UNRqty_systPDF'+c,len(self.unrolledQtY)-1, array('f',self.unrolledQtY))
+            # self.histos[suff+'FitBandPDF'+'UNRqty'+c] = ROOT.TH1F(suff+'_coeff_UNRqty_systScale'+c,suff+'_coeff_UNRqty_systScale'+c,len(self.unrolledQtY)-1, array('f',self.unrolledQtY))
+            self.histos[suff+'FitRatio'+'UNRqty'+c] = ROOT.TH1F(suff+'_coeff_UNRqty_Ratio'+c,suff+'_coeff_UNRqty_Ratio'+c,len(self.unrolledQtY)-1, array('f',self.unrolledQtY))
+            self.histos[suff+'FitRatioAC'+'UNRqty'+c] = ROOT.TH1F(suff+'_coeff_UNRqty_RatioAC'+c,suff+'_coeff_UNRqty_RatioAC'+c,len(self.unrolledQtY)-1, array('f',self.unrolledQtY))
+            for d in self.dirList :
+                self.histos[suff+'FitRatioPDF'+'UNRqty'+d+c] = ROOT.TH1F(suff+'_coeff_UNRqty_RatioPDF'+d+c,suff+'_coeff_UNRqty_RatioPDF'+d+c,len(self.unrolledQtY)-1, array('f',self.unrolledQtY))
+                self.histos[suff+'FitRatioScale'+'UNRqty'+d+c] = ROOT.TH1F(suff+'_coeff_UNRqty_RatioScale'+d+c,suff+'_coeff_UNRqty_RatioScale'+d+c,len(self.unrolledQtY)-1, array('f',self.unrolledQtY))
+            
             for q in self.qtArr[:-1] :
                 for y in self.yArr[:-1] :
                     indexUNRqty = self.qtArr.index(float(q))*(len(self.yArr)-1)+self.yArr.index(float(y))
                     self.histos[suff+'FitAC'+'UNRqty'+c].SetBinContent(indexUNRqty+1,self.histos[suff+'FitAC'+c].GetBinContent(self.yArr.index(y)+1,self.qtArr.index(q)+1))
                     self.histos[suff+'FitAC'+'UNRqty'+c].SetBinError(indexUNRqty+1,self.histos[suff+'FitAC'+c].GetBinError(self.yArr.index(y)+1,self.qtArr.index(q)+1))
                     self.histos[suff+'FitBand'+'UNRqty'+c].SetBinContent(indexUNRqty+1,self.histos[suff+'FitBand'+c].GetBinContent(self.yArr.index(y)+1,self.qtArr.index(q)+1))
-                    self.histos[suff+'FitBand'+'UNRqty'+c].SetBinError(indexUNRqty+1,self.histos[suff+'FitBand'+c].GetBinError(self.yArr.index(y)+1,self.qtArr.index(q)+1))
-                    
-                    self.histos[suff+'FitBandPDF'+'UNRqty'+c].SetBinContent(indexUNRqty+1,self.histos[suff+'FitBandPDF'+c].GetBinContent(self.yArr.index(y)+1,self.qtArr.index(q)+1))
-                    self.histos[suff+'FitBandPDF'+'UNRqty'+c].SetBinError(indexUNRqty+1,self.histos[suff+'FitBandPDF'+c].GetBinError(self.yArr.index(y)+1,self.qtArr.index(q)+1))
-                    self.histos[suff+'FitBandScale'+'UNRqty'+c].SetBinContent(indexUNRqty+1,self.histos[suff+'FitBandScale'+c].GetBinContent(self.yArr.index(y)+1,self.qtArr.index(q)+1))
-                    self.histos[suff+'FitBandScale'+'UNRqty'+c].SetBinError(indexUNRqty+1,self.histos[suff+'FitBandScale'+c].GetBinError(self.yArr.index(y)+1,self.qtArr.index(q)+1))
-                    
-                    # if self.yArr.index(y)==len(self.yArr)-2 :
-                        # self.histos[suff+'FitAC'+'UNRqty'+c].GetXaxis().SetBinLabel(indexUNRqty+1,"q_{T}="+str(q)+", Y="+str(y))
+                    self.histos[suff+'FitBand'+'UNRqty'+c].SetBinError(indexUNRqty+1,self.histos[suff+'FitBand'+c].GetBinError(self.yArr.index(y)+1,self.qtArr.index(q)+1))   
+                    # self.histos[suff+'FitBandPDF'+'UNRqty'+c].SetBinContent(indexUNRqty+1,self.histos[suff+'FitBandPDF'+c].GetBinContent(self.yArr.index(y)+1,self.qtArr.index(q)+1))
+                    # self.histos[suff+'FitBandPDF'+'UNRqty'+c].SetBinError(indexUNRqty+1,self.histos[suff+'FitBandPDF'+c].GetBinError(self.yArr.index(y)+1,self.qtArr.index(q)+1))
+                    # self.histos[suff+'FitBandScale'+'UNRqty'+c].SetBinContent(indexUNRqty+1,self.histos[suff+'FitBandScale'+c].GetBinContent(self.yArr.index(y)+1,self.qtArr.index(q)+1))
+                    # self.histos[suff+'FitBandScale'+'UNRqty'+c].SetBinError(indexUNRqty+1,self.histos[suff+'FitBandScale'+c].GetBinError(self.yArr.index(y)+1,self.qtArr.index(q)+1))
+                    self.histos[suff+'FitRatio'+'UNRqty'+c].SetBinContent(indexUNRqty+1,self.histos[suff+'FitRatio'+c].GetBinContent(self.yArr.index(y)+1,self.qtArr.index(q)+1))
+                    self.histos[suff+'FitRatio'+'UNRqty'+c].SetBinError(indexUNRqty+1,self.histos[suff+'FitRatio'+c].GetBinError(self.yArr.index(y)+1,self.qtArr.index(q)+1))
+                    self.histos[suff+'FitRatioAC'+'UNRqty'+c].SetBinContent(indexUNRqty+1,self.histos[suff+'FitRatioAC'+c].GetBinContent(self.yArr.index(y)+1,self.qtArr.index(q)+1))
+                    self.histos[suff+'FitRatioAC'+'UNRqty'+c].SetBinError(indexUNRqty+1,self.histos[suff+'FitRatioAC'+c].GetBinError(self.yArr.index(y)+1,self.qtArr.index(q)+1))
+
+                    for d in self.dirList :
+                        self.histos[suff+'FitRatioPDF'+'UNRqty'+d+c].SetBinContent(indexUNRqty+1,self.histos[suff+'FitRatioPDF'+d+c].GetBinContent(self.yArr.index(y)+1,self.qtArr.index(q)+1))
+                        self.histos[suff+'FitRatioPDF'+'UNRqty'+d+c].SetBinError(indexUNRqty+1,self.histos[suff+'FitRatioPDF'+d+c].GetBinError(self.yArr.index(y)+1,self.qtArr.index(q)+1))
+                        self.histos[suff+'FitRatioScale'+'UNRqty'+d+c].SetBinContent(indexUNRqty+1,self.histos[suff+'FitRatioScale'+d+c].GetBinContent(self.yArr.index(y)+1,self.qtArr.index(q)+1))
+                        self.histos[suff+'FitRatioScale'+'UNRqty'+d+c].SetBinError(indexUNRqty+1,self.histos[suff+'FitRatioScale'+d+c].GetBinError(self.yArr.index(y)+1,self.qtArr.index(q)+1))
+
                     if self.yArr.index(y)==0 :
                         self.histos[suff+'FitAC'+'UNRqty'+c].GetXaxis().SetNdivisions(-1)
                         self.histos[suff+'FitAC'+'UNRqty'+c].GetXaxis().SetBinLabel(indexUNRqty+1,"q_{T}^{W}#in[%.0f,%.0f]" % (q, self.qtArr[self.qtArr.index(q)+1]))
                         self.histos[suff+'FitAC'+'UNRqty'+c].GetXaxis().ChangeLabel(indexUNRqty+1,340,0.03)
-                    # else :
-                    #     self.histos[suff+'FitAC'+'UNRqty'+c].GetXaxis().SetBinLabel(indexUNRqty+1,str(y))        
+                        
+                        self.histos[suff+'FitRatioAC'+'UNRqty'+c].GetXaxis().SetNdivisions(-1)
+                        self.histos[suff+'FitRatioAC'+'UNRqty'+c].GetXaxis().SetBinLabel(indexUNRqty+1,"q_{T}^{W}#in[%.0f,%.0f]" % (q, self.qtArr[self.qtArr.index(q)+1]))
+                        self.histos[suff+'FitRatioAC'+'UNRqty'+c].GetXaxis().ChangeLabel(indexUNRqty+1,340,0.08)
+    
             self.histos[suff+'FitAC'+'UNRqty'+c].SetTitle(suff+' '+c+", unrolled q_{T}(Y) ")
-            # self.histos[suff+'FitAC'+'UNRqty'+c].GetXaxis().SetTitle('q_{T}^{W} large, Y_{W} small')
-            self.histos[suff+'FitAC'+'UNRqty'+c].GetXaxis().SetTitle('fine binning: Y_{W} 0#rightarrow 2.4')
-            self.histos[suff+'FitAC'+'UNRqty'+c].GetXaxis().SetTitleOffset(1.45)
-            self.histos[suff+'FitAC'+'UNRqty'+c].GetYaxis().SetTitle(c)
+            # self.histos[suff+'FitAC'+'UNRqty'+c].GetXaxis().SetTitle('fine binning: Y_{W} 0#rightarrow 2.4')
+            # self.histos[suff+'FitAC'+'UNRqty'+c].GetXaxis().SetTitleOffset(1.45)
+            self.histos[suff+'FitAC'+'UNRqty'+c].GetYaxis().SetTitleSize(0.06)
             if not 'unpol' in c :
-                self.histos[suff+'FitAC'+'UNRqty'+c].GetYaxis().SetRangeUser(-4,4)
+                # self.histos[suff+'FitAC'+'UNRqty'+c].GetYaxis().SetRangeUser(-4,4)
+                self.histos[suff+'FitAC'+'UNRqty'+c].GetYaxis().SetTitle(c)
+            else :
+                self.histos[suff+'FitAC'+'UNRqty'+c].GetYaxis().SetTitle('#sigma^{U+L} [fb]')
             self.histos[suff+'FitAC'+'UNRqty'+c].SetLineWidth(2)
             self.histos[suff+'FitAC'+'UNRqty'+c].SetStats(0)
-            self.histos[suff+'FitBand'+'UNRqty'+c].SetFillColor(ROOT.kOrange-3)#kMagenta-7)
+            self.histos[suff+'FitBand'+'UNRqty'+c].SetFillColor(ROOT.kOrange)#kMagenta-7)
             self.histos[suff+'FitBand'+'UNRqty'+c].SetFillStyle(0)
-            self.histos[suff+'FitBand'+'UNRqty'+c].SetLineColor(ROOT.kOrange-3)#kMagenta-7)
+            self.histos[suff+'FitBand'+'UNRqty'+c].SetLineColor(ROOT.kOrange)#kMagenta-7)
             self.histos[suff+'FitBand'+'UNRqty'+c].SetLineWidth(2)
+            self.histos[suff+'FitAC'+'UNRqty'+c].SetLineColor(1)
+            self.histos[suff+'FitAC'+'UNRqty'+c].SetMarkerStyle(20)
+            self.histos[suff+'FitAC'+'UNRqty'+c].SetMarkerSize(0.5)
+            self.histos[suff+'FitAC'+'UNRqty'+c].GetYaxis().SetTitleOffset(0.7)
+            self.histos[suff+'FitAC'+'UNRqty'+c].GetXaxis().SetTitleOffset(3)
+            self.histos[suff+'FitAC'+'UNRqty'+c].GetXaxis().SetLabelOffset(3)
             
-            self.histos[suff+'FitBandPDF'+'UNRqty'+c].SetFillColor(self.groupedSystColors['LHEPdfWeightVars'][0])#kMagenta-7)
-            self.histos[suff+'FitBandPDF'+'UNRqty'+c].SetFillStyle(0)
-            self.histos[suff+'FitBandPDF'+'UNRqty'+c].SetLineColor(self.groupedSystColors['LHEPdfWeightVars'][0])#kMagenta-7)
-            self.histos[suff+'FitBandPDF'+'UNRqty'+c].SetLineWidth(2)    
-            self.histos[suff+'FitBandScale'+'UNRqty'+c].SetFillColor(self.groupedSystColors['LHEScaleWeightVars'][0])#kMagenta-7)
-            self.histos[suff+'FitBandScale'+'UNRqty'+c].SetFillStyle(0)
-            self.histos[suff+'FitBandScale'+'UNRqty'+c].SetLineColor(self.groupedSystColors['LHEScaleWeightVars'][0])#kMagenta-7)
-            self.histos[suff+'FitBandScale'+'UNRqty'+c].SetLineWidth(2)
+            self.histos[suff+'FitRatioAC'+'UNRqty'+c].GetYaxis().SetTitle('Pred./Theory')
+            self.histos[suff+'FitRatioAC'+'UNRqty'+c].SetMarkerStyle(20)
+            self.histos[suff+'FitRatioAC'+'UNRqty'+c].SetMarkerSize(0.5)
+            self.histos[suff+'FitRatioAC'+'UNRqty'+c].SetLineWidth(2)
+            self.histos[suff+'FitRatio'+'UNRqty'+c].SetLineWidth(2)
+            self.histos[suff+'FitRatioAC'+'UNRqty'+c].SetTitle("")
+            self.histos[suff+'FitRatioAC'+'UNRqty'+c].GetYaxis().SetTitleOffset(0.25)
+            self.histos[suff+'FitRatioAC'+'UNRqty'+c].SetTitleSize(0.15,'y')
+            self.histos[suff+'FitRatioAC'+'UNRqty'+c].SetLabelSize(0.12,'y')
+            self.histos[suff+'FitRatioAC'+'UNRqty'+c].GetXaxis().SetTitleOffset(1.)
+            self.histos[suff+'FitRatioAC'+'UNRqty'+c].SetTitleSize(0.12,'x')
+            self.histos[suff+'FitRatioAC'+'UNRqty'+c].SetLabelSize(0.15,'x')
+            self.histos[suff+'FitRatioAC'+'UNRqty'+c].SetLabelOffset(0.015,'x')
+            self.histos[suff+'FitRatioAC'+'UNRqty'+c].SetStats(0)
+            self.histos[suff+'FitRatioAC'+'UNRqty'+c].GetXaxis().SetTitle('fine binning: Y_{W} 0#rightarrow 2.4')
+            for d in self.dirList :
+                self.histos[suff+'FitRatioPDF'+'UNRqty'+d+c].SetLineWidth(2)
+                self.histos[suff+'FitRatioScale'+'UNRqty'+d+c].SetLineWidth(2)
+            self.histos[suff+'FitRatio'+'UNRqty'+c].SetLineColor(ROOT.kOrange)
+            for d in self.dirList :
+                self.histos[suff+'FitRatioPDF'+'UNRqty'+d+c].SetLineColor(self.groupedSystColors['LHEPdfWeightVars'][0])
+                self.histos[suff+'FitRatioScale'+'UNRqty'+d+c].SetLineColor(self.groupedSystColors['LHEScaleWeightVars'][0])
+            self.histos[suff+'FitRatio'+'UNRqty'+c].SetFillColor(ROOT.kOrange)
+            self.histos[suff+'FitRatio'+'UNRqty'+c].SetFillStyle(3001)
             
-            self.canvas[suff+'FitAC'+'UNRqty'+c] = ROOT.TCanvas(suff+'_c_UNRqty'+c,suff+'_c_UNRqty'+c,800,600)
+            maxvalRatio=0
+            for xx in range(1,len(self.unrolledQtY)) :
+                if self.histos[suff+'FitRatio'+'UNRqty'+c].GetBinError(xx)>maxvalRatio :
+                    maxvalRatio= self.histos[suff+'FitRatio'+'UNRqty'+c].GetBinError(xx)
+                self.histos[suff+'FitRatioAC'+'UNRqty'+c].SetBinError(xx,0)
+            if maxvalRatio>self.RatioPadYcut :
+                maxvalRatio=self.RatioPadYcut
+            self.histos[suff+'FitRatioAC'+'UNRqty'+c].GetYaxis().SetRangeUser(-maxvalRatio*1.1+1,maxvalRatio*1.1+1)
+
+            # self.histos[suff+'FitBandPDF'+'UNRqty'+c].SetFillColor(self.groupedSystColors['LHEPdfWeightVars'][0])#kMagenta-7)
+            # self.histos[suff+'FitBandPDF'+'UNRqty'+c].SetFillStyle(0)
+            # self.histos[suff+'FitBandPDF'+'UNRqty'+c].SetLineColor(self.groupedSystColors['LHEPdfWeightVars'][0])#kMagenta-7)
+            # self.histos[suff+'FitBandPDF'+'UNRqty'+c].SetLineWidth(2)    
+            # self.histos[suff+'FitBandScale'+'UNRqty'+c].SetFillColor(self.groupedSystColors['LHEScaleWeightVars'][0])#kMagenta-7)
+            # self.histos[suff+'FitBandScale'+'UNRqty'+c].SetFillStyle(0)
+            # self.histos[suff+'FitBandScale'+'UNRqty'+c].SetLineColor(self.groupedSystColors['LHEScaleWeightVars'][0])#kMagenta-7)
+            # self.histos[suff+'FitBandScale'+'UNRqty'+c].SetLineWidth(2)
+            
+            self.canvas[suff+'FitAC'+'UNRqty'+c] = ROOT.TCanvas(suff+'_c_UNRqty'+c,suff+'_c_UNRqty'+c,1200,1050)
+            self.leg[suff+'FitAC'+'UNRqty'+c] = ROOT.TLegend(0.6,0.75,0.9,0.9)
             self.canvas[suff+'FitAC'+'UNRqty'+c].cd()
-            self.canvas[suff+'FitAC'+'UNRqty'+c].SetGridx()
-            self.canvas[suff+'FitAC'+'UNRqty'+c].SetGridy()
+            self.canvas['ph'+suff+'FitAC'+'UNRqty'+c] = ROOT.TPad('ph'+suff+'_c_UNRqty'+c, 'ph'+suff+'_c_UNRqty'+c,0,0.2,1,1)
+            self.canvas['pr'+suff+'FitAC'+'UNRqty'+c] = ROOT.TPad('pr'+suff+'_c_UNRqty'+c,  'pr'+suff+'_c_UNRqty'+c, 0,0,1,0.2)
+            self.canvas['ph'+suff+'FitAC'+'UNRqty'+c].SetBottomMargin(0.02)
+            self.canvas['ph'+suff+'FitAC'+'UNRqty'+c].Draw()
+            self.canvas['pr'+suff+'FitAC'+'UNRqty'+c].SetTopMargin(0)
+            self.canvas['pr'+suff+'FitAC'+'UNRqty'+c].SetBottomMargin(0.25)
+            self.canvas['pr'+suff+'FitAC'+'UNRqty'+c].Draw()
+            
+            self.canvas['ph'+suff+'FitAC'+'UNRqty'+c].cd()
+            self.canvas['ph'+suff+'FitAC'+'UNRqty'+c].SetGridx()
+            self.canvas['ph'+suff+'FitAC'+'UNRqty'+c].SetGridy()
             self.histos[suff+'FitAC'+'UNRqty'+c].Draw()
             self.histos[suff+'FitBand'+'UNRqty'+c].DrawCopy('E2 same')
             self.histos[suff+'FitBand'+'UNRqty'+c].SetFillStyle(3001)
             self.histos[suff+'FitBand'+'UNRqty'+c].Draw("E2 same")
+            self.histos[suff+'FitAC'+'UNRqty'+c].DrawCopy("same") #to have foreground 
+            self.leg[suff+'FitAC'+'UNRqty'+c].Draw("same")                   
+
+            self.canvas['pr'+suff+'FitAC'+'UNRqty'+c].cd()
+            self.canvas['pr'+suff+'FitAC'+'UNRqty'+c].SetGridx()
+            self.canvas['pr'+suff+'FitAC'+'UNRqty'+c].SetGridy()
+            self.histos[suff+'FitRatioAC'+'UNRqty'+c].Draw("EX0")
+            self.histos[suff+'FitRatio'+'UNRqty'+c].DrawCopy("same E2")
+            for d in self.dirList :
+                self.histos[suff+'FitRatioPDF'+'UNRqty'+d+c].Draw("hist same")
+                self.histos[suff+'FitRatioScale'+'UNRqty'+d+c].Draw("hist same")
+            self.histos[suff+'FitRatioAC'+'UNRqty'+c].Draw("EX0 same") #to have foreground
             
-            self.histos[suff+'FitBandPDF'+'UNRqty'+c].DrawCopy('E2 same')
-            self.histos[suff+'FitBandPDF'+'UNRqty'+c].SetFillStyle(3004)
-            self.histos[suff+'FitBandPDF'+'UNRqty'+c].Draw("E2 same")
-            self.histos[suff+'FitBandScale'+'UNRqty'+c].DrawCopy('E2 same')
-            self.histos[suff+'FitBandScale'+'UNRqty'+c].SetFillStyle(3005)
-            self.histos[suff+'FitBandScale'+'UNRqty'+c].Draw("E2 same")
+            self.leg[suff+'FitAC'+'UNRqty'+c].AddEntry(self.histos[suff+'FitAC'+'UNRqty'+c], "Fit")
+            self.leg[suff+'FitAC'+'UNRqty'+c].AddEntry(self.histos[suff+'FitBand'+'UNRqty'+c], "MC Syst. Unc.")
+            self.leg[suff+'FitAC'+'UNRqty'+c].AddEntry(self.histos[suff+'FitRatioPDF'+'UNRqty'+'up'+c], self.groupedSystColors['LHEPdfWeightVars'][1])
+            self.leg[suff+'FitAC'+'UNRqty'+c].AddEntry(self.histos[suff+'FitRatioScale'+'UNRqty'+'up'+c], self.groupedSystColors['LHEScaleWeightVars'][1])
+                    
+            # self.histos[suff+'FitBandPDF'+'UNRqty'+c].DrawCopy('E2 same')
+            # self.histos[suff+'FitBandPDF'+'UNRqty'+c].SetFillStyle(3004)
+            # self.histos[suff+'FitBandPDF'+'UNRqty'+c].Draw("E2 same")
+            # self.histos[suff+'FitBandScale'+'UNRqty'+c].DrawCopy('E2 same')
+            # self.histos[suff+'FitBandScale'+'UNRqty'+c].SetFillStyle(3005)
+            # self.histos[suff+'FitBandScale'+'UNRqty'+c].Draw("E2 same")
             
-            self.histos[suff+'FitAC'+'UNRqty'+c].DrawCopy("same") #to have foreground                    
 
 
 
             #------------- unrolled: y large, qt small -----------------                    
             self.histos[suff+'FitAC'+'UNRyqt'+c] = ROOT.TH1F(suff+'_coeff_UNRyqt'+c,suff+'_coeff_UNRyqt'+c,len(self.unrolledYQt)-1, array('f',self.unrolledYQt))
             self.histos[suff+'FitBand'+'UNRyqt'+c] = ROOT.TH1F(suff+'_coeff_UNRyqt_syst'+c,suff+'_coeff_UNRyqt_syst'+c,len(self.unrolledYQt)-1, array('f',self.unrolledYQt))
-            self.histos[suff+'FitBandPDF'+'UNRyqt'+c] = ROOT.TH1F(suff+'_coeff_UNRyqt_systPDF'+c,suff+'_coeff_UNRyqt_systPDF'+c,len(self.unrolledYQt)-1, array('f',self.unrolledYQt))
-            self.histos[suff+'FitBandScale'+'UNRyqt'+c] = ROOT.TH1F(suff+'_coeff_UNRyqt_systScale'+c,suff+'_coeff_UNRyqt_systScale'+c,len(self.unrolledYQt)-1, array('f',self.unrolledYQt))
+            # self.histos[suff+'FitBandPDF'+'UNRyqt'+c] = ROOT.TH1F(suff+'_coeff_UNRyqt_systPDF'+c,suff+'_coeff_UNRyqt_systPDF'+c,len(self.unrolledYQt)-1, array('f',self.unrolledYQt))
+            # self.histos[suff+'FitBandScale'+'UNRyqt'+c] = ROOT.TH1F(suff+'_coeff_UNRyqt_systScale'+c,suff+'_coeff_UNRyqt_systScale'+c,len(self.unrolledYQt)-1, array('f',self.unrolledYQt))
+            self.histos[suff+'FitRatio'+'UNRyqt'+c] = ROOT.TH1F(suff+'_coeff_UNRyqt_Ratio'+c,suff+'_coeff_UNRyqt_Ratio'+c,len(self.unrolledYQt)-1, array('f',self.unrolledYQt))
+            self.histos[suff+'FitRatioAC'+'UNRyqt'+c] = ROOT.TH1F(suff+'_coeff_UNRyqt_RatioAC'+c,suff+'_coeff_UNRyqt_RatioAC'+c,len(self.unrolledYQt)-1, array('f',self.unrolledYQt))
+            for d in self.dirList :
+                self.histos[suff+'FitRatioPDF'+'UNRyqt'+d+c] = ROOT.TH1F(suff+'_coeff_UNRyqt_RatioPDF'+d+c,suff+'_coeff_UNRyqt_RatioPDF'+d+c,len(self.unrolledYQt)-1, array('f',self.unrolledYQt))
+                self.histos[suff+'FitRatioScale'+'UNRyqt'+d+c] = ROOT.TH1F(suff+'_coeff_UNRyqt_RatioScale'+d+c,suff+'_coeff_UNRyqt_RatioScale'+d+c,len(self.unrolledYQt)-1, array('f',self.unrolledYQt))
+            
             for y in self.yArr[:-1] :
                 for q in self.qtArr[:-1] :
                     indexUNRyqt = self.yArr.index(float(y))*(len(self.qtArr)-1)+self.qtArr.index(float(q))
@@ -745,139 +1019,358 @@ class plotter :
                     self.histos[suff+'FitAC'+'UNRyqt'+c].SetBinError(indexUNRyqt+1,self.histos[suff+'FitAC'+c].GetBinError(self.yArr.index(y)+1,self.qtArr.index(q)+1))
                     self.histos[suff+'FitBand'+'UNRyqt'+c].SetBinContent(indexUNRyqt+1,self.histos[suff+'FitBand'+c].GetBinContent(self.yArr.index(y)+1,self.qtArr.index(q)+1))
                     self.histos[suff+'FitBand'+'UNRyqt'+c].SetBinError(indexUNRyqt+1,self.histos[suff+'FitBand'+c].GetBinError(self.yArr.index(y)+1,self.qtArr.index(q)+1))
-                    
-                    self.histos[suff+'FitBandPDF'+'UNRyqt'+c].SetBinContent(indexUNRyqt+1,self.histos[suff+'FitBandPDF'+c].GetBinContent(self.yArr.index(y)+1,self.qtArr.index(q)+1))
-                    self.histos[suff+'FitBandPDF'+'UNRyqt'+c].SetBinError(indexUNRyqt+1,self.histos[suff+'FitBandPDF'+c].GetBinError(self.yArr.index(y)+1,self.qtArr.index(q)+1))
-                    self.histos[suff+'FitBandScale'+'UNRyqt'+c].SetBinContent(indexUNRyqt+1,self.histos[suff+'FitBandScale'+c].GetBinContent(self.yArr.index(y)+1,self.qtArr.index(q)+1))
-                    self.histos[suff+'FitBandScale'+'UNRyqt'+c].SetBinError(indexUNRyqt+1,self.histos[suff+'FitBandScale'+c].GetBinError(self.yArr.index(y)+1,self.qtArr.index(q)+1))                    
-                    
+                    # self.histos[suff+'FitBandPDF'+'UNRyqt'+c].SetBinContent(indexUNRyqt+1,self.histos[suff+'FitBandPDF'+c].GetBinContent(self.yArr.index(y)+1,self.qtArr.index(q)+1))
+                    # self.histos[suff+'FitBandPDF'+'UNRyqt'+c].SetBinError(indexUNRyqt+1,self.histos[suff+'FitBandPDF'+c].GetBinError(self.yArr.index(y)+1,self.qtArr.index(q)+1))
+                    # self.histos[suff+'FitBandScale'+'UNRyqt'+c].SetBinContent(indexUNRyqt+1,self.histos[suff+'FitBandScale'+c].GetBinContent(self.yArr.index(y)+1,self.qtArr.index(q)+1))
+                    # self.histos[suff+'FitBandScale'+'UNRyqt'+c].SetBinError(indexUNRyqt+1,self.histos[suff+'FitBandScale'+c].GetBinError(self.yArr.index(y)+1,self.qtArr.index(q)+1))                    
+                    self.histos[suff+'FitRatio'+'UNRyqt'+c].SetBinContent(indexUNRyqt+1,self.histos[suff+'FitRatio'+c].GetBinContent(self.yArr.index(y)+1,self.qtArr.index(q)+1))
+                    self.histos[suff+'FitRatio'+'UNRyqt'+c].SetBinError(indexUNRyqt+1,self.histos[suff+'FitRatio'+c].GetBinError(self.yArr.index(y)+1,self.qtArr.index(q)+1))
+                    self.histos[suff+'FitRatioAC'+'UNRyqt'+c].SetBinContent(indexUNRyqt+1,self.histos[suff+'FitRatioAC'+c].GetBinContent(self.yArr.index(y)+1,self.qtArr.index(q)+1))
+                    self.histos[suff+'FitRatioAC'+'UNRyqt'+c].SetBinError(indexUNRyqt+1,self.histos[suff+'FitRatioAC'+c].GetBinError(self.yArr.index(y)+1,self.qtArr.index(q)+1))
+
+                    for d in self.dirList :
+                        self.histos[suff+'FitRatioPDF'+'UNRyqt'+d+c].SetBinContent(indexUNRyqt+1,self.histos[suff+'FitRatioPDF'+d+c].GetBinContent(self.yArr.index(y)+1,self.qtArr.index(q)+1))
+                        self.histos[suff+'FitRatioPDF'+'UNRyqt'+d+c].SetBinError(indexUNRyqt+1,self.histos[suff+'FitRatioPDF'+d+c].GetBinError(self.yArr.index(y)+1,self.qtArr.index(q)+1))
+                        self.histos[suff+'FitRatioScale'+'UNRyqt'+d+c].SetBinContent(indexUNRyqt+1,self.histos[suff+'FitRatioScale'+d+c].GetBinContent(self.yArr.index(y)+1,self.qtArr.index(q)+1))
+                        self.histos[suff+'FitRatioScale'+'UNRyqt'+d+c].SetBinError(indexUNRyqt+1,self.histos[suff+'FitRatioScale'+d+c].GetBinError(self.yArr.index(y)+1,self.qtArr.index(q)+1))
+
                     if self.qtArr.index(q)==0 :
-                        # self.histos[suff+'FitAC'+'UNRyqt'+c].GetXaxis().SetBinLabel(indexUNRyqt+1,"Y_{W}=%.1f" % y)
                         self.histos[suff+'FitAC'+'UNRyqt'+c].GetXaxis().SetNdivisions(-1)
                         self.histos[suff+'FitAC'+'UNRyqt'+c].GetXaxis().SetBinLabel(indexUNRyqt+1,"Y_{W}#in[%.1f,%.1f]" % (y, self.yArr[self.yArr.index(y)+1]))
-                        # self.histos[suff+'FitAC'+'UNRyqt'+c].GetXaxis().ChangeLabel(indexUNRyqt+1,340,0.03)
+                        self.histos[suff+'FitAC'+'UNRyqt'+c].GetXaxis().ChangeLabel(indexUNRyqt+1,340,0.03)
+                        
+                        self.histos[suff+'FitRatioAC'+'UNRyqt'+c].GetXaxis().SetNdivisions(-1)
+                        self.histos[suff+'FitRatioAC'+'UNRyqt'+c].GetXaxis().SetBinLabel(indexUNRyqt+1,"Y_{W}#in[%.1f,%.1f]" % (y, self.yArr[self.yArr.index(y)+1]))
+                        self.histos[suff+'FitRatioAC'+'UNRyqt'+c].GetXaxis().ChangeLabel(indexUNRyqt+1,340,0.08)
+                        
             self.histos[suff+'FitAC'+'UNRyqt'+c].SetTitle(suff+' '+c+", unrolled Y(q_{T}) ")
-            # self.histos[suff+'FitAC'+'UNRyqt'+c].GetXaxis().SetTitle('Y_{W} large, q_{T}^{W}small')
-            self.histos[suff+'FitAC'+'UNRyqt'+c].GetXaxis().SetTitle('fine binning: q_{T}^{W} 0#rightarrow 32 GeV')
-            self.histos[suff+'FitAC'+'UNRyqt'+c].GetXaxis().SetTitleOffset(1.45)
-            self.histos[suff+'FitAC'+'UNRyqt'+c].GetYaxis().SetTitle(c)
+            # self.histos[suff+'FitAC'+'UNRyqt'+c].GetXaxis().SetTitle('fine binning: q_{T}^{W} 0#rightarrow 32 GeV')
+            # self.histos[suff+'FitAC'+'UNRyqt'+c].GetXaxis().SetTitleOffset(1.45) 
+            self.histos[suff+'FitAC'+'UNRyqt'+c].GetYaxis().SetTitleSize(0.06)
             if not 'unpol' in c :
-                self.histos[suff+'FitAC'+'UNRyqt'+c].GetYaxis().SetRangeUser(-4,4)
+                # self.histos[suff+'FitAC'+'UNRyqt'+c].GetYaxis().SetRangeUser(-4,4)
+                self.histos[suff+'FitAC'+'UNRyqt'+c].GetYaxis().SetTitle(c)
+            else :
+                self.histos[suff+'FitAC'+'UNRyqt'+c].GetYaxis().SetTitle('#sigma^{U+L} [fb]')
             self.histos[suff+'FitAC'+'UNRyqt'+c].SetLineWidth(2)
             self.histos[suff+'FitAC'+'UNRyqt'+c].SetStats(0)
-            self.histos[suff+'FitBand'+'UNRyqt'+c].SetFillColor(ROOT.kOrange-3)
+            self.histos[suff+'FitBand'+'UNRyqt'+c].SetFillColor(ROOT.kOrange)
             self.histos[suff+'FitBand'+'UNRyqt'+c].SetFillStyle(0)
-            self.histos[suff+'FitBand'+'UNRyqt'+c].SetLineColor(ROOT.kOrange-3)
+            self.histos[suff+'FitBand'+'UNRyqt'+c].SetLineColor(ROOT.kOrange)
             self.histos[suff+'FitBand'+'UNRyqt'+c].SetLineWidth(2)
+            self.histos[suff+'FitAC'+'UNRyqt'+c].SetLineColor(1)
+            self.histos[suff+'FitAC'+'UNRyqt'+c].SetMarkerStyle(20)
+            self.histos[suff+'FitAC'+'UNRyqt'+c].SetMarkerSize(0.5)
+            self.histos[suff+'FitAC'+'UNRyqt'+c].GetYaxis().SetTitleOffset(0.7)
+            self.histos[suff+'FitAC'+'UNRyqt'+c].GetXaxis().SetTitleOffset(3)
+            self.histos[suff+'FitAC'+'UNRyqt'+c].GetXaxis().SetLabelOffset(3)
             
-            self.histos[suff+'FitBandPDF'+'UNRyqt'+c].SetFillColor(self.groupedSystColors['LHEPdfWeightVars'][0])
-            self.histos[suff+'FitBandPDF'+'UNRyqt'+c].SetFillStyle(0)
-            self.histos[suff+'FitBandPDF'+'UNRyqt'+c].SetLineColor(self.groupedSystColors['LHEPdfWeightVars'][0])
-            self.histos[suff+'FitBandPDF'+'UNRyqt'+c].SetLineWidth(2)
-            self.histos[suff+'FitBandScale'+'UNRyqt'+c].SetFillColor(self.groupedSystColors['LHEScaleWeightVars'][0])
-            self.histos[suff+'FitBandScale'+'UNRyqt'+c].SetFillStyle(0)
-            self.histos[suff+'FitBandScale'+'UNRyqt'+c].SetLineColor(self.groupedSystColors['LHEScaleWeightVars'][0])
-            self.histos[suff+'FitBandScale'+'UNRyqt'+c].SetLineWidth(2)
+            self.histos[suff+'FitRatioAC'+'UNRyqt'+c].GetYaxis().SetTitle('Pred./Theory')
+            self.histos[suff+'FitRatioAC'+'UNRyqt'+c].SetMarkerStyle(20)
+            self.histos[suff+'FitRatioAC'+'UNRyqt'+c].SetMarkerSize(0.5)
+            self.histos[suff+'FitRatioAC'+'UNRyqt'+c].SetLineWidth(2)
+            self.histos[suff+'FitRatio'+'UNRyqt'+c].SetLineWidth(2)
+            self.histos[suff+'FitRatioAC'+'UNRyqt'+c].SetTitle("")
+            self.histos[suff+'FitRatioAC'+'UNRyqt'+c].GetYaxis().SetTitleOffset(0.25)
+            self.histos[suff+'FitRatioAC'+'UNRyqt'+c].SetTitleSize(0.15,'y')
+            self.histos[suff+'FitRatioAC'+'UNRyqt'+c].SetLabelSize(0.12,'y')
+            self.histos[suff+'FitRatioAC'+'UNRyqt'+c].GetXaxis().SetTitleOffset(1.)
+            self.histos[suff+'FitRatioAC'+'UNRyqt'+c].SetTitleSize(0.12,'x')
+            self.histos[suff+'FitRatioAC'+'UNRyqt'+c].SetLabelSize(0.15,'x')
+            self.histos[suff+'FitRatioAC'+'UNRyqt'+c].SetLabelOffset(0.015,'x')
+            self.histos[suff+'FitRatioAC'+'UNRyqt'+c].SetStats(0)
+            self.histos[suff+'FitRatioAC'+'UNRyqt'+c].GetXaxis().SetTitle('fine binning: q_{T}^{W} 0#rightarrow 32 GeV')
+            for d in self.dirList :
+                self.histos[suff+'FitRatioPDF'+'UNRyqt'+d+c].SetLineWidth(2)
+                self.histos[suff+'FitRatioScale'+'UNRyqt'+d+c].SetLineWidth(2)
+            self.histos[suff+'FitRatio'+'UNRyqt'+c].SetLineColor(ROOT.kOrange)
+            for d in self.dirList :
+                self.histos[suff+'FitRatioPDF'+'UNRyqt'+d+c].SetLineColor(self.groupedSystColors['LHEPdfWeightVars'][0])
+                self.histos[suff+'FitRatioScale'+'UNRyqt'+d+c].SetLineColor(self.groupedSystColors['LHEScaleWeightVars'][0])
+            self.histos[suff+'FitRatio'+'UNRyqt'+c].SetFillColor(ROOT.kOrange)
+            self.histos[suff+'FitRatio'+'UNRyqt'+c].SetFillStyle(3001)
             
-            self.canvas[suff+'FitAC'+'UNRyqt'+c] = ROOT.TCanvas(suff+'_c_UNRyqt'+c,suff+'_c_UNRyqt'+c,800,600)
+            maxvalRatio=0
+            for xx in range(1,len(self.unrolledYQt)) :
+                if self.histos[suff+'FitRatio'+'UNRyqt'+c].GetBinError(xx)>maxvalRatio :
+                    maxvalRatio= self.histos[suff+'FitRatio'+'UNRyqt'+c].GetBinError(xx)
+                self.histos[suff+'FitRatioAC'+'UNRyqt'+c].SetBinError(xx,0)
+            if maxvalRatio>self.RatioPadYcut :
+                maxvalRatio=self.RatioPadYcut
+            self.histos[suff+'FitRatioAC'+'UNRyqt'+c].GetYaxis().SetRangeUser(-maxvalRatio*1.1+1,maxvalRatio*1.1+1)
+            
+            # self.histos[suff+'FitBandPDF'+'UNRyqt'+c].SetFillColor(self.groupedSystColors['LHEPdfWeightVars'][0])
+            # self.histos[suff+'FitBandPDF'+'UNRyqt'+c].SetFillStyle(0)
+            # self.histos[suff+'FitBandPDF'+'UNRyqt'+c].SetLineColor(self.groupedSystColors['LHEPdfWeightVars'][0])
+            # self.histos[suff+'FitBandPDF'+'UNRyqt'+c].SetLineWidth(2)
+            # self.histos[suff+'FitBandScale'+'UNRyqt'+c].SetFillColor(self.groupedSystColors['LHEScaleWeightVars'][0])
+            # self.histos[suff+'FitBandScale'+'UNRyqt'+c].SetFillStyle(0)
+            # self.histos[suff+'FitBandScale'+'UNRyqt'+c].SetLineColor(self.groupedSystColors['LHEScaleWeightVars'][0])
+            # self.histos[suff+'FitBandScale'+'UNRyqt'+c].SetLineWidth(2)
+            
+            self.canvas[suff+'FitAC'+'UNRyqt'+c] = ROOT.TCanvas(suff+'_c_UNRyqt'+c,suff+'_c_UNRyqt'+c,1200,1050)
+            self.leg[suff+'FitAC'+'UNRyqt'+c] = ROOT.TLegend(0.6,0.75,0.9,0.9)
             self.canvas[suff+'FitAC'+'UNRyqt'+c].cd()
-            self.canvas[suff+'FitAC'+'UNRyqt'+c].SetGridx()
-            self.canvas[suff+'FitAC'+'UNRyqt'+c].SetGridy()
+            self.canvas['ph'+suff+'FitAC'+'UNRyqt'+c] = ROOT.TPad('ph'+suff+'_c_UNRyqt'+c, 'ph'+suff+'_c_UNRyqt'+c,0,0.2,1,1)
+            self.canvas['pr'+suff+'FitAC'+'UNRyqt'+c] = ROOT.TPad('pr'+suff+'_c_UNRyqt'+c,  'pr'+suff+'_c_UNRyqt'+c, 0,0,1,0.2)
+            self.canvas['ph'+suff+'FitAC'+'UNRyqt'+c].SetBottomMargin(0.02)
+            self.canvas['ph'+suff+'FitAC'+'UNRyqt'+c].Draw()
+            self.canvas['pr'+suff+'FitAC'+'UNRyqt'+c].SetTopMargin(0)
+            self.canvas['pr'+suff+'FitAC'+'UNRyqt'+c].SetBottomMargin(0.25)
+            self.canvas['pr'+suff+'FitAC'+'UNRyqt'+c].Draw()
+            
+            self.canvas['ph'+suff+'FitAC'+'UNRyqt'+c].cd()
+            self.canvas['ph'+suff+'FitAC'+'UNRyqt'+c].SetGridx()
+            self.canvas['ph'+suff+'FitAC'+'UNRyqt'+c].SetGridy()
             self.histos[suff+'FitAC'+'UNRyqt'+c].Draw()
             self.histos[suff+'FitBand'+'UNRyqt'+c].DrawCopy('E2 same')
             self.histos[suff+'FitBand'+'UNRyqt'+c].SetFillStyle(3001)
             self.histos[suff+'FitBand'+'UNRyqt'+c].Draw("E2 same")
+            self.histos[suff+'FitAC'+'UNRyqt'+c].DrawCopy("same") #to have foreground 
+            self.leg[suff+'FitAC'+'UNRyqt'+c].Draw("same")                   
+
+            self.canvas['pr'+suff+'FitAC'+'UNRyqt'+c].cd()
+            self.canvas['pr'+suff+'FitAC'+'UNRyqt'+c].SetGridx()
+            self.canvas['pr'+suff+'FitAC'+'UNRyqt'+c].SetGridy()
+            self.histos[suff+'FitRatioAC'+'UNRyqt'+c].Draw("EX0")
+            self.histos[suff+'FitRatio'+'UNRyqt'+c].DrawCopy("same E2")
+            for d in self.dirList :
+                self.histos[suff+'FitRatioPDF'+'UNRyqt'+d+c].Draw("hist same")
+                self.histos[suff+'FitRatioScale'+'UNRyqt'+d+c].Draw("hist same")
+            self.histos[suff+'FitRatioAC'+'UNRyqt'+c].Draw("EX0 same") #to have foreground
             
-            self.histos[suff+'FitBandPDF'+'UNRyqt'+c].DrawCopy('E2 same')
-            self.histos[suff+'FitBandPDF'+'UNRyqt'+c].SetFillStyle(3004)
-            self.histos[suff+'FitBandPDF'+'UNRyqt'+c].Draw("E2 same")
-            self.histos[suff+'FitBandScale'+'UNRyqt'+c].DrawCopy('E2 same')
-            self.histos[suff+'FitBandScale'+'UNRyqt'+c].SetFillStyle(3005)
-            self.histos[suff+'FitBandScale'+'UNRyqt'+c].Draw("E2 same")
+            self.leg[suff+'FitAC'+'UNRyqt'+c].AddEntry(self.histos[suff+'FitAC'+'UNRyqt'+c], "Fit")
+            self.leg[suff+'FitAC'+'UNRyqt'+c].AddEntry(self.histos[suff+'FitBand'+'UNRyqt'+c], "MC Syst. Unc.")
+            self.leg[suff+'FitAC'+'UNRyqt'+c].AddEntry(self.histos[suff+'FitRatioPDF'+'UNRyqt'+'up'+c], self.groupedSystColors['LHEPdfWeightVars'][1])
+            self.leg[suff+'FitAC'+'UNRyqt'+c].AddEntry(self.histos[suff+'FitRatioScale'+'UNRyqt'+'up'+c], self.groupedSystColors['LHEScaleWeightVars'][1])
             
-            self.histos[suff+'FitAC'+'UNRyqt'+c].DrawCopy("same") #to have foreground
+            # self.histos[suff+'FitBandPDF'+'UNRyqt'+c].DrawCopy('E2 same')
+            # self.histos[suff+'FitBandPDF'+'UNRyqt'+c].SetFillStyle(3004)
+            # self.histos[suff+'FitBandPDF'+'UNRyqt'+c].Draw("E2 same")
+            # self.histos[suff+'FitBandScale'+'UNRyqt'+c].DrawCopy('E2 same')
+            # self.histos[suff+'FitBandScale'+'UNRyqt'+c].SetFillStyle(3005)
+            # self.histos[suff+'FitBandScale'+'UNRyqt'+c].Draw("E2 same")
+            
             
             
             #--------------------- Ai QT only canvas -------------------------#                
-            self.canvas[suff+'FitAC'+'qt'+c] = ROOT.TCanvas(suff+"_c_QT_{}".format(c),suff+"_c_QT_{}".format(c))
-            self.canvas[suff+'FitAC'+'qt'+c].SetGridx()
-            self.canvas[suff+'FitAC'+'qt'+c].SetGridy()
-            self.histos[suff+'FitAC'+'qt'+c].SetTitle(suff+' '+c+" vs W transverse momentum, Y integrated")
+            self.canvas[suff+'FitAC'+'qt'+c] = ROOT.TCanvas(suff+"_c_QT_{}".format(c),suff+"_c_QT_{}".format(c),1200,1050)
+            self.leg[suff+'FitAC'+'qt'+c] = ROOT.TLegend(0.6,0.75,0.9,0.9)
             self.canvas[suff+'FitAC'+'qt'+c].cd()
+            self.canvas['ph'+suff+'FitAC'+'qt'+c] = ROOT.TPad('ph'+suff+"_c_QT_{}".format(c), 'ph'+suff+"_c_QT_{}".format(c),0,0.2,1,1)
+            self.canvas['pr'+suff+'FitAC'+'qt'+c] = ROOT.TPad('pr'+suff+"_c_QT_{}".format(c),  'pr'+suff+"_c_QT_{}".format(c), 0,0,1,0.2)
+            self.canvas['ph'+suff+'FitAC'+'qt'+c].SetBottomMargin(0.02)
+            self.canvas['ph'+suff+'FitAC'+'qt'+c].Draw()
+            self.canvas['pr'+suff+'FitAC'+'qt'+c].SetTopMargin(0)
+            self.canvas['pr'+suff+'FitAC'+'qt'+c].SetBottomMargin(0.25)
+            self.canvas['pr'+suff+'FitAC'+'qt'+c].Draw()
+            
+            self.canvas['ph'+suff+'FitAC'+'qt'+c].cd()
+            self.canvas['ph'+suff+'FitAC'+'qt'+c].SetGridx()
+            self.canvas['ph'+suff+'FitAC'+'qt'+c].SetGridy()
+            self.histos[suff+'FitAC'+'qt'+c].SetTitle(suff+' '+c+" vs W transverse momentum, Y integrated")
             self.histos[suff+'FitAC'+'qt'+c].GetXaxis().SetTitle('q_{T}^{W} [GeV]')
-            self.histos[suff+'FitAC'+'qt'+c].GetYaxis().SetTitle(c)
             self.histos[suff+'FitAC'+'qt'+c].SetLineWidth(2)
+            self.histos[suff+'FitAC'+'qt'+c].SetLineColor(1)
             self.histos[suff+'FitAC'+'qt'+c].SetStats(0)
+            self.histos[suff+'FitAC'+'qt'+c].SetMarkerStyle(20)
+            self.histos[suff+'FitAC'+'qt'+c].SetMarkerSize(0.5)
             self.histos[suff+'FitAC'+'qt'+c].Draw()
+            self.histos[suff+'FitAC'+'qt'+c].GetYaxis().SetTitleSize(0.06)
             if not 'unpol' in c :
-                self.histos[suff+'FitAC'+'qt'+c].GetYaxis().SetRangeUser(-4,4)
-            self.histos[suff+'FitBand'+'qt'+c].SetFillColor(ROOT.kOrange-3)
+                # self.histos[suff+'FitAC'+'qt'+c].GetYaxis().SetRangeUser(-4,4)
+                self.histos[suff+'FitAC'+'qt'+c].GetYaxis().SetTitle(c)
+            else :
+                 self.histos[suff+'FitAC'+'qt'+c].GetYaxis().SetTitle('#sigma^{U+L} [fb]')
+            self.histos[suff+'FitBand'+'qt'+c].SetFillColor(ROOT.kOrange)
             self.histos[suff+'FitBand'+'qt'+c].SetFillStyle(0)
-            self.histos[suff+'FitBand'+'qt'+c].SetLineColor(ROOT.kOrange-3)
+            self.histos[suff+'FitBand'+'qt'+c].SetLineColor(ROOT.kOrange)
             self.histos[suff+'FitBand'+'qt'+c].SetLineWidth(2)
+            self.histos[suff+'FitAC'+'qt'+c].GetYaxis().SetTitleOffset(0.7)
+            self.histos[suff+'FitAC'+'qt'+c].GetXaxis().SetTitleOffset(3)
+            self.histos[suff+'FitAC'+'qt'+c].GetXaxis().SetLabelOffset(3)
             self.histos[suff+'FitBand'+'qt'+c].DrawCopy("E2 same")
             self.histos[suff+'FitBand'+'qt'+c].SetFillStyle(3001)
             self.histos[suff+'FitBand'+'qt'+c].Draw("E2 same")
-            
-            self.histos[suff+'FitBandPDF'+'qt'+c].SetFillColor(self.groupedSystColors['LHEPdfWeightVars'][0])
-            self.histos[suff+'FitBandPDF'+'qt'+c].SetFillStyle(0)
-            self.histos[suff+'FitBandPDF'+'qt'+c].SetLineColor(self.groupedSystColors['LHEPdfWeightVars'][0])
-            self.histos[suff+'FitBandPDF'+'qt'+c].SetLineWidth(2)
-            self.histos[suff+'FitBandPDF'+'qt'+c].DrawCopy("E2 same")
-            self.histos[suff+'FitBandPDF'+'qt'+c].SetFillStyle(3004)
-            self.histos[suff+'FitBandPDF'+'qt'+c].Draw("E2 same")
-            self.histos[suff+'FitBandScale'+'qt'+c].SetFillColor(self.groupedSystColors['LHEScaleWeightVars'][0])
-            self.histos[suff+'FitBandScale'+'qt'+c].SetFillStyle(0)
-            self.histos[suff+'FitBandScale'+'qt'+c].SetLineColor(self.groupedSystColors['LHEScaleWeightVars'][0])
-            self.histos[suff+'FitBandScale'+'qt'+c].SetLineWidth(2)
-            self.histos[suff+'FitBandScale'+'qt'+c].DrawCopy("E2 same")
-            self.histos[suff+'FitBandScale'+'qt'+c].SetFillStyle(3005)
-            self.histos[suff+'FitBandScale'+'qt'+c].Draw("E2 same")
-            
             self.histos[suff+'FitAC'+'qt'+c].DrawCopy("same") #to have foreground
+            self.leg[suff+'FitAC'+'qt'+c].Draw("same")
+
+            self.canvas['pr'+suff+'FitAC'+'qt'+c].cd()
+            self.canvas['pr'+suff+'FitAC'+'qt'+c].SetGridx()
+            self.canvas['pr'+suff+'FitAC'+'qt'+c].SetGridy()
+            self.histos[suff+'FitRatioAC'+'qt'+c].GetXaxis().SetTitle('q_{T}^{W} [GeV]')
+            self.histos[suff+'FitRatioAC'+'qt'+c].GetYaxis().SetTitle('Pred./Theory')
+            self.histos[suff+'FitRatioAC'+'qt'+c].SetMarkerStyle(20)
+            self.histos[suff+'FitRatioAC'+'qt'+c].SetMarkerSize(0.5)
+            self.histos[suff+'FitRatioAC'+'qt'+c].SetLineWidth(2)
+            self.histos[suff+'FitRatio'+'qt'+c].SetLineWidth(2)
+            self.histos[suff+'FitRatioAC'+'qt'+c].SetTitle("")
+            self.histos[suff+'FitRatioAC'+'qt'+c].GetYaxis().SetTitleOffset(0.25)
+            self.histos[suff+'FitRatioAC'+'qt'+c].SetTitleSize(0.15,'y')
+            self.histos[suff+'FitRatioAC'+'qt'+c].SetLabelSize(0.12,'y')
+            self.histos[suff+'FitRatioAC'+'qt'+c].GetXaxis().SetTitleOffset(1.)
+            self.histos[suff+'FitRatioAC'+'qt'+c].SetTitleSize(0.12,'x')
+            self.histos[suff+'FitRatioAC'+'qt'+c].SetLabelSize(0.15,'x')
+            self.histos[suff+'FitRatioAC'+'qt'+c].SetStats(0)
+            for d in self.dirList :
+                self.histos[suff+'FitRatioPDF'+'qt'+d+c].SetLineWidth(2)
+                self.histos[suff+'FitRatioScale'+'qt'+d+c].SetLineWidth(2)
+            self.histos[suff+'FitRatio'+'qt'+c].SetLineColor(ROOT.kOrange)
+            for d in self.dirList :
+                self.histos[suff+'FitRatioPDF'+'qt'+d+c].SetLineColor(self.groupedSystColors['LHEPdfWeightVars'][0])
+                self.histos[suff+'FitRatioScale'+'qt'+d+c].SetLineColor(self.groupedSystColors['LHEScaleWeightVars'][0])
+            self.histos[suff+'FitRatio'+'qt'+c].SetFillColor(ROOT.kOrange)
+            self.histos[suff+'FitRatio'+'qt'+c].SetFillStyle(3001)
+            
+            maxvalRatio=0
+            for xx in range(1,self.histos[suff+'FitRatioAC'+'qt'+c].GetNbinsX()+1) :
+                if self.histos[suff+'FitRatio'+'qt'+c].GetBinError(xx)>maxvalRatio :
+                    maxvalRatio= self.histos[suff+'FitRatio'+'qt'+c].GetBinError(xx)
+                self.histos[suff+'FitRatioAC'+'qt'+c].SetBinError(xx,0)
+            if maxvalRatio>self.RatioPadYcut :
+                maxvalRatio=self.RatioPadYcut
+            self.histos[suff+'FitRatioAC'+'qt'+c].GetYaxis().SetRangeUser(-maxvalRatio*1.1+1,maxvalRatio*1.1+1)
+            
+            self.histos[suff+'FitRatioAC'+'qt'+c].Draw("EX0")
+            self.histos[suff+'FitRatio'+'qt'+c].DrawCopy("same E2")
+            for d in self.dirList :
+                self.histos[suff+'FitRatioPDF'+'qt'+d+c].Draw("hist same")
+                self.histos[suff+'FitRatioScale'+'qt'+d+c].Draw("hist same")
+            self.histos[suff+'FitRatioAC'+'qt'+c].Draw("EX0 same") #to have foreground
+            
+            self.leg[suff+'FitAC'+'qt'+c].AddEntry(self.histos[suff+'FitAC'+'qt'+c], "Fit")
+            self.leg[suff+'FitAC'+'qt'+c].AddEntry(self.histos[suff+'FitBand'+'qt'+c], "MC Syst. Unc.")
+            self.leg[suff+'FitAC'+'qt'+c].AddEntry(self.histos[suff+'FitRatioPDF'+'qt'+'up'+c], self.groupedSystColors['LHEPdfWeightVars'][1])
+            self.leg[suff+'FitAC'+'qt'+c].AddEntry(self.histos[suff+'FitRatioScale'+'qt'+'up'+c], self.groupedSystColors['LHEScaleWeightVars'][1])
+                
+            # self.histos[suff+'FitBandPDF'+'qt'+c].SetFillColor(self.groupedSystColors['LHEPdfWeightVars'][0])
+            # self.histos[suff+'FitBandPDF'+'qt'+c].SetFillStyle(0)
+            # self.histos[suff+'FitBandPDF'+'qt'+c].SetLineColor(self.groupedSystColors['LHEPdfWeightVars'][0])
+            # self.histos[suff+'FitBandPDF'+'qt'+c].SetLineWidth(2)
+            # self.histos[suff+'FitBandPDF'+'qt'+c].DrawCopy("E2 same")
+            # self.histos[suff+'FitBandPDF'+'qt'+c].SetFillStyle(3004)
+            # self.histos[suff+'FitBandPDF'+'qt'+c].Draw("E2 same")
+            # self.histos[suff+'FitBandScale'+'qt'+c].SetFillColor(self.groupedSystColors['LHEScaleWeightVars'][0])
+            # self.histos[suff+'FitBandScale'+'qt'+c].SetFillStyle(0)
+            # self.histos[suff+'FitBandScale'+'qt'+c].SetLineColor(self.groupedSystColors['LHEScaleWeightVars'][0])
+            # self.histos[suff+'FitBandScale'+'qt'+c].SetLineWidth(2)
+            # self.histos[suff+'FitBandScale'+'qt'+c].DrawCopy("E2 same")
+            # self.histos[suff+'FitBandScale'+'qt'+c].SetFillStyle(3005)
+            # self.histos[suff+'FitBandScale'+'qt'+c].Draw("E2 same")
+            
             
             #--------------------- Ai Y only canvas -------------------------#          
-            self.canvas[suff+'FitAC'+'y'+c] = ROOT.TCanvas(suff+"_c_Y_{}".format(c),suff+"_c_Y_{}".format(c))
-            self.canvas[suff+'FitAC'+'y'+c].SetGridx()
-            self.canvas[suff+'FitAC'+'y'+c].SetGridy()
-            self.histos[suff+'FitAC'+'y'+c].SetTitle(suff+' '+c+" vs W rapidity,  q_{T} integrated")
+            self.canvas[suff+'FitAC'+'y'+c] = ROOT.TCanvas(suff+"_c_Y_{}".format(c),suff+"_c_Y_{}".format(c),1200,1050)
+            self.leg[suff+'FitAC'+'y'+c] = ROOT.TLegend(0.6,0.75,0.9,0.9)
             self.canvas[suff+'FitAC'+'y'+c].cd()
+            self.canvas['ph'+suff+'FitAC'+'y'+c] = ROOT.TPad('ph'+suff+"_c_Y_{}".format(c), 'ph'+suff+"_c_Y_{}".format(c),0,0.2,1,1)
+            self.canvas['pr'+suff+'FitAC'+'y'+c] = ROOT.TPad('pr'+suff+"_c_Y_{}".format(c),  'pr'+suff+"_c_Y_{}".format(c), 0,0,1,0.2)
+            self.canvas['ph'+suff+'FitAC'+'y'+c].SetBottomMargin(0.02)
+            self.canvas['ph'+suff+'FitAC'+'y'+c].Draw()
+            self.canvas['pr'+suff+'FitAC'+'y'+c].SetTopMargin(0)
+            self.canvas['pr'+suff+'FitAC'+'y'+c].SetBottomMargin(0.25)
+            self.canvas['pr'+suff+'FitAC'+'y'+c].Draw()
+            
+            self.canvas['ph'+suff+'FitAC'+'y'+c].cd()
+            self.canvas['ph'+suff+'FitAC'+'y'+c].SetGridx()
+            self.canvas['ph'+suff+'FitAC'+'y'+c].SetGridy()
+            self.histos[suff+'FitAC'+'y'+c].SetTitle(suff+' '+c+" vs W rapidity,  q_{T} integrated")
             self.histos[suff+'FitAC'+'y'+c].GetXaxis().SetTitle('Y_{W}')
-            self.histos[suff+'FitAC'+'y'+c].GetYaxis().SetTitle(c)
             self.histos[suff+'FitAC'+'y'+c].SetLineWidth(2)
+            self.histos[suff+'FitAC'+'y'+c].SetLineColor(1)
             self.histos[suff+'FitAC'+'y'+c].SetStats(0)
+            self.histos[suff+'FitAC'+'y'+c].SetMarkerStyle(20)
+            self.histos[suff+'FitAC'+'y'+c].SetMarkerSize(0.5)
             self.histos[suff+'FitAC'+'y'+c].Draw()
+            self.histos[suff+'FitAC'+'y'+c].GetYaxis().SetTitleSize(0.06)
             if not 'unpol' in c :
-                self.histos[suff+'FitAC'+'y'+c].GetYaxis().SetRangeUser(-4,4)
-            self.histos[suff+'FitBand'+'y'+c].SetFillColor(ROOT.kOrange-3)#kMagenta-7)
+                # self.histos[suff+'FitAC'+'y'+c].GetYaxis().SetRangeUser(-4,4)
+                self.histos[suff+'FitAC'+'y'+c].GetYaxis().SetTitle(c)
+            else :
+                self.histos[suff+'FitAC'+'y'+c].GetYaxis().SetTitle('#sigma^{U+L} [fb]')
+            self.histos[suff+'FitBand'+'y'+c].SetFillColor(ROOT.kOrange)#kMagenta-7)
             self.histos[suff+'FitBand'+'y'+c].SetFillStyle(0)
-            self.histos[suff+'FitBand'+'y'+c].SetLineColor(ROOT.kOrange-3)#kMagenta-7)
+            self.histos[suff+'FitBand'+'y'+c].SetLineColor(ROOT.kOrange)#kMagenta-7)
             self.histos[suff+'FitBand'+'y'+c].SetLineWidth(2)
+            self.histos[suff+'FitAC'+'y'+c].GetYaxis().SetTitleOffset(0.7)
+            self.histos[suff+'FitAC'+'y'+c].GetXaxis().SetTitleOffset(3)
+            self.histos[suff+'FitAC'+'y'+c].GetXaxis().SetLabelOffset(3)
             self.histos[suff+'FitBand'+'y'+c].DrawCopy("E2 same")
             self.histos[suff+'FitBand'+'y'+c].SetFillStyle(3001)
             self.histos[suff+'FitBand'+'y'+c].Draw("E2 same")
-            
-            self.histos[suff+'FitBandPDF'+'y'+c].SetFillColor(self.groupedSystColors['LHEPdfWeightVars'][0])#kMagenta-7)
-            self.histos[suff+'FitBandPDF'+'y'+c].SetFillStyle(0)
-            self.histos[suff+'FitBandPDF'+'y'+c].SetLineColor(self.groupedSystColors['LHEPdfWeightVars'][0])#kMagenta-7)
-            self.histos[suff+'FitBandPDF'+'y'+c].SetLineWidth(2)
-            self.histos[suff+'FitBandPDF'+'y'+c].DrawCopy("E2 same")
-            self.histos[suff+'FitBandPDF'+'y'+c].SetFillStyle(3004)
-            self.histos[suff+'FitBandPDF'+'y'+c].Draw("E2 same")
-            self.histos[suff+'FitBandScale'+'y'+c].SetFillColor(self.groupedSystColors['LHEScaleWeightVars'][0])#kMagenta-7)
-            self.histos[suff+'FitBandScale'+'y'+c].SetFillStyle(0)
-            self.histos[suff+'FitBandScale'+'y'+c].SetLineColor(self.groupedSystColors['LHEScaleWeightVars'][0])#kMagenta-7)
-            self.histos[suff+'FitBandScale'+'y'+c].SetLineWidth(2)
-            self.histos[suff+'FitBandScale'+'y'+c].DrawCopy("E2 same")
-            self.histos[suff+'FitBandScale'+'y'+c].SetFillStyle(3005)
-            self.histos[suff+'FitBandScale'+'y'+c].Draw("E2 same")
-            
             self.histos[suff+'FitAC'+'y'+c].DrawCopy("same") #to have foreground
+            self.leg[suff+'FitAC'+'y'+c].Draw("same")
+            
+            self.canvas['pr'+suff+'FitAC'+'y'+c].cd()
+            self.canvas['pr'+suff+'FitAC'+'y'+c].SetGridx()
+            self.canvas['pr'+suff+'FitAC'+'y'+c].SetGridy()
+            self.histos[suff+'FitRatioAC'+'y'+c].GetXaxis().SetTitle('q_{T}^{W} [GeV]')
+            self.histos[suff+'FitRatioAC'+'y'+c].GetYaxis().SetTitle('Pred./Theory')
+            self.histos[suff+'FitRatioAC'+'y'+c].SetMarkerStyle(20)
+            self.histos[suff+'FitRatioAC'+'y'+c].SetMarkerSize(0.5)
+            self.histos[suff+'FitRatioAC'+'y'+c].SetLineWidth(2)
+            self.histos[suff+'FitRatio'+'y'+c].SetLineWidth(2)
+            self.histos[suff+'FitRatioAC'+'y'+c].SetTitle("")
+            self.histos[suff+'FitRatioAC'+'y'+c].GetYaxis().SetTitleOffset(0.25)
+            self.histos[suff+'FitRatioAC'+'y'+c].SetTitleSize(0.15,'y')
+            self.histos[suff+'FitRatioAC'+'y'+c].SetLabelSize(0.12,'y')
+            self.histos[suff+'FitRatioAC'+'y'+c].GetXaxis().SetTitleOffset(1.)
+            self.histos[suff+'FitRatioAC'+'y'+c].SetTitleSize(0.12,'x')
+            self.histos[suff+'FitRatioAC'+'y'+c].SetLabelSize(0.15,'x')
+            self.histos[suff+'FitRatioAC'+'y'+c].SetStats(0)
+            for d in self.dirList :
+                self.histos[suff+'FitRatioPDF'+'y'+d+c].SetLineWidth(2)
+                self.histos[suff+'FitRatioScale'+'y'+d+c].SetLineWidth(2)
+            self.histos[suff+'FitRatio'+'y'+c].SetLineColor(ROOT.kOrange)
+            for d in self.dirList :
+                self.histos[suff+'FitRatioPDF'+'y'+d+c].SetLineColor(self.groupedSystColors['LHEPdfWeightVars'][0])
+                self.histos[suff+'FitRatioScale'+'y'+d+c].SetLineColor(self.groupedSystColors['LHEScaleWeightVars'][0])
+            self.histos[suff+'FitRatio'+'y'+c].SetFillColor(ROOT.kOrange)
+            self.histos[suff+'FitRatio'+'y'+c].SetFillStyle(3001)
+            
+            maxvalRatio=0
+            for xx in range(1,self.histos[suff+'FitRatioAC'+'y'+c].GetNbinsX()+1) :
+                if self.histos[suff+'FitRatio'+'y'+c].GetBinError(xx)>maxvalRatio :
+                    maxvalRatio= self.histos[suff+'FitRatio'+'y'+c].GetBinError(xx)
+                self.histos[suff+'FitRatioAC'+'y'+c].SetBinError(xx,0)
+            if maxvalRatio>self.RatioPadYcut :
+                maxvalRatio=self.RatioPadYcut
+            self.histos[suff+'FitRatioAC'+'y'+c].GetYaxis().SetRangeUser(-maxvalRatio*1.1+1,maxvalRatio*1.1+1)
+            
+            self.histos[suff+'FitRatioAC'+'y'+c].Draw("EX0")
+            self.histos[suff+'FitRatio'+'y'+c].DrawCopy("same E2")
+            for d in self.dirList :
+                self.histos[suff+'FitRatioPDF'+'y'+d+c].Draw("hist same")
+                self.histos[suff+'FitRatioScale'+'y'+d+c].Draw("hist same")
+            self.histos[suff+'FitRatioAC'+'y'+c].Draw("EX0 same") #to have foreground
+            
+            self.leg[suff+'FitAC'+'y'+c].AddEntry(self.histos[suff+'FitAC'+'y'+c], "Fit")
+            self.leg[suff+'FitAC'+'y'+c].AddEntry(self.histos[suff+'FitBand'+'y'+c], "MC Syst. Unc.")
+            self.leg[suff+'FitAC'+'y'+c].AddEntry(self.histos[suff+'FitRatioPDF'+'y'+'up'+c], self.groupedSystColors['LHEPdfWeightVars'][1])
+            self.leg[suff+'FitAC'+'y'+c].AddEntry(self.histos[suff+'FitRatioScale'+'y'+'up'+c], self.groupedSystColors['LHEScaleWeightVars'][1])
+                
+            
+            # self.histos[suff+'FitBandPDF'+'y'+c].SetFillColor(self.groupedSystColors['LHEPdfWeightVars'][0])#kMagenta-7)
+            # self.histos[suff+'FitBandPDF'+'y'+c].SetFillStyle(0)
+            # self.histos[suff+'FitBandPDF'+'y'+c].SetLineColor(self.groupedSystColors['LHEPdfWeightVars'][0])#kMagenta-7)
+            # self.histos[suff+'FitBandPDF'+'y'+c].SetLineWidth(2)
+            # self.histos[suff+'FitBandPDF'+'y'+c].DrawCopy("E2 same")
+            # self.histos[suff+'FitBandPDF'+'y'+c].SetFillStyle(3004)
+            # self.histos[suff+'FitBandPDF'+'y'+c].Draw("E2 same")
+            # self.histos[suff+'FitBandScale'+'y'+c].SetFillColor(self.groupedSystColors['LHEScaleWeightVars'][0])#kMagenta-7)
+            # self.histos[suff+'FitBandScale'+'y'+c].SetFillStyle(0)
+            # self.histos[suff+'FitBandScale'+'y'+c].SetLineColor(self.groupedSystColors['LHEScaleWeightVars'][0])#kMagenta-7)
+            # self.histos[suff+'FitBandScale'+'y'+c].SetLineWidth(2)
+            # self.histos[suff+'FitBandScale'+'y'+c].DrawCopy("E2 same")
+            # self.histos[suff+'FitBandScale'+'y'+c].SetFillStyle(3005)
+            # self.histos[suff+'FitBandScale'+'y'+c].Draw("E2 same")
+            
+            
         
         
              #--------------- Ai 1D relative syst. band canvas -------------------#
             for i in range(1, self.histos[suff+'FitErr'+c].GetNbinsX()+1): #loop over rapidity bins
-                self.canvas[suff+'FitErr'+'qt'+str(i)+c] = ROOT.TCanvas(suff+"_c_projQt{}_{}_Err".format(i,c),suff+"_c_ErrprojQt{}_{}_Err".format(i,c))
+                self.canvas[suff+'FitErr'+'qt'+str(i)+c] = ROOT.TCanvas(suff+"_c_projQt{}_{}_Err".format(i,c),suff+"_c_ErrprojQt{}_{}_Err".format(i,c),1200,900)
                 self.canvas[suff+'FitErr'+'qt'+str(i)+c].SetGridx()
                 self.canvas[suff+'FitErr'+'qt'+str(i)+c].SetGridy()
                 self.leg[suff+'FitErr'+'qt'+str(i)+c] = ROOT.TLegend(0.6,0.75,0.9,0.9)
@@ -905,13 +1398,13 @@ class plotter :
                 self.leg[suff+'FitErr'+'qt'+str(i)+c].AddEntry(self.histos[suff+'FitErrScale'+'qt'+str(i)+c],self.groupedSystColors['LHEScaleWeightVars'][1])
                 self.leg[suff+'FitErr'+'qt'+str(i)+c].Draw("Same")
             for j in range(1, self.histos[suff+'FitErr'+c].GetNbinsY()+1): #loop over pt bins
-                self.canvas[suff+'FitErr'+'y'+str(j)+c] = ROOT.TCanvas(suff+"_c_projY{}_{}_Err".format(j,c),suff+"_c_projY{}_{}_Err".format(j,c))
+                self.canvas[suff+'FitErr'+'y'+str(j)+c] = ROOT.TCanvas(suff+"_c_projY{}_{}_Err".format(j,c),suff+"_c_projY{}_{}_Err".format(j,c),1200,900)
                 self.canvas[suff+'FitErr'+'y'+str(j)+c].SetGridx()
                 self.canvas[suff+'FitErr'+'y'+str(j)+c].SetGridy()
                 self.leg[suff+'FitErr'+'y'+str(j)+c] = ROOT.TLegend(0.6,0.75,0.9,0.9)
                 self.histos[suff+'FitErr'+'y'+str(j)+c] = self.histos[suff+'FitErr'+c].ProjectionX("projY{}_{}".format(j,c),j,j)
-                self.histos[suff+'FitErrPDF'+'y'+str(j)+c] = self.histos[suff+'FitErrPDF'+c].ProjectionY("projY{}_{}_ErrPDF".format(j,c),j,j)
-                self.histos[suff+'FitErrScale'+'y'+str(j)+c] = self.histos[suff+'FitErrScale'+c].ProjectionY("projY{}_{}_ErrScale".format(j,c),j,j)
+                self.histos[suff+'FitErrPDF'+'y'+str(j)+c] = self.histos[suff+'FitErrPDF'+c].ProjectionX("projY{}_{}_ErrPDF".format(j,c),j,j)
+                self.histos[suff+'FitErrScale'+'y'+str(j)+c] = self.histos[suff+'FitErrScale'+c].ProjectionX("projY{}_{}_ErrScale".format(j,c),j,j)
                 self.histos[suff+'FitErr'+'y'+str(j)+c].SetTitle(suff+' '+c+"relative uncertainity vs W rapidity, "+str(self.qtArr[j-1])+"<q_{T}^{W}<"+str(self.qtArr[j]))
                 self.canvas[suff+'FitErr'+'y'+str(j)+c].cd()
                 self.histos[suff+'FitErr'+'y'+str(j)+c].GetXaxis().SetTitle('Y_{W}')
@@ -960,7 +1453,7 @@ class plotter :
             self.histos[suff+'FitErrPDF'+'UNRqty'+c].SetLineColor(self.groupedSystColors['LHEPdfWeightVars'][0])
             self.histos[suff+'FitErrScale'+'UNRqty'+c].SetLineColor(self.groupedSystColors['LHEScaleWeightVars'][0])
 
-            self.canvas[suff+'FitErr'+'UNRqty'+c] = ROOT.TCanvas(suff+'_c_Err_UNRqty'+c,suff+'_c_Err_UNRqty'+c,800,600)
+            self.canvas[suff+'FitErr'+'UNRqty'+c] = ROOT.TCanvas(suff+'_c_Err_UNRqty'+c,suff+'_c_Err_UNRqty'+c,1200,900)
             self.leg[suff+'FitErr'+'UNRqty'+c] = ROOT.TLegend(0.6,0.75,0.9,0.9)
             self.canvas[suff+'FitErr'+'UNRqty'+c].cd()
             self.canvas[suff+'FitErr'+'UNRqty'+c].SetGridx()
@@ -1002,7 +1495,7 @@ class plotter :
             self.histos[suff+'FitErrPDF'+'UNRyqt'+c].SetLineColor(self.groupedSystColors['LHEPdfWeightVars'][0])
             self.histos[suff+'FitErrScale'+'UNRyqt'+c].SetLineColor(self.groupedSystColors['LHEScaleWeightVars'][0])
             
-            self.canvas[suff+'FitErr'+'UNRyqt'+c] = ROOT.TCanvas(suff+'_c_Err_UNRyqt'+c,suff+'_c_Err_UNRyqt'+c,800,600)
+            self.canvas[suff+'FitErr'+'UNRyqt'+c] = ROOT.TCanvas(suff+'_c_Err_UNRyqt'+c,suff+'_c_Err_UNRyqt'+c,1200,900)
             self.leg[suff+'FitErr'+'UNRyqt'+c] = ROOT.TLegend(0.6,0.75,0.9,0.9)
             self.canvas[suff+'FitErr'+'UNRyqt'+c].cd()
             self.canvas[suff+'FitErr'+'UNRyqt'+c].SetGridx()
@@ -1019,7 +1512,7 @@ class plotter :
             
             
             #--------------- Ai QT only relative syst. band canvas -------------------#
-            self.canvas[suff+'FitErr'+'qt'+c] = ROOT.TCanvas(suff+"_c_QT_{}_Err".format(c),suff+"_c_QT_{}_Err".format(c))
+            self.canvas[suff+'FitErr'+'qt'+c] = ROOT.TCanvas(suff+"_c_QT_{}_Err".format(c),suff+"_c_QT_{}_Err".format(c),1200,900)
             self.canvas[suff+'FitErr'+'qt'+c].SetGridx()
             self.canvas[suff+'FitErr'+'qt'+c].SetGridy()
             self.leg[suff+'FitErr'+'qt'+c] = ROOT.TLegend(0.6,0.75,0.9,0.9)
@@ -1045,7 +1538,7 @@ class plotter :
             self.leg[suff+'FitErr'+'qt'+c].Draw("Same")
             
             #--------------- Ai Y only relative syst. band canvas -------------------#
-            self.canvas[suff+'FitErr'+'y'+c] = ROOT.TCanvas(suff+"_c_Y_{}_Err".format(c),suff+"_c_Y_{}_Err".format(c))
+            self.canvas[suff+'FitErr'+'y'+c] = ROOT.TCanvas(suff+"_c_Y_{}_Err".format(c),suff+"_c_Y_{}_Err".format(c),1200,900)
             self.canvas[suff+'FitErr'+'y'+c].SetGridx()
             self.canvas[suff+'FitErr'+'y'+c].SetGridy()
             self.leg[suff+'FitErr'+'y'+c] = ROOT.TLegend(0.6,0.75,0.9,0.9)
@@ -1076,7 +1569,7 @@ class plotter :
             if mtx == 'cov' : htitle = 'Covariance'
             
             for c in self.coeffDict:
-                self.canvas[suff+mtx+'Mat'+c] = ROOT.TCanvas(suff+'_'+mtx+'Mat_'+c,suff+'_'+mtx+'Mat_'+c,800,600)
+                self.canvas[suff+mtx+'Mat'+c] = ROOT.TCanvas(suff+'_'+mtx+'Mat_'+c,suff+'_'+mtx+'Mat_'+c,1200,900)
                 self.canvas[suff+mtx+'Mat'+c].cd()
                 self.canvas[suff+mtx+'Mat'+c].SetGridx()
                 self.canvas[suff+mtx+'Mat'+c].SetGridy()
@@ -1101,7 +1594,7 @@ class plotter :
                             self.histos[suff+mtx+'Mat'+c].GetYaxis().ChangeLabel(indexUNR+1,340,0.03)
                 
             for i in range(1, self.histos[suff+'FitACA0'].GetNbinsX()+1): #loop over y bins
-                self.canvas[suff+mtx+'Mat'+'y'+str(i)] = ROOT.TCanvas(suff+'_'+mtx+'Mat_'+'y'+str(i),suff+'_'+mtx+'Mat_'+'y'+str(i),800,600)
+                self.canvas[suff+mtx+'Mat'+'y'+str(i)] = ROOT.TCanvas(suff+'_'+mtx+'Mat_'+'y'+str(i),suff+'_'+mtx+'Mat_'+'y'+str(i),1200,900)
                 self.canvas[suff+mtx+'Mat'+'y'+str(i)].cd()
                 self.canvas[suff+mtx+'Mat'+'y'+str(i)].SetGridx()
                 self.canvas[suff+mtx+'Mat'+'y'+str(i)].SetGridy()
@@ -1130,7 +1623,7 @@ class plotter :
             
             
             for j in range(1, self.histos[suff+'FitACA0'].GetNbinsY()+1): #loop over qt bins
-                self.canvas[suff+mtx+'Mat'+'qt'+str(j)] = ROOT.TCanvas(suff+'_'+mtx+'Mat_'+'qt'+str(j),suff+'_'+mtx+'Mat_'+'qt'+str(j),800,600)
+                self.canvas[suff+mtx+'Mat'+'qt'+str(j)] = ROOT.TCanvas(suff+'_'+mtx+'Mat_'+'qt'+str(j),suff+'_'+mtx+'Mat_'+'qt'+str(j),1200,900)
                 self.canvas[suff+mtx+'Mat'+'qt'+str(j)].cd()
                 self.canvas[suff+mtx+'Mat'+'qt'+str(j)].SetGridx()
                 self.canvas[suff+mtx+'Mat'+'qt'+str(j)].SetGridy()
@@ -1159,7 +1652,7 @@ class plotter :
             
             
             #---------------------------- Canvas integrated correlation matrices ------------------------ 
-            self.canvas[suff+mtx+'Mat'+'Integrated'+'y'] = ROOT.TCanvas(suff+'_'+mtx+'Mat_'+'Integrated_'+'y',suff+'_'+mtx+'Mat_'+'Integrated_'+'y',800,600)
+            self.canvas[suff+mtx+'Mat'+'Integrated'+'y'] = ROOT.TCanvas(suff+'_'+mtx+'Mat_'+'Integrated_'+'y',suff+'_'+mtx+'Mat_'+'Integrated_'+'y',1200,900)
             self.canvas[suff+mtx+'Mat'+'Integrated'+'y'].cd()
             self.canvas[suff+mtx+'Mat'+'Integrated'+'y'].SetGridx()
             self.canvas[suff+mtx+'Mat'+'Integrated'+'y'].SetGridy()
@@ -1187,7 +1680,7 @@ class plotter :
                         self.histos[suff+mtx+'Mat'+'Integrated'+'y'].GetYaxis().ChangeLabel(indexUNR+1,340,0.03)
             
                     
-            self.canvas[suff+mtx+'Mat'+'Integrated'+'qt'] = ROOT.TCanvas(suff+'_'+mtx+'Mat_'+'Integrated_'+'qt',suff+'_'+mtx+'Mat_'+'Integrated_'+'qt',800,600)
+            self.canvas[suff+mtx+'Mat'+'Integrated'+'qt'] = ROOT.TCanvas(suff+'_'+mtx+'Mat_'+'Integrated_'+'qt',suff+'_'+mtx+'Mat_'+'Integrated_'+'qt',1200,900)
             self.canvas[suff+mtx+'Mat'+'Integrated'+'qt'].cd()
             self.canvas[suff+mtx+'Mat'+'Integrated'+'qt'].SetGridx()
             self.canvas[suff+mtx+'Mat'+'Integrated'+'qt'].SetGridy()
@@ -1494,7 +1987,7 @@ def saver(rootInput, suffList, comparison,coeffDict,yArr,qtArr) :
     FitFile = ROOT.TFile.Open(rootInput+'.root')
         
     unrList = ['UNRqty','Err_UNRqty','UNRyqt','Err_UNRyqt']
-    intList = ['QT','Y']
+    intList = ['QT_','Y_']
 
     if comparison :
         for c in coeffDict:
@@ -1508,7 +2001,7 @@ def saver(rootInput, suffList, comparison,coeffDict,yArr,qtArr) :
         if not comparison :
              for c in coeffDict:
                 for name in unrList :
-                    can = FitFile.Get('coeff_unrolled'+suff+'/'+suff+'_c_'+name+c)
+                    can = FitFile.Get('coeff_unrolled_'+suff+'/'+suff+'_c_'+name+c)
                     can.SaveAs(rootInput+'/'+can.GetTitle()+'.pdf')
                     can.SaveAs(rootInput+'/'+can.GetTitle()+'.png')
                 for name in intList :
