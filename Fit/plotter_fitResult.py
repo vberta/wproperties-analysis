@@ -21,6 +21,7 @@ class plotter :
         self.nuisArr = ['mass']
         self.dirList = ['up','down']
         self.RatioPadYcut = 1.
+        self.lumi=35.9
         
         self.systDict = {
             "_LHEScaleWeight" : ["_LHEScaleWeight_muR0p5_muF0p5", "_LHEScaleWeight_muR0p5_muF1p0","_LHEScaleWeight_muR1p0_muF0p5","_LHEScaleWeight_muR1p0_muF2p0","_LHEScaleWeight_muR2p0_muF1p0", "_LHEScaleWeight_muR2p0_muF2p0"],
@@ -187,8 +188,8 @@ class plotter :
                             coeff = eval('ev.y_{i}_qt_{j}_{c}'.format(c=c, j=j, i=i))
                             coeff_err = eval('ev.y_{i}_qt_{j}_{c}_err'.format(c=c, j=j, i=i))
                             if 'unpol' in c:
-                                coeff = coeff/(3./16./math.pi)
-                                coeff_err = coeff_err/(3./16./math.pi)
+                                coeff = coeff/(3./16./math.pi)/self.lumi
+                                coeff_err = coeff_err/(3./16./math.pi)/self.lumi
                             self.histos[suff+'FitAC'+c].SetBinContent(i,j,coeff)
                             self.histos[suff+'FitAC'+c].SetBinError(i,j,coeff_err)
                             
@@ -199,8 +200,8 @@ class plotter :
                         coeff = eval('ev.qt_{j}_helmeta_{c}'.format(c=c, j=j))
                         coeff_err = eval('ev.qt_{j}_helmeta_{c}_err'.format(c=c, j=j))
                         if 'unpol' in c:
-                                coeff = coeff/(3./16./math.pi)
-                                coeff_err = coeff_err/(3./16./math.pi)
+                                coeff = coeff/(3./16./math.pi)/self.lumi
+                                coeff_err = coeff_err/(3./16./math.pi)/self.lumi
                         self.histos[suff+'FitACqt'+c].SetBinContent(j,coeff)
                         self.histos[suff+'FitACqt'+c].SetBinError(j,coeff_err)
 
@@ -212,8 +213,8 @@ class plotter :
                         coeff = eval('ev.y_{i}_helmeta_{c}'.format(c=c, i=i))
                         coeff_err = eval('ev.y_{i}_helmeta_{c}_err'.format(c=c, i=i))
                         if 'unpol' in c:
-                                coeff = coeff/(3./16./math.pi)
-                                coeff_err = coeff_err/(3./16./math.pi)
+                                coeff = coeff/(3./16./math.pi)/self.lumi
+                                coeff_err = coeff_err/(3./16./math.pi)/self.lumi
                         self.histos[suff+'FitACy'+c].SetBinContent(i,coeff)
                         self.histos[suff+'FitACy'+c].SetBinError(i,coeff_err)
 
@@ -271,15 +272,15 @@ class plotter :
                 self.histos[suff+'FitBandqt'+c] = self.histos[suff+'MC'+'qt'+'mapTot'].Clone('FitBandqt'+c)
                 self.histos[suff+'FitBandPDFqt'+c] = self.histos[suff+'MC'+'qt'+'mapTot'].Clone('FitBandPDFqt'+c)
                 self.histos[suff+'FitBandScaleqt'+c] = self.histos[suff+'MC'+'qt'+'mapTot'].Clone('FitBandScaleqt'+c)
-                self.histos[suff+'FitBand'+c].Scale(1/35.9)
-                self.histos[suff+'FitBandPDF'+c].Scale(1/35.9)
-                self.histos[suff+'FitBandScale'+c].Scale(1/35.9)
-                self.histos[suff+'FitBandy'+c].Scale(1/35.9)
-                self.histos[suff+'FitBandPDFy'+c].Scale(1/35.9)
-                self.histos[suff+'FitBandScaley'+c].Scale(1/35.9)
-                self.histos[suff+'FitBandqt'+c].Scale(1/35.9)
-                self.histos[suff+'FitBandPDFqt'+c].Scale(1/35.9)
-                self.histos[suff+'FitBandScaleqt'+c].Scale(1/35.9)
+                self.histos[suff+'FitBand'+c].Scale(1/self.lumi)
+                self.histos[suff+'FitBandPDF'+c].Scale(1/self.lumi)
+                self.histos[suff+'FitBandScale'+c].Scale(1/self.lumi)
+                self.histos[suff+'FitBandy'+c].Scale(1/self.lumi)
+                self.histos[suff+'FitBandPDFy'+c].Scale(1/self.lumi)
+                self.histos[suff+'FitBandScaley'+c].Scale(1/self.lumi)
+                self.histos[suff+'FitBandqt'+c].Scale(1/self.lumi)
+                self.histos[suff+'FitBandPDFqt'+c].Scale(1/self.lumi)
+                self.histos[suff+'FitBandScaleqt'+c].Scale(1/self.lumi)
 
 
             for i in range(1, self.histos[suff+'FitAC'+c].GetNbinsX()+1): #loop over rapidity bins
@@ -300,15 +301,15 @@ class plotter :
                     if j==1 : errPDFy = 0.
                     MCVal = self.histos[suff+'FitBand'+c].GetBinContent(i,j) #like MC, but already lumi scaled
                     # if 'unpol' in c:
-                    #     MCVal=MCVal/35.9
+                    #     MCVal=MCVal/self.lumi
                     if i==1 : MCValqt = self.histos[suff+'FitBandqt'+c].GetBinContent(j)
                     if j==1 : MCValy = self.histos[suff+'FitBandy'+c].GetBinContent(i)
                     
                     for sName in self.systDict['_LHEPdfWeight']:
                         if 'unpol' in c:
-                            systVal=self.histos[suff+'MC'+sName+'mapTot'].GetBinContent(i,j)/35.9
-                            if i==1 : systValqt=self.histos[suff+'MCqt'+sName+'mapTot'].GetBinContent(j)/35.9
-                            if j==1 : systValy=self.histos[suff+'MCy'+sName+'mapTot'].GetBinContent(i)/35.9
+                            systVal=self.histos[suff+'MC'+sName+'mapTot'].GetBinContent(i,j)/self.lumi
+                            if i==1 : systValqt=self.histos[suff+'MCqt'+sName+'mapTot'].GetBinContent(j)/self.lumi
+                            if j==1 : systValy=self.histos[suff+'MCy'+sName+'mapTot'].GetBinContent(i)/self.lumi
                         else:
                             systVal = self.histos[suff+'MC'+sName+c].GetBinContent(i,j)
                             if i==1 : systValqt = self.histos[suff+'MCqt'+sName+c].GetBinContent(j)
@@ -333,9 +334,9 @@ class plotter :
                             if sName=='_nom' and sNameDen=='_nom' : continue
                             if ([sName,sNameDen] in self.vetoScaleList) : continue  #extremal cases
                             if 'unpol' in c:
-                                systVal=self.histos[suff+'MC'+sName+'mapTot'].GetBinContent(i,j)/35.9
-                                if i==1 : systValqt =self.histos[suff+'MCqt'+sName+'mapTot'].GetBinContent(j)/35.9
-                                if j==1 : systValy =self.histos[suff+'MCy'+sName+'mapTot'].GetBinContent(i)/35.9
+                                systVal=self.histos[suff+'MC'+sName+'mapTot'].GetBinContent(i,j)/self.lumi
+                                if i==1 : systValqt =self.histos[suff+'MCqt'+sName+'mapTot'].GetBinContent(j)/self.lumi
+                                if j==1 : systValy =self.histos[suff+'MCy'+sName+'mapTot'].GetBinContent(i)/self.lumi
                             else:
                                 if UNCORR :
                                     systVal = self.histos[suff+'MC'+sName+sNameDen+c].GetBinContent(i,j)
@@ -424,7 +425,7 @@ class plotter :
                         valCentral = self.histos[suff+'MC'+c].GetBinContent(i,j)
                     else :
                         valCentral = self.histos[suff+'MC'+'mapTot'].GetBinContent(i,j)
-                        valCentral= valCentral/35.9
+                        valCentral= valCentral/self.lumi
                     self.histos[suff+'FitRatioAC'+c].SetBinContent(i,j, self.histos[suff+'FitRatioAC'+c].GetBinContent(i,j)/valCentral)
                     self.histos[suff+'FitRatio'+c].SetBinContent(i,j, self.histos[suff+'FitRatio'+c].GetBinContent(i,j)/valCentral)
                     self.histos[suff+'FitRatioPDF'+c].SetBinContent(i,j,self.histos[suff+'FitRatioPDF'+c].GetBinContent(i,j)/valCentral)
@@ -455,7 +456,7 @@ class plotter :
                     valCentral = self.histos[suff+'MC'+'y'+c].GetBinContent(i)
                 else :
                     valCentral = self.histos[suff+'MC'+'y'+'mapTot'].GetBinContent(i)
-                    valCentral= valCentral/35.9
+                    valCentral= valCentral/self.lumi
                 self.histos[suff+'FitRatioAC'+'y'+c].SetBinContent(i, self.histos[suff+'FitRatioAC'+'y'+c].GetBinContent(i)/valCentral)
                 self.histos[suff+'FitRatio'+'y'+c].SetBinContent(i, self.histos[suff+'FitRatio'+'y'+c].GetBinContent(i)/valCentral)
                 self.histos[suff+'FitRatioPDF'+'y'+c].SetBinContent(i,self.histos[suff+'FitRatioPDF'+'y'+c].GetBinContent(i)/valCentral)
@@ -487,7 +488,7 @@ class plotter :
                     valCentral = self.histos[suff+'MC'+'qt'+c].GetBinContent(i)
                 else :
                     valCentral = self.histos[suff+'MC'+'qt'+'mapTot'].GetBinContent(i)
-                    valCentral= valCentral/35.9
+                    valCentral= valCentral/self.lumi
                 self.histos[suff+'FitRatioAC'+'qt'+c].SetBinContent(i, self.histos[suff+'FitRatioAC'+'qt'+c].GetBinContent(i)/valCentral)
                 self.histos[suff+'FitRatio'+'qt'+c].SetBinContent(i, self.histos[suff+'FitRatio'+'qt'+c].GetBinContent(i)/valCentral)
                 self.histos[suff+'FitRatioPDF'+'qt'+c].SetBinContent(i,self.histos[suff+'FitRatioPDF'+'qt'+c].GetBinContent(i)/valCentral)
