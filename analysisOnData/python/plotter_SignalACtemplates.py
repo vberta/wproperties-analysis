@@ -1,3 +1,4 @@
+import itertools
 from termcolor import colored
 from time import time
 import ROOT
@@ -9,10 +10,31 @@ sys.path.append('../data')
 from systematics import systematics
 import math
 import copy
+import multiprocessing
 
 ROOT.gROOT.SetBatch()
 ROOT.TH1.AddDirectory(False)
 ROOT.TH2.AddDirectory(False)
+
+
+def uncorrelate1PtVar(t):
+    h = t[0]
+    hvar = t[1]
+    i = t[2]
+    updown = t[3]
+    uncorrh = []
+    for j in range(1, 4+1):  # eta macro bins
+        #create one histogram per macro bin
+        haux = h.Clone()
+        haux.SetName(h.GetName() +'_stateig{}Eta{}{}'.format(i, j, updown))
+        #print haux.GetName()
+        for t in range(1, 12+1):  # 48 eta bins /4 macro bins
+            for k in range(1, hvar.GetNbinsY()+1):  # loop over pt bins
+                bin1D = hvar.GetBin((j-1)*12+t, k)
+                varcont = hvar.GetBinContent(bin1D)
+                haux.SetBinContent(bin1D, varcont)
+        uncorrh.append(haux)
+    return [uncorrh[0], uncorrh[1], uncorrh[2], uncorrh[3]]
 
 class plotter:
     
@@ -23,12 +45,29 @@ class plotter:
 
         self.extSyst = copy.deepcopy(systematics)
         self.extSyst['Nominal'] =  (['', '_massUp', '_massDown'],"Nom")
+        self.extSyst['jme'] = ['_jesTotalUp', '_jesTotalDown', '_unclustEnUp', '_unclustEnDown'],
         self.charges = ["Wplus", "Wminus"]
+        self.yields = {}
+        self.yields["Wplus"] = {}
+        self.yields["Wminus"] = {}
+        self.bins = []
+        for iY in range(1, 7):
+            for iQt in range(1, 9):
+                self.yields["Wplus"][(iY, iQt)] = 0.
+                self.yields["Wminus"][(iY, iQt)] = 0.
+                self.bins.append("y_{}_qt_{}".format(iY,iQt))
+        self.clist = ["L", "I", "T", "A", "P", "7", "8", "9", "UL"]
+        
         self.histoDict ={}
         for charge in self.charges:
-            self.histoDict[charge]={}
+            self.histoDict[charge] = {}
+            for c in self.clist:
+                self.histoDict[charge][c] = {}
+                for bin in self.bins:
+                    self.histoDict[charge][c][bin] = {}
+                    for sKind in self.extSyst:
+                        self.histoDict[charge][c][bin][sKind] = []
 
-        self.clist = ["L", "I", "T", "A", "P", "7", "8", "9", "UL"]
         self.varName = 'helXsecs'
         self.inFile = ROOT.TFile.Open(self.indir+'/'+self.sampleFile)
         if not self.inFile :
@@ -40,13 +79,7 @@ class plotter:
         self.imapMinus = self.fileACminus.Get("angularCoefficients/mapTot")
         self.closPlus = copy.deepcopy(ROOT.TH2D("closPlus", "closPlus", self.imapPlus.GetXaxis().GetNbins(),self.imapPlus.GetXaxis().GetXbins().GetArray(),self.imapPlus.GetYaxis().GetNbins(),self.imapPlus.GetYaxis().GetXbins().GetArray()))
         self.closMinus = copy.deepcopy(ROOT.TH2D("closMinus", "closMinus", self.imapPlus.GetXaxis().GetNbins(), self.imapPlus.GetXaxis().GetXbins().GetArray(), self.imapPlus.GetYaxis().GetNbins(), self.imapPlus.GetYaxis().GetXbins().GetArray()))
-        self.yields = {}
-        self.yields["Wplus"] = {}
-        self.yields["Wminus"] = {}
-        for iY in range(1, 7):
-            for iQt in range(1, 9):
-                self.yields["Wplus"][(iY, iQt)] = 0.
-                self.yields["Wminus"][(iY, iQt)] = 0.
+        
         
         self.helXsecs = OrderedDict()
         self.helXsecs["L"] = "A0"
@@ -114,7 +147,7 @@ class plotter:
             else:
                 self.normaliseYields(th2slice, coeff, iY, iQt, self.imapMinus, self.fileACminus)
             th2slice.SetDirectory(0)
-            self.histoDict[charge][systname].append(th2slice)
+            self.histoDict[charge][coeff]["y_{}_qt_{}".format(iY, iQt)][systname].append(th2slice)
 
             if syst=="":
                 self.yields[charge][(iY,iQt)]+=th2slice.Integral(0,th2slice.GetNbinsX()+2,0,th2slice.GetNbinsY()+2)
@@ -136,112 +169,124 @@ class plotter:
         self.imapMinus.Write()
         fout.Close()
     def getHistos(self) :
-
         basepath="templatesAC_Signal/"
         for charge in self.charges:
-            for sKind, sList in self.extSyst.iteritems():
-                self.histoDict[charge][sKind]  = []
-                #print sKind, sList
-                for sname in sList[0]:#variations of each sKind
-                    for htype in self.clist:
-                        for iQt in range(1,9):
-                            fpath = basepath + sKind + '/'+charge+ '_qt_{}_helXsecs_'.format(iQt) + htype + sname
+            for c in self.clist:
+                for iQt in range(1, 9):
+                    for sKind, sList in self.extSyst.iteritems():
+                        for sname in sList[0]:  # variations of each sKind
+                            fpath = basepath + sKind + '/'+charge+ '_qt_{}_helXsecs_'.format(iQt) + c + sname
                             print "Histo read:", fpath
                             th3 = self.inFile.Get(fpath)
                             if not th3: print colored('fpath not found', 'red')
                             self.makeTH3slices(th3, sKind)
+                            #assert(0)
         self.uncorrelateEff()
         self.symmetrisePDF()
         self.alphaVariations()
+        self.uncorrelatePtVars()
         self.closureMap()
-        self.writeHistos()   
+        self.writeHistos()
+    def uncorrelatePtVars(self):
+        for charge in self.charges:
+            for c in self.clist:
+                for bin in self.bins:
+                    hlist = []
+                    hnom = [h for h in self.histoDict[charge][c][bin]['Nominal'] if not 'mass' in h.GetName()][0]
+                    for hvar in self.histoDict[charge][c][bin]['ptScale']:
+                        for j in range(1, 4+1):  # eta macro bins
+                            #create one histogram per macro bin
+                            haux = hnom.Clone()
+                            if 'stateig' in hvar.GetName():
+                                haux.SetName(hvar.GetName().replace('stateig', 'Eta{}stateig'.format(j)))
+                            elif 'zptsyst' in hvar.GetName():
+                                haux.SetName(hvar.GetName().replace('zptsyst', 'Eta{}zptsyst'.format(j)))
+                            elif 'Ewksyst' in hvar.GetName():
+                                haux.SetName(hvar.GetName().replace('Ewksyst', 'Eta{}Ewksyst'.format(j)))
+                            elif 'deltaM' in hvar.GetName():
+                                haux.SetName(hvar.GetName().replace('deltaM', 'Eta{}deltaM'.format(j)))
+                            #print haux.GetName()
+                            for t in range(1, 12+1):  # 48 eta bins /4 macro bins
+                                for k in range(1, hvar.GetNbinsY()+1):  # loop over pt bins
+                                    bin1D = hvar.GetBin((j-1)*12+t, k)
+                                    varcont = hvar.GetBinContent(bin1D)
+                                    haux.SetBinContent(bin1D, varcont)
+                            hlist.append(haux)
+                    self.histoDict[charge][c][bin]['ptScale'] = hlist
     def uncorrelateEff(self):
         for charge in self.charges:
-            aux = {}
-            aux['WHSF'] = []
-            for h in self.histoDict[charge]['Nominal']:
-                if 'mass' in h.GetName():
-                    continue
-                for i in range(3):
-                    for hvar in self.histoDict[charge]['WHSF']:
-                        for updown in ['Up', 'Down']:
-                            #print h.GetName() + 'WHSFSyst{}{}'.format(i, updown), "match"
-                            if hvar.GetName() == h.GetName() + '_WHSFSyst{}{}'.format(i, updown):
-                                for j in range(1, hvar.GetNbinsX()+1):  # loop over eta bins
-                                    #create one histogram per eta bin
-                                    haux = h.Clone()
-                                    haux.SetName(
-                                        h.GetName() + '_WHSFSyst{}Eta{}{}'.format(i, j, updown))
-                                    #print haux.GetName()
-                                    for k in range(1, hvar.GetNbinsY()+1):  # loop over pt bins
-                                        bin1D = hvar.GetBin(j, k)
-                                        varcont = hvar.GetBinContent(bin1D)
-                                        haux.SetBinContent(bin1D, varcont)
-                                    aux['WHSF'].append(haux)
-            for hvar in self.histoDict[charge]['WHSF']:
-                if 'Flat' in hvar.GetName():  # leave syst uncertainty as it is
-                    aux['WHSF'].append(hvar)
-            self.histoDict[charge].update(aux)
+            for c in self.clist:
+                for bin in self.bins:
+                    hlist = []
+                    hnom = [h for h in self.histoDict[charge][c][bin]['Nominal'] if not 'mass' in h.GetName()][0]
+                    for hvar in self.histoDict[charge][c][bin]['WHSF']:
+                        if not 'Flat' in hvar.GetName():
+                            for j in range(1, hvar.GetNbinsX()+1):  # loop over eta bins
+                                #create one histogram per eta bin
+                                haux = hnom.Clone()
+                                if 'Up' in hvar.GetName():
+                                    haux.SetName(hvar.GetName().replace('Up', 'Eta{}Up'.format(j)))
+                                else:
+                                    haux.SetName(hvar.GetName().replace('Down', 'Eta{}Down'.format(j)))
+                                #print haux.GetName()
+                                for k in range(1, hvar.GetNbinsY()+1):  # loop over pt bins
+                                    bin1D = hvar.GetBin(j, k)
+                                    varcont = hvar.GetBinContent(bin1D)
+                                    haux.SetBinContent(bin1D, varcont)
+                                hlist.append(haux)
+                        else:
+                            hlist.append(hvar)
+                    self.histoDict[charge][c][bin]['WHSF'] = hlist
     def symmetrisePDF(self):
         for charge in self.charges:
-            aux = {}
-            aux['LHEPdfWeight']=[]
-            for h in self.histoDict[charge]['Nominal']:
-                if 'mass' in h.GetName(): continue
-                for i in range(60):
-                    for hvar in self.histoDict[charge]['LHEPdfWeight']:
-                        if hvar.GetName() == h.GetName()+ '_LHEPdfWeightHess{}'.format(i+1):
-                            th2var = hvar
-                            break
-                    print h.GetName(), "pdf {}".format(i+1)
-                    th2c = h.Clone()
-                    th2varD = th2var.Clone()
-                    th2var.Divide(th2c)
-                    th2c.Divide(th2varD)
-                    nbinsX = h.GetXaxis().GetNbins()
-                    nbinsY = h.GetYaxis().GetNbins()
-                    th2Up = ROOT.TH2D("up","up",nbinsX,h.GetXaxis().GetBinLowEdge(1),h.GetXaxis().GetBinUpEdge(nbinsX),nbinsY,h.GetYaxis().GetBinLowEdge(1),h.GetYaxis().GetBinUpEdge(nbinsY))
-                    th2Up.Sumw2()
-                    th2Down =ROOT.TH2D("down","down",nbinsX,h.GetXaxis().GetBinLowEdge(1),h.GetXaxis().GetBinUpEdge(nbinsX),nbinsY,h.GetYaxis().GetBinLowEdge(1),h.GetYaxis().GetBinUpEdge(nbinsY))
-                    th2Down.Sumw2()
-                    for j in range(1,h.GetNbinsX()+1):
-                        for k in range(1,h.GetNbinsY()+1):
-                        
-                            th2Up.SetBinContent(j,k,h.GetBinContent(j,k)*th2var.GetBinContent(j,k))
-                            th2Down.SetBinContent(j,k,h.GetBinContent(j,k)*th2c.GetBinContent(j,k))
-
-                    th2Up.SetName(h.GetName()+ '_LHEPdfWeightHess{}Up'.format(i+1))
-                    th2Down.SetName(h.GetName()+ '_LHEPdfWeightHess{}Down'.format(i+1))
-                    aux['LHEPdfWeight'].append(th2Up)
-                    aux['LHEPdfWeight'].append(th2Down)
-
-            self.histoDict[charge].update(aux)
+            for c in self.clist:
+                for bin in self.bins:
+                    hlist = []
+                    hnom = [h for h in self.histoDict[charge][c][bin]['Nominal'] if not 'mass' in h.GetName()][0]
+                    for hvar in self.histoDict[charge][c][bin]['LHEPdfWeight']:
+                        print hvar.GetName()
+                        th2c = hnom.Clone()
+                        th2varD = hvar.Clone()
+                        hvar.Divide(th2c)
+                        th2c.Divide(th2varD)
+                        nbinsX = hnom.GetXaxis().GetNbins()
+                        nbinsY = hnom.GetYaxis().GetNbins()
+                        th2Up = ROOT.TH2D("up", "up", nbinsX, hnom.GetXaxis().GetBinLowEdge(1), hnom.GetXaxis().GetBinUpEdge(nbinsX), nbinsY, hnom.GetYaxis().GetBinLowEdge(1), hnom.GetYaxis().GetBinUpEdge(nbinsY))
+                        th2Up.Sumw2()
+                        th2Down = ROOT.TH2D("down", "down", nbinsX, hnom.GetXaxis().GetBinLowEdge(1), hnom.GetXaxis().GetBinUpEdge(nbinsX), nbinsY, hnom.GetYaxis().GetBinLowEdge(1), hnom.GetYaxis().GetBinUpEdge(nbinsY))
+                        th2Down.Sumw2()
+                        for j in range(1, hnom.GetNbinsX()+1):
+                            for k in range(1, hnom.GetNbinsY()+1):
+                                th2Up.SetBinContent(j, k, hnom.GetBinContent(j, k)*hvar.GetBinContent(j, k))
+                                th2Down.SetBinContent(j, k, hnom.GetBinContent(j, k)*th2c.GetBinContent(j, k))
+                        th2Up.SetName(hvar.GetName() + 'Up')
+                        th2Down.SetName(hvar.GetName() + 'Down')
+                        hlist.append(th2Up)
+                        hlist.append(th2Down)
+                    self.histoDict[charge][c][bin]['LHEPdfWeight'] = hlist
     def alphaVariations(self):
         for charge in self.charges:
-            aux = {}
-            aux['alphaS'] = []
-            for h in self.histoDict[charge]['Nominal']:
-                if 'mass' in h.GetName(): continue
-                for hvar in self.histoDict[charge]['alphaS']:
-                    if hvar.GetName() == h.GetName() + '_alphaSUp' or hvar.GetName() == h.GetName() + '_alphaSDown':
-                        hvar.Divide(h)
-                        aux['alphaS'].append(hvar)
-            self.histoDict[charge].update(aux)
+            for c in self.clist:
+                for bin in self.bins:
+                    hlist = []
+                    hnom = [h for h in self.histoDict[charge][c][bin]['Nominal'] if not 'mass' in h.GetName()][0]
+                    for hvar in self.histoDict[charge][c][bin]['alphaS']:
+                        hvar.Divide(hnom)
+                        hlist.append(hvar)
+                    self.histoDict[charge][c][bin]['alphaS'] = hlist
     def writeHistos(self):
         print 'writing histograms'
-        charges = ["Wplus", "Wminus"]
-        for charge in charges:
+        for charge in self.charges:
             foutName = charge+'_reco'
             foutName += '.root'
-            fout = ROOT.TFile.Open(self.outdir + '/' + foutName, "RECREATE")
+            fout = ROOT.TFile.Open(self.outdir + '/' + foutName, "recreate")
             fout.cd()
-            for sKind, hlist in self.histoDict[charge].iteritems():
-                #fout.mkdir(sKind)
-                #fout.cd(sKind)
-                fout.cd()
-                for h in hlist:
-                    #th1=self.unroll2D(h)
-                    h.Write()
+            for c in self.clist:
+                for bin in self.bins:
+                    for sKind in self.extSyst:
+                        for h in self.histoDict[charge][c][bin][sKind]:
+                            fout.cd()
+                            h.Write()
             fout.cd()
             fout.Save()
             fout.Close()
