@@ -33,15 +33,19 @@ class bkg_analyzer:
         self.signList = ['Plus','Minus']
         self.sampleList =  ['WToMuNu','Data'] #WToMuNu= All EWK samples
         self.maxPt_linearFit = 55
-        self.PDFvar = 'LHEPdfWeightVars'
+        self.PDFvar = 'LHEPdfWeight'
         # print "WARNING: pt fit range 25-55 GeV"
         self.rootFiles = []
         for f in self.sampleList : 
              self.rootFiles.append(ROOT.TFile.Open(self.inputDir+'/'+f+'.root'))    
 
-        self.ptBinningS = ['{:.2g}'.format(x) for x in self.ptBinning[:-1]]
+        self.ptBinningS = ['{:.3g}'.format(x) for x in self.ptBinning[:-1]]
+        print self.ptBinning
+        print self.ptBinningS
+
         self.etaBinningS = ['{:.2g}'.format(x) for x in self.etaBinning[:-1]]
-        
+        print self.etaBinning
+        print self.etaBinningS
         # print "WARNING: hardcoded LHE dict"
         # self.LHEdict = {
         #     'Down' : ["LHEScaleWeight_muR0p5_muF0p5", "LHEScaleWeight_muR0p5_muF1p0", "LHEScaleWeight_muR1p0_muF0p5"],
@@ -127,7 +131,7 @@ class bkg_analyzer:
 
     def correlatedFitter(self, fakedict) :
        
-        DONT_REBIN = False
+        DONT_REBIN = True
 
         #load the histos
         file_dict = {}
@@ -519,13 +523,13 @@ class bkg_analyzer:
         }
         
         groupedSystColors = {
-            "WHSFVars"  : [ROOT.kGreen+1, 'Scale Factors'],
-            "LHEScaleWeightVars" : [ROOT.kViolet-2, 'MC Scale'],
-            "ptScaleVars" : [ROOT.kBlue-4, 'pT Scale'],
-            "jmeVars" : [ROOT.kAzure+10, 'MET'],
-            "LHEPdfWeightVars" : [ROOT.kRed+1, 'PDF'],
+            "WHSF"  : [ROOT.kGreen+1, 'Scale Factors'],
+            "LHEScaleWeight" : [ROOT.kViolet-2, 'MC Scale'],
+            "ptScale" : [ROOT.kBlue-4, 'pT Scale'],
+            "jme" : [ROOT.kAzure+10, 'MET'],
+            "LHEPdfWeight" : [ROOT.kRed+1, 'PDF'],
             "Nominal" : [1, 'Stat. Unc.'],
-            "PrefireWeightVars" : [ROOT.kSpring+10, 'Prefire']
+            "PrefireWeight" : [ROOT.kSpring+10, 'Prefire']
         }
             
         #getting canvas and histoss
@@ -637,7 +641,7 @@ class bkg_analyzer:
                                     deltaPDF=0 #LHE PDF variations (wrt nominal)
                                     for sKind, sList in systDict.iteritems():
                                         for sName in sList :
-                                            if not 'LHEPdf' in sName: continue 
+                                            if not 'LHEPdf' in sName or not 'alphaS' in sName: continue 
                                             Nrepl=1.
                                             # if sKind=='LHEPdfWeightVars' :
                                             #     Nrepl = float(len(sList))
@@ -868,7 +872,7 @@ class bkg_analyzer:
                                     delta = 0
                                     for sName in sList :
                                         if 'Down' in sName : continue
-                                        if 'LHE' in sName : continue
+                                        if 'LHE' in sName or 'alphaS' in sName: continue
                                         if sName=='nom' : continue
                                         if 'Up' in sName :
                                             systDown =  sName.replace("Up","Down")
@@ -1266,7 +1270,7 @@ class bkg_analyzer:
                             for sKind, sList in systDict.iteritems():
                                 for sName in sList :
                                     if 'Down' in sName : continue
-                                    if 'LHE' in sName: continue
+                                    if 'LHE' in sName or 'alphaS' in sName: continue
                                     # if sName in self.LHEdict['Down']: continue
                                     if 'Up' in sName :
                                         sNameDown =  sName.replace("Up","Down")
@@ -1283,7 +1287,7 @@ class bkg_analyzer:
                             deltaPDF=0 #LHE PDF variations (wrt nominal)
                             for sKind, sList in systDict.iteritems():
                                 for sName in sList :
-                                    if not 'LHEPdf' in sName: continue 
+                                    if not 'LHEPdf' in sName and not 'alphaS' in sName: continue 
                                     Nrepl=1.
                                     # if sKind=='LHEPdfWeightVars' :
                                     #     Nrepl = float(len(sList))                                    
@@ -1470,6 +1474,7 @@ class bkg_analyzer:
                     histo3DDict[f+r] = self.rootFiles[self.sampleList.index(f)].Get('templates_'+rl+'/Nominal/'+var_inside_histo)
                 else :
                     histo3DDict[f+r] = self.rootFiles[self.sampleList.index(f)].Get('templates_'+rl+'/'+self.systKind+'/'+var_inside_histo+sName)
+                    if not histo3DDict[f+r] : print 'NOT FOUND: templates_'+rl+'/'+self.systKind+'/'+var_inside_histo+sName, '  in sample ', f
                 
         print "> evaluating fakerate..."
         hfakes = self.differential_fakerate(kind='fake',histo3D=histo3DDict)

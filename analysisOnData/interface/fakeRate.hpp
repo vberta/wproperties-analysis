@@ -11,13 +11,14 @@ private:
 
   std::map<std::string, TH2D *> _FR;
 
-  std::vector<std::string> _variations = {"Nominal_", "WHSFVars_WHSFSyst0Up", "WHSFVars_WHSFSyst1Up",
-                                         "WHSFVars_WHSFSyst2Up", "WHSFVars_WHSFSystFlatUp", "WHSFVars_WHSFSyst0Down", "WHSFVars_WHSFSyst1Down",
-                                         "WHSFVars_WHSFSyst2Down", "WHSFVars_WHSFSystFlatDown", "LHEScaleWeightVars_LHEScaleWeight_muR0p5_muF0p5",
-                                         "LHEScaleWeightVars_LHEScaleWeight_muR0p5_muF1p0", "LHEScaleWeightVars_LHEScaleWeight_muR1p0_muF0p5",
-                                         "LHEScaleWeightVars_LHEScaleWeight_muR1p0_muF2p0", "LHEScaleWeightVars_LHEScaleWeight_muR2p0_muF1p0",
-                                         "LHEScaleWeightVars_LHEScaleWeight_muR2p0_muF2p0", "ptScaleVars_correctedUp", "ptScaleVars_correctedDown",
-					  "jmeVars_jerUp", "jmeVars_jerDown", "jmeVars_jesTotalUp", "jmeVars_jesTotalDown", "jmeVars_unclustEnUp", "jmeVars_unclustEnDown", "PrefireWeightVars_PrefireWeightUp", "PrefireWeightVars_PrefireWeightDown"};
+  std::vector<std::string> _variations = {"Nominal_", "WHSF_WHSFSyst0Up", "WHSF_WHSFSyst1Up",
+                                         "WHSF_WHSFSyst2Up", "WHSF_WHSFSystFlatUp", "WHSF_WHSFSyst0Down", "WHSF_WHSFSyst1Down",
+                                         "WHSF_WHSFSyst2Down", "WHSF_WHSFSystFlatDown", "LHEScaleWeight_LHEScaleWeight_muR0p5_muF0p5",
+                                         "LHEScaleWeight_LHEScaleWeight_muR0p5_muF1p0", "LHEScaleWeight_LHEScaleWeight_muR1p0_muF0p5",
+                                         "LHEScaleWeight_LHEScaleWeight_muR1p0_muF2p0", "LHEScaleWeight_LHEScaleWeight_muR2p0_muF1p0",
+                                         "LHEScaleWeight_LHEScaleWeight_muR2p0_muF2p0", "ptScale_correctedUp", "ptScale_correctedDown",
+					  "jme_jerUp", "jme_jerDown", "jme_jesTotalUp", "jme_jesTotalDown", "jme_unclustEnUp", "jme_unclustEnDown"};
+  //, "PrefireWeight_PrefireWeightUp", "PrefireWeight_PrefireWeightDown"};
 
 public:
   fakeRate(TFile *SF)
