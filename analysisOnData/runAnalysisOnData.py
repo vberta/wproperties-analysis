@@ -26,8 +26,8 @@ def RDFprocessData(fvec, outputDir, ncores, pretendJob=True, SBana=False, outF="
         nom.push_back("")
         #last argument refers to histo category - 0 = Nominal, 1 = Pt scale , 2 = MET scale
         print "branching nominal"
-        if region == "Signal" or (region=='Sideband' and SBana):
-            p.branch(nodeToStart = 'defs', nodeToEnd = 'prefit_{}/Nominal'.format(region), modules = [ROOT.muonHistos(cut, weight, nom,"Nom",0)]) 
+        #if region == "Signal" or (region=='Sideband' and SBana):
+        #    p.branch(nodeToStart = 'defs', nodeToEnd = 'prefit_{}/Nominal'.format(region), modules = [ROOT.muonHistos(cut, weight, nom,"Nom",0)]) 
         #nominal templates
         p.branch(nodeToStart = 'defs', nodeToEnd = 'templates_{}/Nominal'.format(region), modules = [ROOT.templates(cut, weight, nom,"Nom",0)])       
     p.getOutput()
@@ -59,8 +59,8 @@ def RDFprocessfakefromData(fvec, outputDir, bkgFile, ncores, pretendJob=True, SB
 
         #now add fake variations
         for s,variations in systematics.iteritems():
-            if "LHEPdfWeight" in s : continue
-            if "alphaS" in s : continue
+            #only required systs
+            if "LHEPdfWeight" not in s and "LHEScaleWeight" not in s: continue
             print "branching weight variations", s
             vars_vec = ROOT.vector('string')()
             for var in variations[0]:
@@ -73,6 +73,7 @@ def RDFprocessfakefromData(fvec, outputDir, bkgFile, ncores, pretendJob=True, SB
         
         #fake column variations since the cut won't change in data
         for vartype, vardict in selectionVars.iteritems():
+            if vartype != 'jme' : continue
             vars_vec = ROOT.vector('string')()
             for selvar, hcat in vardict.iteritems() :
                 vars_vec.push_back(selvar)

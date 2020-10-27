@@ -64,7 +64,7 @@ class fitUtils:
 
         shapeOutxsec = ROOT.TFile(self.channel+'_xsec.root', 'recreate')
 
-        self.xsec.Scale(61526.7*1000.) #xsec in fb
+        self.xsec.Scale(61526.7*1000.*35.9) #xsec in fb x integrated luminosity
         self.xsec.Write()
         
         for proc in self.processes:
@@ -199,10 +199,13 @@ class fitUtils:
                     self.DC.systs.append((var, False, self.templSystematics[syst]["type"], [], aux))
         
         self.DC.groups = {'mass': ['mass'], 
-                          'pdfs': set(['LHEPdfWeightHess{}'.format(i+1) for i in range(60)]),
-                          'alphaS': ['alphaS'],
+                          'pdfs': set(['LHEPdfWeightHess{}'.format(i+1) for i in range(60)]+['alphaS']),
                           'WHSFStat': set(["WHSFSyst0Eta{}".format(i) for i in range(1, 49)]+["WHSFSyst1Eta{}".format(i) for i in range(1, 49)]+["WHSFSyst2Eta{}".format(i) for i in range(1, 49)]),
-                          'WHSFSyst': ['WHSFSystFlat']}  # <type 'dict'>
+                          'WHSFSyst': ['WHSFSystFlat'],
+                          'ptScale': set(["Eta{}zptsyst".format(j) for j in range(1, 5)] + ["Eta{}Ewksyst".format(j) for j in range(1, 5)] + ["Eta{}deltaMsyst".format(j) for j in range(1, 5)]+["Eta{}stateig{}".format(j, i) for i in range(0, 99) for j in range(1, 5)]),
+                          'jme': set(['jesTotal', 'unclustEn']),
+                          'PrefireWeight':['PrefireWeight'],
+                          }  # <type 'dict'>
         
         self.DC.shapeMap = 	{self.channel: {'*': [self.channel+'.root', '$PROCESS', '$PROCESS_$SYSTEMATIC']},\
         self.channel+'_xsec': {'*': [self.channel+'_xsec.root', '$PROCESS', '$PROCESS_$SYSTEMATIC']}} # <type 'dict'>

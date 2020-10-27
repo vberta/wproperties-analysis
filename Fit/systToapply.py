@@ -24,7 +24,7 @@ systematicsDict = {
     "mass" : {
         "vars":["mass"],
         "procs": ["Signal", "LowAcc"],
-        "type":"shape"
+        "type": "shapeNoConstraint"
     },
     "WHSFStat"  : {
         "vars": ["WHSFSyst0Eta{}".format(i) for i in range(1, 49)]+["WHSFSyst1Eta{}".format(i) for i in range(1, 49)]+["WHSFSyst2Eta{}".format(i) for i in range(1, 49)],
@@ -34,21 +34,21 @@ systematicsDict = {
         "vars": ["WHSFSystFlat"],
         "procs": ["Signal","LowAcc"],
         "type": "shape"},
-    #"ptScale" : {
-    #    "vars":["corrected"], 
-    #    "procs": ["Signal", "DY","Diboson","Top","Tau","LowAcc","Fakes"],
-    #    "type": "shape"
-    #},
-    #"jme" : {
-    #    "vars":["jesTotal", "unclustEn"],
-    #    "procs": ["Signal", "DY","Diboson","Top","Tau","LowAcc","Fakes"],
-    #    "type": "shape"
-    #},
-    #"PrefireWeight":{
-    #    "vars":["PrefireWeight"],
-    #    "procs": ["Signal", "DY","Diboson","Top","Tau","LowAcc","Fakes"],
-    #    "type": "shape"
-    #}
+    "ptScale" : {
+        "vars": ["Eta{}zptsyst".format(j) for j in range(1, 5)] + ["Eta{}Ewksyst".format(j) for j in range(1, 5)] + ["Eta{}deltaMsyst".format(j) for j in range(1, 5)]+["Eta{}stateig{}".format(j, i) for i in range(0, 99) for j in range(1, 5)],
+        "procs": ["Signal"],
+        "type": "shape"
+    },
+    "jme" : {
+        "vars":["jesTotal", "unclustEn"],
+        "procs": ["Signal", "LowAcc"],
+        "type": "shape"
+    },
+    "PrefireWeight":{
+        "vars":["PrefireWeight"],
+        "procs": ["Signal", "LowAcc"],
+        "type": "shape"
+    },
     "LHEPdfWeight" : {
         "vars":["LHEPdfWeightHess{}".format(i+1) for i in range(60)],
         "procs": ["Signal", "LowAcc"],
