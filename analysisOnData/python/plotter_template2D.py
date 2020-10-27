@@ -33,6 +33,7 @@ class plotter:
         self.selectionFake = ['fakes']       
         self.extSyst = copy.deepcopy(systematics)
         self.extSyst['Nominal'] = ['']
+        self.extSyst['jme'] = ['_jesTotalUp', '_jesTotalDown','_unclustEnUp', '_unclustEnDown'],
         self.histoDict ={} 
 
     def unroll2D(self, th2):
@@ -109,7 +110,6 @@ class plotter:
                 aux['WHSF'].append(hvar)
         self.histoDict[sample].update(aux)
     def symmetrisePDF(self,sample):
-
         if not self.histoDict[sample]['LHEPdfWeight']==[]:
             aux = {}
             aux['LHEPdfWeight']=[]
@@ -140,7 +140,17 @@ class plotter:
                     aux['LHEPdfWeight'].append(th2Up)
                     aux['LHEPdfWeight'].append(th2Down)
             self.histoDict[sample].update(aux)
-    
+    def alphaVariations(self,sample):
+        aux = {}
+        aux['alphaS'] = []
+        for h in self.histoDict[sample]['Nominal']:
+            if 'mass' in h.GetName():
+                continue
+            for hvar in self.histoDict[sample]['alphaS']:
+                if hvar.GetName() == h.GetName() + '_alphaSUp' or hvar.GetName() == h.GetName() + '_alphaSDown':
+                    hvar.Divide(h)
+                    aux['alphaS'].append(hvar)
+        self.histoDict[sample].update(aux)
     def getHistos(self, chargeBin) :
         print 'writing histograms'
         foutName = 'Wplus_reco' if chargeBin == 2 else 'Wminus_reco'
@@ -160,8 +170,9 @@ class plotter:
             if sample not in  self.histoDict : 
                 print "No histo dict for sample:", sample, " What have you done??!!!!"
                 continue
-            #self.symmetrisePDF(sample)
-            #self.uncorrelateEff(sample)
+            self.symmetrisePDF(sample)
+            self.uncorrelateEff(sample)
+            self.alphaVariations(sample)
             for syst, hlist in self.histoDict[sample].iteritems():
                 #fout.mkdir(syst)
                 #fout.cd(syst)

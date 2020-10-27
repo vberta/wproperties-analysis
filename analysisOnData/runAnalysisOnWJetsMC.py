@@ -31,12 +31,12 @@ def RDFprocessWJetsMCSignalACtempl(fvec, outputDir, sample, xsec, fileSF, fileSc
     weight = 'float(puWeight*lumiweight*WHSF*weightPt*weightY)'
     wtomu_cut =  selections_bkg[region] + wdecayselections['WToMu']
     wtomu_lowAcc_cut = wtomu_cut + "&& Wpt_preFSR>32. && Wrap_preFSR_abs>2.4"
-    print weight, "NOMINAL WEIGHT"
+    #print weight, "NOMINAL WEIGHT"
     nom = ROOT.vector('string')()
     nom.push_back("")
 
     p = RDFtree(outputDir = outputDir, inputFile = fvec, outputFile="{}_AC_plots.root".format('WToMu'), pretend=pretendJob)
-    p.branch(nodeToStart = 'input', nodeToEnd = 'defs', modules = [ROOT.reweightFromZ(filePt,fileY),ROOT.baseDefinitions(True,True),ROOT.rochesterVariations(fileScale),ROOT.weightDefinitions(fileSF),getLumiWeight(xsec=xsec, inputFile=fvec, genEvsbranch = "genEventSumw"),ROOT.Replica2Hessian()])
+    p.branch(nodeToStart = 'input', nodeToEnd = 'defs', modules = [ROOT.reweightFromZ(filePt,fileY),ROOT.baseDefinitions(True,True),ROOT.rochesterWeights(fileScale),ROOT.weightDefinitions(fileSF),getLumiWeight(xsec=xsec, inputFile=fvec, genEvsbranch = "genEventSumw"),ROOT.Replica2Hessian()])
 
     steps = [ROOT.getACValues(fileACplus,fileACminus), ROOT.defineHarmonics(), ROOT.getMassWeights(), ROOT.getWeights()]
     p.branch(nodeToStart = 'defs', nodeToEnd = 'defsAC', modules = steps)
@@ -82,7 +82,7 @@ def RDFprocessWJetsMCSignalACtempl(fvec, outputDir, sample, xsec, fileSF, fileSc
         print 'low Acc'
         for cut in wtomu_cut_vec:
             cut+= "&& Wpt_preFSR>32. && Wrap_preFSR_abs>2.4"
-            print "Low acc cut vec vars:", wtomu_cut_vec
+            #print "Low acc cut vec vars:", wtomu_cut_vec
         p.branch(nodeToStart = 'defsAC', nodeToEnd = 'templatesLowAcc_{}/{}'.format(region,vartype), modules = [ROOT.templates(wtomu_cut_vec, weight, nom,"Nom",hcat,wtomu_var_vec)])
     p.getOutput()
     p.saveGraph()
@@ -99,7 +99,7 @@ def RDFprocessWJetsMC(fvec, outputDir, sample, xsec, fileSF, fileScale, ncores, 
     filePt = ROOT.TFile.Open("data/histoUnfoldingSystPt_nsel2_dy3_rebin1_default.root")
     fileY = ROOT.TFile.Open("data/histoUnfoldingSystRap_nsel2_dy3_rebin1_default.root")
     #fileAC = ROOT.TFile.Open("../analysisOnGen/genInput.root")
-    p.branch(nodeToStart = 'input', nodeToEnd = 'defs', modules = [ROOT.reweightFromZ(filePt,fileY),ROOT.baseDefinitions(True, True),ROOT.rochesterVariations(fileScale), ROOT.weightDefinitions(fileSF),getLumiWeight(xsec=xsec, inputFile=fvec, genEvsbranch = "genEventSumw"),ROOT.Replica2Hessian()])
+    p.branch(nodeToStart = 'input', nodeToEnd = 'defs', modules = [ROOT.reweightFromZ(filePt,fileY),ROOT.baseDefinitions(True, True),ROOT.rochesterWeights(fileScale), ROOT.weightDefinitions(fileSF),getLumiWeight(xsec=xsec, inputFile=fvec, genEvsbranch = "genEventSumw"),ROOT.Replica2Hessian()])
     for region,cut in selections_bkg.iteritems():
         if 'aiso' in region:
             weight = 'float(puWeight*lumiweight*weightPt*weightY)'
@@ -227,25 +227,12 @@ def main():
         sys.exit(1)
     print fvec 
 
-    selectionVars['ptScale'].update( 
-        {"_zptsystUp" : 1, "_zptsystDown" : 1, "_EwksystUp" : 1, "_EwksystDown" : 1,
-         "_deltaMsystUp" : 1, "_deltaMsystDown" : 1, "_Ewk2systUp" : 1, "_Ewk2systDown" : 1,
-     } 
-    )
-       
-    for idx in range(0, 99):
-        upName = "_stateig" + str(idx) + "Up"
-        selectionVars["ptScale"].update({upName : 1})
-        downName = "_stateig" + str(idx) + "Down"
-        selectionVars["ptScale"].update({downName : 1})
-
-    print selectionVars
     fileSF = ROOT.TFile.Open("data/ScaleFactors_OnTheFly.root")
-    fileScale = ROOT.TFile.Open("data/muscales_extended.root")
+    fileScale = ROOT.TFile.Open("/scratchnvme/emanca/wproperties-analysis/analysisOnData/rochPlots/rochPlotsWeights.root")
     if bkg: 
         RDFprocessWJetsMC(fvec, outputDir, sample, xsec, fileSF, fileScale, ncores, pretendJob, bkg,SBana)
     else:
         RDFprocessWJetsMCSignalACtempl(fvec, outputDir, sample, xsec, fileSF, fileScale, ncores, pretendJob)
-    
+
 if __name__ == "__main__":
     main()
