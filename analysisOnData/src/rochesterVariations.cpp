@@ -2,18 +2,7 @@
 #include "interface/rochesterVariations.hpp"
 RNode rochesterVariations::run(RNode d)
 {
-  std::vector<float> _pTArr = std::vector<float>(61);
-  std::vector<float> _etaArr = std::vector<float>(49);
-  std::vector<float> _chargeArr = std::vector<float>(3);
-  for (unsigned int i = 0; i < 61; i++)
-  {
-    float binSize = (55. - 25.) / 60;
-    _pTArr[i] = 25. + i * binSize;
-  }
-  for (unsigned int i = 0; i < 49; i++)
-    _etaArr[i] = -2.4 + i * 4.8 / 48;
-  for (int i = 0; i < 3; i++)
-    _chargeArr[i] = -2. + i * 2.;
+  
   auto df = d.Define("Mu1_pt_zptsystUp", [this](float pt, float eta) { return getCorrfromhisto(_Zptcorv, pt, eta, 0); }, {"Mu1_pt", "Mu1_eta"})
                 .Define("Mu1_pt_zptsystDown", [this](float pt, float eta) { return getCorrfromhisto(_Zptcorv, pt, eta, 1); }, {"Mu1_pt", "Mu1_eta"})
                 .Define("MT_zptsystUp", W_mt, {"Mu1_pt_zptsystUp", "Mu1_phi", "MET_pt_nom", "MET_phi_nom"})
@@ -30,25 +19,6 @@ RNode rochesterVariations::run(RNode d)
                 .Define("Mu1_pt_Ewk2systDown", [this](float pt, float eta) { return getCorrfromhisto(_Ewk2corv, pt, eta, 1); }, {"Mu1_pt", "Mu1_eta"})
                 .Define("MT_Ewk2systUp", W_mt, {"Mu1_pt_Ewk2systUp", "Mu1_phi", "MET_pt_nom", "MET_phi_nom"})
                 .Define("MT_Ewk2systDown", W_mt, {"Mu1_pt_Ewk2systDown", "Mu1_phi", "MET_pt_nom", "MET_phi_nom"});
-
-  auto Mu1_pt = df.Histo3D(TH3D("Mu1_ptnom", "Mu1_ptnom", _etaArr.size() - 1, _etaArr.data(), _pTArr.size() - 1, _pTArr.data(), _chargeArr.size() - 1, _chargeArr.data()), "Mu1_eta","Mu1_pt", "Mu1_charge");
-  _h3List.push_back(Mu1_pt);
-  auto Mu1_ptzptsystUp = df.Histo3D(TH3D("Mu1_pt_zptsystUp", "Mu1_pt_zptsystUp", _etaArr.size() - 1, _etaArr.data(), _pTArr.size() - 1, _pTArr.data(), _chargeArr.size() - 1, _chargeArr.data()), "Mu1_eta" ,"Mu1_pt_zptsystUp", "Mu1_charge");
-  _h3List.push_back(Mu1_ptzptsystUp);
-  auto Mu1_ptzptsystDown = df.Histo3D(TH3D("Mu1_pt_zptsystDown", "Mu1_pt_zptsystDown", _etaArr.size() - 1, _etaArr.data(), _pTArr.size() - 1, _pTArr.data(), _chargeArr.size() - 1, _chargeArr.data()), "Mu1_eta", "Mu1_pt_zptsystDown", "Mu1_charge");
-  _h3List.push_back(Mu1_ptzptsystDown);
-  auto Mu1_ptEwksystUp = df.Histo3D(TH3D("Mu1_pt_EwksystUp", "Mu1_pt_EwksystUp", _etaArr.size() - 1, _etaArr.data(), _pTArr.size() - 1, _pTArr.data(), _chargeArr.size() - 1, _chargeArr.data()), "Mu1_eta", "Mu1_pt_EwksystUp", "Mu1_charge");
-  _h3List.push_back(Mu1_ptEwksystUp);
-  auto Mu1_ptEwksystDown = df.Histo3D(TH3D("Mu1_pt_EwksystDown", "Mu1_pt_EwksystDown", _etaArr.size() - 1, _etaArr.data(), _pTArr.size() - 1, _pTArr.data(), _chargeArr.size() - 1, _chargeArr.data()), "Mu1_eta", "Mu1_pt_EwksystDown", "Mu1_charge");
-  _h3List.push_back(Mu1_ptEwksystDown);
-  auto Mu1_ptEwk2systUp = df.Histo3D(TH3D("Mu1_pt_Ewk2systUp", "Mu1_pt_Ewk2systUp", _etaArr.size() - 1, _etaArr.data(), _pTArr.size() - 1, _pTArr.data(), _chargeArr.size() - 1, _chargeArr.data()), "Mu1_eta", "Mu1_pt_Ewk2systUp", "Mu1_charge");
-  _h3List.push_back(Mu1_ptEwk2systUp);
-  auto Mu1_ptEwk2systDown = df.Histo3D(TH3D("Mu1_pt_Ewk2systDown", "Mu1_pt_Ewk2systDown", _etaArr.size() - 1, _etaArr.data(), _pTArr.size() - 1, _pTArr.data(), _chargeArr.size() - 1, _chargeArr.data()), "Mu1_eta", "Mu1_pt_Ewk2systDown", "Mu1_charge");
-  _h3List.push_back(Mu1_ptEwk2systDown);
-  auto Mu1_ptdeltaMsystUp = df.Histo3D(TH3D("Mu1_pt_deltaMsystUp", "Mu1_pt_deltaMsystUp", _etaArr.size() - 1, _etaArr.data(), _pTArr.size() - 1, _pTArr.data(), _chargeArr.size() - 1, _chargeArr.data()), "Mu1_eta", "Mu1_pt_deltaMsystUp", "Mu1_charge");
-  _h3List.push_back(Mu1_ptdeltaMsystUp);
-  auto Mu1_ptdeltaMsystDown = df.Histo3D(TH3D("Mu1_pt_deltaMsystDown", "Mu1_pt_deltaMsystDown", _etaArr.size() - 1, _etaArr.data(), _pTArr.size() - 1, _pTArr.data(), _chargeArr.size() - 1, _chargeArr.data()), "Mu1_eta", "Mu1_pt_deltaMsystDown", "Mu1_charge");
-  _h3List.push_back(Mu1_ptdeltaMsystDown);
 
   for (unsigned int idx = 0; idx < 99; idx++)
   {
@@ -83,10 +53,6 @@ RNode rochesterVariations::run(RNode d)
              .Define(mtDown, W_mt, {ptDown, "Mu1_phi", "MET_pt_nom", "MET_phi_nom"})
              .Define(ptUp, cDown, {"Mu1_pt", "Mu1_eta"})
              .Define(mtUp, W_mt, {ptUp, "Mu1_phi", "MET_pt_nom", "MET_phi_nom"});
-    auto hUp = df.Histo3D(TH3D(ptUp.c_str(), ptUp.c_str(), _etaArr.size() - 1, _etaArr.data(), _pTArr.size() - 1, _pTArr.data(), _chargeArr.size() - 1, _chargeArr.data()), "Mu1_eta", ptUp, "Mu1_charge");
-    _h3List.push_back(hUp);
-    auto hDown = df.Histo3D(TH3D(ptDown.c_str(), ptDown.c_str(), _etaArr.size() - 1, _etaArr.data(), _pTArr.size() - 1, _pTArr.data(), _chargeArr.size() - 1, _chargeArr.data()), "Mu1_eta", ptDown, "Mu1_charge");
-    _h3List.push_back(hDown);
   }
   return df;
 }
