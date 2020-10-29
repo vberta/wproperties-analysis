@@ -34,7 +34,8 @@ def pmin(f, x, args = [], doParallel=True):
     tol = np.sqrt(np.finfo('float64').eps)
     #tol = np.finfo('float64').eps
     #edmtol = np.sqrt(np.finfo('float64').eps)
-    maxiter = int(100e3)
+    # maxiter = int(100e3)
+    maxiter = int(10000) 
     
     trust_radius = np.ones(shape=x.shape[:-1], dtype=x.dtype)
     
@@ -44,7 +45,9 @@ def pmin(f, x, args = [], doParallel=True):
     #sufficiently advanced technology is indistinguishable from magic
     if doParallel:
         fiter = jax.vmap(fiter)
-    fiter = jax.jit(fiter)
+    # fiter = jax.jit(fiter)
+    static_argnums = (2,)
+    fiter = jax.jit(fiter,static_argnums=static_argnums)
     
     #jit compile function where arguments not varying between iterations treated as static
     #this possibly leads to excessive memory consumption
@@ -56,7 +59,10 @@ def pmin(f, x, args = [], doParallel=True):
         #x,trust_radius, actual_reduction, predicted_reduction, rho, val, gradmag = vfiter(x,trust_radius,args)
         #maxidx = np.argmax(trust_radius)
         #print(i, val, trust_radius, gradmag, np.max(trust_radius), np.max(gradmag), actual_reduction[maxidx],predicted_reduction[maxidx])
-        print("iter", i, np.sum(val), np.max(trust_radius), np.max(gradmag), np.sum(edm), np.max(edm), np.min(e0))
+        # print("iter", i, np.sum(val), np.max(trust_radius), np.max(gradmag), np.sum(edm), np.max(edm), np.min(e0))
+        print "iter", i, ", gradmag=",gradmag ,", edm=",edm, "e0=", e0
+        # print ", parametri:", x[0], x[1], x[2], x[3],x[4],x[5],x[6],x[7],x[8],x[9],x[10]
+        # print x
         #for iparm in range(4):
             #print(iparm, np.min(x[...,iparm]), np.max(x[...,iparm]))
         #if np.all(trust_radius<tol):
