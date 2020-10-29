@@ -12,4 +12,3 @@
 #include "interface/templateBuilder.hpp"
 #include "interface/defineHarmonics.hpp"
 #include "interface/rochesterVariations.hpp"
-#include "interface/rochesterWeights.hpp"
