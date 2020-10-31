@@ -6,6 +6,7 @@ from HiggsAnalysis.CombinedLimit.DatacardParser import *
 from collections import OrderedDict
 import copy
 from systToapply import systematicsDict
+import numpy as np
 
 class fitUtils:
     def __init__(self, fmap, channel ="WPlus", doSyst=False):
@@ -20,6 +21,8 @@ class fitUtils:
         self.helGroups = OrderedDict()
         self.sumGroups = OrderedDict()
         self.helMetaGroups = OrderedDict()
+        self.poly1DRegGroups = OrderedDict()
+        self.poly2DRegGroups = OrderedDict()
         
         self.templSystematics = systematicsDict
 
@@ -64,7 +67,7 @@ class fitUtils:
 
         shapeOutxsec = ROOT.TFile(self.channel+'_xsec.root', 'recreate')
 
-        self.xsec.Scale(61526.7*1000.) #xsec in fb
+        self.xsec.Scale(61526.7*1000.*35.9) #xsec in fb x integrated luminosity
         self.xsec.Write()
         
         for proc in self.processes:
@@ -198,11 +201,14 @@ class fitUtils:
 
                     self.DC.systs.append((var, False, self.templSystematics[syst]["type"], [], aux))
         
-        self.DC.groups = {'mass': ['mass'], 
-                          'pdfs': set(['LHEPdfWeightHess{}'.format(i+1) for i in range(60)]),
-                          'alphaS': ['alphaS'],
-                          'WHSFStat': set(["WHSFSyst0Eta{}".format(i) for i in range(1, 49)]+["WHSFSyst1Eta{}".format(i) for i in range(1, 49)]+["WHSFSyst2Eta{}".format(i) for i in range(1, 49)]),
-                          'WHSFSyst': ['WHSFSystFlat']}  # <type 'dict'>
+        self.DC.groups = {'mass': ['mass']} 
+        #                  'pdfs': set(['LHEPdfWeightHess{}'.format(i+1) for i in range(60)]+['alphaS']),
+        #                 'WHSFStat': set(["WHSFSyst0Eta{}".format(i) for i in range(1, 49)]+["WHSFSyst1Eta{}".format(i) for i in range(1, 49)]+["WHSFSyst2Eta{}".format(i) for i in range(1, 49)]),
+        #                  'WHSFSyst': ['WHSFSystFlat'],
+        #                  'ptScale': set(["Eta{}zptsyst".format(j) for j in range(1, 5)] + ["Eta{}Ewksyst".format(j) for j in range(1, 5)] + ["Eta{}deltaMsyst".format(j) for j in range(1, 5)]+["Eta{}stateig{}".format(j, i) for i in range(0, 99) for j in range(1, 5)]),
+        #                  'jme': set(['jesTotal', 'unclustEn']),
+        #                  'PrefireWeight':['PrefireWeight'],
+        #                  }  # <type 'dict'>
         
         self.DC.shapeMap = 	{self.channel: {'*': [self.channel+'.root', '$PROCESS', '$PROCESS_$SYSTEMATIC']},\
         self.channel+'_xsec': {'*': [self.channel+'_xsec.root', '$PROCESS', '$PROCESS_$SYSTEMATIC']}} # <type 'dict'>
@@ -220,5 +226,93 @@ class fitUtils:
         self.DC.helMetaGroups = self.helMetaGroups
         self.DC.noiGroups = {'mass':['mass']}
 
+        coeff = [0,2]
+        for j in coeff:
+            testnames = []
+            for i in range(1, 7):
+                testnames.append("y_{}_helmeta_A{}".format(i,j))
+
+            etas = [0.2, 0.6, 1.0, 1.4, 1.8, 2.2]
+
+
+            #self.poly1DRegGroups["poly1dyA{}".format(j)] = {"names": testnames, "bincenters": etas, "firstorder": 0, "lastorder": 2}
+
+            testnames = []
+            for i in range(1, 9):
+                testnames.append("qt_{}_helmeta_A{}".format(i, j))
+
+            pts = [2., 6., 10., 14., 18., 22., 26., 30.]
+
+
+            #self.poly1DRegGroups["poly1dqtA{}".format(j)] = {"names": testnames, "bincenters": pts, "firstorder": 1, "lastorder": 3}
+
+        coeff = [1, 3, 4]
+        for j in coeff:
+            testnames = []
+            for i in range(1, 7):
+                testnames.append("y_{}_helmeta_A{}".format(i, j))
+
+            etas = [0.2, 0.6, 1.0, 1.4, 1.8, 2.2]
+
+
+            #self.poly1DRegGroups["poly1dyA{}".format(j)] = {"names": testnames, "bincenters": etas, "firstorder": 1, "lastorder": 2}
+        
+        coeff = [1, 3]
+        for j in coeff:
+            testnames = []
+            for i in range(1, 9):
+                testnames.append("qt_{}_helmeta_A{}".format(i, j))
+
+            pts = [2., 6., 10., 14., 18., 22., 26., 30.]
+
+
+            #self.poly1DRegGroups["poly1dqtA{}".format(j)] = {"names": testnames, "bincenters": pts, "firstorder": 1, "lastorder": 3}
+
+        testnames = []
+        for i in range(1, 9):
+            testnames.append("qt_{}_helmeta_A4".format(i))
+
+        pts = [2., 6., 10., 14., 18., 22., 26., 30.]
+
+        #self.poly1DRegGroups["poly1dqtA4"] = {"names": testnames, "bincenters": pts, "firstorder": 0, "lastorder": 3}
+        
+        self.DC.poly1DRegGroups = self.poly1DRegGroups
+
+        #etas = np.array([0.2/2.4, 0.6/2.4, 1.0/2.4, 1.4/2.4, 1.8/2.4, 2.2/2.4])
+        #pts = np.array([2./32., 6./32., 10./32., 14./32., 18./32., 22./32., 26./32., 30./32.])
+        etas = np.array([0.2, 0.6, 1.0, 1.4, 1.8, 2.2])
+        pts = np.array([2., 6., 10., 14., 18., 22., 26., 30.])
+
+        #etas = etas/2.4
+        #pts = pts/32.
+
+        testnames = []
+        bincenters = []
+        for i in range(6):
+            for j in range(8):
+                testnames.append("y_%i_qt_%i_A4" % (i+1, j+1))
+                bincenters.append([etas[i], pts[j]])
+
+        self.poly2DRegGroups["poly2dA4"] = {"names": testnames, "bincenters": bincenters, "firstorder": (1, 0), "lastorder": (3, 4), "fullorder": (5, 7)}
+
+        coeff = [1, 3]
+        for c in coeff:
+            testnames = []
+            for i in range(6):
+                for j in range(8):
+                    testnames.append("y_%i_qt_%i_A%i" % (i+1, j+1,c))
+
+        self.poly2DRegGroups["poly2dA%i"%c] = {"names": testnames, "bincenters": bincenters, "firstorder": (1, 1), "lastorder": (3, 4), "fullorder": (5, 7)}
+        
+        coeff = [0, 2]
+        for c in coeff:
+            testnames = []
+            for i in range(6):
+                for j in range(8):
+                    testnames.append("y_%i_qt_%i_A%i" % (i+1, j+1, c))
+
+        self.poly2DRegGroups["poly2dA%i" % c] = {"names": testnames, "bincenters": bincenters, "firstorder": (0, 1), "lastorder": (3, 4), "fullorder": (5, 7)}
+        
+        self.DC.poly2DRegGroups = self.poly2DRegGroups
         filehandler = open('{}.pkl'.format(self.channel), 'w')
         pickle.dump(self.DC, filehandler)

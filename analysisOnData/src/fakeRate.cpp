@@ -38,7 +38,7 @@ RNode fakeRate::run(RNode d)
 
                   return fR;
                 },
-                        {"fakeRate_WHSFVars_WHSFSyst0Up", "fakeRate_WHSFVars_WHSFSyst1Up", "fakeRate_WHSFVars_WHSFSyst2Up", "fakeRate_WHSFVars_WHSFSystFlatUp", "fakeRate_WHSFVars_WHSFSyst0Down", "fakeRate_WHSFVars_WHSFSyst1Down", "fakeRate_WHSFVars_WHSFSyst2Down", "fakeRate_WHSFVars_WHSFSystFlatDown"})
+                        {"fakeRate_WHSF_WHSFSyst0Up", "fakeRate_WHSF_WHSFSyst1Up", "fakeRate_WHSF_WHSFSyst2Up", "fakeRate_WHSF_WHSFSystFlatUp", "fakeRate_WHSF_WHSFSyst0Down", "fakeRate_WHSF_WHSFSyst1Down", "fakeRate_WHSF_WHSFSyst2Down", "fakeRate_WHSF_WHSFSystFlatDown"})
                 .Define("fakeRate_LHEScaleWeightred", [](float f1, float f2, float f3, float f4, float f5, float f6) {
                   ROOT::VecOps::RVec<float> fR;
                   fR.emplace_back(f1);
@@ -50,14 +50,14 @@ RNode fakeRate::run(RNode d)
 
                   return fR;
                 },
-                        {"fakeRate_LHEScaleWeightVars_LHEScaleWeight_muR0p5_muF0p5", "fakeRate_LHEScaleWeightVars_LHEScaleWeight_muR0p5_muF1p0", "fakeRate_LHEScaleWeightVars_LHEScaleWeight_muR1p0_muF0p5", "fakeRate_LHEScaleWeightVars_LHEScaleWeight_muR1p0_muF2p0", "fakeRate_LHEScaleWeightVars_LHEScaleWeight_muR2p0_muF1p0", "fakeRate_LHEScaleWeightVars_LHEScaleWeight_muR2p0_muF2p0"})
+                        {"fakeRate_LHEScaleWeight_LHEScaleWeight_muR0p5_muF0p5", "fakeRate_LHEScaleWeight_LHEScaleWeight_muR0p5_muF1p0", "fakeRate_LHEScaleWeight_LHEScaleWeight_muR1p0_muF0p5", "fakeRate_LHEScaleWeight_LHEScaleWeight_muR1p0_muF2p0", "fakeRate_LHEScaleWeight_LHEScaleWeight_muR2p0_muF1p0", "fakeRate_LHEScaleWeight_LHEScaleWeight_muR2p0_muF2p0"})
                 .Define("fakeRate_ptScale", [](float f1, float f2) {
                   ROOT::VecOps::RVec<float> fR;
                   fR.emplace_back(f1);
                   fR.emplace_back(f2);
                   return fR;
                 },
-                        {"fakeRate_ptScaleVars_correctedUp", "fakeRate_ptScaleVars_correctedDown"})
+                        {"fakeRate_ptScale_correctedUp", "fakeRate_ptScale_correctedDown"})
                 // .Define("fakeRate_jme", [](float f1, float f2, float f3, float f4, float f5, float f6) {
                 .Define("fakeRate_jme", [](float f1, float f2, float f3, float f4) {
                   ROOT::VecOps::RVec<float> fR;
@@ -70,15 +70,16 @@ RNode fakeRate::run(RNode d)
 
                   return fR;
                 },
-                        // {"fakeRate_jmeVars_jerUp", "fakeRate_jmeVars_jerDown", "fakeRate_jmeVars_jesTotalUp", "fakeRate_jmeVars_jesTotalDown", "fakeRate_jmeVars_unclustEnUp", "fakeRate_jmeVars_unclustEnDown"});
-		  {"fakeRate_jmeVars_jesTotalUp", "fakeRate_jmeVars_jesTotalDown", "fakeRate_jmeVars_unclustEnUp", "fakeRate_jmeVars_unclustEnDown"})
-                .Define("fakeRate_PrefireWeightVars", [](float f1, float f2) {
+                        // {"fakeRate_jme_jerUp", "fakeRate_jme_jerDown", "fakeRate_jme_jesTotalUp", "fakeRate_jme_jesTotalDown", "fakeRate_jme_unclustEnUp", "fakeRate_jme_unclustEnDown"});
+		  {"fakeRate_jme_jesTotalUp", "fakeRate_jme_jesTotalDown", "fakeRate_jme_unclustEnUp", "fakeRate_jme_unclustEnDown"});
+  /*
+                .Define("fakeRate_PrefireWeight", [](float f1, float f2) {
                   ROOT::VecOps::RVec<float> fR;
                   fR.emplace_back(f1);
                   fR.emplace_back(f2);
                   return fR;
-		  }, {"fakeRate_PrefireWeightVars_PrefireWeightUp","fakeRate_PrefireWeightVars_PrefireWeightDown"});
+		  }, {"fakeRate_PrefireWeight_PrefireWeightUp","fakeRate_PrefireWeight_PrefireWeightDown"});
   
-
+  */
   return d2;
 }

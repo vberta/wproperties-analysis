@@ -33,6 +33,7 @@ class plotter:
         self.selectionFake = ['fakes']       
         self.extSyst = copy.deepcopy(systematics)
         self.extSyst['Nominal'] = ['']
+        self.extSyst['jme'] = ['_jesTotalUp', '_jesTotalDown','_unclustEnUp', '_unclustEnDown'],
         self.histoDict ={} 
 
     def unroll2D(self, th2):
@@ -156,7 +157,7 @@ class plotter:
         foutName += '.root'
         fout = ROOT.TFile.Open(self.outdir + '/' + foutName, "UPDATE")
         for sample,fname in self.sampleDict.iteritems():
-            if 'LowAcc' in sample or 'data_obs' in sample or 'DiBoson' in sample or 'Top' in sample:
+            if not 'LowAcc' in sample and not 'data_obs' in sample:
                 continue
             print  "Processing sample:", sample
             infile = ROOT.TFile(self.indir + '/' + fname[0])
@@ -169,9 +170,9 @@ class plotter:
             if sample not in  self.histoDict : 
                 print "No histo dict for sample:", sample, " What have you done??!!!!"
                 continue
-            #self.symmetrisePDF(sample)
-            #self.uncorrelateEff(sample)
-            #self.alphaVariations(sample)
+            self.symmetrisePDF(sample)
+            self.uncorrelateEff(sample)
+            self.alphaVariations(sample)
             for syst, hlist in self.histoDict[sample].iteritems():
                 #fout.mkdir(syst)
                 #fout.cd(syst)
