@@ -106,7 +106,7 @@ class plotter :
         
         
         
-    def getHistos(self,inFile, FitFile, uncorrelate,suff) :
+    def getHistos(self,inFile, FitFile, uncorrelate,suff,apoFile='') :
         
         resFit = FitFile.fitresults
 
@@ -225,14 +225,22 @@ class plotter :
         self.histos[suff+'corrMat'] = FitFile.Get('correlation_matrix_channelhelpois')
         self.histos[suff+'covMat'] = FitFile.Get('covariance_matrix_channelhelpois')  
         self.histos[suff+'corrMat'+'Integrated'] = FitFile.Get('correlation_matrix_channelhelmetapois')
-        self.histos[suff+'covMat'+'Integrated'] = FitFile.Get('covariance_matrix_channelhelmetapois')  
+        self.histos[suff+'covMat'+'Integrated'] = FitFile.Get('covariance_matrix_channelhelmetapois')
+        
+        if apoFile!='' :
+            for c in self.coeffDict:   
+                self.histos[suff+'apo'+c] = apoFile.Get('post-fit-regularization_'+c)
               
         
-    def AngCoeffPlots(self,inputFile, fitFile, uncorrelate,suff) :
+    def AngCoeffPlots(self,inputFile, fitFile, uncorrelate,suff,aposteriori) :
         
         FitFile = ROOT.TFile.Open(fitFile)
         inFile = ROOT.TFile.Open(inputFile)
-        self.getHistos(inFile=inFile, FitFile=FitFile, uncorrelate=uncorrelate,suff=suff)
+        if aposteriori!='' :
+            apoFile = ROOT.TFile.Open(aposteriori)
+            self.getHistos(inFile=inFile, FitFile=FitFile, uncorrelate=uncorrelate,suff=suff,apoFile=apoFile)
+        else :
+            self.getHistos(inFile=inFile, FitFile=FitFile, uncorrelate=uncorrelate,suff=suff)
         # print "WARNING: syst.band done with the fit central value (ok if asimov only)"
         
         # ------------- build the bands for the angular coefficient ---------------------------# 
@@ -613,14 +621,14 @@ class plotter :
         for c in self.coeffDict:
             for i in range(1, self.histos[suff+'FitAC'+c].GetNbinsX()+1): #loop over rapidity bins
                 self.canvas[suff+'FitAC'+'qt'+str(i)+c] = ROOT.TCanvas(suff+"_c_projQt{}_{}".format(i,c),suff+"_c_projQt{}_{}".format(i,c),1200,1050)
-                self.leg[suff+'FitAC'+'qt'+str(i)+c] = ROOT.TLegend(0.6,0.75,0.9,0.9)
+                self.leg[suff+'FitAC'+'qt'+str(i)+c] = ROOT.TLegend(0.5,0.75,0.9,0.9)
                 self.canvas[suff+'FitAC'+'qt'+str(i)+c].cd()
-                self.canvas['ph'+suff+'FitAC'+'qt'+str(i)+c] = ROOT.TPad('ph'+suff+"_c_projQt{}_{}".format(i,c), 'ph'+suff+"_c_projQt{}_{}".format(i,c),0,0.2,1,1)
-                self.canvas['pr'+suff+'FitAC'+'qt'+str(i)+c] = ROOT.TPad('pr'+suff+"_c_projQt{}_{}".format(i,c),  'pr'+suff+"_c_projQt{}_{}".format(i,c), 0,0,1,0.2)
+                self.canvas['ph'+suff+'FitAC'+'qt'+str(i)+c] = ROOT.TPad('ph'+suff+"_c_projQt{}_{}".format(i,c), 'ph'+suff+"_c_projQt{}_{}".format(i,c),0,0.3,1,1)
+                self.canvas['pr'+suff+'FitAC'+'qt'+str(i)+c] = ROOT.TPad('pr'+suff+"_c_projQt{}_{}".format(i,c),  'pr'+suff+"_c_projQt{}_{}".format(i,c), 0,0,1,0.3)
                 self.canvas['ph'+suff+'FitAC'+'qt'+str(i)+c].SetBottomMargin(0.02)
                 self.canvas['ph'+suff+'FitAC'+'qt'+str(i)+c].Draw()
                 self.canvas['pr'+suff+'FitAC'+'qt'+str(i)+c].SetTopMargin(0)
-                self.canvas['pr'+suff+'FitAC'+'qt'+str(i)+c].SetBottomMargin(0.25)
+                self.canvas['pr'+suff+'FitAC'+'qt'+str(i)+c].SetBottomMargin(0.4)
                 self.canvas['pr'+suff+'FitAC'+'qt'+str(i)+c].Draw()
                 
                 self.canvas['ph'+suff+'FitAC'+'qt'+str(i)+c].cd()
@@ -639,11 +647,14 @@ class plotter :
                 self.histos[suff+'FitAC'+'qt'+str(i)+c].SetMarkerSize(0.5)
                 self.histos[suff+'FitAC'+'qt'+str(i)+c].Draw()
                 self.histos[suff+'FitAC'+'qt'+str(i)+c].GetYaxis().SetTitleSize(0.06)
+                self.histos[suff+'FitAC'+'qt'+str(i)+c].SetLabelSize(0.05,'y')
                 if not 'unpol' in c :
                     # self.histos[suff+'FitAC'+'qt'+str(i)+c].GetYaxis().SetRangeUser(-4,4)
                     self.histos[suff+'FitAC'+'qt'+str(i)+c].GetYaxis().SetTitle(c)
                 else :
                     self.histos[suff+'FitAC'+'qt'+str(i)+c].GetYaxis().SetTitle('#sigma^{U+L} [fb]')
+                    maxvalMain = self.histos[suff+'FitAC'+'qt'+str(i)+c].GetMaximum()
+                    self.histos[suff+'FitAC'+'qt'+str(i)+c].GetYaxis().SetRangeUser(0,maxvalMain*1.5)
                 self.histos[suff+'FitBand'+'qt'+str(i)+c].SetFillColor(ROOT.kOrange)
                 self.histos[suff+'FitBand'+'qt'+str(i)+c].SetFillStyle(0)
                 self.histos[suff+'FitBand'+'qt'+str(i)+c].SetLineColor(ROOT.kOrange)
@@ -655,8 +666,15 @@ class plotter :
                 self.histos[suff+'FitBand'+'qt'+str(i)+c].SetFillStyle(3001)
                 self.histos[suff+'FitBand'+'qt'+str(i)+c].Draw("E2 same")
                 self.histos[suff+'FitAC'+'qt'+str(i)+c].DrawCopy("same") #to have foreground
+                
+                if aposteriori!='' :
+                    self.histos[suff+'apo'+'qt'+str(i)+c] = self.histos[suff+'apo'+c].ProjectionY('apo'+"projQt{}_{}".format(i,c),i,i)
+                    self.histos[suff+'apo'+'qt'+str(i)+c].SetLineColor(ROOT.kAzure+1)
+                    self.histos[suff+'apo'+'qt'+str(i)+c].SetLineWidth(5)
+                    self.histos[suff+'apo'+'qt'+str(i)+c].SetMarkerStyle(20)
+                    self.histos[suff+'apo'+'qt'+str(i)+c].Draw("EX0 same")
+                
                 self.leg[suff+'FitAC'+'qt'+str(i)+c].Draw("same")
-   
                 
                 self.canvas['pr'+suff+'FitAC'+'qt'+str(i)+c].cd()
                 self.canvas['pr'+suff+'FitAC'+'qt'+str(i)+c].SetGridx()
@@ -673,12 +691,12 @@ class plotter :
                 self.histos[suff+'FitRatioAC'+'qt'+str(i)+c].SetLineWidth(2)
                 self.histos[suff+'FitRatio'+'qt'+str(i)+c].SetLineWidth(2)
                 self.histos[suff+'FitRatioAC'+'qt'+str(i)+c].SetTitle("")
-                self.histos[suff+'FitRatioAC'+'qt'+str(i)+c].GetYaxis().SetTitleOffset(0.25)
-                self.histos[suff+'FitRatioAC'+'qt'+str(i)+c].SetTitleSize(0.15,'y')
-                self.histos[suff+'FitRatioAC'+'qt'+str(i)+c].SetLabelSize(0.12,'y')
-                self.histos[suff+'FitRatioAC'+'qt'+str(i)+c].GetXaxis().SetTitleOffset(1.)
+                self.histos[suff+'FitRatioAC'+'qt'+str(i)+c].GetYaxis().SetTitleOffset(0.32)
+                self.histos[suff+'FitRatioAC'+'qt'+str(i)+c].SetTitleSize(0.13,'y')
+                self.histos[suff+'FitRatioAC'+'qt'+str(i)+c].SetLabelSize(0.10,'y')
+                self.histos[suff+'FitRatioAC'+'qt'+str(i)+c].GetXaxis().SetTitleOffset(1.2)
                 self.histos[suff+'FitRatioAC'+'qt'+str(i)+c].SetTitleSize(0.12,'x')
-                self.histos[suff+'FitRatioAC'+'qt'+str(i)+c].SetLabelSize(0.15,'x')
+                self.histos[suff+'FitRatioAC'+'qt'+str(i)+c].SetLabelSize(0.12,'x')
                 self.histos[suff+'FitRatioAC'+'qt'+str(i)+c].SetStats(0)
                 for d in self.dirList :
                     self.histos[suff+'FitRatioPDF'+'qt'+str(i)+d+c].SetLineWidth(2)
@@ -710,6 +728,9 @@ class plotter :
                 self.leg[suff+'FitAC'+'qt'+str(i)+c].AddEntry(self.histos[suff+'FitBand'+'qt'+str(i)+c], "MC Syst. Unc.")
                 self.leg[suff+'FitAC'+'qt'+str(i)+c].AddEntry(self.histos[suff+'FitRatioPDF'+'qt'+str(i)+'up'+c], self.groupedSystColors['LHEPdfWeightVars'][1])
                 self.leg[suff+'FitAC'+'qt'+str(i)+c].AddEntry(self.histos[suff+'FitRatioScale'+'qt'+str(i)+'up'+c], self.groupedSystColors['LHEScaleWeightVars'][1])
+                self.leg[suff+'FitAC'+'qt'+str(i)+c].SetNColumns(2)
+                if aposteriori!='' :
+                    self.leg[suff+'FitAC'+'qt'+str(i)+c].AddEntry(self.histos[suff+'apo'+'qt'+str(i)+c], "Post-fit-regularized")
                 
                 #Additional block for scale-pdf splitted
                 # self.histos[suff+'FitBandPDF'+'qt'+str(i)+c].SetFillColor(self.groupedSystColors['LHEPdfWeightVars'][0])
@@ -730,14 +751,14 @@ class plotter :
                 
             for j in range(1, self.histos[suff+'FitAC'+c].GetNbinsY()+1): #loop over pt bins
                 self.canvas[suff+'FitAC'+'y'+str(j)+c] = ROOT.TCanvas(suff+"_c_projY{}_{}".format(j,c),suff+"_c_projY{}_{}".format(j,c),1200,1050)
-                self.leg[suff+'FitAC'+'y'+str(j)+c] = ROOT.TLegend(0.6,0.75,0.9,0.9)
+                self.leg[suff+'FitAC'+'y'+str(j)+c] = ROOT.TLegend(0.5,0.75,0.9,0.9)
                 self.canvas[suff+'FitAC'+'y'+str(j)+c].cd()
-                self.canvas['ph'+suff+'FitAC'+'y'+str(j)+c] = ROOT.TPad('ph'+suff+"_c_projY{}_{}".format(i,c), 'ph'+suff+"_c_projY{}_{}".format(i,c),0,0.2,1,1)
-                self.canvas['pr'+suff+'FitAC'+'y'+str(j)+c] = ROOT.TPad('pr'+suff+"_c_projY{}_{}".format(i,c),  'pr'+suff+"_c_projY{}_{}".format(i,c), 0,0,1,0.2)
+                self.canvas['ph'+suff+'FitAC'+'y'+str(j)+c] = ROOT.TPad('ph'+suff+"_c_projY{}_{}".format(i,c), 'ph'+suff+"_c_projY{}_{}".format(i,c),0,0.3,1,1)
+                self.canvas['pr'+suff+'FitAC'+'y'+str(j)+c] = ROOT.TPad('pr'+suff+"_c_projY{}_{}".format(i,c),  'pr'+suff+"_c_projY{}_{}".format(i,c), 0,0,1,0.3)
                 self.canvas['ph'+suff+'FitAC'+'y'+str(j)+c].SetBottomMargin(0.02)
                 self.canvas['ph'+suff+'FitAC'+'y'+str(j)+c].Draw()
                 self.canvas['pr'+suff+'FitAC'+'y'+str(j)+c].SetTopMargin(0)
-                self.canvas['pr'+suff+'FitAC'+'y'+str(j)+c].SetBottomMargin(0.25)
+                self.canvas['pr'+suff+'FitAC'+'y'+str(j)+c].SetBottomMargin(0.4)
                 self.canvas['pr'+suff+'FitAC'+'y'+str(j)+c].Draw()
                 
                 self.canvas['ph'+suff+'FitAC'+'y'+str(j)+c].cd()
@@ -756,11 +777,14 @@ class plotter :
                 self.histos[suff+'FitAC'+'y'+str(j)+c].SetMarkerSize(0.5)
                 self.histos[suff+'FitAC'+'y'+str(j)+c].Draw()
                 self.histos[suff+'FitAC'+'y'+str(j)+c].GetYaxis().SetTitleSize(0.06)
+                self.histos[suff+'FitAC'+'y'+str(j)+c].SetLabelSize(0.05,'y')
                 if not 'unpol' in c :
                     # self.histos[suff+'FitAC'+'y'+str(j)+c].GetYaxis().SetRangeUser(-4,4)
                     self.histos[suff+'FitAC'+'y'+str(j)+c].GetYaxis().SetTitle(c)
                 else :
                     self.histos[suff+'FitAC'+'y'+str(j)+c].GetYaxis().SetTitle('#sigma^{U+L} [fb]')
+                    maxvalMain = self.histos[suff+'FitAC'+'y'+str(j)+c].GetMaximum()
+                    self.histos[suff+'FitAC'+'y'+str(j)+c].GetYaxis().SetRangeUser(0,maxvalMain*1.5)
                 self.histos[suff+'FitBand'+'y'+str(j)+c].SetFillColor(ROOT.kOrange)#kMagenta-7)
                 self.histos[suff+'FitBand'+'y'+str(j)+c].SetFillStyle(0)
                 self.histos[suff+'FitBand'+'y'+str(j)+c].SetLineColor(ROOT.kOrange)#kMagenta-7)
@@ -772,6 +796,14 @@ class plotter :
                 self.histos[suff+'FitBand'+'y'+str(j)+c].SetFillStyle(3001)
                 self.histos[suff+'FitBand'+'y'+str(j)+c].Draw("E2 same")
                 self.histos[suff+'FitAC'+'y'+str(j)+c].DrawCopy("same") #to have foreground   
+                
+                if aposteriori!='' :
+                    self.histos[suff+'apo'+'y'+str(j)+c] = self.histos[suff+'apo'+c].ProjectionX('apo'+"projY{}_{}".format(j,c),j,j)
+                    self.histos[suff+'apo'+'y'+str(j)+c].SetLineColor(ROOT.kAzure+1)
+                    self.histos[suff+'apo'+'y'+str(j)+c].SetLineWidth(5)
+                    self.histos[suff+'apo'+'y'+str(j)+c].SetMarkerStyle(20)
+                    self.histos[suff+'apo'+'y'+str(j)+c].Draw("EX0 same")
+
                 self.leg[suff+'FitAC'+'y'+str(j)+c].Draw("same")
                 
                 self.canvas['pr'+suff+'FitAC'+'y'+str(j)+c].cd()
@@ -789,12 +821,12 @@ class plotter :
                 self.histos[suff+'FitRatioAC'+'y'+str(j)+c].SetLineWidth(2)
                 self.histos[suff+'FitRatio'+'y'+str(j)+c].SetLineWidth(2)
                 self.histos[suff+'FitRatioAC'+'y'+str(j)+c].SetTitle("")
-                self.histos[suff+'FitRatioAC'+'y'+str(j)+c].GetYaxis().SetTitleOffset(0.25)
-                self.histos[suff+'FitRatioAC'+'y'+str(j)+c].SetTitleSize(0.15,'y')
-                self.histos[suff+'FitRatioAC'+'y'+str(j)+c].SetLabelSize(0.12,'y')
-                self.histos[suff+'FitRatioAC'+'y'+str(j)+c].GetXaxis().SetTitleOffset(1.)
+                self.histos[suff+'FitRatioAC'+'y'+str(j)+c].GetYaxis().SetTitleOffset(0.32)
+                self.histos[suff+'FitRatioAC'+'y'+str(j)+c].SetTitleSize(0.13,'y')
+                self.histos[suff+'FitRatioAC'+'y'+str(j)+c].SetLabelSize(0.10,'y')
+                self.histos[suff+'FitRatioAC'+'y'+str(j)+c].GetXaxis().SetTitleOffset(1.2)
                 self.histos[suff+'FitRatioAC'+'y'+str(j)+c].SetTitleSize(0.12,'x')
-                self.histos[suff+'FitRatioAC'+'y'+str(j)+c].SetLabelSize(0.15,'x')
+                self.histos[suff+'FitRatioAC'+'y'+str(j)+c].SetLabelSize(0.12,'x')
                 self.histos[suff+'FitRatioAC'+'y'+str(j)+c].SetStats(0)
                 for d in self.dirList :
                     self.histos[suff+'FitRatioPDF'+'y'+str(j)+d+c].SetLineWidth(2)
@@ -826,6 +858,9 @@ class plotter :
                 self.leg[suff+'FitAC'+'y'+str(j)+c].AddEntry(self.histos[suff+'FitBand'+'y'+str(j)+c], "MC Syst. Unc.")
                 self.leg[suff+'FitAC'+'y'+str(j)+c].AddEntry(self.histos[suff+'FitRatioPDF'+'y'+str(j)+'up'+c], self.groupedSystColors['LHEPdfWeightVars'][1])
                 self.leg[suff+'FitAC'+'y'+str(j)+c].AddEntry(self.histos[suff+'FitRatioScale'+'y'+str(j)+'up'+c], self.groupedSystColors['LHEScaleWeightVars'][1])
+                self.leg[suff+'FitAC'+'y'+str(j)+c].SetNColumns(2)
+                if aposteriori!='' :
+                    self.leg[suff+'FitAC'+'y'+str(j)+c].AddEntry(self.histos[suff+'apo'+'y'+str(j)+c], "Post-fit-regularized")
                 
                 
                 #Additional block for scale-pdf splitted
@@ -859,6 +894,8 @@ class plotter :
             for d in self.dirList :
                 self.histos[suff+'FitRatioPDF'+'UNRqty'+d+c] = ROOT.TH1F(suff+'_coeff_UNRqty_RatioPDF'+d+c,suff+'_coeff_UNRqty_RatioPDF'+d+c,len(self.unrolledQtY)-1, array('f',self.unrolledQtY))
                 self.histos[suff+'FitRatioScale'+'UNRqty'+d+c] = ROOT.TH1F(suff+'_coeff_UNRqty_RatioScale'+d+c,suff+'_coeff_UNRqty_RatioScale'+d+c,len(self.unrolledQtY)-1, array('f',self.unrolledQtY))
+            if aposteriori!='' :
+                self.histos[suff+'apo'+'UNRqty'+c] = ROOT.TH1F(suff+'_apo_UNRqty'+c,suff+'_apo_UNRqty'+c,len(self.unrolledQtY)-1, array('f',self.unrolledQtY))
             
             for q in self.qtArr[:-1] :
                 for y in self.yArr[:-1] :
@@ -881,6 +918,10 @@ class plotter :
                         self.histos[suff+'FitRatioPDF'+'UNRqty'+d+c].SetBinError(indexUNRqty+1,self.histos[suff+'FitRatioPDF'+d+c].GetBinError(self.yArr.index(y)+1,self.qtArr.index(q)+1))
                         self.histos[suff+'FitRatioScale'+'UNRqty'+d+c].SetBinContent(indexUNRqty+1,self.histos[suff+'FitRatioScale'+d+c].GetBinContent(self.yArr.index(y)+1,self.qtArr.index(q)+1))
                         self.histos[suff+'FitRatioScale'+'UNRqty'+d+c].SetBinError(indexUNRqty+1,self.histos[suff+'FitRatioScale'+d+c].GetBinError(self.yArr.index(y)+1,self.qtArr.index(q)+1))
+                    
+                    if aposteriori!='' :
+                        self.histos[suff+'apo'+'UNRqty'+c].SetBinContent(indexUNRqty+1,self.histos[suff+'apo'+c].GetBinContent(self.yArr.index(y)+1,self.qtArr.index(q)+1))
+                        self.histos[suff+'apo'+'UNRqty'+c].SetBinError(indexUNRqty+1,self.histos[suff+'apo'+c].GetBinError(self.yArr.index(y)+1,self.qtArr.index(q)+1))
 
                     if self.yArr.index(y)==0 :
                         self.histos[suff+'FitAC'+'UNRqty'+c].GetXaxis().SetNdivisions(-1)
@@ -889,7 +930,7 @@ class plotter :
                         
                         self.histos[suff+'FitRatioAC'+'UNRqty'+c].GetXaxis().SetNdivisions(-1)
                         self.histos[suff+'FitRatioAC'+'UNRqty'+c].GetXaxis().SetBinLabel(indexUNRqty+1,"q_{T}^{W}#in[%.0f,%.0f]" % (q, self.qtArr[self.qtArr.index(q)+1]))
-                        self.histos[suff+'FitRatioAC'+'UNRqty'+c].GetXaxis().ChangeLabel(indexUNRqty+1,340,0.08)
+                        self.histos[suff+'FitRatioAC'+'UNRqty'+c].GetXaxis().ChangeLabel(indexUNRqty+1,340,0.1)
     
             self.histos[suff+'FitAC'+'UNRqty'+c].SetTitle(suff+' '+c+", unrolled q_{T}(Y) ")
             # self.histos[suff+'FitAC'+'UNRqty'+c].GetXaxis().SetTitle('fine binning: Y_{W} 0#rightarrow 2.4')
@@ -900,6 +941,8 @@ class plotter :
                 self.histos[suff+'FitAC'+'UNRqty'+c].GetYaxis().SetTitle(c)
             else :
                 self.histos[suff+'FitAC'+'UNRqty'+c].GetYaxis().SetTitle('#sigma^{U+L} [fb]')
+                maxvalMain = self.histos[suff+'FitAC'+'UNRqty'+c].GetMaximum()
+                self.histos[suff+'FitAC'+'UNRqty'+c].GetYaxis().SetRangeUser(0,maxvalMain*1.5)
             self.histos[suff+'FitAC'+'UNRqty'+c].SetLineWidth(2)
             self.histos[suff+'FitAC'+'UNRqty'+c].SetStats(0)
             self.histos[suff+'FitBand'+'UNRqty'+c].SetFillColor(ROOT.kOrange)#kMagenta-7)
@@ -912,6 +955,7 @@ class plotter :
             self.histos[suff+'FitAC'+'UNRqty'+c].GetYaxis().SetTitleOffset(0.7)
             self.histos[suff+'FitAC'+'UNRqty'+c].GetXaxis().SetTitleOffset(3)
             self.histos[suff+'FitAC'+'UNRqty'+c].GetXaxis().SetLabelOffset(3)
+            self.histos[suff+'FitAC'+'UNRqty'+c].SetLabelSize(0.05,'y')
             
             self.histos[suff+'FitRatioAC'+'UNRqty'+c].GetYaxis().SetTitle('Pred./Theory')
             self.histos[suff+'FitRatioAC'+'UNRqty'+c].SetMarkerStyle(20)
@@ -919,13 +963,13 @@ class plotter :
             self.histos[suff+'FitRatioAC'+'UNRqty'+c].SetLineWidth(2)
             self.histos[suff+'FitRatio'+'UNRqty'+c].SetLineWidth(2)
             self.histos[suff+'FitRatioAC'+'UNRqty'+c].SetTitle("")
-            self.histos[suff+'FitRatioAC'+'UNRqty'+c].GetYaxis().SetTitleOffset(0.25)
-            self.histos[suff+'FitRatioAC'+'UNRqty'+c].SetTitleSize(0.15,'y')
-            self.histos[suff+'FitRatioAC'+'UNRqty'+c].SetLabelSize(0.12,'y')
-            self.histos[suff+'FitRatioAC'+'UNRqty'+c].GetXaxis().SetTitleOffset(1.)
+            self.histos[suff+'FitRatioAC'+'UNRqty'+c].GetYaxis().SetTitleOffset(0.32)
+            self.histos[suff+'FitRatioAC'+'UNRqty'+c].SetTitleSize(0.13,'y')
+            self.histos[suff+'FitRatioAC'+'UNRqty'+c].SetLabelSize(0.10,'y')
+            self.histos[suff+'FitRatioAC'+'UNRqty'+c].GetXaxis().SetTitleOffset(1.65)
             self.histos[suff+'FitRatioAC'+'UNRqty'+c].SetTitleSize(0.12,'x')
             self.histos[suff+'FitRatioAC'+'UNRqty'+c].SetLabelSize(0.15,'x')
-            self.histos[suff+'FitRatioAC'+'UNRqty'+c].SetLabelOffset(0.015,'x')
+            self.histos[suff+'FitRatioAC'+'UNRqty'+c].SetLabelOffset(0.03,'x')
             self.histos[suff+'FitRatioAC'+'UNRqty'+c].SetStats(0)
             self.histos[suff+'FitRatioAC'+'UNRqty'+c].GetXaxis().SetTitle('fine binning: Y_{W} 0#rightarrow 2.4')
             for d in self.dirList :
@@ -957,14 +1001,14 @@ class plotter :
             # self.histos[suff+'FitBandScale'+'UNRqty'+c].SetLineWidth(2)
             
             self.canvas[suff+'FitAC'+'UNRqty'+c] = ROOT.TCanvas(suff+'_c_UNRqty'+c,suff+'_c_UNRqty'+c,1200,1050)
-            self.leg[suff+'FitAC'+'UNRqty'+c] = ROOT.TLegend(0.6,0.75,0.9,0.9)
+            self.leg[suff+'FitAC'+'UNRqty'+c] = ROOT.TLegend(0.5,0.75,0.9,0.9)
             self.canvas[suff+'FitAC'+'UNRqty'+c].cd()
-            self.canvas['ph'+suff+'FitAC'+'UNRqty'+c] = ROOT.TPad('ph'+suff+'_c_UNRqty'+c, 'ph'+suff+'_c_UNRqty'+c,0,0.2,1,1)
-            self.canvas['pr'+suff+'FitAC'+'UNRqty'+c] = ROOT.TPad('pr'+suff+'_c_UNRqty'+c,  'pr'+suff+'_c_UNRqty'+c, 0,0,1,0.2)
+            self.canvas['ph'+suff+'FitAC'+'UNRqty'+c] = ROOT.TPad('ph'+suff+'_c_UNRqty'+c, 'ph'+suff+'_c_UNRqty'+c,0,0.3,1,1)
+            self.canvas['pr'+suff+'FitAC'+'UNRqty'+c] = ROOT.TPad('pr'+suff+'_c_UNRqty'+c,  'pr'+suff+'_c_UNRqty'+c, 0,0,1,0.3)
             self.canvas['ph'+suff+'FitAC'+'UNRqty'+c].SetBottomMargin(0.02)
             self.canvas['ph'+suff+'FitAC'+'UNRqty'+c].Draw()
             self.canvas['pr'+suff+'FitAC'+'UNRqty'+c].SetTopMargin(0)
-            self.canvas['pr'+suff+'FitAC'+'UNRqty'+c].SetBottomMargin(0.25)
+            self.canvas['pr'+suff+'FitAC'+'UNRqty'+c].SetBottomMargin(0.4)
             self.canvas['pr'+suff+'FitAC'+'UNRqty'+c].Draw()
             
             self.canvas['ph'+suff+'FitAC'+'UNRqty'+c].cd()
@@ -975,6 +1019,11 @@ class plotter :
             self.histos[suff+'FitBand'+'UNRqty'+c].SetFillStyle(3001)
             self.histos[suff+'FitBand'+'UNRqty'+c].Draw("E2 same")
             self.histos[suff+'FitAC'+'UNRqty'+c].DrawCopy("same") #to have foreground 
+            if aposteriori!='' :
+                self.histos[suff+'apo'+'UNRqty'+c].SetLineColor(ROOT.kAzure+1)
+                self.histos[suff+'apo'+'UNRqty'+c].SetLineWidth(5)
+                self.histos[suff+'apo'+'UNRqty'+c].SetMarkerStyle(20)
+                self.histos[suff+'apo'+'UNRqty'+c].Draw("EX0 same")
             self.leg[suff+'FitAC'+'UNRqty'+c].Draw("same")                   
 
             self.canvas['pr'+suff+'FitAC'+'UNRqty'+c].cd()
@@ -991,6 +1040,9 @@ class plotter :
             self.leg[suff+'FitAC'+'UNRqty'+c].AddEntry(self.histos[suff+'FitBand'+'UNRqty'+c], "MC Syst. Unc.")
             self.leg[suff+'FitAC'+'UNRqty'+c].AddEntry(self.histos[suff+'FitRatioPDF'+'UNRqty'+'up'+c], self.groupedSystColors['LHEPdfWeightVars'][1])
             self.leg[suff+'FitAC'+'UNRqty'+c].AddEntry(self.histos[suff+'FitRatioScale'+'UNRqty'+'up'+c], self.groupedSystColors['LHEScaleWeightVars'][1])
+            self.leg[suff+'FitAC'+'UNRqty'+c].SetNColumns(2)
+            if aposteriori!='' :
+                    self.leg[suff+'FitAC'+'UNRqty'+c].AddEntry(self.histos[suff+'apo'+'UNRqty'+c], "Post-fit-regularized")
                     
             # self.histos[suff+'FitBandPDF'+'UNRqty'+c].DrawCopy('E2 same')
             # self.histos[suff+'FitBandPDF'+'UNRqty'+c].SetFillStyle(3004)
@@ -1012,6 +1064,9 @@ class plotter :
             for d in self.dirList :
                 self.histos[suff+'FitRatioPDF'+'UNRyqt'+d+c] = ROOT.TH1F(suff+'_coeff_UNRyqt_RatioPDF'+d+c,suff+'_coeff_UNRyqt_RatioPDF'+d+c,len(self.unrolledYQt)-1, array('f',self.unrolledYQt))
                 self.histos[suff+'FitRatioScale'+'UNRyqt'+d+c] = ROOT.TH1F(suff+'_coeff_UNRyqt_RatioScale'+d+c,suff+'_coeff_UNRyqt_RatioScale'+d+c,len(self.unrolledYQt)-1, array('f',self.unrolledYQt))
+            if aposteriori!='' :
+                self.histos[suff+'apo'+'UNRyqt'+c] = ROOT.TH1F(suff+'_apo_UNRyqt'+c,suff+'_apo_UNRyqt'+c,len(self.unrolledYQt)-1, array('f',self.unrolledYQt))
+
             
             for y in self.yArr[:-1] :
                 for q in self.qtArr[:-1] :
@@ -1034,6 +1089,10 @@ class plotter :
                         self.histos[suff+'FitRatioPDF'+'UNRyqt'+d+c].SetBinError(indexUNRyqt+1,self.histos[suff+'FitRatioPDF'+d+c].GetBinError(self.yArr.index(y)+1,self.qtArr.index(q)+1))
                         self.histos[suff+'FitRatioScale'+'UNRyqt'+d+c].SetBinContent(indexUNRyqt+1,self.histos[suff+'FitRatioScale'+d+c].GetBinContent(self.yArr.index(y)+1,self.qtArr.index(q)+1))
                         self.histos[suff+'FitRatioScale'+'UNRyqt'+d+c].SetBinError(indexUNRyqt+1,self.histos[suff+'FitRatioScale'+d+c].GetBinError(self.yArr.index(y)+1,self.qtArr.index(q)+1))
+                    
+                    if aposteriori!='' :
+                        self.histos[suff+'apo'+'UNRyqt'+c].SetBinContent(indexUNRyqt+1,self.histos[suff+'apo'+c].GetBinContent(self.yArr.index(y)+1,self.qtArr.index(q)+1))
+                        self.histos[suff+'apo'+'UNRyqt'+c].SetBinError(indexUNRyqt+1,self.histos[suff+'apo'+c].GetBinError(self.yArr.index(y)+1,self.qtArr.index(q)+1))
 
                     if self.qtArr.index(q)==0 :
                         self.histos[suff+'FitAC'+'UNRyqt'+c].GetXaxis().SetNdivisions(-1)
@@ -1042,7 +1101,7 @@ class plotter :
                         
                         self.histos[suff+'FitRatioAC'+'UNRyqt'+c].GetXaxis().SetNdivisions(-1)
                         self.histos[suff+'FitRatioAC'+'UNRyqt'+c].GetXaxis().SetBinLabel(indexUNRyqt+1,"Y_{W}#in[%.1f,%.1f]" % (y, self.yArr[self.yArr.index(y)+1]))
-                        self.histos[suff+'FitRatioAC'+'UNRyqt'+c].GetXaxis().ChangeLabel(indexUNRyqt+1,340,0.08)
+                        self.histos[suff+'FitRatioAC'+'UNRyqt'+c].GetXaxis().ChangeLabel(indexUNRyqt+1,340,0.1)
                         
             self.histos[suff+'FitAC'+'UNRyqt'+c].SetTitle(suff+' '+c+", unrolled Y(q_{T}) ")
             # self.histos[suff+'FitAC'+'UNRyqt'+c].GetXaxis().SetTitle('fine binning: q_{T}^{W} 0#rightarrow 32 GeV')
@@ -1053,6 +1112,8 @@ class plotter :
                 self.histos[suff+'FitAC'+'UNRyqt'+c].GetYaxis().SetTitle(c)
             else :
                 self.histos[suff+'FitAC'+'UNRyqt'+c].GetYaxis().SetTitle('#sigma^{U+L} [fb]')
+                maxvalMain = self.histos[suff+'FitAC'+'UNRyqt'+c].GetMaximum()
+                self.histos[suff+'FitAC'+'UNRyqt'+c].GetYaxis().SetRangeUser(0,maxvalMain*1.5)
             self.histos[suff+'FitAC'+'UNRyqt'+c].SetLineWidth(2)
             self.histos[suff+'FitAC'+'UNRyqt'+c].SetStats(0)
             self.histos[suff+'FitBand'+'UNRyqt'+c].SetFillColor(ROOT.kOrange)
@@ -1065,6 +1126,7 @@ class plotter :
             self.histos[suff+'FitAC'+'UNRyqt'+c].GetYaxis().SetTitleOffset(0.7)
             self.histos[suff+'FitAC'+'UNRyqt'+c].GetXaxis().SetTitleOffset(3)
             self.histos[suff+'FitAC'+'UNRyqt'+c].GetXaxis().SetLabelOffset(3)
+            self.histos[suff+'FitAC'+'UNRyqt'+c].SetLabelSize(0.05,'y')
             
             self.histos[suff+'FitRatioAC'+'UNRyqt'+c].GetYaxis().SetTitle('Pred./Theory')
             self.histos[suff+'FitRatioAC'+'UNRyqt'+c].SetMarkerStyle(20)
@@ -1072,13 +1134,13 @@ class plotter :
             self.histos[suff+'FitRatioAC'+'UNRyqt'+c].SetLineWidth(2)
             self.histos[suff+'FitRatio'+'UNRyqt'+c].SetLineWidth(2)
             self.histos[suff+'FitRatioAC'+'UNRyqt'+c].SetTitle("")
-            self.histos[suff+'FitRatioAC'+'UNRyqt'+c].GetYaxis().SetTitleOffset(0.25)
-            self.histos[suff+'FitRatioAC'+'UNRyqt'+c].SetTitleSize(0.15,'y')
-            self.histos[suff+'FitRatioAC'+'UNRyqt'+c].SetLabelSize(0.12,'y')
-            self.histos[suff+'FitRatioAC'+'UNRyqt'+c].GetXaxis().SetTitleOffset(1.)
+            self.histos[suff+'FitRatioAC'+'UNRyqt'+c].GetYaxis().SetTitleOffset(0.32)
+            self.histos[suff+'FitRatioAC'+'UNRyqt'+c].SetTitleSize(0.13,'y')
+            self.histos[suff+'FitRatioAC'+'UNRyqt'+c].SetLabelSize(0.10,'y')
+            self.histos[suff+'FitRatioAC'+'UNRyqt'+c].GetXaxis().SetTitleOffset(1.65)
             self.histos[suff+'FitRatioAC'+'UNRyqt'+c].SetTitleSize(0.12,'x')
             self.histos[suff+'FitRatioAC'+'UNRyqt'+c].SetLabelSize(0.15,'x')
-            self.histos[suff+'FitRatioAC'+'UNRyqt'+c].SetLabelOffset(0.015,'x')
+            self.histos[suff+'FitRatioAC'+'UNRyqt'+c].SetLabelOffset(0.03,'x')
             self.histos[suff+'FitRatioAC'+'UNRyqt'+c].SetStats(0)
             self.histos[suff+'FitRatioAC'+'UNRyqt'+c].GetXaxis().SetTitle('fine binning: q_{T}^{W} 0#rightarrow 32 GeV')
             for d in self.dirList :
@@ -1112,12 +1174,12 @@ class plotter :
             self.canvas[suff+'FitAC'+'UNRyqt'+c] = ROOT.TCanvas(suff+'_c_UNRyqt'+c,suff+'_c_UNRyqt'+c,1200,1050)
             self.leg[suff+'FitAC'+'UNRyqt'+c] = ROOT.TLegend(0.6,0.75,0.9,0.9)
             self.canvas[suff+'FitAC'+'UNRyqt'+c].cd()
-            self.canvas['ph'+suff+'FitAC'+'UNRyqt'+c] = ROOT.TPad('ph'+suff+'_c_UNRyqt'+c, 'ph'+suff+'_c_UNRyqt'+c,0,0.2,1,1)
-            self.canvas['pr'+suff+'FitAC'+'UNRyqt'+c] = ROOT.TPad('pr'+suff+'_c_UNRyqt'+c,  'pr'+suff+'_c_UNRyqt'+c, 0,0,1,0.2)
+            self.canvas['ph'+suff+'FitAC'+'UNRyqt'+c] = ROOT.TPad('ph'+suff+'_c_UNRyqt'+c, 'ph'+suff+'_c_UNRyqt'+c,0,0.3,1,1)
+            self.canvas['pr'+suff+'FitAC'+'UNRyqt'+c] = ROOT.TPad('pr'+suff+'_c_UNRyqt'+c,  'pr'+suff+'_c_UNRyqt'+c, 0,0,1,0.3)
             self.canvas['ph'+suff+'FitAC'+'UNRyqt'+c].SetBottomMargin(0.02)
             self.canvas['ph'+suff+'FitAC'+'UNRyqt'+c].Draw()
             self.canvas['pr'+suff+'FitAC'+'UNRyqt'+c].SetTopMargin(0)
-            self.canvas['pr'+suff+'FitAC'+'UNRyqt'+c].SetBottomMargin(0.25)
+            self.canvas['pr'+suff+'FitAC'+'UNRyqt'+c].SetBottomMargin(0.4)
             self.canvas['pr'+suff+'FitAC'+'UNRyqt'+c].Draw()
             
             self.canvas['ph'+suff+'FitAC'+'UNRyqt'+c].cd()
@@ -1128,6 +1190,13 @@ class plotter :
             self.histos[suff+'FitBand'+'UNRyqt'+c].SetFillStyle(3001)
             self.histos[suff+'FitBand'+'UNRyqt'+c].Draw("E2 same")
             self.histos[suff+'FitAC'+'UNRyqt'+c].DrawCopy("same") #to have foreground 
+            
+            if aposteriori!='' :
+                self.histos[suff+'apo'+'UNRyqt'+c].SetLineColor(ROOT.kAzure+1)
+                self.histos[suff+'apo'+'UNRyqt'+c].SetLineWidth(5)
+                self.histos[suff+'apo'+'UNRyqt'+c].SetMarkerStyle(20)
+                self.histos[suff+'apo'+'UNRyqt'+c].Draw("EX0 same")
+            
             self.leg[suff+'FitAC'+'UNRyqt'+c].Draw("same")                   
 
             self.canvas['pr'+suff+'FitAC'+'UNRyqt'+c].cd()
@@ -1144,6 +1213,8 @@ class plotter :
             self.leg[suff+'FitAC'+'UNRyqt'+c].AddEntry(self.histos[suff+'FitBand'+'UNRyqt'+c], "MC Syst. Unc.")
             self.leg[suff+'FitAC'+'UNRyqt'+c].AddEntry(self.histos[suff+'FitRatioPDF'+'UNRyqt'+'up'+c], self.groupedSystColors['LHEPdfWeightVars'][1])
             self.leg[suff+'FitAC'+'UNRyqt'+c].AddEntry(self.histos[suff+'FitRatioScale'+'UNRyqt'+'up'+c], self.groupedSystColors['LHEScaleWeightVars'][1])
+            if aposteriori!='' :
+                self.leg[suff+'FitAC'+'UNRyqt'+c].AddEntry(self.histos[suff+'apo'+'UNRyqt'+c], "Post-fit-regularized")
             
             # self.histos[suff+'FitBandPDF'+'UNRyqt'+c].DrawCopy('E2 same')
             # self.histos[suff+'FitBandPDF'+'UNRyqt'+c].SetFillStyle(3004)
@@ -1156,14 +1227,14 @@ class plotter :
             
             #--------------------- Ai QT only canvas -------------------------#                
             self.canvas[suff+'FitAC'+'qt'+c] = ROOT.TCanvas(suff+"_c_QT_{}".format(c),suff+"_c_QT_{}".format(c),1200,1050)
-            self.leg[suff+'FitAC'+'qt'+c] = ROOT.TLegend(0.6,0.75,0.9,0.9)
+            self.leg[suff+'FitAC'+'qt'+c] = ROOT.TLegend(0.5,0.75,0.9,0.9)
             self.canvas[suff+'FitAC'+'qt'+c].cd()
-            self.canvas['ph'+suff+'FitAC'+'qt'+c] = ROOT.TPad('ph'+suff+"_c_QT_{}".format(c), 'ph'+suff+"_c_QT_{}".format(c),0,0.2,1,1)
-            self.canvas['pr'+suff+'FitAC'+'qt'+c] = ROOT.TPad('pr'+suff+"_c_QT_{}".format(c),  'pr'+suff+"_c_QT_{}".format(c), 0,0,1,0.2)
+            self.canvas['ph'+suff+'FitAC'+'qt'+c] = ROOT.TPad('ph'+suff+"_c_QT_{}".format(c), 'ph'+suff+"_c_QT_{}".format(c),0,0.3,1,1)
+            self.canvas['pr'+suff+'FitAC'+'qt'+c] = ROOT.TPad('pr'+suff+"_c_QT_{}".format(c),  'pr'+suff+"_c_QT_{}".format(c), 0,0,1,0.3)
             self.canvas['ph'+suff+'FitAC'+'qt'+c].SetBottomMargin(0.02)
             self.canvas['ph'+suff+'FitAC'+'qt'+c].Draw()
             self.canvas['pr'+suff+'FitAC'+'qt'+c].SetTopMargin(0)
-            self.canvas['pr'+suff+'FitAC'+'qt'+c].SetBottomMargin(0.25)
+            self.canvas['pr'+suff+'FitAC'+'qt'+c].SetBottomMargin(0.4)
             self.canvas['pr'+suff+'FitAC'+'qt'+c].Draw()
             
             self.canvas['ph'+suff+'FitAC'+'qt'+c].cd()
@@ -1178,11 +1249,14 @@ class plotter :
             self.histos[suff+'FitAC'+'qt'+c].SetMarkerSize(0.5)
             self.histos[suff+'FitAC'+'qt'+c].Draw()
             self.histos[suff+'FitAC'+'qt'+c].GetYaxis().SetTitleSize(0.06)
+            self.histos[suff+'FitAC'+'qt'+c].SetLabelSize(0.05,'y')
             if not 'unpol' in c :
                 # self.histos[suff+'FitAC'+'qt'+c].GetYaxis().SetRangeUser(-4,4)
                 self.histos[suff+'FitAC'+'qt'+c].GetYaxis().SetTitle(c)
             else :
                  self.histos[suff+'FitAC'+'qt'+c].GetYaxis().SetTitle('#sigma^{U+L} [fb]')
+                 maxvalMain = self.histos[suff+'FitAC'+'qt'+c].GetMaximum()
+                 self.histos[suff+'FitAC'+'qt'+c].GetYaxis().SetRangeUser(0,maxvalMain*1.5)
             self.histos[suff+'FitBand'+'qt'+c].SetFillColor(ROOT.kOrange)
             self.histos[suff+'FitBand'+'qt'+c].SetFillStyle(0)
             self.histos[suff+'FitBand'+'qt'+c].SetLineColor(ROOT.kOrange)
@@ -1206,12 +1280,12 @@ class plotter :
             self.histos[suff+'FitRatioAC'+'qt'+c].SetLineWidth(2)
             self.histos[suff+'FitRatio'+'qt'+c].SetLineWidth(2)
             self.histos[suff+'FitRatioAC'+'qt'+c].SetTitle("")
-            self.histos[suff+'FitRatioAC'+'qt'+c].GetYaxis().SetTitleOffset(0.25)
-            self.histos[suff+'FitRatioAC'+'qt'+c].SetTitleSize(0.15,'y')
-            self.histos[suff+'FitRatioAC'+'qt'+c].SetLabelSize(0.12,'y')
-            self.histos[suff+'FitRatioAC'+'qt'+c].GetXaxis().SetTitleOffset(1.)
+            self.histos[suff+'FitRatioAC'+'qt'+c].GetYaxis().SetTitleOffset(0.32)
+            self.histos[suff+'FitRatioAC'+'qt'+c].SetTitleSize(0.13,'y')
+            self.histos[suff+'FitRatioAC'+'qt'+c].SetLabelSize(0.10,'y')
+            self.histos[suff+'FitRatioAC'+'qt'+c].GetXaxis().SetTitleOffset(1.2)
             self.histos[suff+'FitRatioAC'+'qt'+c].SetTitleSize(0.12,'x')
-            self.histos[suff+'FitRatioAC'+'qt'+c].SetLabelSize(0.15,'x')
+            self.histos[suff+'FitRatioAC'+'qt'+c].SetLabelSize(0.12,'x')
             self.histos[suff+'FitRatioAC'+'qt'+c].SetStats(0)
             for d in self.dirList :
                 self.histos[suff+'FitRatioPDF'+'qt'+d+c].SetLineWidth(2)
@@ -1243,7 +1317,7 @@ class plotter :
             self.leg[suff+'FitAC'+'qt'+c].AddEntry(self.histos[suff+'FitBand'+'qt'+c], "MC Syst. Unc.")
             self.leg[suff+'FitAC'+'qt'+c].AddEntry(self.histos[suff+'FitRatioPDF'+'qt'+'up'+c], self.groupedSystColors['LHEPdfWeightVars'][1])
             self.leg[suff+'FitAC'+'qt'+c].AddEntry(self.histos[suff+'FitRatioScale'+'qt'+'up'+c], self.groupedSystColors['LHEScaleWeightVars'][1])
-                
+            self.leg[suff+'FitAC'+'qt'+c].SetNColumns(2)    
             # self.histos[suff+'FitBandPDF'+'qt'+c].SetFillColor(self.groupedSystColors['LHEPdfWeightVars'][0])
             # self.histos[suff+'FitBandPDF'+'qt'+c].SetFillStyle(0)
             # self.histos[suff+'FitBandPDF'+'qt'+c].SetLineColor(self.groupedSystColors['LHEPdfWeightVars'][0])
@@ -1262,14 +1336,14 @@ class plotter :
             
             #--------------------- Ai Y only canvas -------------------------#          
             self.canvas[suff+'FitAC'+'y'+c] = ROOT.TCanvas(suff+"_c_Y_{}".format(c),suff+"_c_Y_{}".format(c),1200,1050)
-            self.leg[suff+'FitAC'+'y'+c] = ROOT.TLegend(0.6,0.75,0.9,0.9)
+            self.leg[suff+'FitAC'+'y'+c] = ROOT.TLegend(0.5,0.75,0.9,0.9)
             self.canvas[suff+'FitAC'+'y'+c].cd()
-            self.canvas['ph'+suff+'FitAC'+'y'+c] = ROOT.TPad('ph'+suff+"_c_Y_{}".format(c), 'ph'+suff+"_c_Y_{}".format(c),0,0.2,1,1)
-            self.canvas['pr'+suff+'FitAC'+'y'+c] = ROOT.TPad('pr'+suff+"_c_Y_{}".format(c),  'pr'+suff+"_c_Y_{}".format(c), 0,0,1,0.2)
+            self.canvas['ph'+suff+'FitAC'+'y'+c] = ROOT.TPad('ph'+suff+"_c_Y_{}".format(c), 'ph'+suff+"_c_Y_{}".format(c),0,0.3,1,1)
+            self.canvas['pr'+suff+'FitAC'+'y'+c] = ROOT.TPad('pr'+suff+"_c_Y_{}".format(c),  'pr'+suff+"_c_Y_{}".format(c), 0,0,1,0.3)
             self.canvas['ph'+suff+'FitAC'+'y'+c].SetBottomMargin(0.02)
             self.canvas['ph'+suff+'FitAC'+'y'+c].Draw()
             self.canvas['pr'+suff+'FitAC'+'y'+c].SetTopMargin(0)
-            self.canvas['pr'+suff+'FitAC'+'y'+c].SetBottomMargin(0.25)
+            self.canvas['pr'+suff+'FitAC'+'y'+c].SetBottomMargin(0.4)
             self.canvas['pr'+suff+'FitAC'+'y'+c].Draw()
             
             self.canvas['ph'+suff+'FitAC'+'y'+c].cd()
@@ -1284,11 +1358,14 @@ class plotter :
             self.histos[suff+'FitAC'+'y'+c].SetMarkerSize(0.5)
             self.histos[suff+'FitAC'+'y'+c].Draw()
             self.histos[suff+'FitAC'+'y'+c].GetYaxis().SetTitleSize(0.06)
+            self.histos[suff+'FitAC'+'y'+c].SetLabelSize(0.05,'y')
             if not 'unpol' in c :
                 # self.histos[suff+'FitAC'+'y'+c].GetYaxis().SetRangeUser(-4,4)
                 self.histos[suff+'FitAC'+'y'+c].GetYaxis().SetTitle(c)
             else :
                 self.histos[suff+'FitAC'+'y'+c].GetYaxis().SetTitle('#sigma^{U+L} [fb]')
+                maxvalMain = self.histos[suff+'FitAC'+'y'+c].GetMaximum()
+                self.histos[suff+'FitAC'+'y'+c].GetYaxis().SetRangeUser(0,maxvalMain*1.5)
             self.histos[suff+'FitBand'+'y'+c].SetFillColor(ROOT.kOrange)#kMagenta-7)
             self.histos[suff+'FitBand'+'y'+c].SetFillStyle(0)
             self.histos[suff+'FitBand'+'y'+c].SetLineColor(ROOT.kOrange)#kMagenta-7)
@@ -1305,19 +1382,19 @@ class plotter :
             self.canvas['pr'+suff+'FitAC'+'y'+c].cd()
             self.canvas['pr'+suff+'FitAC'+'y'+c].SetGridx()
             self.canvas['pr'+suff+'FitAC'+'y'+c].SetGridy()
-            self.histos[suff+'FitRatioAC'+'y'+c].GetXaxis().SetTitle('q_{T}^{W} [GeV]')
+            self.histos[suff+'FitRatioAC'+'y'+c].GetXaxis().SetTitle('Y_{W}')
             self.histos[suff+'FitRatioAC'+'y'+c].GetYaxis().SetTitle('Pred./Theory')
             self.histos[suff+'FitRatioAC'+'y'+c].SetMarkerStyle(20)
             self.histos[suff+'FitRatioAC'+'y'+c].SetMarkerSize(0.5)
             self.histos[suff+'FitRatioAC'+'y'+c].SetLineWidth(2)
             self.histos[suff+'FitRatio'+'y'+c].SetLineWidth(2)
             self.histos[suff+'FitRatioAC'+'y'+c].SetTitle("")
-            self.histos[suff+'FitRatioAC'+'y'+c].GetYaxis().SetTitleOffset(0.25)
-            self.histos[suff+'FitRatioAC'+'y'+c].SetTitleSize(0.15,'y')
-            self.histos[suff+'FitRatioAC'+'y'+c].SetLabelSize(0.12,'y')
-            self.histos[suff+'FitRatioAC'+'y'+c].GetXaxis().SetTitleOffset(1.)
+            self.histos[suff+'FitRatioAC'+'y'+c].GetYaxis().SetTitleOffset(0.32)
+            self.histos[suff+'FitRatioAC'+'y'+c].SetTitleSize(0.13,'y')
+            self.histos[suff+'FitRatioAC'+'y'+c].SetLabelSize(0.10,'y')
+            self.histos[suff+'FitRatioAC'+'y'+c].GetXaxis().SetTitleOffset(1.2)
             self.histos[suff+'FitRatioAC'+'y'+c].SetTitleSize(0.12,'x')
-            self.histos[suff+'FitRatioAC'+'y'+c].SetLabelSize(0.15,'x')
+            self.histos[suff+'FitRatioAC'+'y'+c].SetLabelSize(0.12,'x')
             self.histos[suff+'FitRatioAC'+'y'+c].SetStats(0)
             for d in self.dirList :
                 self.histos[suff+'FitRatioPDF'+'y'+d+c].SetLineWidth(2)
@@ -1349,7 +1426,7 @@ class plotter :
             self.leg[suff+'FitAC'+'y'+c].AddEntry(self.histos[suff+'FitBand'+'y'+c], "MC Syst. Unc.")
             self.leg[suff+'FitAC'+'y'+c].AddEntry(self.histos[suff+'FitRatioPDF'+'y'+'up'+c], self.groupedSystColors['LHEPdfWeightVars'][1])
             self.leg[suff+'FitAC'+'y'+c].AddEntry(self.histos[suff+'FitRatioScale'+'y'+'up'+c], self.groupedSystColors['LHEScaleWeightVars'][1])
-                
+            self.leg[suff+'FitAC'+'y'+c].SetNColumns(2)    
             
             # self.histos[suff+'FitBandPDF'+'y'+c].SetFillColor(self.groupedSystColors['LHEPdfWeightVars'][0])#kMagenta-7)
             # self.histos[suff+'FitBandPDF'+'y'+c].SetFillStyle(0)
@@ -2025,6 +2102,11 @@ def saver(rootInput, suffList, comparison,coeffDict,yArr,qtArr) :
                 can = FitFile.Get('matrices_'+suff+'/'+suff+'_'+mtx+'Mat_qt'+str(j))
                 can.SaveAs(rootInput+'/'+can.GetTitle()+'.pdf')
                 can.SaveAs(rootInput+'/'+can.GetTitle()+'.png')
+            for nn in ['qt','y'] :
+                can = FitFile.Get('matrices_'+suff+'/'+suff+'_'+mtx+'Mat_Integrated_'+nn)
+                can.SaveAs(rootInput+'/'+can.GetTitle()+'.pdf')
+                can.SaveAs(rootInput+'/'+can.GetTitle()+'.png')
+                
                 
                 
 ###############################################################################################################################
@@ -2046,6 +2128,8 @@ parser.add_argument('-u','--uncorrelate', type=int, default=True,help="if true u
 parser.add_argument('-c','--comparison', type=int, default=True,help="comparison between reco and gen fit")
 parser.add_argument('-s','--save', type=int, default=False,help="save .png and .pdf canvas")
 parser.add_argument('-l','--suffList', type=str, default='',nargs='*', help="list of suff to be processed in the form: gen,reco")
+parser.add_argument('-a','--aposteriori', type=str, default='',help="name of the aposteriori fit file, if empty not plotted")
+
 
 args = parser.parse_args()
 OUTPUT = args.output
@@ -2055,10 +2139,11 @@ UNCORR = args.uncorrelate
 COMP = args.comparison
 SAVE= args.save
 SUFFL =args.suffList
+APO = args.aposteriori
 
 
 p=plotter()
-p.AngCoeffPlots(inputFile=INPUT, fitFile=FITFILE, uncorrelate=UNCORR,suff=SUFFL[0])
+p.AngCoeffPlots(inputFile=INPUT, fitFile=FITFILE, uncorrelate=UNCORR,suff=SUFFL[0],aposteriori=APO)
 if COMP :
     recoFit = FITFILE.replace('.root', '_'+str(SUFFL[1])+'.root')
     p.AngCoeffPlots(inputFile=INPUT, fitFile=recoFit, uncorrelate=UNCORR, suff=SUFFL[1])

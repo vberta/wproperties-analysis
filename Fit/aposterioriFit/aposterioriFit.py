@@ -340,7 +340,7 @@ def chi2PolyFit(modelPars,npFitRes, npCovMatInv, coeffList, npBinCenters,parNum)
             fitModelList_unpol = []
             for iqt in range(jnp.shape(npFitRes)[2]) :
                 # fitModelList_unpol.append(fitModelList_unpol[-1]+unpolMult*modelPars[0+ipar]+unpolMult*modelPars[1+ipar]*np.power(valYunpol,2))#+unpolMult*modelPars[2+ipar]*np.power(valYunpol,4))
-                fitModelList_unpol.append(unpolMult[0]*modelPars[0+ipar]+unpolMult[1]*modelPars[1+ipar]*np.power(valYunpol,2))#+unpolMult*modelPars[2+ipar]*np.power(valYunpol,4))
+                fitModelList_unpol.append(unpolMult[0]*modelPars[0+ipar]+unpolMult[1]*modelPars[1+ipar]*np.power(valYunpol,2))#+unpolMult[1]*modelPars[2+ipar]*np.power(valYunpol,4))
                 # fitModelList_unpol.append(fitModelList_unpol[-1]+modelPars[0+ipar]+modelPars[1+ipar]*np.power(valYunpol,2))#+modelPars[2+ipar]*np.power(valYunpol,4))
                 ipar = ipar+parNum[icoeff]
                 icoeff+=1
@@ -375,7 +375,7 @@ def chi2PolyFit(modelPars,npFitRes, npCovMatInv, coeffList, npBinCenters,parNum)
     
     diff = npFitRes-fitModel
     # diff = npFitRes_rescaled-fitModel
-    # diff = jax.ops.index_update(diff,jax.ops.index[0,:,:],diff[0,:,:]/10000000 )
+    # diff = jax.ops.index_update(diff,jax.ops.index[0,:,:],diff[0,:,:]/10000000. )
     print "shape res", jnp.shape(diff)
     print 'POINTS='
     print npFitRes[0]
@@ -438,8 +438,6 @@ def polyFit(fitRes,regFunc, coeffList) :
             print "Warning: hardcoded deg3 for Y unpolarized fit"
             for qt in range(1, dimQt+1) :
                 modelParsC=np.zeros(2)
-                # modelParsC[0] = 10000. #const
-                # modelParsC[1] = -1000. #y^2
                 modelParsC[0] = 1. #const
                 modelParsC[1] = 1. #y^2
                 # modelParsC[2] = 1. #y^4
@@ -503,6 +501,21 @@ def polyFit(fitRes,regFunc, coeffList) :
     np.set_printoptions(threshold=np.inf)
     # print "hessian", modelHess
     # print "diag hessian", np.linalg.eig(modelHess)
+    # e, u = np.linalg.eigh(modelHess)
+    # print "e0=", e[...,0]
+    # e2,u2 = np.linalg.eig(modelHess)
+    # print "e0_as=", e2[...,0]
+    # # print "sorted", np.sort(e2,1)
+    # print "e=",e
+    # print "e2=", e2
+    # for i in e :
+    #     if i<=0 : 
+    #         print "e0, i=", i
+    # for j in e2 :
+    #     if j<=0 : 
+    #         print "e0_as, j=", j
+    # print "is symmetric?", np.allclose(np.transpose(modelHess), modelHess)
+    # print "is approx symmetric?", np.allclose(np.transpose(modelHess), modelHess, rtol=1e-05, atol=1e-06)
     print "*-------------------------------------------*"
     
 
@@ -728,7 +741,7 @@ SAVE= args.save
 coeffList = []#y plus, qt plus, y minus, qt minus, constraint y, constraint qt
 coeffList.append(['unpolarizedxsec', 3,3])
 coeffList.append(['A0', 3,4,3,4, 0,1])
-coeffList.append(['A1', 3,5,5,4, 1,1])
+coeffList.append(['A1', 3,5,5,4, 0,1])
 coeffList.append(['A2', 2,4,3,3, 0,1])
 coeffList.append(['A3', 4,4,5,4, 1,1])
 coeffList.append(['A4', 6,4,6,4, 1,0])
