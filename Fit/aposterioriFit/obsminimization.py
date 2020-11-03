@@ -34,8 +34,7 @@ def pmin(f, x, args = [], doParallel=True):
     tol = np.sqrt(np.finfo('float64').eps)
     #tol = np.finfo('float64').eps
     #edmtol = np.sqrt(np.finfo('float64').eps)
-    # maxiter = int(100e3)
-    maxiter = int(10000) 
+    maxiter = int(100e3)
     
     trust_radius = np.ones(shape=x.shape[:-1], dtype=x.dtype)
     

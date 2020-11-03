@@ -333,14 +333,15 @@ def chi2PolyFit(modelPars,npFitRes, npCovMatInv, coeffList, npBinCenters,parNum)
 
     icoeff = 0
     ipar=0
-    unpolMult=[1e5,1e3]    
+    # unpolMult=[1e5,1e3]    
+    unpolMult=[1e5,1e5]    
     # npFitRes_rescaled = np.zeros(jnp.shape(npFitRes))
     for li in coeffList :
         if li[0]==5 :
             fitModelList_unpol = []
-            for iqt in range(jnp.shape(npFitRes)[2]) :
+            for iqt in range(jnp.shape(npFitRes)[2]) :    
                 # fitModelList_unpol.append(fitModelList_unpol[-1]+unpolMult*modelPars[0+ipar]+unpolMult*modelPars[1+ipar]*np.power(valYunpol,2))#+unpolMult*modelPars[2+ipar]*np.power(valYunpol,4))
-                fitModelList_unpol.append(unpolMult[0]*modelPars[0+ipar]+unpolMult[1]*modelPars[1+ipar]*np.power(valYunpol,2))#+unpolMult[1]*modelPars[2+ipar]*np.power(valYunpol,4))
+                fitModelList_unpol.append(unpolMult[0]*modelPars[0+ipar]+unpolMult[1]*modelPars[1+ipar]*valYunpol+unpolMult[1]*modelPars[2+ipar]*np.power(valYunpol,2))#+unpolMult[1]*modelPars[2+ipar]*np.power(valYunpol,4))
                 # fitModelList_unpol.append(fitModelList_unpol[-1]+modelPars[0+ipar]+modelPars[1+ipar]*np.power(valYunpol,2))#+modelPars[2+ipar]*np.power(valYunpol,4))
                 ipar = ipar+parNum[icoeff]
                 icoeff+=1
@@ -353,17 +354,21 @@ def chi2PolyFit(modelPars,npFitRes, npCovMatInv, coeffList, npBinCenters,parNum)
             fitModelList_temp = []
             fitModelList_temp.append(np.zeros(jnp.shape(npBinCenters)[0])) # list of  (y,qt), with lenght (Ny*Nqt) 
             # fitModel_coeff = jnp.zeros(jnp.shape(npBinCenters)[0])
-            effY = 4
-            effQt = 5
+            effY = li[1]
+            effQt = li[2]
             if li[5] : effY-= 1
             if li[6] : effQt-= 1
+            if li[7] : effQt-= 1
             for iqt in range(0, effQt) :
+                powQt = iqt
+                if li[6] : powQt+= 1 
+                if li[7] and li[0]!=4 : powQt+= 1 
+                if li[7] and li[0]==4 and iqt>0 : powQt+=1
                 for iy in range(0, effY) :
                    powY = iy
-                   powQt = iqt
                    if li[5] : powY+= 1
-                   if li[6] : powQt+= 1 
                 #    fitModel_coeff = jax.ops.index_update(fitModel_coeff,jax.ops.index[:],fitModel_coeff[:]+modelPars[iqt*(effY)+iy+ipar]*np.power(valY,powY)*np.power(valQt,powQt)  )
+                #    print "A",li[0], "index=",iqt*(effY)+iy+ipar, "degY=",powY,", degQt=",powQt
                    fitModelList_temp.append(fitModelList_temp[-1]+modelPars[iqt*(effY)+iy+ipar]*np.power(valY,powY)*np.power(valQt,powQt) )
             ipar = ipar+parNum[icoeff]
             icoeff+=1       
@@ -376,20 +381,24 @@ def chi2PolyFit(modelPars,npFitRes, npCovMatInv, coeffList, npBinCenters,parNum)
     diff = npFitRes-fitModel
     # diff = npFitRes_rescaled-fitModel
     # diff = jax.ops.index_update(diff,jax.ops.index[0,:,:],diff[0,:,:]/10000000. )
-    print "shape res", jnp.shape(diff)
-    print 'POINTS='
-    print npFitRes[0]
+   
+   
+   
+   
+    # print "shape res", jnp.shape(diff)
+    # print 'POINTS='
+    # print npFitRes[0]
     # print  npFitRes[1]
-    print "FIT="
-    print fitModel[0]
+    # print "FIT="
+    # print fitModel[0]
     # print fitModel[1]
-    print "diff"
-    print diff[0]
+    # print "diff"
+    # print diff[0]
     # print diff[1]
-    print "diff ratio="
-    print diff[0]/npFitRes[0]
+    # print "diff ratio="
+    # print diff[0]/npFitRes[0]
     # print diff[1]/npFitRes[1]
-    print "relative chi2 weight",  np.sum(diff,axis=(1,2))
+    # print "relative chi2 weight",  np.sum(diff,axis=(1,2))
     # print "relative chi2 weight", diff[0], diff[1], diff[2], diff[3],diff[4], diff[5], diff[6]
     
     diff = diff.flatten() 
@@ -403,12 +412,11 @@ def chi2PolyFit(modelPars,npFitRes, npCovMatInv, coeffList, npBinCenters,parNum)
 
 def polyFit(fitRes,regFunc, coeffList) :
     
-    degY=3
-    degQt=4
     # unpolMult = 1000
     dimY = fitRes[coeffList[0][0]].GetNbinsX()
     dimQt = fitRes[coeffList[0][0]].GetNbinsY()
-    dimCoeff = len(coeffList)    
+    dimCoeff = len(coeffList)
+    # print "dimY,dimQt=", dimY, dimQt   
 
     npCovMat = rootnp.hist2array(fitRes['cov'])
     npCovMat = npCovMat[0:dimCoeff*dimQt*dimY,0:dimCoeff*dimQt*dimY]
@@ -435,20 +443,20 @@ def polyFit(fitRes,regFunc, coeffList) :
     parNum = []
     for li in coeffList :
         if li[0]=='unpolarizedxsec' : 
-            print "Warning: hardcoded deg3 for Y unpolarized fit"
+            print "Warning: hardcoded deg3 for Y unpolarized fit (in the chi2)"
             for qt in range(1, dimQt+1) :
-                modelParsC=np.zeros(2)
-                modelParsC[0] = 1. #const
-                modelParsC[1] = 1. #y^2
-                # modelParsC[2] = 1. #y^4
+                modelParsC=np.zeros(li[1])
+                for yy in range(len(modelParsC)) :
+                    modelParsC[yy] = 1.
                 modelParsList.append(modelParsC.copy())
-                parNum.append(2)
+                parNum.append(len(modelParsC))
                 print li[0], "qt=",qt, "pars=", parNum[-1]
         else :
-            effY = degY+1
-            effQt = degQt+1
+            effY = li[1]
+            effQt = li[2]
             if li[5] : effY-= 1
             if li[6] : effQt-= 1
+            if li[7] : effQt-= 1
             modelParsC=np.zeros((effY,effQt))
             for qt in range(0, effQt) :
                 for y in range(0, effY) :
@@ -469,8 +477,8 @@ def polyFit(fitRes,regFunc, coeffList) :
     print "everything initialized, minimizer call..."
     # print "initial x=", modelPars
     print "par num", parNum
-    # print "testchi2", chi2PolyFit(modelPars, npFitRes, npCovMatInv, coeffListJAX, npBinCenters,parNum)
     modelPars = pmin(chi2PolyFit, modelPars, args=(npFitRes, npCovMatInv, coeffListJAX, npBinCenters,parNum), doParallel=False)
+
         
     # after fit results
     static_argnumsPF = (1,2,3,4,5)
@@ -495,10 +503,10 @@ def polyFit(fitRes,regFunc, coeffList) :
     print "relative uncertaintiy" , np.true_divide(modelErr,modelPars)
     
     print "check covariance matrix:"
-    print "is semi positive definite?", np.all(np.linalg.eigvals(modelCov) >= 0)
-    print "is symmetric?", np.allclose(np.transpose(modelCov), modelCov)
-    print "is approx symmetric?", np.allclose(np.transpose(modelCov), modelCov, rtol=1e-05, atol=1e-06)
-    np.set_printoptions(threshold=np.inf)
+    print "is covariance semi positive definite?", np.all(np.linalg.eigvals(modelCov) >= 0)
+    print "is covariance symmetric?", np.allclose(np.transpose(modelCov), modelCov)
+    print "is covariance approx symmetric?", np.allclose(np.transpose(modelCov), modelCov, rtol=1e-05, atol=1e-06)
+    # np.set_printoptions(threshold=np.inf)
     # print "hessian", modelHess
     # print "diag hessian", np.linalg.eig(modelHess)
     # e, u = np.linalg.eigh(modelHess)
@@ -514,15 +522,16 @@ def polyFit(fitRes,regFunc, coeffList) :
     # for j in e2 :
     #     if j<=0 : 
     #         print "e0_as, j=", j
-    # print "is symmetric?", np.allclose(np.transpose(modelHess), modelHess)
-    # print "is approx symmetric?", np.allclose(np.transpose(modelHess), modelHess, rtol=1e-05, atol=1e-06)
+    # print "is hessian symmetric?", np.allclose(np.transpose(modelHess), modelHess)
+    # print "is hessian approx symmetric?", np.allclose(np.transpose(modelHess), modelHess, rtol=1e-05, atol=1e-06)
+    # print "is hessian semi posititive?", np.all(np.linalg.eigvals( modelHess) >= 0)
     print "*-------------------------------------------*"
     
 
     outFit = (modelPars,modelCov,npFitRes, npBinCenters,parNum)
     
     #DEBUG
-    deb = chi2PolyFit(modelPars, npFitRes, npCovMatInv, coeffListJAX, npBinCenters,parNum)
+    # deb = chi2PolyFit(modelPars, npFitRes, npCovMatInv, coeffListJAX, npBinCenters,parNum)
 
     
     return outFit
@@ -543,28 +552,31 @@ def rebuildPoly(fitPars,histo,npBinCenters,coeffList,parNum) :
 
     icoeff = 0
     ipar=0
-    unpolMult=[1e5,1e3]
+    unpolMult=[1e5,1e5]
     for li in coeffList :
         if li[0]=='unpolarizedxsec' :
             for iqt in range(dimQt) :
                 # print "binqt=", iqt
-                output[0,:,iqt] = unpolMult[0]*fitPars[0+ipar]+unpolMult[1]*fitPars[1+ipar]*np.power(valYunpol,2)#+unpolMult*fitPars[2+ipar]*np.power(valYunpol,4))
+                output[0,:,iqt] = unpolMult[0]*fitPars[0+ipar]+unpolMult[1]*fitPars[1+ipar]*valYunpol+unpolMult[1]*fitPars[2+ipar]*np.power(valYunpol,2)#+unpolMult*fitPars[2+ipar]*np.power(valYunpol,4))
                 ipar = ipar+parNum[icoeff]
                 icoeff+=1
                 # print output[0,:,iqt]                     
         else :
             # tempCoeff =np.zeros((dimQt*dimY,1))
             tempCoeff =np.zeros(np.shape(npBinCenters)[0])
-            effY = 4
-            effQt = 5
+            effY = li[1]
+            effQt = li[2]
             if li[5] : effY-= 1
             if li[6] : effQt-= 1
+            if li[7] : effQt-= 1
             for iqt in range(0, effQt) :
+                powQt = iqt
+                if li[6] : powQt+= 1 
+                if li[7] and li[0]!=4 : powQt+= 1 
+                if li[7] and li[0]==4 and iqt>0 : powQt+=1
                 for iy in range(0, effY) :
                    powY = iy
-                   powQt = iqt
                    if li[5] : powY+= 1
-                   if li[6] : powQt+= 1 
                    tempCoeff = tempCoeff+fitPars[iqt*(effY)+iy+ipar]*np.power(valY,powY)*np.power(valQt,powQt) 
             ipar = ipar+parNum[icoeff]
             icoeff+=1       
@@ -729,7 +741,7 @@ parser = argparse.ArgumentParser("")
 
 parser.add_argument('-o','--output', type=str, default='aposterioriFit',help="name of the output file")
 parser.add_argument('-f','--fitInput', type=str, default='fitResult.root',help="name of the fit result root file, after plotter_fitResult")
-parser.add_argument('-r','--regInput', type=str, default='../../regularization/TEST_2sign_MC/regularizationFit_range11_rebuild____nom_nom.root',help="name of the regularization study result root file")
+parser.add_argument('-r','--regInput', type=str, default='../../regularization/OUTPUT_poly/regularizationFit_range11_rebuild____nom_nom.root',help="name of the regularization study result root file")
 parser.add_argument('-s','--save', type=int, default=False,help="save .png and .pdf canvas")
 
 args = parser.parse_args()
@@ -738,13 +750,20 @@ FITINPUT = args.fitInput
 REGINPUT = args.regInput
 SAVE= args.save
 
-coeffList = []#y plus, qt plus, y minus, qt minus, constraint y, constraint qt
-coeffList.append(['unpolarizedxsec', 3,3])
-coeffList.append(['A0', 3,4,3,4, 0,1])
-coeffList.append(['A1', 3,5,5,4, 0,1])
-coeffList.append(['A2', 2,4,3,3, 0,1])
-coeffList.append(['A3', 4,4,5,4, 1,1])
-coeffList.append(['A4', 6,4,6,4, 1,0])
+coeffList = []#y plus, qt plus, y minus, qt minus, constraint y, constraint qt,constrain C1
+# coeffList.append(['unpolarizedxsec', 3,3])
+# coeffList.append(['A0', 3,4,3,4, 0,1])
+# coeffList.append(['A1', 3,5,5,4, 1,1])
+# coeffList.append(['A2', 2,4,3,3, 0,1])
+# coeffList.append(['A3', 4,4,5,4, 1,1])
+# coeffList.append(['A4', 6,4,6,4, 1,0])
+
+coeffList.append(['unpolarizedxsec', 3,3,-999,-999,0,0,0])
+coeffList.append(['A0', 3,4,3,4, 0,1,1])
+coeffList.append(['A1', 4,4,3,4, 1,1,0])
+coeffList.append(['A2', 2,5,2,4, 0,1,1])
+coeffList.append(['A3', 3,4,3,3, 0,1,0])
+coeffList.append(['A4', 4,5,4,6, 1,0,0]) #5-->7 but no convergence! and last number=1
 
 # parPerCoeff(coeffList=coeffList) #add number of free par per coeff to coeffList
 fitResDict = getFitRes(inFile=FITINPUT, coeffList=coeffList)
