@@ -40,12 +40,7 @@ class bkg_analyzer:
              self.rootFiles.append(ROOT.TFile.Open(self.inputDir+'/'+f+'.root'))    
 
         self.ptBinningS = ['{:.3g}'.format(x) for x in self.ptBinning[:-1]]
-        print self.ptBinning
-        print self.ptBinningS
-
         self.etaBinningS = ['{:.2g}'.format(x) for x in self.etaBinning[:-1]]
-        print self.etaBinning
-        print self.etaBinningS
         # print "WARNING: hardcoded LHE dict"
         # self.LHEdict = {
         #     'Down' : ["LHEScaleWeight_muR0p5_muF0p5", "LHEScaleWeight_muR0p5_muF1p0", "LHEScaleWeight_muR1p0_muF0p5"],
@@ -1665,7 +1660,6 @@ class bkg_analyzer:
                     htempl_prompt_pt = ROOT.TH1F("htempl_prompt_pt_{kind}_{sign}_{eta}".format(kind=kind,sign=s,eta=e),"htempl_prompt_pt_{kind}_{sign}_{eta}".format(kind=kind,sign=s,eta=e), len(self.ptBinning)-1, array('f',self.ptBinning) )
 
                     for p in self.ptBinningS :
-        
                         #fake rate eval:
                         if correlatedFit :
                             CF_string = 'Minuit' 

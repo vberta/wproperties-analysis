@@ -16,13 +16,14 @@ from ROOT import gStyle
 ROOT.gROOT.SetBatch(True)
 ROOT.TH1.AddDirectory(False)
 ROOT.TH2.AddDirectory(False)
+import multiprocessing
 
 
 pp = pprint.PrettyPrinter(indent=2)
 
 parser = argparse.ArgumentParser("")
 parser.add_argument('-o', '--output_dir',type=str, default='TEST', help="")
-parser.add_argument('-i', '--input_gen',type=str, default='../analysisOnGen/genInputUncorrErr.root', help="")
+parser.add_argument('-i','--input_gen', type=str, default='../analysisOnGen/genInput_fineBinned_4regularization_fix_Wplus.root ../analysisOnGen/genInput_fineBinned_4regularization_fix_Wminus.root',nargs='*', help="list of two gen input files (plus, minus), separated by space")
 parser.add_argument('-validation_only', '--validation_only',type=int, default=False, help="False: skip fit and do validation only")
 parser.add_argument('-input_reg', '--input_reg',type=str, default='regularizationFit', help="Name of the input file for validation_only")
 parser.add_argument('-map01', '--map01',type=int, default=False, help="if true map the polynomial between 0 and 1, otherwise between -1,1")
@@ -30,6 +31,7 @@ parser.add_argument('-suffix', '--suffix',type=str, default='', help="suffix for
 parser.add_argument('-syst_kind', '--syst_kind',type=str, default='', help="name of the kind of syst empty=nominal")
 parser.add_argument('-syst_name', '--syst_name',type=str, default='_nom_nom', help="name of the particular syst empty=nominal")
 parser.add_argument('-syst_val', '--syst_val',type=int, default=False, help="activate the systs validation, using all the syst of the dictionary")
+parser.add_argument('-ncores', '--ncores',type=int, default=1, help="number of cores used")
 
 args = parser.parse_args()
 output_dir = args.output_dir
@@ -41,6 +43,11 @@ MAP01 = args.map01
 SYST_kind= args.syst_kind
 SYST_name= args.syst_name
 SYST_VALIDATION = args.syst_val
+NCORES=args.ncores
+if NCORES>1 :
+    MULTICORE=True
+else :
+    MULTICORE=False
 
 
 if VALONLY :
@@ -76,15 +83,22 @@ systDict  = buildSystDict()
 
 signDict = {
         'Plus' : 'WtoMuP',
-        # 'Minus' : 'WtoMuN'
+        'Minus' : 'WtoMuN'
         }
         
+# coeffDict = {
+#         'A0' : 'qt->0',
+#         'A1' : 'qt->0, y->0',
+#         'A2' : 'qt->0',
+#         'A3' : 'qt->0, y->0',
+#         'A4' : 'y->0'
+#     }
 coeffDict = {
-        'A0' : 'qt->0',
-        'A1' : 'qt->0, y->0',
-        'A2' : 'qt->0',
-        'A3' : 'qt->0, y->0',
-        'A4' : 'y->0'
+        'A0' : 'qt->0, C1',
+        'A1' : 'qt->0, y->0, ',
+        'A2' : 'qt->0, C1',
+        'A3' : 'qt->0',
+        'A4' : 'y->0, C1'
     }
         
 #oder of Chebyshev polinomials:
@@ -92,8 +106,10 @@ degreeYList = [2,3,4,5,6,7]
 degreeQtList = [2,3,4,5,6,7]
 # degreeYList = [2,3]
 # degreeQtList = [2,3]
-degreeYList = [2,3,4,5]
-degreeQtList = [2,3,4,5]
+# degreeYList = [2,3,4]
+# degreeQtList = [2,3,4]
+
+
 
 
 # ROOT.Math.MinimizerOptions.SetDefaultMinimizer("Minuit2")
@@ -106,6 +122,7 @@ groupedSystColors = {
         "_LHEPdfWeight" : [ROOT.kRed+1, 'PDF'],
         "" : [1, 'Stat Unc.']
         }
+
 
 
 
@@ -249,35 +266,23 @@ class fit_func:
 
 
 
-def fit_coeff(fname="genInput.root", charge="WtoMuP", coeff="A4", constraint='y->0', qt_max = 24., y_max = 2.5, degreeY=4,degreeQt=3,Map01=False): #fname="WJets_LHE.root"
+def fit_coeff(fname=["genInput_Wplus.root","genInput_Wminus.root"] , charge="WtoMuP", coeff="A4", constraint='y->0', qt_max = 24., y_max = 2.5, degreeY=4,degreeQt=3,Map01=False): #fname="WJets_LHE.root"
 
-    print "Coeff=",coeff, "charge=",charge," (ydeg, qtdeg)=, ",degreeY,degreeQt
+    print "Coeff=",coeff, "charge=",charge," (ydeg, qtdeg)= ",degreeY,degreeQt
     # -------------- prepare the histos for the fit ----------------------- #
-    
-    inputFile   = ROOT.TFile.Open(fname)
+    if charge == 'WtoMuP' : fnameUsed = fname[0]
+    if charge == 'WtoMuN' : fnameUsed = fname[1]
+    inputFile   = ROOT.TFile.Open(fnameUsed)
     hA    = ROOT.gDirectory.Get('angularCoefficients'+SYST_kind+'/harmonics'+coeff+SYST_name)
-    # print hA, 
-    # print 'angularCoefficients'+SYST_kind+'/harmonics'+coeff+SYST_name
-    # print fname, inputFile
-    # hAErr = ROOT.gDirectory.Get("angularCoefficient_"_nominal/GENINCLUSIVE_"+charge+"_"+coeff+"Err")
-    # hMC   = ROOT.gDirectory.Get("angularCoefficient_"_"+SYST_kind+"/GENINCLUSIVE_"+charge+"_MC"+systDict[SYST_kind+'_'+SYST_name])
         
     #settings for the output 
     hA.SetTitle('coeff_'+charge+'_'+coeff)
-    # hAErr.SetTitle('coeffErr_'+charge+'_'+coeff)
-    # hMC.SetTitle('MC_'+charge+'_'+coeff)
     hA.SetName('coeff_'+charge+'_'+coeff)
-    # hAErr.SetName('coeffErr_'+charge+'_'+coeff)
-    # hMC.SetName('MC_'+charge+'_'+coeff)
     
     hA.GetXaxis().SetTitle('Y')
     hA.GetYaxis().SetTitle('q_{T} [GeV]')
-    # hAErr.GetXaxis().SetTitle('Y')
-    # hAErr.GetYaxis().SetTitle('q_{T} [GeV]')
-    # hMC.GetXaxis().SetTitle('Y')
-    # hMC.GetYaxis().SetTitle('q_{T} [GeV]')
     
-    y_max_bin  = hA.GetXaxis().FindBin( y_max )
+    y_max_bin  = hA.GetXaxis().FindBin( y_max+0.0001 )
     y_min_bin  = hA.GetXaxis().FindBin( 0.0 )
     y_max_cut  = hA.GetXaxis().GetBinLowEdge(y_max_bin+1)        
     y_min_cut  = 0.0   #hMC.GetXaxis().GetBinCenter(y_min_bin)        
@@ -286,10 +291,7 @@ def fit_coeff(fname="genInput.root", charge="WtoMuP", coeff="A4", constraint='y-
     qt_min_bin = hA.GetYaxis().FindBin( 0.0 )
     qt_max_cut = hA.GetYaxis().GetBinLowEdge(qt_max_bin+1)        
     qt_min_cut = 0.0    #hMC.GetYaxis().GetBinCenter(qt_min_bin)        
-    
-    # print qt_max_bin,qt_min_bin,qt_max_cut,qt_min_cut
-    # print y_max_bin,y_min_bin,y_max_cut,y_min_cut
- 
+     
     x,y = [], []
     if Map01 :
         for i in range(y_min_bin, y_max_bin+1):   x.append( (hA.GetXaxis().GetBinCenter(i)- y_min_cut)/(y_max_cut-  y_min_cut)) #range between 0,1
@@ -300,8 +302,6 @@ def fit_coeff(fname="genInput.root", charge="WtoMuP", coeff="A4", constraint='y-
 
     xx = array('f', x)
     yy = array('f', y)
-    # print xx
-    # print yy
     
     hA_cut = ROOT.TH2F("hfit_"+charge+"_"+coeff+'_'+str(degreeY)+str(degreeQt), "hfit_"+charge+"_"+coeff+'_'+str(degreeY)+str(degreeQt), len(xx)-1, xx, len(yy)-1, yy)
     hA_cut.GetXaxis().SetTitle('Y, 1='+str(y_max))
@@ -312,12 +312,6 @@ def fit_coeff(fname="genInput.root", charge="WtoMuP", coeff="A4", constraint='y-
             hA_cut.SetBinContent(i,j, hA.GetBinContent(i,j) )
             hA_cut.SetBinError(i,j, hA.GetBinError(i,j) )
             
-    #hA_cut.Draw("colz")
-    
-    # id_y = [0,1,2] #3 poly in y
-    # id_qt = [0,1,2,3] #4 poly in qt
-    # id_y = [0,1,2,3,4] 
-    # id_qt = [0,1,2,3] 
 
     id_y  = [] #poly in y
     id_qt = [] #poly in qt
@@ -327,9 +321,6 @@ def fit_coeff(fname="genInput.root", charge="WtoMuP", coeff="A4", constraint='y-
         id_qt.append(qq)    
     
 
-    #possible contraint: 'qt->0', 'y->0', 'qt->0,y->0'
-    # constraint = 'y->0'
-    #constraint = ''
     if Map01 :
         func = fit_func01(id_y,id_qt, constraint)
     else :
@@ -370,7 +361,6 @@ def fit_coeff(fname="genInput.root", charge="WtoMuP", coeff="A4", constraint='y-
                 # print "y->0: Fix parameter", itot
                 fit.FixParameter(itot, 0.0)
     
-    # res = hA_cut.Fit(fit, "RSV") #range, result, verbose
     res = hA_cut.Fit(fit, "RSQ") 
 
     fit.SetNpx(5000)
@@ -384,13 +374,13 @@ def fit_coeff(fname="genInput.root", charge="WtoMuP", coeff="A4", constraint='y-
     #DEBUG block------------------------------------#
     # print "-------------------- Post fit debug:"
     # res.Print()
-    print coeff, degreeQt, degreeY, charge, fit.GetNDF()
+    print coeff, "(qt,y)=", degreeQt, degreeY, charge, ", NDF=",fit.GetNDF()
     for i in range(nparams) :
         print "par", i, fit.GetParName(i), "=",fit.GetParameter(i), "+/-",fit.GetParError(i), 
         if fit.GetParameter(i)!=0 : print ", deltaPar/par=",  fit.GetParError(i)/fit.GetParameter(i)
         else : print ""
-    print res.GetCorrelationMatrix()
-    print res.GetCovarianceMatrix()
+    # print res.GetCorrelationMatrix()
+    # print res.GetCovarianceMatrix()
     print "chi2 reduced:", fit.GetChisquare()/fit.GetNDF(), "+/-", math.sqrt(2*fit.GetNDF())/fit.GetNDF()
     print "-------------------- "
     #------------------------------------------------#
@@ -450,14 +440,9 @@ def fit_coeff(fname="genInput.root", charge="WtoMuP", coeff="A4", constraint='y-
     # c_pull.Draw()
 
     
-    
-    
     #---------------prepare the output ----------------#
-   
     outDict ={}
     outDict['hh'+charge+coeff] = hA
-    # outDict['hh'+charge+coeff+'Err'] = hAErr
-    # outDict['hh'+charge+coeff+'MC'] = hMC
     outDict['fit'+charge+coeff] = hA_cut
     outDict['fit'+'Res'+charge+coeff] = res
     outDict['fit'+'Err'+charge+coeff] = h_fitError
@@ -465,7 +450,6 @@ def fit_coeff(fname="genInput.root", charge="WtoMuP", coeff="A4", constraint='y-
     outDict['pull'+'1D'+charge+coeff] = hPulls1D
     outDict['pull'+'2D'+charge+coeff] = hPulls2D
     
-    # raw_input()
     return outDict
 
 
@@ -485,11 +469,13 @@ class fit_func_unpol:
             val+= parameters[iy]*scipy.special.eval_chebyt(vy, y) 
         return val
 
-def fit_unpol(fname="genInput.root", charge="WtoMuP", qt_max = 24., y_max = 2.5, degreeY=4,Map01=True,coeff='AUL') : #fname="WJets_LHE.root
+def fit_unpol(fname=["genInput_Wplus.root","genInput_Wminus.root"], charge="WtoMuP", qt_max = 24., y_max = 2.5, degreeY=4,Map01=True,coeff='AUL') : #fname="WJets_LHE.root
     
     print "unpol cross sec, charge=", charge, " ydeg=, ",degreeY
     
-    inputFile   = ROOT.TFile.Open(fname)
+    if charge == 'WtoMuP' : fnameUsed = fname[0]
+    if charge == 'WtoMuN' : fnameUsed = fname[1]
+    inputFile   = ROOT.TFile.Open(fnameUsed)
     hMC   = ROOT.gDirectory.Get('angularCoefficients'+SYST_kind+'/harmonics'+coeff+SYST_name)
 
 
@@ -499,7 +485,7 @@ def fit_unpol(fname="genInput.root", charge="WtoMuP", qt_max = 24., y_max = 2.5,
     hMC.GetYaxis().SetTitle('q_{T} [GeV]')
     
     #------ rebin input histo ------ #
-    y_max_bin  = hMC.GetXaxis().FindBin( y_max )
+    y_max_bin  = hMC.GetXaxis().FindBin( y_max+0.0001 )
     y_min_bin  = hMC.GetXaxis().FindBin( 0.0 )
     y_max_cut  = hMC.GetXaxis().GetBinLowEdge(y_max_bin+1)        
     y_min_cut  = 0.0   #hMC.GetXaxis().GetBinCenter(y_min_bin)        
@@ -546,6 +532,10 @@ def fit_unpol(fname="genInput.root", charge="WtoMuP", qt_max = 24., y_max = 2.5,
             funcList.append(ROOT.TF1("fit_"+charge+"_unpol", func, 0, 1.0, nparams))    
         else :
             funcList.append(ROOT.TF1("fit_"+charge+"_unpol", func, -1, 1.0, nparams))
+        for yy in range(0,degreeY) :
+            funcList[-1].SetParName(yy,'T'+str(yy))
+            if yy%2!=0 :     
+                funcList[-1].FixParameter(yy,0.0)
     #---fit----#
     for h,f in zip(hList,funcList) :
         resList.append(h.Fit(f, "RSQ"))
@@ -614,8 +604,362 @@ def fit_unpol(fname="genInput.root", charge="WtoMuP", qt_max = 24., y_max = 2.5,
 
     
     return outDict
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+class fit_poly:
+
+    def __init__(self, id_y,id_qt, constraints='qt->0'):
+        self.id_qt = id_qt
+        self.id_y = id_y
+        self.nparams =  len(id_qt)*len(id_y)
+        self.limqt = 'qt->0' in constraints
+        self.limy = 'y->0' in constraints
+        self.limC1 = 'C1' in constraints
+
+    def __call__(self, x, parameters):
+        y,qt = x[0],x[1]
+        val = 0.0
+        p = [0.]*self.nparams                
+        
+        for iqt,vqt in enumerate(self.id_qt):
+            for iy,vy in enumerate(self.id_y):
+                itot = iqt*(len(self.id_y))+iy
+                p[itot] = parameters[itot]
+                if self.limy and vy==0 : 
+                    p[itot]=0
+                    # print "itot=", itot
+                if self.limqt and vqt==0 : 
+                    p[itot]=0
+                    # print "itot=",itot
+                if self.limC1 and vqt==1 :
+                    p[itot]=0
+                # if self.limy and vy%2==0 : 
+                #     p[itot]=0
+                # if ((not self.limy) and vy%2!=0 ): 
+                #     p[itot]=0
+                val += p[itot]*pow(qt,vqt)*pow(y,vy) 
+        return val
+
+
+
+def fit_coeff_poly(fname=["genInput_Wplus.root","genInput_Wminus.root"] , charge="WtoMuP", coeff="A4", constraint='y->0', qt_max = 24., y_max = 2.5, degreeY=4,degreeQt=3,Map01=False): #fname="WJets_LHE.root"
+
+    print "Coeff=",coeff, "charge=",charge," (ydeg, qtdeg)= ",degreeY,degreeQt
+    # -------------- prepare the histos for the fit ----------------------- #
+    if charge == 'WtoMuP' : fnameUsed = fname[0]
+    if charge == 'WtoMuN' : fnameUsed = fname[1]
+    inputFile   = ROOT.TFile.Open(fnameUsed)
+    hA    = ROOT.gDirectory.Get('angularCoefficients'+SYST_kind+'/harmonics'+coeff+SYST_name)
+ 
+    #settings for the output 
+    hA.SetTitle('coeff_'+charge+'_'+coeff)
+    hA.SetName('coeff_'+charge+'_'+coeff)
+    hA.GetXaxis().SetTitle('Y')
+    hA.GetYaxis().SetTitle('q_{T} [GeV]')
+    
+    y_max_bin  = hA.GetXaxis().FindBin( y_max+0.0001 )
+    qt_max_bin = hA.GetYaxis().FindBin( qt_max )
+        
+    x,y = [], []
+    for i in range(1, y_max_bin+1): x.append( hA.GetXaxis().GetBinLowEdge(i))
+    for i in range(1, qt_max_bin+1): y.append( hA.GetYaxis().GetBinLowEdge(i))    
+
+    xx = array('f', x)
+    yy = array('f', y)
+    # print "bin y=",xx
+    # print "bin qt=", yy
+    
+    hA_cut = ROOT.TH2F("hfit_"+charge+"_"+coeff+'_'+str(degreeY)+str(degreeQt), "hfit_"+charge+"_"+coeff+'_'+str(degreeY)+str(degreeQt), len(xx)-1, xx, len(yy)-1, yy)
+    hA_cut.GetXaxis().SetTitle('Y, 1='+str(y_max))
+    hA_cut.GetYaxis().SetTitle('q_{T} [GeV], 1='+str(qt_max))
+    
+    for i in range(1, hA_cut.GetXaxis().GetNbins()+1):
+        for j in range(1, hA_cut.GetYaxis().GetNbins()+1):
+            hA_cut.SetBinContent(i,j, hA.GetBinContent(i,j) )
+            hA_cut.SetBinError(i,j, hA.GetBinError(i,j) )
+
+    id_y  = [] #poly in y
+    id_qt = [] #poly in qt
+    for yy in range(0,degreeY) :
+        id_y.append(yy)
+    for qq in range(0,degreeQt) :
+        id_qt.append(qq)    
+    
+    func = fit_poly(id_y,id_qt, constraint)
+    nparams = len(id_qt)*len(id_y)
+    
+    fit = ROOT.TF2("fit_"+charge+"_"+coeff, func, 0, y_max, 0, qt_max, nparams)
+    
+    for iqt,vqt in enumerate(id_qt):
+        for iy,vy in enumerate(id_y):
+            itot = iqt*(len(id_y))+iy
+            fit.SetParName(itot, "qt"+str(iqt)+"_"+"y"+str(iy))
+            fit.SetParError(itot, 0.002)
+            if 'qt->0' in constraint and iqt==0 : 
+                fit.FixParameter(itot, 0.0)
+                print "fixed:", fit.GetParName(itot)
+            if 'y->0' in constraint and iy==0 : 
+                fit.FixParameter(itot, 0.0)
+                print "fixed:", fit.GetParName(itot)
+            if 'C1' in constraint and vqt==1 :
+                fit.FixParameter(itot, 0.0)
+                print "fixed:", fit.GetParName(itot)
+            # if 'y->0' in constraint and vy%2==0 : #y=0-->dispari
+            #     fit.FixParameter(itot, 0.0)
+            #     print "fixed:", fit.GetParName(itot)
+            # if ((not 'y->0' in constraint) and vy%2!=0) : #y!=0-->pari
+            #     fit.FixParameter(itot, 0.0)
+            #     print "fixed:", fit.GetParName(itot)    
+
+    # res = hA_cut.Fit(fit, "RSV") #range, result, verbose
+    res = hA_cut.Fit(fit, "RSQ") 
+    fit.SetNpx(5000)
+    
+    #build the errorbands for the fit
+    h_fitError = hA_cut.Clone("hfitErr_"+charge+"_"+coeff+'_'+str(degreeY)+str(degreeQt))
+    ROOT.TVirtualFitter.GetFitter().GetConfidenceIntervals(h_fitError,0.68)
+
+
+    #DEBUG block------------------------------------#
+    # print "-------------------- Post fit debug:"
+    # res.Print()
+    print coeff, "(qt,y)=", degreeQt, degreeY, charge, ", NDF=",fit.GetNDF()
+    for i in range(nparams) :
+        print "par", i, fit.GetParName(i), "=",fit.GetParameter(i), "+/-",fit.GetParError(i), 
+        if fit.GetParameter(i)!=0 : print ", deltaPar/par=",  fit.GetParError(i)/fit.GetParameter(i)
+        else : print ""
+    print "chi2 reduced:", fit.GetChisquare()/fit.GetNDF(), "+/-", math.sqrt(2*fit.GetNDF())/fit.GetNDF()
+    print "-------------------- "
+    #------------------------------------------------#
+
+    #addittional debug ---------------#
+    # for y in [-1.0, 0.0, +1.0]:
+    #     print 'f(qt=0, y=', y, ')=', fit.Eval(y, -1.0 )
+    # for qt in [-1.0, 0.0, +1.0]:
+    #     print 'f(qt=', qt, ', y=0)=', fit.Eval(-1.0, qt )
+    #--------------------------------#
+    
+    
+    #-------------------------pulls building ------------------------------#
+    
+    hPulls2D = hA_cut.Clone("hPulls2D_"+charge+"_"+coeff+'_'+str(degreeY)+str(degreeQt))
+    hPulls2D.SetTitle("hPulls2D_"+charge+"_"+coeff+'_'+str(degreeY)+str(degreeQt))
+    hPulls2D.SetName("hPulls2D_"+charge+"_"+coeff+'_'+str(degreeY)+str(degreeQt))
+    hPulls2D.Reset()
+    for vy in range(1, hPulls2D.GetXaxis().GetNbins()+1):
+        for iq in range(1, hPulls2D.GetYaxis().GetNbins()+1):
+            hPulls2D.SetBinContent( vy, iq, (fit.Eval( hPulls2D.GetXaxis().GetBinCenter(vy), hPulls2D.GetYaxis().GetBinCenter(iq) ) - hA_cut.GetBinContent(vy,iq))/hA_cut.GetBinError(vy,iq) )
+    hPulls2D.SetMinimum(-8)
+    hPulls2D.SetMaximum(+8)
+
+    hPulls1D = ROOT.TH1F("hPulls1D_"+charge+"_"+coeff+'_'+str(degreeY)+str(degreeQt), "hPulls1D_"+charge+"_"+coeff+'_'+str(degreeY)+str(degreeQt), 25,-4,4)
+    for vy in range(1, hPulls2D.GetXaxis().GetNbins()+1):
+        for iq in range(1, hPulls2D.GetYaxis().GetNbins()+1):
+            hPulls1D.Fill( hPulls2D.GetBinContent( vy, iq) )
+    # hPulls1D.Sumw2()
+
+    c_pull = ROOT.TCanvas("c_pull_"+charge+'_'+coeff+'_'+str(degreeY)+str(degreeQt), "c_pull_"+charge+'_'+coeff+'_'+str(degreeY)+str(degreeQt), 1200, 600)
+    c_pull.cd()
+    c_pull.Divide(2,1)
+
+    c_pull.cd(1)
+    hPulls2D.SetStats(0)
+    hPulls2D.DrawCopy("colz")
+    c_pull.cd(2)
+    hPulls1D.Fit("gaus", "Q", "", -4,4)
+    gaus = hPulls1D.GetFunction("gaus")
+    hPulls1D.DrawCopy("hist")
+    # if hPulls1D.GetBinContent(0)+hPulls1D.GetBinContent(hPulls1D.GetNbinsX()+1)>=hPulls1D.GetEntries() : #there are entry instide the histogram
+    try :
+        gaus.Draw("same")
+    except :
+        print "empty pulls"
+    # hPulls1D.SetStats()
+    # stats = hPulls1D.FindObject("stats")
+    ROOT.gStyle.SetOptFit()
+    
+    c_pull.Update()
+    
+    c_scratch = ROOT.TCanvas("c_scratch"+charge+coeff+str(degreeY)+str(degreeQt), "c_scratch"+charge+coeff+str(degreeY)+str(degreeQt), 1800, 600)
+    c_scratch.cd()
+    # c_pull.cd()
+    # c_pull.Draw()
+
+    
+    #---------------prepare the output ----------------#
+    outDict ={}
+    outDict['hh'+charge+coeff] = hA
+    outDict['fit'+charge+coeff] = hA_cut
+    outDict['fit'+'Res'+charge+coeff] = res
+    outDict['fit'+'Err'+charge+coeff] = h_fitError
+    outDict['pull'+'c'+charge+coeff] = c_pull
+    outDict['pull'+'1D'+charge+coeff] = hPulls1D
+    outDict['pull'+'2D'+charge+coeff] = hPulls2D
+    return outDict
+
+
+
+
+class fit_func_unpol_poly:
+
+    def __init__(self, id_y):
+        self.id_yy= id_y
+        self.nparamss =  len(id_y)
+       
+    def __call__(self, x, parameters):
+        y = x[0]
+        val = 0.0
+        p = [0.]*self.nparamss    
+        for iy,vy in enumerate(self.id_yy):
+            # if vy%2!=0 : continue 
+            val += parameters[iy]*pow(y,vy)
+        return val
+
+def fit_unpol_poly(fname=["genInput_Wplus.root","genInput_Wminus.root"], charge="WtoMuP", qt_max = 24., y_max = 2.5, degreeY=4,Map01=True,coeff='AUL') : #fname="WJets_LHE.root
+    
+    print "unpol cross sec, charge=", charge, " ydeg=, ",degreeY
+    
+    if charge == 'WtoMuP' : fnameUsed = fname[0]
+    if charge == 'WtoMuN' : fnameUsed = fname[1]
+    inputFile   = ROOT.TFile.Open(fnameUsed)
+    hMC   = ROOT.gDirectory.Get('angularCoefficients'+SYST_kind+'/harmonics'+coeff+SYST_name)
+
+    hMC.SetTitle('MC_'+charge+'_unpol')
+    hMC.SetName('MC_'+charge+'_unpol')
+    hMC.GetXaxis().SetTitle('Y')
+    hMC.GetYaxis().SetTitle('q_{T} [GeV]')
+    
+    #------ rebin input histo ------ #
+    y_max_bin  = hMC.GetXaxis().FindBin( y_max+0.0001 )
+    qt_max_bin = hMC.GetYaxis().FindBin( qt_max )   
+    
+    x,y = [], []
+    for i in range(1, y_max_bin+1): x.append( hMC.GetXaxis().GetBinLowEdge(i))
+    for i in range(1, qt_max_bin+1): y.append( hMC.GetYaxis().GetBinLowEdge(i))    
+
+    xx = array('f', x)
+    yy = array('f', y)
+    
+    hMC_rebin = ROOT.TH2F("hfit_"+charge+'_unpol_'+str(degreeY), "hfit_"+charge+'_unpol_'+str(degreeY), len(xx)-1, xx, len(yy)-1, yy)
+    hMC_rebin.GetXaxis().SetTitle('Y, 1='+str(y_max))
+    hMC_rebin.GetYaxis().SetTitle('q_{T} [GeV], 1='+str(qt_max))
+    for i in range(1, hMC_rebin.GetXaxis().GetNbins()+1):
+        for j in range(1, hMC_rebin.GetYaxis().GetNbins()+1):
+            hMC_rebin.SetBinContent(i,j, hMC.GetBinContent(i,j))
+            hMC_rebin.SetBinError(i,j, hMC.GetBinError(i,j))
+    
+    #----- slice the histogram and define fit functions-----#
+    hList = []
+    funcList = []
+    resList = []
+    fitErrList = []
+    
+    id_y  = [] #poly in y
+    for yy in range(0,degreeY) :
+        id_y.append(yy)
+    nparams = len(id_y)
+    
+    for i in range(1, hMC_rebin.GetYaxis().GetNbins()+1):
+        hList.append(hMC_rebin.ProjectionX(hMC_rebin.GetName()+'_'+str(i),i,i))
+        func = fit_func_unpol_poly(id_y)
+        funcList.append(ROOT.TF1("fit_"+charge+"_unpol", func, 0, y_max, nparams))    
+        for yy in range(0,degreeY) :
+            funcList[-1].SetParName(yy,'y'+str(yy))
+            # if yy%2!=0 :     
+            #     funcList[-1].FixParameter(yy,0.0)
+    
+    #---fit----#
+    for h,f in zip(hList,funcList) :
+        resList.append(h.Fit(f, "RSQ"))
+        fitErrList.append(h.Clone("hfitErr_"+charge+'_unpol_'+str(degreeY)+'_'+str(hList.index(h)+1)))
+        ROOT.TVirtualFitter.GetFitter().GetConfidenceIntervals(fitErrList[-1],0.68)
+    
+    #-------------------------pulls building ------------------------------#
+    
+    hPulls2D = hMC_rebin.Clone("hPulls2D_"+charge+"_"+'unpol'+'_'+str(degreeY))
+    hPulls2D.SetTitle("hPulls2D_"+charge+"_"+'unpol'+'_'+str(degreeY))
+    hPulls2D.SetName("hPulls2D_"+charge+"_"+'unpol'+'_'+str(degreeY))
+    hPulls2D.Reset()
+    for vy in range(1, hPulls2D.GetXaxis().GetNbins()+1):
+        for iq in range(1, hPulls2D.GetYaxis().GetNbins()+1):
+            hPulls2D.SetBinContent( vy, iq, (funcList[iq-1].Eval( hPulls2D.GetXaxis().GetBinCenter(vy)) - hMC_rebin.GetBinContent(vy,iq))/hMC_rebin.GetBinError(vy,iq) )
+    hPulls2D.SetMinimum(-4)
+    hPulls2D.SetMaximum(+4)
+
+    hPulls1D = ROOT.TH1F("hPulls1D_"+charge+"_"+'unpol'+'_'+str(degreeY), "hPulls1D_"+charge+"_"+'unpol'+'_'+str(degreeY), 25,-4,4)
+    for vy in range(1, hPulls2D.GetXaxis().GetNbins()+1):
+        for iq in range(1, hPulls2D.GetYaxis().GetNbins()+1):
+            hPulls1D.Fill( hPulls2D.GetBinContent( vy, iq) )
+
+    c_pull = ROOT.TCanvas("c_pull_"+charge+'_'+'unpol'+'_'+str(degreeY), "c_pull_"+charge+'_'+'unpol'+'_'+str(degreeY), 1200, 600)
+    c_pull.cd()
+    c_pull.Divide(2,1)
+
+    c_pull.cd(1)
+    hPulls2D.SetStats(0)
+    hPulls2D.DrawCopy("colz")
+    c_pull.cd(2)
+    hPulls1D.Fit("gaus", "Q", "", -4,4)
+    gaus = hPulls1D.GetFunction("gaus")
+    hPulls1D.DrawCopy("hist")
+    gaus.Draw("same")
+    ROOT.gStyle.SetOptFit()
+    c_pull.Update()
+    
+    
+    c_scratchBIS = ROOT.TCanvas("c_scratchBIS"+charge+'unpol'+str(degreeY), "c_scratchBIS"+charge+'unpol'+str(degreeY), 1800, 600)
+    c_scratchBIS.cd()
+    
+    #--- prepare the output ---#
+    outDict = {}
+    for i in range(1, hMC_rebin.GetYaxis().GetNbins()+1): 
+        outDict["fit"+charge+'unpol'+str(i)] = hList[i-1]
+        outDict["fitRes"+charge+'unpol'+str(i)] = resList[i-1]
+        outDict["fitErr"+charge+'unpol'+str(i)] = fitErrList[i-1]
+    outDict['pull'+'c'+charge+'unpol'] = c_pull
+    outDict['pull'+'1D'+charge+'unpol'] = hPulls1D
+    outDict['pull'+'2D'+charge+'unpol'] = hPulls2D
+    outDict['hh'+charge+'unpol'+'MC'] = hMC_rebin
+
+    return outDict
        
             
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
             
     
 def rebuildHistoDict(charge="WtoMuP", coeff="A4", degreeY=4,degreeQt=3):
@@ -658,7 +1002,7 @@ def F_test(hdict,valDict,signDict, degreeYList, degreeQtList,Npt,VALONLY,   s,co
         binQtmax=degreeQtList.index(qtMax)+1
         binQtmin=degreeQtList.index(qtMin)+1
     
-        if not VALONLY :
+        if not (VALONLY or MULTICORE) :
             NDFMax = hdict[str(yMax)+str(qtMax)+s+coeff]['fit'+'Res'+signDict[s]+coeff].Ndf()
             NDFMin = hdict[str(yMin)+str(qtMin)+s+coeff]['fit'+'Res'+signDict[s]+coeff].Ndf()
         else :
@@ -686,7 +1030,7 @@ def F_test(hdict,valDict,signDict, degreeYList, degreeQtList,Npt,VALONLY,   s,co
         else :
             pvalue=1
     except :
-        print "WARNING: issue in F-test evaluation"
+        print "WARNING: issue in F-test evaluation,",s,coeff, ",parMax=parMin?", parMax, parMin
         pvalue = 1
         
     return pvalue
@@ -885,7 +1229,7 @@ def Validation(hdict, signDict, coeffDict, degreeYList,degreeQtList) :
                 valDict[str(yDeg)+str(qtDeg)+'chi2'+s].GetYaxis().SetRangeUser(0,6)
                 binN=1
                 for coeff,constr in coeffDict.iteritems() :
-                    if not VALONLY :
+                    if not (VALONLY or MULTICORE) :
                         if hdict[str(yDeg)+str(qtDeg)+s+coeff]['fit'+'Res'+sName+coeff].Ndf()>0 :
                             valDict[str(yDeg)+str(qtDeg)+'chi2'+s].SetBinContent(binN,hdict[str(yDeg)+str(qtDeg)+s+coeff]['fit'+'Res'+sName+coeff].Chi2()/hdict[str(yDeg)+str(qtDeg)+s+coeff]['fit'+'Res'+sName+coeff].Ndf())
                         else :
@@ -940,7 +1284,7 @@ def Validation(hdict, signDict, coeffDict, degreeYList,degreeQtList) :
                     binQt=0
                     for qtDeg in degreeQtList : 
                        binQt+=1
-                       if not VALONLY :
+                       if not (VALONLY or MULTICORE) :
                             if hdict[str(yDeg)+str(qtDeg)+s+coeff]['fit'+'Res'+sName+coeff].Ndf()>0 :   
                                 valDict['h2_chi2'+s+coeff].SetBinContent(binY,binQt,hdict[str(yDeg)+str(qtDeg)+s+coeff]['fit'+'Res'+sName+coeff].Chi2()/hdict[str(yDeg)+str(qtDeg)+s+coeff]['fit'+'Res'+sName+coeff].Ndf())   
                             else :
@@ -1938,8 +2282,17 @@ def systComparison(bestCombDict, saveRoot=True,saveFig=False,excludeSyst='',stat
             
             
     
-                    
-
+def runSignleFit(par) :
+    # fit_coeff_call = fit_coeff(fname=par[0], charge=par[1],coeff=par[2],constraint=par[3],degreeY=par[4],degreeQt=par[5],Map01=par[6],y_max=par[7],qt_max=par[8] )    
+    fit_coeff_call = fit_coeff_poly(fname=par[0], charge=par[1],coeff=par[2],constraint=par[3],degreeY=par[4],degreeQt=par[5],Map01=par[6],y_max=par[7],qt_max=par[8] )    
+                  
+    ss = signDict.keys()[signDict.values().index(par[1])] #find the key relative to "charge"
+    fit_coeff_call['KEYNAME'] = str(par[4])+str(par[5])+ss+par[2]
+    
+    del fit_coeff_call['fit'+'Res'+par[1]+par[2]]
+    fit_coeff_call['fit'+'Res'+par[1]+par[2]] = fit_coeff_call['fit'+par[1]+par[2]].GetFunction("fit_"+par[1]+"_"+par[2])
+    
+    return fit_coeff_call
 
 
 if __name__ == "__main__":
@@ -1953,22 +2306,37 @@ if __name__ == "__main__":
         
         #do the analysis
         print "analysis started..."
+        processesMain = []
         for yDeg in degreeYList :
             for qtDeg in degreeQtList :
                 for s,sname in signDict.iteritems() :
                     for coeff,constr in coeffDict.iteritems() :
                         if not VALONLY :
-                            tempDict = fit_coeff(fname=IN_GEN, charge=sname,coeff=coeff,constraint=constr,degreeY=yDeg,degreeQt=qtDeg,Map01=MAP01,y_max=2.4,qt_max=32 )
+                            if MULTICORE : 
+                                processesMain.append((IN_GEN, sname,coeff,constr,yDeg,qtDeg,MAP01,2.4,32))
+                            else :
+                                # tempDict = fit_coeff(fname=IN_GEN, charge=sname,coeff=coeff,constraint=constr,degreeY=yDeg,degreeQt=qtDeg,Map01=MAP01,y_max=2.4,qt_max=32 )
+                                tempDict = fit_coeff_poly(fname=IN_GEN, charge=sname,coeff=coeff,constraint=constr,degreeY=yDeg,degreeQt=qtDeg,Map01=MAP01,y_max=2.4,qt_max=32 )
                         else : #skip analyisis, do validation only
                             tempDict = rebuildHistoDict(charge=sname,coeff=coeff,degreeY=yDeg,degreeQt=qtDeg)    
-                        cumulativeDict[str(yDeg)+str(qtDeg)+s+coeff] = tempDict
+                        if not MULTICORE : cumulativeDict[str(yDeg)+str(qtDeg)+s+coeff] = tempDict
+        if MULTICORE :
+            poolMain = multiprocessing.Pool(NCORES)
+            poolResultList = poolMain.map(runSignleFit,processesMain)
+            poolMain.close()
+            poolMain.join()
+
+            for poolResult in poolResultList :
+                cumulativeDict[poolResult['KEYNAME']] = copy.deepcopy(poolResult)
+                del cumulativeDict[poolResult['KEYNAME']]['KEYNAME']
+                                
+                            
         for yDeg in degreeYList :
             for s,sname in signDict.iteritems() :
-                tempDict = fit_unpol(fname=IN_GEN,coeff='AUL',charge=sname,degreeY=yDeg,Map01=True,y_max=2.4,qt_max=32.) #Map01 should be ALWAYS true to remove odd degree easily
+                # tempDict = fit_unpol(fname=IN_GEN,coeff='AUL',charge=sname,degreeY=yDeg,Map01=True,y_max=2.4,qt_max=32.) #Map01 should be ALWAYS true to remove odd degree easily
+                tempDict = fit_unpol_poly(fname=IN_GEN,coeff='AUL',charge=sname,degreeY=yDeg,Map01=True,y_max=2.4,qt_max=32.) #Map01 should be ALWAYS true to remove odd degree easily
                 cumulativeDict[str(yDeg)+s+'unpol'] = tempDict
             
-    
-
         #validation of the fit
         print "validation...."
         valDict = Validation(hdict=cumulativeDict, signDict=signDict, coeffDict=coeffDict,degreeYList=degreeYList,degreeQtList=degreeQtList)
@@ -2033,7 +2401,7 @@ if __name__ == "__main__":
         
     if SYST_VALIDATION : #systematic comparison
         
-        # bestCombDict = {
+        # bestCombDict = { #OLD FW
         #     'PlusA0' : [3,4],
         #     'PlusA1' : [5,4],
         #     'PlusA2' : [2,4],
@@ -2047,23 +2415,37 @@ if __name__ == "__main__":
         #     'Plusunpol' : 3,
         #     'Minusunpol' : 3
         # }
-        bestCombDict = {
-            'PlusA0' : [2,3],
-            'PlusA1' : [5,4],
-            'PlusA2' : [2,3],
-            'PlusA3' : [4,3],
-            'PlusA4' : [5,3],
-            'MinusA0' : [2,3],#not really fitted! 
-            'MinusA1' : [5,4],#not really fitted! 
-            'MinusA2' : [2,3],#not really fitted! 
-            'MinusA3' : [4,3],#not really fitted! 
-            'MinusA4' : [5,3],#not really fitted! 
+        # bestCombDict = { #[y,qt] #CHEBYC
+        #     'PlusA0' : [2,4],
+        #     'PlusA1' : [5,5],
+        #     'PlusA2' : [2,3],
+        #     'PlusA3' : [5,4],
+        #     'PlusA4' : [6,4],
+        #     'MinusA0' : [3,4], 
+        #     'MinusA1' : [5,4], 
+        #     'MinusA2' : [2,3], 
+        #     'MinusA3' : [6,3], 
+        #     'MinusA4' : [5,4], 
+        #     'Plusunpol' : 3,
+        #     'Minusunpol' : 5 
+        # }
+        bestCombDict = { #[y,qt] #poly
+            'PlusA0' : [3,4],
+            'PlusA1' : [4,4],
+            'PlusA2' : [2,5],
+            'PlusA3' : [3,4],
+            'PlusA4' : [4,7],
+            'MinusA0' : [3,4], 
+            'MinusA1' : [3,4], 
+            'MinusA2' : [2,4], 
+            'MinusA3' : [3,3], 
+            'MinusA4' : [4,6], 
             'Plusunpol' : 3,
-            'Minusunpol' : 3#not really fitted! 
+            'Minusunpol' : 3 
         }
 
         
-        
         print "WARNING: harcoded best combination for syst comparsion"
+        print "WARNING: hardcoded outdated combination"
     
         systComparison(bestCombDict=bestCombDict, saveRoot=True,saveFig=False,excludeSyst='',statMC=True)
