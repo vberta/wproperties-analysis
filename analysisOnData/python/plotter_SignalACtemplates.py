@@ -71,7 +71,7 @@ class plotter:
         self.varName = 'helXsecs'
         self.inFile = ROOT.TFile.Open(self.indir+'/'+self.sampleFile)
         if not self.inFile :
-            print self.inFile, ' does not exist'
+            print((self.inFile, ' does not exist'))
             sys.exit(1)
         self.fileACplus = ROOT.TFile.Open("../../analysisOnGen/genInput_Wplus.root")
         self.fileACminus = ROOT.TFile.Open("../../analysisOnGen/genInput_Wminus.root")
@@ -160,7 +160,7 @@ class plotter:
         self.closMinus.Divide(self.imapMinus)
         for iY in range(1, 7):
             for iQt in range(1, 9):
-                print colored(self.closPlus.GetBinContent(iY,iQt),'magenta')
+                print((colored(self.closPlus.GetBinContent(iY,iQt),'magenta')))
         fout = ROOT.TFile("accMap.root","recreate")
         fout.cd()
         self.closPlus.Write()
@@ -173,12 +173,12 @@ class plotter:
         for charge in self.charges:
             for c in self.clist:
                 for iQt in range(1, 9):
-                    for sKind, sList in self.extSyst.iteritems():
+                    for sKind, sList in list(self.extSyst.items()):
                         for sname in sList[0]:  # variations of each sKind
                             fpath = basepath + sKind + '/'+charge+ '_qt_{}_helXsecs_'.format(iQt) + c + sname
-                            print "Histo read:", fpath
+                            print(("Histo read:", fpath))
                             th3 = self.inFile.Get(fpath)
-                            if not th3: print colored('fpath not found', 'red')
+                            if not th3: print((colored('fpath not found', 'red')))
                             self.makeTH3slices(th3, sKind)
                             #assert(0)
         self.uncorrelateEff()
@@ -244,7 +244,7 @@ class plotter:
                     hlist = []
                     hnom = [h for h in self.histoDict[charge][c][bin]['Nominal'] if not 'mass' in h.GetName()][0]
                     for hvar in self.histoDict[charge][c][bin]['LHEPdfWeight']:
-                        print hvar.GetName()
+                        print((hvar.GetName()))
                         th2c = hnom.Clone()
                         th2varD = hvar.Clone()
                         hvar.Divide(th2c)
@@ -275,7 +275,7 @@ class plotter:
                         hlist.append(hvar)
                     self.histoDict[charge][c][bin]['alphaS'] = hlist
     def writeHistos(self):
-        print 'writing histograms'
+        print('writing histograms')
         for charge in self.charges:
             foutName = charge+'_reco'
             foutName += '.root'

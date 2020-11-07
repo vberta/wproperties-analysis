@@ -64,7 +64,7 @@ class plotter:
                         th2=th3.Project3D("yx")
                         th2.SetDirectory(0)
                         th2.SetName(th3.GetName().replace('templates',sample))
-                        print th2.GetName()
+                        print((th2.GetName()))
                         self.histoDict[sample][sKind].append(th2)
                         
         else:
@@ -72,14 +72,14 @@ class plotter:
                 self.histoDict[sample][sKind] = []
                 basepath = 'templates_fakes/' + sKind
                 if infile.GetDirectory(basepath):
-                    print basepath
+                    print(basepath)
                     for key in infile.Get(basepath).GetListOfKeys():
-                        print key.GetName()
+                        print((key.GetName()))
                         th3=infile.Get(basepath+'/'+key.GetName())
                         #plus charge bin 2, minus bin 1
                         th3.GetZaxis().SetRange(chargeBin,chargeBin)
                         th2=th3.Project3D("yx")
-                        print th2.GetName()
+                        print((th2.GetName()))
                         th2.SetDirectory(0)
                         th2.SetName(th3.GetName())
                         self.histoDict[sample][sKind].append(th2)
@@ -152,28 +152,28 @@ class plotter:
                     aux['alphaS'].append(hvar)
         self.histoDict[sample].update(aux)
     def getHistos(self, chargeBin) :
-        print 'writing histograms'
+        print('writing histograms')
         foutName = 'Wplus_reco' if chargeBin == 2 else 'Wminus_reco'
         foutName += '.root'
         fout = ROOT.TFile.Open(self.outdir + '/' + foutName, "UPDATE")
-        for sample,fname in self.sampleDict.iteritems():
+        for sample,fname in list(self.sampleDict.items()):
             if not 'LowAcc' in sample and not 'data_obs' in sample:
                 continue
-            print  "Processing sample:", sample
+            print(("Processing sample:", sample))
             infile = ROOT.TFile(self.indir + '/' + fname[0])
             systType = fname[1]
             if not infile:
-                print infile,' does not exist'
+                print((infile,' does not exist'))
                 continue
             self.histoDict[sample] = {}
             self.getHistoforSample(sample,infile, chargeBin)
             if sample not in  self.histoDict : 
-                print "No histo dict for sample:", sample, " What have you done??!!!!"
+                print(("No histo dict for sample:", sample, " What have you done??!!!!"))
                 continue
             self.symmetrisePDF(sample)
             self.uncorrelateEff(sample)
             self.alphaVariations(sample)
-            for syst, hlist in self.histoDict[sample].iteritems():
+            for syst, hlist in list(self.histoDict[sample].items()):
                 #fout.mkdir(syst)
                 #fout.cd(syst)
                 fout.cd()

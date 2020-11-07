@@ -200,7 +200,7 @@ class fitUtils:
                                 aux[self.channel+'_xsec'][proc] = 0.0
 
                     self.DC.systs.append((var, False, self.templSystematics[syst]["type"], [], aux))
-        
+        #self.DC.groups = {}
         self.DC.groups = {'mass': ['mass']} 
         #                  'pdfs': set(['LHEPdfWeightHess{}'.format(i+1) for i in range(60)]+['alphaS']),
         #                 'WHSFStat': set(["WHSFSyst0Eta{}".format(i) for i in range(1, 49)]+["WHSFSyst1Eta{}".format(i) for i in range(1, 49)]+["WHSFSyst2Eta{}".format(i) for i in range(1, 49)]),
@@ -226,14 +226,13 @@ class fitUtils:
         self.DC.helMetaGroups = self.helMetaGroups
         self.DC.noiGroups = {'mass':['mass']}
 
-        coeff = [0,2]
+        coeff = [0,1,2]
         for j in coeff:
             testnames = []
             for i in range(1, 7):
                 testnames.append("y_{}_helmeta_A{}".format(i,j))
 
             etas = [0.2, 0.6, 1.0, 1.4, 1.8, 2.2]
-
 
             #self.poly1DRegGroups["poly1dyA{}".format(j)] = {"names": testnames, "bincenters": etas, "firstorder": 0, "lastorder": 2}
 
@@ -242,19 +241,17 @@ class fitUtils:
                 testnames.append("qt_{}_helmeta_A{}".format(i, j))
 
             pts = [2., 6., 10., 14., 18., 22., 26., 30.]
-
-
+            
             #self.poly1DRegGroups["poly1dqtA{}".format(j)] = {"names": testnames, "bincenters": pts, "firstorder": 1, "lastorder": 3}
 
-        coeff = [1, 3, 4]
+        coeff = [3, 4]
         for j in coeff:
             testnames = []
             for i in range(1, 7):
                 testnames.append("y_{}_helmeta_A{}".format(i, j))
 
             etas = [0.2, 0.6, 1.0, 1.4, 1.8, 2.2]
-
-
+            
             #self.poly1DRegGroups["poly1dyA{}".format(j)] = {"names": testnames, "bincenters": etas, "firstorder": 1, "lastorder": 2}
         
         coeff = [1, 3]
@@ -264,8 +261,7 @@ class fitUtils:
                 testnames.append("qt_{}_helmeta_A{}".format(i, j))
 
             pts = [2., 6., 10., 14., 18., 22., 26., 30.]
-
-
+            
             #self.poly1DRegGroups["poly1dqtA{}".format(j)] = {"names": testnames, "bincenters": pts, "firstorder": 1, "lastorder": 3}
 
         testnames = []
@@ -273,7 +269,7 @@ class fitUtils:
             testnames.append("qt_{}_helmeta_A4".format(i))
 
         pts = [2., 6., 10., 14., 18., 22., 26., 30.]
-
+        
         #self.poly1DRegGroups["poly1dqtA4"] = {"names": testnames, "bincenters": pts, "firstorder": 0, "lastorder": 3}
         
         self.DC.poly1DRegGroups = self.poly1DRegGroups
@@ -285,7 +281,48 @@ class fitUtils:
 
         #etas = etas/2.4
         #pts = pts/32.
+        
+        #### A0
+        testnames = []
+        bincenters = []
+        for i in range(6):
+            for j in range(8):
+                testnames.append("y_%i_qt_%i_A0" % (i+1, j+1))
+                bincenters.append([etas[i], pts[j]])
 
+        self.poly2DRegGroups["poly2dA0"] = {"names": testnames, "bincenters": bincenters, "firstorder": (0, 2), "lastorder": (2, 4), "fullorder": (5, 7)}
+
+        #### A1
+        testnames = []
+        bincenters = []
+        for i in range(6):
+            for j in range(8):
+                testnames.append("y_%i_qt_%i_A1" % (i+1, j+1))
+                bincenters.append([etas[i], pts[j]])
+
+        self.poly2DRegGroups["poly2dA1"] = {"names": testnames, "bincenters": bincenters, "firstorder": (1, 1), "lastorder": (3, 3), "fullorder": (5, 7)}
+
+        #### A2
+        testnames = []
+        bincenters = []
+        for i in range(6):
+            for j in range(8):
+                testnames.append("y_%i_qt_%i_A2" % (i+1, j+1))
+                bincenters.append([etas[i], pts[j]])
+
+        self.poly2DRegGroups["poly2dA2"] = {"names": testnames, "bincenters": bincenters, "firstorder": (0, 2), "lastorder": (2, 4), "fullorder": (5, 7)}
+        
+        #### A3
+        testnames = []
+        bincenters = []
+        for i in range(6):
+            for j in range(8):
+                testnames.append("y_%i_qt_%i_A3" % (i+1, j+1))
+                bincenters.append([etas[i], pts[j]])
+
+        self.poly2DRegGroups["poly2dA3"] = {"names": testnames, "bincenters": bincenters, "firstorder": (0, 1), "lastorder": (2, 3), "fullorder": (5, 7)}
+        
+        #### A4
         testnames = []
         bincenters = []
         for i in range(6):
@@ -295,24 +332,6 @@ class fitUtils:
 
         self.poly2DRegGroups["poly2dA4"] = {"names": testnames, "bincenters": bincenters, "firstorder": (1, 0), "lastorder": (3, 4), "fullorder": (5, 7)}
 
-        coeff = [1, 3]
-        for c in coeff:
-            testnames = []
-            for i in range(6):
-                for j in range(8):
-                    testnames.append("y_%i_qt_%i_A%i" % (i+1, j+1,c))
-
-        self.poly2DRegGroups["poly2dA%i"%c] = {"names": testnames, "bincenters": bincenters, "firstorder": (1, 1), "lastorder": (3, 4), "fullorder": (5, 7)}
-        
-        coeff = [0, 2]
-        for c in coeff:
-            testnames = []
-            for i in range(6):
-                for j in range(8):
-                    testnames.append("y_%i_qt_%i_A%i" % (i+1, j+1, c))
-
-        self.poly2DRegGroups["poly2dA%i" % c] = {"names": testnames, "bincenters": bincenters, "firstorder": (0, 1), "lastorder": (3, 4), "fullorder": (5, 7)}
-        
         self.DC.poly2DRegGroups = self.poly2DRegGroups
         filehandler = open('{}.pkl'.format(self.channel), 'w')
         pickle.dump(self.DC, filehandler)
