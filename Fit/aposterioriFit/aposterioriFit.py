@@ -61,7 +61,7 @@ def getRegFunc(inFile, coeffList) :
             temph = openFile.Get('unpol_Y3/hfit_WtoMuP_unpol_3')
             for qt in range(1, temph.GetNbinsY()+1) :
                 outDict[li[0]+str(qt)] = openFile.Get('unpol_Y'+str(li[1])+'/hfit_WtoMuP_unpol_3_'+str(qt))
-            print "WARNING: unpolarized qt binning must be aligned to the fit qt binning!"
+            print("WARNING: unpolarized qt binning must be aligned to the fit qt binning!")
     return outDict
 
      
@@ -159,7 +159,7 @@ def chi2PostReg(modelPars,npFitRes, npCovMatInv, coeffList, npBinCenters,parNum)
         fitModelList[-1] = fitModelList[-1].reshape((jnp.shape(npFitRes)[1],jnp.shape(npFitRes)[2])) # reshape to (Ny x Nqt), like the fitRes histogram
         
     fitModel = jnp.stack(fitModelList,0)
-    print "this is wrong in the list there are all the not-required element ovewritten"
+    print("this is wrong in the list there are all the not-required element ovewritten")
 
  
     diff = npFitRes-fitModel
@@ -274,8 +274,8 @@ def fitPostReg(fitRes,regFunc, coeffList) :#NOT USED, for now
     # print "UNPOL=", interPars[:np.shape(npFitRes)[2]]
     # # END OF DEBUGG---------------------------------------------------
 
-    print "everything initialized, minimizer call..."
-    print "initial x=", modelPars
+    print("everything initialized, minimizer call...")
+    print("initial x=", modelPars)
     modelPars = pmin(chi2PostReg, modelPars, args=(npFitRes, npCovMatInv, coeffListJAX, npBinCenters,parNum), doParallel=False)
     
         
@@ -293,14 +293,14 @@ def fitPostReg(fitRes,regFunc, coeffList) :#NOT USED, for now
     modelEDM = 0.5*np.matmul(np.matmul(fitGrad.T,modelCov),fitGrad)
     modelNDOF = dimY*dimQt - np.size(modelPars)
     
-    print "*-------------------------------------------*"
-    print "FIT RESULTS"
-    print "edm=",modelEDM 
-    print "chi2/dof=", modelChi2,"/",modelNDOF, "=", modelChi2/float(modelNDOF) 
-    print "parameters=", modelPars
-    print "errors=", modelErr
-    print "relative uncertaintiy" , np.true_divide(modelErr,modelPars)
-    print "*-------------------------------------------*"
+    print("*-------------------------------------------*")
+    print("FIT RESULTS")
+    print("edm=",modelEDM) 
+    print("chi2/dof=", modelChi2,"/",modelNDOF, "=", modelChi2/float(modelNDOF)) 
+    print("parameters=", modelPars)
+    print("errors=", modelErr)
+    print("relative uncertaintiy" , np.true_divide(modelErr,modelPars))
+    print("*-------------------------------------------*")
     
     extraInfoDict = {
         'binY' : binY,
@@ -443,14 +443,14 @@ def polyFit(fitRes,regFunc, coeffList) :
     parNum = []
     for li in coeffList :
         if li[0]=='unpolarizedxsec' : 
-            print "Warning: hardcoded deg3 for Y unpolarized fit (in the chi2)"
+            print("Warning: hardcoded deg3 for Y unpolarized fit (in the chi2)")
             for qt in range(1, dimQt+1) :
                 modelParsC=np.zeros(li[1])
                 for yy in range(len(modelParsC)) :
                     modelParsC[yy] = 1.
                 modelParsList.append(modelParsC.copy())
                 parNum.append(len(modelParsC))
-                print li[0], "qt=",qt, "pars=", parNum[-1]
+                print(li[0], "qt=",qt, "pars=", parNum[-1])
         else :
             effY = li[1]
             effQt = li[2]
@@ -462,7 +462,7 @@ def polyFit(fitRes,regFunc, coeffList) :
                 for y in range(0, effY) :
                    modelParsC[y,qt] = 1. 
             modelParsList.append(modelParsC.copy())
-            print li[0], "pars (y,qt)=", effY, effQt
+            print(li[0], "pars (y,qt)=", effY, effQt)
             parNum.append(effY*effQt)
             modelParsList[-1]=modelParsList[-1].flatten()
     modelPars = np.concatenate(modelParsList) #already flattened, otherwise YOU HAVE TO FLATTEN before pass it to the fit
@@ -474,9 +474,9 @@ def polyFit(fitRes,regFunc, coeffList) :
         else :
             li[0] = 5
     
-    print "everything initialized, minimizer call..."
+    print("everything initialized, minimizer call...")
     # print "initial x=", modelPars
-    print "par num", parNum
+    print("par num", parNum)
     modelPars = pmin(chi2PolyFit, modelPars, args=(npFitRes, npCovMatInv, coeffListJAX, npBinCenters,parNum), doParallel=False)
 
         
@@ -494,18 +494,18 @@ def polyFit(fitRes,regFunc, coeffList) :
     modelEDM = 0.5*np.matmul(np.matmul(modelGrad.T,modelCov),modelGrad)
     modelNDOF = dimCoeff*dimQt*dimY- np.size(modelPars)
     
-    print "*-------------------------------------------*"
-    print "FIT RESULTS"
-    print "edm=",modelEDM 
-    print "chi2/dof=", modelChi2,"/",modelNDOF, "=", modelChi2/float(modelNDOF) 
-    print "parameters=", modelPars
-    print "errors=", modelErr
-    print "relative uncertaintiy" , np.true_divide(modelErr,modelPars)
+    print("*-------------------------------------------*")
+    print("FIT RESULTS")
+    print("edm=",modelEDM) 
+    print("chi2/dof=", modelChi2,"/",modelNDOF, "=", modelChi2/float(modelNDOF)) 
+    print("parameters=", modelPars)
+    print("errors=", modelErr)
+    print("relative uncertaintiy" , np.true_divide(modelErr,modelPars))
     
-    print "check covariance matrix:"
-    print "is covariance semi positive definite?", np.all(np.linalg.eigvals(modelCov) >= 0)
-    print "is covariance symmetric?", np.allclose(np.transpose(modelCov), modelCov)
-    print "is covariance approx symmetric?", np.allclose(np.transpose(modelCov), modelCov, rtol=1e-05, atol=1e-06)
+    print("check covariance matrix:")
+    print("is covariance semi positive definite?", np.all(np.linalg.eigvals(modelCov) >= 0))
+    print("is covariance symmetric?", np.allclose(np.transpose(modelCov), modelCov))
+    print("is covariance approx symmetric?", np.allclose(np.transpose(modelCov), modelCov, rtol=1e-05, atol=1e-06))
     # np.set_printoptions(threshold=np.inf)
     # print "hessian", modelHess
     # print "diag hessian", np.linalg.eig(modelHess)
@@ -525,7 +525,7 @@ def polyFit(fitRes,regFunc, coeffList) :
     # print "is hessian symmetric?", np.allclose(np.transpose(modelHess), modelHess)
     # print "is hessian approx symmetric?", np.allclose(np.transpose(modelHess), modelHess, rtol=1e-05, atol=1e-06)
     # print "is hessian semi posititive?", np.all(np.linalg.eigvals( modelHess) >= 0)
-    print "*-------------------------------------------*"
+    print("*-------------------------------------------*")
     
 
     outFit = (modelPars,modelCov,npFitRes, npBinCenters,parNum)

@@ -15,17 +15,17 @@ ROOT.gSystem.Load('bin/libAnalysisOnData.so')
 #produces templates for all regions and prefit for signal
 def RDFprocessData(fvec, outputDir, ncores, pretendJob=True, SBana=False, outF="SingleMuonData_plots.root"):
     ROOT.ROOT.EnableImplicitMT(ncores)
-    print "running with {} cores".format(ncores)
+    print(("running with {} cores".format(ncores)))
     weight = 'float(1)'
     outF="SingleMuonData_plots.root"
     p = RDFtree(outputDir = outputDir, inputFile = fvec, outputFile=outF, pretend=pretendJob)
     p.branch(nodeToStart = 'input', nodeToEnd = 'defs', modules = [ROOT.baseDefinitions(0)])
-    for region,cut in selections_bkg.iteritems():    
-        print region       
+    for region,cut in list(selections_bkg.items()):    
+        print(region)       
         nom = ROOT.vector('string')()
         nom.push_back("")
         #last argument refers to histo category - 0 = Nominal, 1 = Pt scale , 2 = MET scale
-        print "branching nominal"
+        print("branching nominal")
         #if region == "Signal" or (region=='Sideband' and SBana):
         #    p.branch(nodeToStart = 'defs', nodeToEnd = 'prefit_{}/Nominal'.format(region), modules = [ROOT.muonHistos(cut, weight, nom,"Nom",0)]) 
         #nominal templates
@@ -36,48 +36,48 @@ def RDFprocessData(fvec, outputDir, ncores, pretendJob=True, SBana=False, outF="
 #produces Fake contribution to prefit plots computed from data 
 def RDFprocessfakefromData(fvec, outputDir, bkgFile, ncores, pretendJob=True, SBana=False, outF="FakeFromData_plots.root"):
     ROOT.ROOT.EnableImplicitMT(ncores)
-    print "running with {} cores".format(ncores)
+    print(("running with {} cores".format(ncores)))
     weight = 'float(1)'
     #in case we want pdf variations for fakes
     #systematics.update({ "LHEPdfWeight" : ( ["_LHEPdfWeight" + str(i)  for i in range(0, 100)], "LHEPdfWeight" ) } )
     #print systematics
     p = RDFtree(outputDir = outputDir, inputFile = fvec, outputFile=outF, pretend=pretendJob)
-    for region,cut in selections_fakes.iteritems(): 
+    for region,cut in list(selections_fakes.items()): 
         if 'SideBand' in region and (not SBana) : continue 
         if 'SideBand' in region : bkgFile_mod = bkgFile.replace('.root','SideBand.root') 
         else :  bkgFile_mod=bkgFile
         FR=ROOT.TFile.Open(bkgFile_mod)
         p.branch(nodeToStart = 'input', nodeToEnd = 'defs', modules = [ROOT.baseDefinitions(0),ROOT.fakeRate(FR)]) 
-        print region       
+        print(region)       
         nom = ROOT.vector('string')()
         nom.push_back("")
         weight = "float(fakeRate_Nominal_)"
         #last argument refers to histo category - 0 = Nominal, 1 = Pt scale , 2 = MET scale
-        print "branching nominal"
+        print("branching nominal")
         p.branch(nodeToStart = 'defs', nodeToEnd = 'prefit_{}/Nominal'.format(region), modules = [ROOT.muonHistos(cut, weight, nom,"Nom",0)]) 
         p.branch(nodeToStart = 'defs', nodeToEnd = 'templates_{}/Nominal'.format(region), modules = [ROOT.templates(cut, weight, nom,"Nom",0)])       
 
         #now add fake variations
-        for s,variations in systematics.iteritems():
+        for s,variations in list(systematics.items()):
             #only required systs
             if "LHEPdfWeight" not in s and "LHEScaleWeight" not in s: continue
-            print "branching weight variations", s
+            print(("branching weight variations", s))
             vars_vec = ROOT.vector('string')()
             for var in variations[0]:
                 vars_vec.push_back(var)
                 weight="float(1)"
-            print "fakeRate_"+variations[1]
-            print vars_vec
+            print(("fakeRate_"+variations[1]))
+            print(vars_vec)
             p.branch(nodeToStart = 'defs'.format(region), nodeToEnd = 'prefit_{}/{}'.format(region,s), modules = [ROOT.muonHistos(cut,weight,vars_vec,"fakeRate_"+variations[1], 0)])
             p.branch(nodeToStart = 'defs'.format(region), nodeToEnd = 'templates_{}/{}'.format(region,s), modules = [ROOT.templates(cut,weight,vars_vec,"fakeRate_"+variations[1], 0)])
         
         #fake column variations since the cut won't change in data
-        for vartype, vardict in selectionVars.iteritems():
+        for vartype, vardict in list(selectionVars.items()):
             if vartype != 'jme' : continue
             vars_vec = ROOT.vector('string')()
-            for selvar, hcat in vardict.iteritems() :
+            for selvar, hcat in list(vardict.items()) :
                 vars_vec.push_back(selvar)
-            print "branching fake column variations", vartype
+            print(("branching fake column variations", vartype))
             p.branch(nodeToStart = 'defs'.format(region), nodeToEnd = 'prefit_{}/{}'.format(region,vartype), modules = [ROOT.muonHistos(cut,weight,vars_vec,"fakeRate_"+vartype, 0)])
             p.branch(nodeToStart = 'defs'.format(region), nodeToEnd = 'templates_{}/{}'.format(region,vartype), modules = [ROOT.templates(cut,weight,vars_vec,"fakeRate_"+vartype, 0)])
 
@@ -104,9 +104,9 @@ def main():
     inDir = args.inputDir
     SBana = args.SBana
     if pretendJob:
-        print "Running a test job over a few events"
+        print("Running a test job over a few events")
     else:
-        print "Running on full dataset"
+        print("Running on full dataset")
     fvec=ROOT.vector('string')()
     samples={}
     with open('data/samples_2016.json') as f:
@@ -114,19 +114,19 @@ def main():
     for sample in samples:
         if not samples[sample]['datatype']=='DATA': continue
         direc = samples[sample]['dir']
-        for dirname,fname in direc.iteritems():
+        for dirname,fname in list(direc.items()):
             ##check if file exists or not
             inputFile = '{}/{}/tree.root'.format(inDir, dirname)
             isFile = os.path.isfile(inputFile)  
             if not isFile:
-                print inputFile, " does not exist"
+                print((inputFile, " does not exist"))
                 continue
             fvec.push_back(inputFile)
         
     if fvec.empty():
-        print "No files found for json provided\n"
+        print("No files found for json provided\n")
         sys.exit(1)
-    print fvec
+    print(fvec)
     if runBKG : #produces templates for all regions and prefit for signal
         RDFprocessData(fvec, outputDir, ncores, pretendJob,SBana)
     else : #produces Fake contribution to prefit plots computed from data 

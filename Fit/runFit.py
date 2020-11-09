@@ -16,10 +16,11 @@ for charge in charges:
     f.makeDatacard()    
     
     text2hd5f = 'text2hdf5.py --allowNegativeExpectation --maskedChan={}_xsec {}.pkl'.format(f.channel,f.channel)
-    print 'executing', text2hd5f 
+    print('executing', text2hd5f) 
     os.system(text2hd5f)    
-    combinetf = 'combinetf.py --allowNegativePOI --binByBinStat --correlateXsecStat --doRegularization --regularizationTau=1e1 -t-1 {}.pkl.hdf5 -o fit_{}.root'.format(
+    #--doRegularization --regularizationTau=1e4
+    combinetf = 'combinetf.py --allowNegativePOI --binByBinStat --correlateXsec --doRegularization --regularizationTau=100 -t1 {}.pkl.hdf5 -o fit_{}.root'.format(
         f.channel, f.channel)
-    print 'executing', combinetf
+    print('executing', combinetf)
     os.system(combinetf)
     assert(0)

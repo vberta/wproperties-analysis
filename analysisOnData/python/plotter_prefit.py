@@ -101,20 +101,20 @@ class plotter:
         return hout 
             
     def getHistos(self):
-        for f,fileInfo in self.sampleDict.iteritems() :
+        for f,fileInfo in list(self.sampleDict.items()) :
             inFile = ROOT.TFile.Open(self.indir+'/hadded/'+fileInfo[0])
             #inFile = ROOT.TFile.Open(self.outdir+'/hadded/'+fileInfo[0])
-            for sKind, sList in self.extSyst.iteritems():
+            for sKind, sList in list(self.extSyst.items()):
                 for sName in sList :
-                    for var, varInfo in self.variableDict.iteritems() :
+                    for var, varInfo in list(self.variableDict.items()) :
                         inFile.cd()
                         if ROOT.gDirectory.Get(fileInfo[1]+'/'+sKind+'/'+varInfo[0]+'_'+sName)==None : #this syst is missing --> take the nominal
-                            if sName!='' or f!='Data': print "missing syst:", sName, " for file", f
+                            if sName!='' or f!='Data': print(("missing syst:", sName, " for file", f))
                             h2 = inFile.Get(fileInfo[1]+'/Nominal/'+varInfo[0])
                         else : 
                             h2 = inFile.Get(fileInfo[1]+'/'+sKind+'/'+varInfo[0]+'_'+sName)
                         # print fileInfo[1]+'/'+sKind+'/'+varInfo[0]+'_'+sName
-                        for s,sInfo in self.signDict.iteritems() :
+                        for s,sInfo in list(self.signDict.items()) :
                             # print "inside=", h2
                             self.histoDict[f+s+var+sName] = h2.ProjectionX(h2.GetName() + s, sInfo[0],sInfo[0])
                             self.varBinWidth_modifier(self.histoDict[f+s+var+sName])
@@ -126,7 +126,7 @@ class plotter:
         fname = "{dir}/stackPlots{suff}.root".format(dir=self.outdir,suff=self.SBsuff)
         outFile =  ROOT.TFile(fname, "RECREATE")
         
-        for var,varInfo in self.variableDict.iteritems() :
+        for var,varInfo in list(self.variableDict.items()) :
             
             if var.endswith('minus') : s='minus'  
             else : s='plus'  
@@ -154,7 +154,7 @@ class plotter:
             hRatio = hData.Clone('hRatio_'+var)
             hRatio.Divide(hSum) #nominal ratio
             hRatioDict = {} #syst ratio
-            for sKind, sList in bkg_utils.bkg_systematics.iteritems():
+            for sKind, sList in list(bkg_utils.bkg_systematics.items()):
                 if sKind in skipSyst : continue #skipped systs
                 for sName in sList :
                     hSumSyst= self.CloneEmpty(self.histoDict[self.sampleOrder[0]+s+var],'hsum_'+var+'_'+sName)
@@ -166,7 +166,7 @@ class plotter:
             hRatioBand = hRatio.Clone('hRatioBand') #systband
             for i in range(1,hRatioBand.GetNbinsX()+1) :
                 delta = 0
-                for syst, hsyst in hRatioDict.iteritems() :
+                for syst, hsyst in list(hRatioDict.items()) :
                     if 'Down' in syst : continue
                     # if syst in self.LHEdict['Down']: continue
                     if 'LHE' in syst : continue 
@@ -180,12 +180,12 @@ class plotter:
                         delta += (hsyst.GetBinContent(i)-hRatioDict[systDown].GetBinContent(i))**2
                         # delta + = (hsyst.GetBinContent(i)-hRatio.GetBinContent(i))**2
                         if (hRatioDict[systDown].GetBinContent(i)<hRatio.GetBinContent(i) and hRatioDict[syst].GetBinContent(i)<hRatio.GetBinContent(i)) or (hRatioDict[systDown].GetBinContent(i)>hRatio.GetBinContent(i) and hRatioDict[syst].GetBinContent(i)>hRatio.GetBinContent(i)) : #nominal not in between systs
-                            print var,"WARNING: systematic", syst," up/down not around nominal in bin", i, hRatioDict[systDown].GetBinContent(i), hRatio.GetBinContent(i), hRatioDict[syst].GetBinContent(i)
+                            print((var,"WARNING: systematic", syst," up/down not around nominal in bin", i, hRatioDict[systDown].GetBinContent(i), hRatio.GetBinContent(i), hRatioDict[syst].GetBinContent(i)))
                             
                 delta = 0.25*delta
                 
                 deltaPDF=0 #LHE PDF variations (wrt nominal)
-                for syst, hsyst in hRatioDict.iteritems() : 
+                for syst, hsyst in list(hRatioDict.items()) : 
                     if not 'LHEPdf' in syst: continue 
                     Nrepl = 1.
                     # if 'LHEPdfWeight' in syst :
@@ -193,7 +193,7 @@ class plotter:
                     deltaPDF+= (1/Nrepl)*(hsyst.GetBinContent(i)-hRatio.GetBinContent(i))**2
                 
                 deltaScale=0 #LHE Scale variations (envelope)
-                for syst, hsyst in hRatioDict.iteritems() : 
+                for syst, hsyst in list(hRatioDict.items()) : 
                     if not 'LHEScale' in syst: continue 
                     deltaScale_temp= (hsyst.GetBinContent(i)-hRatio.GetBinContent(i))**2
                     if deltaScale_temp>deltaScale : 
@@ -285,7 +285,7 @@ class plotter:
         fname = "{dir}/systPlots{suff}.root".format(dir=self.outdir,suff=self.SBsuff)
         outFile =  ROOT.TFile(fname, "RECREATE")
         
-        for var,varInfo in self.variableDict.iteritems() :
+        for var,varInfo in list(self.variableDict.items()) :
             if var.endswith('minus') : s='minus'  
             else : s='plus' 
             
@@ -294,14 +294,14 @@ class plotter:
             #completely broken syst 
             legend = ROOT.TLegend(0.15, 0.6, 0.85, 0.85) 
             hData = self.histoDict['Data'+s+var].Clone('hData_'+var) 
-            for sKind, sList in self.extSyst.iteritems(): #summing MCs
+            for sKind, sList in list(self.extSyst.items()): #summing MCs
                 for sName in sList :    
                     hdict[sName] = self.CloneEmpty(self.histoDict[self.sampleOrder[0]+s+var+sName],'hsum_'+var+'_'+sName)
                     for sample in self.sampleOrder :
                         hdict[sName].Add(self.histoDict[sample+s+var+sName])
             
             hSumNOM =hdict[''].Clone("sumNom"+var)          
-            for sKind, sList in self.extSyst.iteritems(): #ratios
+            for sKind, sList in list(self.extSyst.items()): #ratios
                 for sName in sList :    
                     hdict[sName].Divide(hSumNOM)
                     
@@ -353,7 +353,7 @@ class plotter:
             colorCounter = 0
             modSyst = copy.deepcopy(bkg_utils.bkg_systematics)
             modSyst['LHEPdfUpDown'] = ['LHEPdfUp','LHEPdfDown']
-            for sKind, sList in modSyst.iteritems():
+            for sKind, sList in list(modSyst.items()):
                 if sKind==self.PDFvar : continue #skip 100 lines on the plot!
                 colorNumber = colorList[colorCounter]
                 colorCounter = colorCounter+1
@@ -387,7 +387,7 @@ class plotter:
             
             #grouped syst
             legend2 = ROOT.TLegend(0.15, 0.7, 0.7, 0.9) 
-            for sKind, sList in self.extSyst.iteritems(): #ratios
+            for sKind, sList in list(self.extSyst.items()): #ratios
                 hdict[sKind] = self.CloneEmpty(self.histoDict[self.sampleOrder[0]+s+var],'hsum_'+var+'_'+sKind)
                 for i in range(1,hdict[sKind].GetNbinsX()+1) :
                     delta = 0
@@ -461,7 +461,7 @@ class plotter:
             hdict['sum'].SetFillStyle(3003)
             for i in range(1,hdict['sum'].GetNbinsX()+1) :
                 sumOfDelta=0
-                for sKind, sList in bkg_utils.bkg_systematics.iteritems():
+                for sKind, sList in list(bkg_utils.bkg_systematics.items()):
                     if sKind in skipSyst : continue #skipped systs
                     sumOfDelta+= hdict[sKind].GetBinContent(i)**2
                 sumOfDelta = math.sqrt(sumOfDelta)
@@ -471,7 +471,7 @@ class plotter:
             hdict['Nominal'].Draw('hist SAME')
             
             # colorNumber=2
-            for sKind, sList in bkg_utils.bkg_systematics.iteritems():
+            for sKind, sList in list(bkg_utils.bkg_systematics.items()):
                     # if colorNumber==5 : colorNumber+=1
 
                     if sKind in skipSyst : continue #skipped systs
