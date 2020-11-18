@@ -227,6 +227,15 @@ class plotter :
         self.histos[suff+'corrMat'+'Integrated'] = FitFile.Get('correlation_matrix_channelhelmetapois')
         self.histos[suff+'covMat'+'Integrated'] = FitFile.Get('covariance_matrix_channelhelmetapois')
         
+        #mass
+        self.histos[suff+'mass'] = ROOT.TH1F('mass'+suff,'mass'+suff,1,0,1)
+        for ev in resFit: #dummy because there's one event only
+            massVal = eval('ev.mass')
+            massErr = eval('ev.mass_err')
+        self.histos[suff+'mass'].SetBinContent(1,massVal)
+        self.histos[suff+'mass'].SetBinError(1,massErr)
+        # print("WARNING: mass =0., error converted in GeV")
+        
         if apoFile!='' :
             for c in self.coeffDict:   
                 self.histos[suff+'apo'+c] = apoFile.Get('post-fit-regularization_'+c)
@@ -2021,6 +2030,7 @@ class plotter :
                     self.canvas[suff+mtx+'Mat'+'qt'+str(j)].Write()
                 self.canvas[suff+mtx+'Mat'+'Integrated'+'qt'].Write()
                 self.canvas[suff+mtx+'Mat'+'Integrated'+'y'].Write()
+            self.histos[suff+'mass'].Write()
                 
                   
         if comparison :
