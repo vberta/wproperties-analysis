@@ -114,12 +114,12 @@ class plotter :
         self.histos[suff+'MC'+'mapTot'] =  inFile.Get('angularCoefficients/mapTot')
         self.histos[suff+'MCy'+'mapTot'] =  inFile.Get('angularCoefficients/Y')
         self.histos[suff+'MCqt'+'mapTot'] =  inFile.Get('angularCoefficients/Pt')
-        for coeff,div in self.coeffDict.iteritems() :
+        for coeff,div in self.coeffDict.items() :
             self.histos[suff+'MC'+coeff] =  inFile.Get('angularCoefficients/harmonics'+coeff+'_nom_nom')
             self.histos[suff+'MC'+'y'+coeff] =  inFile.Get('angularCoefficients/harmonicsY'+coeff+'_nom_nom')
             self.histos[suff+'MC'+'qt'+coeff] =  inFile.Get('angularCoefficients/harmonicsPt'+coeff+'_nom_nom')
 
-        for sKind, sList in self.systDict.iteritems():
+        for sKind, sList in self.systDict.items():
 
             sListMod = copy.deepcopy(sList)
             if sKind=='_LHEScaleWeight' and UNCORR :
@@ -134,7 +134,7 @@ class plotter :
                         continue 
                     if sName=='_nom' and sNameDen=='_nom' : 
                         continue
-                    for coeff,div in self.coeffDict.iteritems() :
+                    for coeff,div in self.coeffDict.items() :
                         if "unpolarizedxsec" in coeff: continue
                         if UNCORR :
                             if sKind=='_LHEScaleWeight':
@@ -296,13 +296,13 @@ class plotter :
                 
                     #debug unclousure
                     if abs(self.histos[suff+'FitBand'+c].GetBinContent(i,j)-self.histos[suff+'FitAC'+c].GetBinContent(i,j))/self.histos[suff+'FitBand'+c].GetBinContent(i,j)>0.0000001 :
-                            print "not clousure of", c, i, j , ",   (fitted-mc)/fitted=", (self.histos[suff+'FitBand'+c].GetBinContent(i,j)-self.histos[suff+'FitAC'+c].GetBinContent(i,j))/self.histos[suff+'FitAC'+c].GetBinContent(i,j)
+                            print("not clousure of", c, i, j , ",   (fitted-mc)/fitted=", (self.histos[suff+'FitBand'+c].GetBinContent(i,j)-self.histos[suff+'FitAC'+c].GetBinContent(i,j))/self.histos[suff+'FitAC'+c].GetBinContent(i,j))
                     if i==1 :
                         if abs(self.histos[suff+'FitBandqt'+c].GetBinContent(j)-self.histos[suff+'FitACqt'+c].GetBinContent(j))/self.histos[suff+'FitBandqt'+c].GetBinContent(j)>0.0000001 :
-                            print "not clousure of", c, j , "(qT),   (fitted-mc)/fitted=", (self.histos[suff+'FitBandqt'+c].GetBinContent(j)-self.histos[suff+'FitACqt'+c].GetBinContent(j))/self.histos[suff+'FitBandqt'+c].GetBinContent(j)
+                            print("not clousure of", c, j , "(qT),   (fitted-mc)/fitted=", (self.histos[suff+'FitBandqt'+c].GetBinContent(j)-self.histos[suff+'FitACqt'+c].GetBinContent(j))/self.histos[suff+'FitBandqt'+c].GetBinContent(j))
                     if j==1 : 
                         if abs(self.histos[suff+'FitBandy'+c].GetBinContent(i)-self.histos[suff+'FitACy'+c].GetBinContent(i))/self.histos[suff+'FitBandqt'+c].GetBinContent(i)>0.0000001 :
-                            print "not clousure of", c, i , "(y),   (fitted-mc)/fitted=", (self.histos[suff+'FitBandy'+c].GetBinContent(i)-self.histos[suff+'FitACy'+c].GetBinContent(i))/self.histos[suff+'FitBandy'+c].GetBinContent(i)
+                            print("not clousure of", c, i , "(y),   (fitted-mc)/fitted=", (self.histos[suff+'FitBandy'+c].GetBinContent(i)-self.histos[suff+'FitACy'+c].GetBinContent(i))/self.histos[suff+'FitBandy'+c].GetBinContent(i))
                     
                     errPDF = 0.
                     if i==1 : errPDFqt = 0.
