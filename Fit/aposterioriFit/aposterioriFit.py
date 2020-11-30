@@ -42,6 +42,14 @@ def getFitRes(inFile, coeffList) :
 #             print("WARNING: unpolarized qt binning must be aligned to the fit qt binning!")
 #     return outDict
 
+def chi2MassOnlyFit(modelPars,npFitRes,npCovMatInv) :
+    print("shapes",np.shape(modelPars), np.shape(npFitRes), np.shape(npCovMatInv))
+    print("vals",modelPars, npFitRes, npCovMatInv, 100*math.sqrt(1/npCovMatInv)) #1/npnpCovMatInv??
+    diff = npFitRes-modelPars
+    # chi2 = jnp.matmul(diff.T, jnp.matmul(npCovMatInv, diff) )
+    chi2 = diff*diff*npCovMatInv
+    return chi2
+    
 def par2polyModel(modelPars, npFitRes, coeffList, npBinCenters,parNum,dimYQt) :#input = the parameters, output the polyinomial function
     fitModelList = []
     valY = npBinCenters[:,0]
@@ -115,8 +123,8 @@ def polyFit(fitRes, coeffList) :
     dimYQt = [dimY,dimQt]
 
     npCovMatUncut = rootnp.hist2array(fitRes['cov'])
-    # npCovMat = npCovMatUncut[0:dimCoeff*dimQt*dimY,0:dimCoeff*dimQt*dimY]
-    npCovMat = npCovMatUncut[1*dimQt*dimY:6*dimQt*dimY,1*dimQt*dimY:6*dimQt*dimY]
+    npCovMat = npCovMatUncut[0:dimCoeff*dimQt*dimY,0:dimCoeff*dimQt*dimY]
+    # npCovMat = npCovMatUncut[1*dimQt*dimY:6*dimQt*dimY,1*dimQt*dimY:6*dimQt*dimY]
     
     #add mass to the convariance matrix
     massBin = fitRes['cov'].GetXaxis().FindBin('mass')
@@ -126,6 +134,16 @@ def polyFit(fitRes, coeffList) :
     npCovMat = np.c_[npCovMat,massColumn]
     massRow = np.append(massRow,massEl)
     npCovMat = np.r_[npCovMat,[massRow]]
+     
+    # reweight the covariance matrix to have it in "GeV"
+    # for i in range(0,np.shape(npCovMat)[0]) :
+    #     for j in range(0,np.shape(npCovMat)[1]) :
+    #         if i==np.shape(npCovMat)[0]-1 or j==np.shape(npCovMat)[0]-1 :
+    #             if i==j :
+    #                 npCovMat[i,j] = npCovMat[i,j]/100. #/100->GeV, *10000->MeV
+    #             else :
+    #                 npCovMat[i,j] = npCovMat[i,j]/10. #/10->GeV, *100->MeV
+        
 
     npCovMatInv = np.linalg.inv(npCovMat)
     
@@ -198,6 +216,7 @@ def polyFit(fitRes, coeffList) :
 
     print("everything initialized, minimizer call...")
     modelPars = pmin(chi2PolyFit, modelPars, args=(npFitRes, npCovMatInv, coeffListJAX, npBinCenters,parNum,dimYQt), doParallel=False)
+    # modelPars = pmin(chi2MassOnlyFit, modelPars[-1], args=(npFitRes[-1], npCovMatInv[-1][-1]), doParallel=False)
     print ("fit ended, post fit operation...")
         
     # after fit results
@@ -231,6 +250,7 @@ def polyFit(fitRes, coeffList) :
     print("is covariance semi positive definite?", np.all(np.linalg.eigvals(modelCov) >= 0))
     print("is covariance symmetric?", np.allclose(np.transpose(modelCov), modelCov))
     print("is covariance approx symmetric?", np.allclose(np.transpose(modelCov), modelCov, rtol=1e-05, atol=1e-06))
+    # print("mass uncertainity if everything fixed=", math.sqrt(npCovMatInv[-1][-1]))
     print("*-------------------------------------------*")
     # print("covariance=", modelCov.diagonal())
     
@@ -361,6 +381,7 @@ FITINPUT = args.fitInput
 REGINPUT = args.regInput
 SAVE= args.save
 
+print("have you done cmsenv in CMSSW_11_2_0_pre8 instead of nightlies? (jax incomatibility)")
 coeffList = []#y plus, qt plus, y minus, qt minus, constraint y, constraint qt,constrain C1, noRegul
 # coeffList.append(['unpolarizedxsec', 3,3,-999,-999,  0,0,0, 0]) #ORIGINAL SET
 # coeffList.append(['A0', 3,4,3,4, 0,1,1, 0])
@@ -369,7 +390,7 @@ coeffList = []#y plus, qt plus, y minus, qt minus, constraint y, constraint qt,c
 # coeffList.append(['A3', 3,4,3,3, 0,1,0, 0])
 # coeffList.append(['A4', 4,5,4,6, 1,0,0, 0]) #5-->7 but no convergence! and last number=1
 
-# coeffList.append(['unpolarizedxsec', 3,3,-999,-999,  0,0,0, 1])
+coeffList.append(['unpolarizedxsec', 3,3,-999,-999,  0,0,0, 1])
 coeffList.append(['A0', 3,4,3,4, 0,1,1, 0])
 coeffList.append(['A1', 4,4,3,4, 1,1,0, 0])
 coeffList.append(['A2', 2,5,2,4, 0,1,1, 0])
