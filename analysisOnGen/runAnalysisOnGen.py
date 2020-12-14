@@ -12,7 +12,7 @@ from getLumiWeight import getLumiWeight
 
 ROOT.gSystem.Load('bin/libSignalAnalysis.so')
 
-c=128
+c=64
 
 ROOT.ROOT.EnableImplicitMT(c)
 

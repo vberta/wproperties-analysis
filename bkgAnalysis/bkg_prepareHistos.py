@@ -72,7 +72,7 @@ class bkg_prepareHistos:
         cmdList = []
         if not os.path.isdir(self.outDir+'/hadded'): os.system('mkdir '+self.outDir+'/hadded')
         
-        cmdList.append('hadd ./'+self.outDir+'hadded/WToMuNu.root ./'+self.outDir+'*.root')
+        cmdList.append('hadd -f ./'+self.outDir+'hadded/WToMuNu.root ./'+self.outDir+'*.root')
         cmdList.append('cp  ./'+self.inputDir+'SingleMuonData_plots.root ./'+self.outDir+'hadded/Data.root')
                 
         for i in cmdList :

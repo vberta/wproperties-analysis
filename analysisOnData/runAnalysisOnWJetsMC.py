@@ -28,7 +28,7 @@ def RDFprocessWJetsMCSignalACtempl(fvec, outputDir, sample, xsec, fileSF, fileSc
     fileACminus = ROOT.TFile.Open("../analysisOnGen/genInput_Wminus.root")
     #Will only ber run on signal region
     region = 'Signal'
-    weight = 'float(puWeight*lumiweight*WHSF*weightPt*weightY)'
+    weight = 'float(puWeight*lumiweight*WHSF*weightPt)'
     wtomu_cut =  selections_bkg[region] + wdecayselections['WToMu']
     wtomu_lowAcc_cut = wtomu_cut + "&& Wpt_preFSR>32. && Wrap_preFSR_abs>2.4"
     #print weight, "NOMINAL WEIGHT"
@@ -102,9 +102,13 @@ def RDFprocessWJetsMC(fvec, outputDir, sample, xsec, fileSF, fileScale, ncores, 
     p.branch(nodeToStart = 'input', nodeToEnd = 'defs', modules = [ROOT.reweightFromZ(filePt,fileY),ROOT.baseDefinitions(True, True),ROOT.rochesterVariations(fileScale), ROOT.weightDefinitions(fileSF),getLumiWeight(xsec=xsec, inputFile=fvec, genEvsbranch = "genEventSumw"),ROOT.Replica2Hessian()])
     for region,cut in selections_bkg.items():
         if 'aiso' in region:
-            weight = 'float(puWeight*lumiweight*weightPt*weightY)'
+            weight = 'float(puWeight*lumiweight*weightPt)'
         else:
-            weight = 'float(puWeight*lumiweight*WHSF*weightPt*weightY)'
+            weight = 'float(puWeight*lumiweight*WHSF*weightPt)'
+        # if 'aiso' in region:
+        #     weight = 'float(puWeight*lumiweight)'
+        # else:
+        #     weight = 'float(puWeight*lumiweight*WHSF)'
             
         print(weight, "NOMINAL WEIGHT")
         nom = ROOT.vector('string')()
@@ -183,20 +187,20 @@ def RDFprocessWJetsMC(fvec, outputDir, sample, xsec, fileSF, fileScale, ncores, 
 
 def main():
     parser = argparse.ArgumentParser("")
-    parser.add_argument('-p', '--pretend',type=bool, default=False, help="run over a small number of event")
-    parser.add_argument('-c', '--ncores',type=int, default=128, help="number of cores used")
-    parser.add_argument('-o', '--outputDir',type=str, default='./output/', help="output dir name")
+    parser.add_argument('-p', '--pretend',type=int, default=False, help="run over a small number of event")
     parser.add_argument('-i', '--inputDir',type=str, default="/scratchnvme/wmass/NanoAOD2016-V2/", help="input dir name")
-    parser.add_argument('-b', '--runBKG', type=bool, default=False, help="get histograms for bkg analysis")
-    parser.add_argument('-s', '--SBana', type=bool, default=False, help="run also on the sideband (clousure test)")
+    parser.add_argument('-o', '--outputDir',type=str, default='./output/', help="output dir name")
+    parser.add_argument('-c', '--ncores',type=int, default=128, help="number of cores used")
+    parser.add_argument('-sb', '--SBana', type=int, default=False, help="run also on the sideband (clousure test)")
+    parser.add_argument('-b', '--runBKG', type=int, default=False, help="get histograms for bkg analysis")
 
     args = parser.parse_args()
     pretendJob = args.pretend
-    ncores = args.ncores
-    outputDir = args.outputDir
     inDir = args.inputDir
-    bkg = args.runBKG
+    outputDir = args.outputDir
+    ncores = args.ncores
     SBana = args.SBana
+    bkg = args.runBKG
     print(bkg, '\t', pretendJob, '\t', SBana)
     
     if pretendJob:

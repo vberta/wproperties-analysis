@@ -41,11 +41,6 @@ class bkg_analyzer:
 
         self.ptBinningS = ['{:.3g}'.format(x) for x in self.ptBinning[:-1]]
         self.etaBinningS = ['{:.2g}'.format(x) for x in self.etaBinning[:-1]]
-        # print "WARNING: hardcoded LHE dict"
-        # self.LHEdict = {
-        #     'Down' : ["LHEScaleWeight_muR0p5_muF0p5", "LHEScaleWeight_muR0p5_muF1p0", "LHEScaleWeight_muR1p0_muF0p5"],
-        #     'Up' : ["LHEScaleWeight_muR2p0_muF2p0", "LHEScaleWeight_muR2p0_muF1p0","LHEScaleWeight_muR1p0_muF2p0"]   
-        # }
         if self.nameSuff =='SideBand' :
             print("WARNING: special name used, SideBand, processed sideband clousure test")
         
@@ -145,7 +140,7 @@ class bkg_analyzer:
         bin4corFitS = ['{:.2g}'.format(x) for x in bin4corFit[:-1]]
 
         for sKind, sList in systDict.items():
-            if 'LHE' in sKind : continue #Theory uncertainity skipped in the correlated fit
+            if 'LHE' in sKind or 'alphaS' in sKind : continue #Theory uncertainity skipped in the correlated fit
             for sName in sList :
                 systList.append(sName)
                 systdir = self.outdir.replace("bkg_"+self.systName,"bkg_"+sName+'/')
@@ -524,7 +519,8 @@ class bkg_analyzer:
             "jme" : [ROOT.kAzure+10, 'MET'],
             "LHEPdfWeight" : [ROOT.kRed+1, 'PDF'],
             "Nominal" : [1, 'Stat. Unc.'],
-            "PrefireWeight" : [ROOT.kSpring+10, 'Prefire']
+            "PrefireWeight" : [ROOT.kSpring+10, 'Prefire'],
+            "alphaS" : [ROOT.kOrange-3, 'Alpha Strong'],
         }
             
         #getting canvas and histoss
@@ -636,7 +632,7 @@ class bkg_analyzer:
                                     deltaPDF=0 #LHE PDF variations (wrt nominal)
                                     for sKind, sList in systDict.items():
                                         for sName in sList :
-                                            if not 'LHEPdf' in sName or not 'alphaS' in sName: continue 
+                                            if not 'LHEPdf' in sName: continue 
                                             Nrepl=1.
                                             # if sKind=='LHEPdfWeightVars' :
                                             #     Nrepl = float(len(sList))
@@ -867,7 +863,7 @@ class bkg_analyzer:
                                     delta = 0
                                     for sName in sList :
                                         if 'Down' in sName : continue
-                                        if 'LHE' in sName or 'alphaS' in sName: continue
+                                        if 'LHE' in sName in sName: continue
                                         if sName=='nom' : continue
                                         if 'Up' in sName :
                                             systDown =  sName.replace("Up","Down")
@@ -1265,7 +1261,7 @@ class bkg_analyzer:
                             for sKind, sList in systDict.items():
                                 for sName in sList :
                                     if 'Down' in sName : continue
-                                    if 'LHE' in sName or 'alphaS' in sName: continue
+                                    if 'LHE' in sName: continue
                                     # if sName in self.LHEdict['Down']: continue
                                     if 'Up' in sName :
                                         sNameDown =  sName.replace("Up","Down")
@@ -1282,7 +1278,7 @@ class bkg_analyzer:
                             deltaPDF=0 #LHE PDF variations (wrt nominal)
                             for sKind, sList in systDict.items():
                                 for sName in sList :
-                                    if not 'LHEPdf' in sName and not 'alphaS' in sName: continue 
+                                    if not 'LHEPdf' in sName: continue 
                                     Nrepl=1.
                                     # if sKind=='LHEPdfWeightVars' :
                                     #     Nrepl = float(len(sList))                                    

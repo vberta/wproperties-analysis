@@ -73,7 +73,8 @@ class plotter:
             "jme" : [ROOT.kAzure+10, 'MET'],
             "LHEPdfWeight" : [ROOT.kRed+1, 'PDF'],
             "Nominal" : [1, 'Stat. Unc.'],
-            "PrefireWeight" : [ROOT.kSpring+10, 'Prefire']
+            "PrefireWeight" : [ROOT.kSpring+10, 'Prefire'],
+            "alphaS" : [ROOT.kOrange-3, 'Alpha Strong'],
         }
 
 
@@ -103,7 +104,6 @@ class plotter:
     def getHistos(self):
         for f,fileInfo in self.sampleDict.items() :
             inFile = ROOT.TFile.Open(self.indir+'/hadded/'+fileInfo[0])
-            #inFile = ROOT.TFile.Open(self.outdir+'/hadded/'+fileInfo[0])
             for sKind, sList in self.extSyst.items():
                 for sName in sList :
                     for var, varInfo in self.variableDict.items() :
@@ -113,13 +113,10 @@ class plotter:
                             h2 = inFile.Get(fileInfo[1]+'/Nominal/'+varInfo[0])
                         else : 
                             h2 = inFile.Get(fileInfo[1]+'/'+sKind+'/'+varInfo[0]+'_'+sName)
-                        # print fileInfo[1]+'/'+sKind+'/'+varInfo[0]+'_'+sName
                         for s,sInfo in self.signDict.items() :
-                            # print "inside=", h2
                             self.histoDict[f+s+var+sName] = h2.ProjectionX(h2.GetName() + s, sInfo[0],sInfo[0])
                             self.varBinWidth_modifier(self.histoDict[f+s+var+sName])
-   
-                            
+                                         
     def plotStack(self,skipSyst=[]):
 
         self.getHistos()

@@ -26,8 +26,8 @@ def RDFprocessData(fvec, outputDir, ncores, pretendJob=True, SBana=False, outF="
         nom.push_back("")
         #last argument refers to histo category - 0 = Nominal, 1 = Pt scale , 2 = MET scale
         print("branching nominal")
-        #if region == "Signal" or (region=='Sideband' and SBana):
-        #    p.branch(nodeToStart = 'defs', nodeToEnd = 'prefit_{}/Nominal'.format(region), modules = [ROOT.muonHistos(cut, weight, nom,"Nom",0)]) 
+        if region == "Signal" or (region=='Sideband' and SBana):
+           p.branch(nodeToStart = 'defs', nodeToEnd = 'prefit_{}/Nominal'.format(region), modules = [ROOT.muonHistos(cut, weight, nom,"Nom",0)]) 
         #nominal templates
         p.branch(nodeToStart = 'defs', nodeToEnd = 'templates_{}/Nominal'.format(region), modules = [ROOT.templates(cut, weight, nom,"Nom",0)])       
     p.getOutput()
@@ -60,7 +60,8 @@ def RDFprocessfakefromData(fvec, outputDir, bkgFile, ncores, pretendJob=True, SB
         #now add fake variations
         for s,variations in systematics.items():
             #only required systs
-            if "LHEPdfWeight" not in s and "LHEScaleWeight" not in s: continue
+            # if "LHEPdfWeight" not in s and "LHEScaleWeight" not in s: continue
+            if "LHEScaleWeight" not in s: continue
             print("branching weight variations", s)
             vars_vec = ROOT.vector('string')()
             for var in variations[0]:
@@ -87,22 +88,22 @@ def RDFprocessfakefromData(fvec, outputDir, bkgFile, ncores, pretendJob=True, SB
 
 def main():
     parser = argparse.ArgumentParser("")
-    parser.add_argument('-p', '--pretend',type=bool, default=False, help="run over a small number of event")
-    parser.add_argument('-b', '--runBKG',type=bool, default=False, help="prepare the input of the bkg analysis, if =false run the prefit Plots")
-    parser.add_argument('-c', '--ncores',type=int, default=64, help="number of cores used")
+    parser.add_argument('-p', '--pretend',type=int, default=False, help="run over a small number of event")
+    parser.add_argument('-i', '--inputDir',type=str, default='/scratchnvme/wmass/NanoAOD2016-V2/', help="input dir name")
     parser.add_argument('-o', '--outputDir',type=str, default='./output/', help="output dir name")
+    parser.add_argument('-c', '--ncores',type=int, default=64, help="number of cores used")
+    parser.add_argument('-sb', '--SBana',type=int, default=False, help="run also on the sideband (clousure test)")
+    parser.add_argument('-b', '--runBKG',type=int, default=False, help="prepare the input of the bkg analysis, if =false run the prefit Plots")
     parser.add_argument('-f', '--bkgFile',type=str, default='/scratch/bertacch/wmass/wproperties-analysis/bkgAnalysis/TEST_runTheMatrix/bkg_parameters_CFstatAna.root', help="bkg parameters file path/name.root")
-    parser.add_argument('-i', '--inputDir',type=str, default='/scratchssd/sroychow/NanoAOD2016-V2/', help="input dir name")
-    parser.add_argument('-s', '--SBana',type=bool, default=False, help="run also on the sideband (clousure test)")
-
     args = parser.parse_args()
     pretendJob = args.pretend
-    runBKG = args.runBKG
-    ncores = args.ncores
-    outputDir = args.outputDir
-    bkgFile = args.bkgFile
     inDir = args.inputDir
+    outputDir = args.outputDir
+    ncores = args.ncores
     SBana = args.SBana
+    runBKG = args.runBKG
+    bkgFile = args.bkgFile
+
     if pretendJob:
         print("Running a test job over a few events")
     else:

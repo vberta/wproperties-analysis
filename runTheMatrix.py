@@ -58,10 +58,9 @@ if step1 :
     print("step1: bkg input preparation... ")
     os.chdir('./analysisOnData')
     if not os.path.isdir(outputDir): os.system('mkdir '+ outputDir)
-    os.system('python runAnalysis.py -p=0 -b=1 -i='+inputDir+' -c='+ncores+' -o='+outputDir + ' -sb='+SBana)
-    # os.system('python runAnalysisOnMC.py      -i='+inputDir+' -c='+ncores+' -o='+outputDir + ' -sb='+SBana)
-    # os.system('python runAnalysisOnWJetsMC.py -i='+inputDir+' -c='+ncores+' -o='+outputDir + ' -sb='+SBana +' -b=1')
-    # os.system('python runAnalysisOnData.py    -i='+inputDir+' -c='+ncores+' -o='+outputDir + ' -sb='+SBana +' -b=1')
+    os.system('python runAnalysisOnMC.py        -i='+inputDir+' -o='+outputDir+' -c='+ncores+' -sb='+SBana)
+    os.system('python runAnalysisOnWJetsMC.py   -i='+inputDir+' -o='+outputDir+' -c='+ncores+' -sb='+SBana+' -b=1')
+    os.system('python runAnalysisOnData.py      -i='+inputDir+' -o='+outputDir+' -c='+ncores+' -sb='+SBana+' -b=1')
     os.chdir('../')
     s1end=time.time()
     runTimes.append(s1end - s1start)
@@ -87,8 +86,8 @@ if step3 :
     os.chdir('analysisOnData')
     if not os.path.isdir(outputDir): os.system('mkdir '+ outputDir)
     #ncores is optimized and set in the config itself, so no need to pass here
-    os.system('python runAnalysis.py -b=0 -i='+inputDir+ ' -o=' +outputDir+ ' -f='+bkgFile + ' -sb='+SBana)
-    # os.system('python runAnalysisOnData.py    -i='+inputDir+' -c='+ncores+' -o='+outputDir + ' -sb='+SBana +' -b=0' + ' -f='+bkgFile)
+    os.system('python runAnalysisOnWJetsMC.py   -i='+inputDir+' -o='+outputDir+' -c='+ncores+' -sb='+SBana+' -b=0')
+    os.system('python runAnalysisOnData.py      -i='+inputDir+' -o='+outputDir+' -c='+ncores+' -sb='+SBana+' -b=0 -f'+bkgFile)
     os.chdir('../')
     s3end=time.time()
     runTimes.append(s3end - s3start)
@@ -102,7 +101,7 @@ if step4 :
     os.system('python plotter_prefit.py --hadd 1 --output ../'+outputDir+'/plot/ --input ../'+outputDir+' --systComp 1'+' -sb='+SBana)
 
     if not os.path.isdir('../'+outputDir+'/plot/hadded/template2D/'): os.system('mkdir -p ../'+outputDir+'/plot/hadded/template2D/')
-    os.system('python plotter_template2D.py -o=../'+outputDir+'/plot/hadded/template2D/ -i=../'+outputDir+'/plot/hadded')
+    # os.system('python plotter_template2D.py -o=../'+outputDir+'/plot/hadded/template2D/ -i=../'+outputDir+'/plot/hadded')
 
     sys.path.append('../../bkgAnalysis')
     import bkg_utils

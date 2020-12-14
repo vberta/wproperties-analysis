@@ -52,7 +52,7 @@ parser.add_argument('-comparisonAna', '--compAna',type=int, default=False, help=
 parser.add_argument('-inputDir', '--inputDir',type=str, default='./data/', help="input dir name")
 parser.add_argument('-outputDir', '--outputDir',type=str, default='./bkg_V2/', help="output dir name")
 parser.add_argument('-ncores', '--ncores',type=int, default=64, help="number of cores used")
-parser.add_argument('-s', '--SBana',type=bool, default=False, help="run also on the sideband (clousure test)")
+parser.add_argument('-s', '--SBana',type=int, default=False, help="run also on the sideband (clousure test)")
 
 args = parser.parse_args()
 mainAna = args.mainAna
