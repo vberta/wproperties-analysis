@@ -170,9 +170,9 @@ class plotter:
             if sample not in  self.histoDict : 
                 print("No histo dict for sample:", sample, " What have you done??!!!!")
                 continue
-            self.symmetrisePDF(sample)
-            self.uncorrelateEff(sample)
-            self.alphaVariations(sample)
+            # self.symmetrisePDF(sample)
+            # self.uncorrelateEff(sample)
+            # self.alphaVariations(sample)
             for syst, hlist in self.histoDict[sample].items():
                 #fout.mkdir(syst)
                 #fout.cd(syst)

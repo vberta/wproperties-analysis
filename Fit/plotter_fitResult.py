@@ -109,6 +109,7 @@ class plotter :
     def getHistos(self,inFile, FitFile, uncorrelate,suff,apoFile='',toyFile='') :
         
         resFit = FitFile.fitresults
+        genMod=''#_gen
 
         #MC (Pre Fit) angular coefficients and variations
         self.histos[suff+'MC'+'mapTot'] =  inFile.Get('angularCoefficients/mapTot')
@@ -163,12 +164,12 @@ class plotter :
                 for i in range(1, self.histos[suff+'FitHel'+hel].GetNbinsX()+1): #loop over rapidity bins
                     for j in range(1, self.histos[suff+'FitHel'+hel].GetNbinsY()+1): #loop over pt bins
                         try:
-                            coeff = eval('ev.helXsecs{}_y_{}_qt_{}_pmaskedexp'.format(hel, i, j))
+                            coeff = eval('ev.helXsecs{}_y_{}_qt_{}_pmaskedexp{}'.format(hel, i, j,genMod))
                             coeff_err = eval('ev.helXsecs{}_y_{}_qt_{}_pmaskedexp_err'.format(hel, i, j))
                             self.histos[suff+'FitHel'+hel].SetBinContent(i,j,coeff)
                             self.histos[suff+'FitHel'+hel].SetBinError(i,j,coeff_err)
 
-                            coeffnorm = eval('ev.helXsecs{}_y_{}_qt_{}_pmaskedexpnorm'.format(hel, i, j))
+                            coeffnorm = eval('ev.helXsecs{}_y_{}_qt_{}_pmaskedexpnorm{}'.format(hel, i, j,genMod))
                             coeffnorm_err = eval('ev.helXsecs{}_y_{}_qt_{}_pmaskedexpnorm_err'.format(hel, i, j))
                             self.histos[suff+'FitHel'+hel+'norm'].SetBinContent(i,j,coeffnorm)
                             self.histos[suff+'FitHel'+hel+'norm'].SetBinError(i,j,coeffnorm_err)
@@ -185,7 +186,7 @@ class plotter :
                 for i in range(1, self.histos[suff+'FitAC'+c].GetNbinsX()+1): #loop over rapidity bins
                     for j in range(1, self.histos[suff+'FitAC'+c].GetNbinsY()+1): #loop over pt bins
                         try:
-                            coeff = eval('ev.y_{i}_qt_{j}_{c}'.format(c=c, j=j, i=i))
+                            coeff = eval('ev.y_{i}_qt_{j}_{c}{g}'.format(c=c, j=j, i=i,g=genMod))
                             coeff_err = eval('ev.y_{i}_qt_{j}_{c}_err'.format(c=c, j=j, i=i))
                             if 'unpol' in c:
                                 coeff = coeff/(3./16./math.pi)/self.lumi
@@ -197,7 +198,7 @@ class plotter :
                             pass
                 for j in range(1, self.histos[suff+'FitAC'+c].GetNbinsY()+1): #loop over pt bins
                     try:
-                        coeff = eval('ev.qt_{j}_helmeta_{c}'.format(c=c, j=j))
+                        coeff = eval('ev.qt_{j}_helmeta_{c}{g}'.format(c=c, j=j,g=genMod))
                         coeff_err = eval('ev.qt_{j}_helmeta_{c}_err'.format(c=c, j=j))
                         if 'unpol' in c:
                                 coeff = coeff/(3./16./math.pi)/self.lumi
@@ -210,7 +211,7 @@ class plotter :
                         pass
                 for i in range(1, self.histos[suff+'FitAC'+c].GetNbinsX()+1): #loop over rapidity bins
                     try:
-                        coeff = eval('ev.y_{i}_helmeta_{c}'.format(c=c, i=i))
+                        coeff = eval('ev.y_{i}_helmeta_{c}{g}'.format(c=c, i=i,g=genMod))
                         coeff_err = eval('ev.y_{i}_helmeta_{c}_err'.format(c=c, i=i))
                         if 'unpol' in c:
                                 coeff = coeff/(3./16./math.pi)/self.lumi
@@ -230,7 +231,7 @@ class plotter :
         #mass
         self.histos[suff+'mass'] = ROOT.TH1F('mass'+suff,'mass'+suff,1,0,1)
         for ev in resFit: #dummy because there's one event only
-            massVal = eval('ev.mass')
+            massVal = eval('ev.mass{}'.format(genMod))
             massErr = eval('ev.mass_err')
         self.histos[suff+'mass'].SetBinContent(1,massVal)
         self.histos[suff+'mass'].SetBinError(1,massErr)
@@ -2500,7 +2501,7 @@ parser.add_argument('-o','--output', type=str, default='fitResult',help="name of
 parser.add_argument('-f','--fitFile', type=str, default='fit_Wplus.root',help="name of the fit result root file. If comparison active the name must be: NAME.root, NAME_reco.root")
 parser.add_argument('-i','--input', type=str, default='../analysisOnGen/genInput_Wplus.root',help="name of the input root file")
 parser.add_argument('-u','--uncorrelate', type=int, default=True,help="if true uncorrelate num and den of Angular Coeff in MC scale variation")
-parser.add_argument('-c','--comparison', type=int, default=True,help="comparison between reco and gen fit")
+parser.add_argument('-c','--comparison', type=int, default=False,help="comparison between reco and gen fit")
 parser.add_argument('-s','--save', type=int, default=False,help="save .png and .pdf canvas")
 parser.add_argument('-l','--suffList', type=str, default='',nargs='*', help="list of suff to be processed in the form: gen,reco")
 parser.add_argument('-a','--aposteriori', type=str, default='',help="name of the aposteriori fit file, if empty not plotted")

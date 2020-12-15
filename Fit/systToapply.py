@@ -24,7 +24,8 @@ systematicsDict = {
     "mass" : {
         "vars":["mass"],
         "procs": ["Signal", "LowAcc"],
-        "type": "shapeNoConstraint"
+        # "type": "shapeNoConstraint"
+        "type": "shape"
     },
     #"WHSFStat"  : {
     #    "vars": ["WHSFSyst0Eta{}".format(i) for i in range(1, 49)]+["WHSFSyst1Eta{}".format(i) for i in range(1, 49)]+["WHSFSyst2Eta{}".format(i) for i in range(1, 49)],
