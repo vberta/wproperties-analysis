@@ -6,7 +6,7 @@ import os
 
 charges = ["Wplus","Wminus"]
 for charge in charges:
-    fmap = '/scratchnvme/emanca/wproperties-analysis/analysisOnGen/genInput_{}.root'.format(charge) 
+    fmap = '../../analysisOnGen/genInput_{}.root'.format(charge)
     # f = fitUtils(fmap, channel=charge+"_reco_reg", doSyst=True)
     f = fitUtils(fmap, channel=charge+"_reco", doSyst=True)
     f.fillProcessList()
