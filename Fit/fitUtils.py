@@ -60,8 +60,7 @@ class fitUtils:
                     self.processes.append(proc)
                     if not "helXsecs7" in proc and not "helXsecs8" in proc and not "helXsecs9" in proc:
                         self.signals.append(proc)
-        #bkg_list = ["DY","Diboson","Top","Fake","Tau","LowAcc"]
-        bkg_list = ["LowAcc"]
+        bkg_list = ["DYJets","DiBoson","Top","Fake","WtoTau","LowAcc"]  # bkg_list = ["Fake","LowAcc"] # bkg_list = ["LowAcc"]
         self.processes.extend(bkg_list)
     def shapeFile(self):
 
@@ -189,7 +188,7 @@ class fitUtils:
                     aux[self.channel+'_xsec'] = {}
                     for proc in self.processes: 
                         if proc in self.templSystematics[syst]["procs"]:
-                            aux[self.channel][proc] = 1.0
+                            aux[self.channel][proc] = self.templSystematics[syst]["weight"]
                             aux[self.channel+'_xsec'][proc] = 0.0
                         else:
                             if "Signal" in self.templSystematics[syst]["procs"] and "hel" in proc:
@@ -201,14 +200,21 @@ class fitUtils:
 
                     self.DC.systs.append((var, False, self.templSystematics[syst]["type"], [], aux))
         
-        self.DC.groups = {'mass': ['mass']} 
-        #                  'pdfs': set(['LHEPdfWeightHess{}'.format(i+1) for i in range(60)]+['alphaS']),
-        #                 'WHSFStat': set(["WHSFSyst0Eta{}".format(i) for i in range(1, 49)]+["WHSFSyst1Eta{}".format(i) for i in range(1, 49)]+["WHSFSyst2Eta{}".format(i) for i in range(1, 49)]),
-        #                  'WHSFSyst': ['WHSFSystFlat'],
-        #                  'ptScale': set(["Eta{}zptsyst".format(j) for j in range(1, 5)] + ["Eta{}Ewksyst".format(j) for j in range(1, 5)] + ["Eta{}deltaMsyst".format(j) for j in range(1, 5)]+["Eta{}stateig{}".format(j, i) for i in range(0, 99) for j in range(1, 5)]),
-        #                  'jme': set(['jesTotal', 'unclustEn']),
-        #                  'PrefireWeight':['PrefireWeight'],
-        #                  }  # <type 'dict'>
+        self.DC.groups = {'mass': ['mass'],
+                         'pdfs': set(['LHEPdfWeightHess{}'.format(i+1) for i in range(60)]+['alphaS']),
+                         'WHSFStat': set(["WHSFSyst0Eta{}".format(i) for i in range(1, 49)]+["WHSFSyst1Eta{}".format(i) for i in range(1, 49)]+["WHSFSyst2Eta{}".format(i) for i in range(1, 49)]),
+                         'WHSFSyst': ['WHSFSystFlat'],
+                         'jme': set(['jesTotal', 'unclustEn']),
+                         'PrefireWeight':['PrefireWeight'],
+                        #   'ptScale': set(["Eta{}zptsyst".format(j) for j in range(1, 5)] + ["Eta{}Ewksyst".format(j) for j in range(1, 5)] + ["Eta{}deltaMsyst".format(j) for j in range(1, 5)]+["Eta{}stateig{}".format(j, i) for i in range(0, 99) for j in range(1, 5)]),
+                          "CMSlumi" :["CMSlumi"],
+                          "DYxsec" :["DYxsec"],
+                          "Topxsec" :["Topxsec"],
+                          "Dibosonxsec" :["Dibosonxsec"],
+                          "Tauxsec" :["Tauxsec"],
+                          "LeptonVeto" : ["LeptonVeto"],
+                          "FakeNorm" :['FakeNorm'],
+                         }  # <type 'dict'>
         
         self.DC.shapeMap = 	{self.channel: {'*': [self.channel+'.root', '$PROCESS', '$PROCESS_$SYSTEMATIC']},\
         self.channel+'_xsec': {'*': [self.channel+'_xsec.root', '$PROCESS', '$PROCESS_$SYSTEMATIC']}} # <type 'dict'>

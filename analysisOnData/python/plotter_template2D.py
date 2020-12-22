@@ -51,11 +51,13 @@ class plotter:
                 unrolledth2.SetBinError(bin1D, th2.GetBinError(ibin, jbin))
         return unrolledth2
     def getHistoforSample(self, sample, infile, chargeBin) :
-        if not 'Fake' in sample:
+        # if not 'Fake' in sample:
             for sKind in self.extSyst:
                 self.histoDict[sample][sKind] = []
                 basepath = 'templates_Signal/' + sKind
                 if 'LowAcc' in sample: basepath = 'templatesLowAcc_Signal/' + sKind
+                if 'Fake' in sample: basepath = 'templates_fakes/' + sKind
+                if 'Fake' in sample and sKind!='Nominal' and sKind!='LHEScaleWeight' and sKind!='jme' : continue  
                 if infile.GetDirectory(basepath):
                     for key in infile.Get(basepath).GetListOfKeys():
                         th3=infile.Get(basepath+'/'+key.GetName())
@@ -67,22 +69,22 @@ class plotter:
                         print(th2.GetName())
                         self.histoDict[sample][sKind].append(th2)
                         
-        else:
-            for sKind in self.extSyst:
-                self.histoDict[sample][sKind] = []
-                basepath = 'templates_fakes/' + sKind
-                if infile.GetDirectory(basepath):
-                    print(basepath)
-                    for key in infile.Get(basepath).GetListOfKeys():
-                        print(key.GetName())
-                        th3=infile.Get(basepath+'/'+key.GetName())
-                        #plus charge bin 2, minus bin 1
-                        th3.GetZaxis().SetRange(chargeBin,chargeBin)
-                        th2=th3.Project3D("yx")
-                        print(th2.GetName())
-                        th2.SetDirectory(0)
-                        th2.SetName(th3.GetName())
-                        self.histoDict[sample][sKind].append(th2)
+        # else:
+        #     for sKind in self.extSyst:
+        #         self.histoDict[sample][sKind] = []
+        #         basepath = 'templates_fakes/' + sKind
+        #         if infile.GetDirectory(basepath):
+        #             print(basepath)
+        #             for key in infile.Get(basepath).GetListOfKeys():
+        #                 print(key.GetName())
+        #                 th3=infile.Get(basepath+'/'+key.GetName())
+        #                 #plus charge bin 2, minus bin 1
+        #                 th3.GetZaxis().SetRange(chargeBin,chargeBin)
+        #                 th2=th3.Project3D("yx")
+        #                 print(th2.GetName())
+        #                 th2.SetDirectory(0)
+        #                 th2.SetName(th3.GetName())
+        #                 self.histoDict[sample][sKind].append(th2)
     def uncorrelateEff(self, sample):
         aux = {}
         aux['WHSF'] = []
@@ -157,8 +159,8 @@ class plotter:
         foutName += '.root'
         fout = ROOT.TFile.Open(self.outdir + '/' + foutName, "UPDATE")
         for sample,fname in self.sampleDict.items():
-            if not 'LowAcc' in sample and not 'data_obs' in sample:
-                continue
+            # if not 'LowAcc' in sample and not 'data_obs' in sample:
+            #     continue
             print("Processing sample:", sample)
             infile = ROOT.TFile(self.indir + '/' + fname[0])
             systType = fname[1]
@@ -170,9 +172,9 @@ class plotter:
             if sample not in  self.histoDict : 
                 print("No histo dict for sample:", sample, " What have you done??!!!!")
                 continue
-            # self.symmetrisePDF(sample)
-            # self.uncorrelateEff(sample)
-            # self.alphaVariations(sample)
+            self.symmetrisePDF(sample)
+            self.uncorrelateEff(sample)
+            self.alphaVariations(sample)
             for syst, hlist in self.histoDict[sample].items():
                 #fout.mkdir(syst)
                 #fout.cd(syst)

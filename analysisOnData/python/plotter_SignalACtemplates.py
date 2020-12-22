@@ -181,9 +181,9 @@ class plotter:
                             if not th3: print(colored('fpath not found', 'red'))
                             self.makeTH3slices(th3, sKind)
                             #assert(0)
-        # self.uncorrelateEff()
-        # self.symmetrisePDF()
-        # self.alphaVariations()
+        self.uncorrelateEff()
+        self.symmetrisePDF()
+        self.alphaVariations()
         # self.uncorrelatePtVars() ALWAYS COMMENTED, ROCHESTER CORR. NOT RUN
         self.closureMap()
         self.writeHistos()
