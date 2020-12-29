@@ -40,37 +40,61 @@ systematicsDict = {
     },
     "WHSFStat"  : {
        "vars": ["WHSFSyst0Eta{}".format(i) for i in range(1, 49)]+["WHSFSyst1Eta{}".format(i) for i in range(1, 49)]+["WHSFSyst2Eta{}".format(i) for i in range(1, 49)],
-       "procs": ["Signal", "LowAcc"],
+       "procs": ["Signal", "DYJets","DiBoson","Top","Fake","WtoTau","LowAcc"],
        "type": "shape",
        "weight" : 1.
     },
     "WHSFSyst":{
        "vars": ["WHSFSystFlat"],
-       "procs": ["Signal","LowAcc"],
+       "procs": ["Signal","DYJets","DiBoson","Top","Fake","WtoTau","LowAcc"],
        "type": "shape",
        "weight" : 1.
     },
     "jme" : {
        "vars":["jesTotal", "unclustEn"],
-       "procs": ["Signal", "LowAcc", "Fake"],
+       "procs": ["Signal", "DYJets","DiBoson","Top","Fake","WtoTau","LowAcc"],
        "type": "shape",
        "weight" : 1.
     },
     "PrefireWeight":{
        "vars":["PrefireWeight"],
-       "procs": ["Signal", "LowAcc"],
+       "procs": ["Signal", "DYJets","DiBoson","Top","Fake","WtoTau","LowAcc"],
        "type": "shape",
        "weight" : 1.
     },
     "LHEPdfWeight" : {
        "vars":["LHEPdfWeightHess{}".format(i+1) for i in range(60)],
-       "procs": ["Signal", "LowAcc"],
+       "procs": ["Signal", "DYJets", "Fake", "WtoTau", "LowAcc"],
        "type": "shape",
        "weight" : 1.
     },
     "alphaS" :{
        "vars": ["alphaS"],
-       "procs": ["Signal", "LowAcc"],
+       "procs": ["Signal", "DYJets", "Fake", "WtoTau", "LowAcc"],
+       "type": "shape",
+       "weight" : 1.
+    },
+     "LHEScaleWeight" :{
+       "vars": ["LHEScaleWeight_muR0p5_muF0p5", "LHEScaleWeight_muR0p5_muF1p0","LHEScaleWeight_muR1p0_muF0p5","LHEScaleWeight_muR1p0_muF2p0","LHEScaleWeight_muR2p0_muF1p0","LHEScaleWeight_muR2p0_muF2p0"],
+       "procs": ["DYJets", "Fake", "WtoTau", "LowAcc"],
+       "type": "shape",
+       "weight" : 1.
+    },
+     "LHEScaleWeight_WQTlow" :{
+       "vars": ["LHEScaleWeight_muR0p5_muF0p5_WQTlow", "LHEScaleWeight_muR0p5_muF1p0_WQTlow","LHEScaleWeight_muR1p0_muF0p5_WQTlow","LHEScaleWeight_muR1p0_muF2p0_WQTlow","LHEScaleWeight_muR2p0_muF1p0_WQTlow","LHEScaleWeight_muR2p0_muF2p0_WQTlow"],
+       "procs": ["Fake"],
+       "type": "shape",
+       "weight" : 1.
+    },
+     "LHEScaleWeight_WQTmid" :{
+       "vars": ["LHEScaleWeight_muR0p5_muF0p5_WQTmid", "LHEScaleWeight_muR0p5_muF1p0_WQTmid","LHEScaleWeight_muR1p0_muF0p5_WQTmid","LHEScaleWeight_muR1p0_muF2p0_WQTmid","LHEScaleWeight_muR2p0_muF1p0_WQTmid","LHEScaleWeight_muR2p0_muF2p0_WQTmid"],
+       "procs": ["Fake"],
+       "type": "shape",
+       "weight" : 1.
+    },
+     "LHEScaleWeight_WQThigh" :{
+       "vars": ["LHEScaleWeight_muR0p5_muF0p5_WQThigh", "LHEScaleWeight_muR0p5_muF1p0_WQThigh","LHEScaleWeight_muR1p0_muF0p5_WQThigh","LHEScaleWeight_muR1p0_muF2p0_WQThigh","LHEScaleWeight_muR2p0_muF1p0_WQThigh","LHEScaleWeight_muR2p0_muF2p0_WQThigh"],
+       "procs": ["Fake"],
        "type": "shape",
        "weight" : 1.
     },
@@ -91,6 +115,7 @@ systematicsDict = {
        "vars":["FakeNorm"],
        "procs": ["Fake"],
        "type": "lnN",
-       "weight" : 1.100 
+       "weight" : 1.2
+       #1.05 
     },
 }

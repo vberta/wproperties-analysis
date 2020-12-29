@@ -11,6 +11,9 @@ import numpy as np
 class fitUtils:
     def __init__(self, fmap, channel ="WPlus", doSyst=False):
         
+        self.nBinsQt = 9
+        self.nBinsY = 6
+        
         self.doSyst = doSyst
         self.processes = []
         self.signals = []
@@ -54,8 +57,8 @@ class fitUtils:
         self.helXsecs["UL"] = "AUL"
     def fillProcessList(self):
         for hel in self.helXsecs:
-            for i in range(1,7): #binsY
-                for j in range(1,9): #binsPt
+            for i in range(1, self.nBinsY+1): #binsY
+                for j in range(1, self.nBinsQt+1): #binsPt
                     proc = 'helXsecs' + hel + '_y_{}'.format(i)+'_qt_{}'.format(j)
                     self.processes.append(proc)
                     if not "helXsecs7" in proc and not "helXsecs8" in proc and not "helXsecs9" in proc:
@@ -110,7 +113,7 @@ class fitUtils:
                     del self.helGroups[s]
     def fillHelMetaGroup(self):
 
-        for i in range(1, 7):
+        for i in range(1, self.nBinsY+1):
             s = 'y_{i}'.format(i=i)
             self.helMetaGroups[s] = []
             for key in self.sumGroups:
@@ -120,7 +123,7 @@ class fitUtils:
             if self.helMetaGroups[s] == []:
                     del self.helMetaGroups[s]
         
-        for j in range(1, 9):
+        for j in range(1, self.nBinsQt+1):
             s = 'qt_{j}'.format(j=j)
             self.helMetaGroups[s] = []
             for key in self.sumGroups:
@@ -132,23 +135,23 @@ class fitUtils:
         #print self.helMetaGroups
     def fillSumGroup(self):
 
-        for i in range(1, 7):
+        for i in range(1, self.nBinsY+1):
             s = 'y_{i}'.format(i=i)
             for hel in self.helXsecs:
                 for signal in self.signals:
                     if 'helXsecs'+hel+'_'+s in signal:
                         self.sumGroups['helXsecs'+hel+'_'+s] = []
-                        for j in range(1, 9):
+                        for j in range(1, self.nBinsQt+1):
                             if 'helXsecs'+hel+'_'+'y_{i}_qt_{j}'.format(i=i,j=j) in self.signals:
                                 self.sumGroups['helXsecs'+hel+'_'+s].append('helXsecs'+hel+'_'+s+'_qt_{j}'.format(j=j))
         
-        for j in range(1, 9):
+        for j in range(1, self.nBinsQt+1):
             s = 'qt_{j}'.format(j=j)
             for hel in self.helXsecs:
                 for signal in self.signals:
                     if signal.split('_')[0] == 'helXsecs'+hel and signal.split('_')[4] == str(j):
                         self.sumGroups['helXsecs'+hel+'_'+s] = []
-                        for i in range(1, 7):
+                        for i in range(1, self.nBinsY+1):
                             if 'helXsecs'+hel+'_'+'y_{i}_qt_{j}'.format(i=i,j=j) in self.signals:
                             #print i, signal, 'helXsecs'+hel+'_'+'y_{i}_pt_{j}'.format(i=i,j=j)
                             #print 'append', 'helXsecs'+hel+'_y_{i}_'.format(i=i)+s, 'to', 'helXsecs'+hel+'_'+s
@@ -192,7 +195,7 @@ class fitUtils:
                             aux[self.channel+'_xsec'][proc] = 0.0
                         else:
                             if "Signal" in self.templSystematics[syst]["procs"] and "hel" in proc:
-                                aux[self.channel][proc] = 1.0
+                                aux[self.channel][proc] = self.templSystematics[syst]["weight"]
                                 aux[self.channel+'_xsec'][proc] = 0.0
                             else:
                                 aux[self.channel][proc] = 0.0
@@ -206,14 +209,18 @@ class fitUtils:
                          'WHSFSyst': ['WHSFSystFlat'],
                          'jme': set(['jesTotal', 'unclustEn']),
                          'PrefireWeight':['PrefireWeight'],
-                        #   'ptScale': set(["Eta{}zptsyst".format(j) for j in range(1, 5)] + ["Eta{}Ewksyst".format(j) for j in range(1, 5)] + ["Eta{}deltaMsyst".format(j) for j in range(1, 5)]+["Eta{}stateig{}".format(j, i) for i in range(0, 99) for j in range(1, 5)]),
-                          "CMSlumi" :["CMSlumi"],
+                          'CMSlumi' :['CMSlumi'],
                           "DYxsec" :["DYxsec"],
                           "Topxsec" :["Topxsec"],
                           "Dibosonxsec" :["Dibosonxsec"],
                           "Tauxsec" :["Tauxsec"],
                           "LeptonVeto" : ["LeptonVeto"],
                           "FakeNorm" :['FakeNorm'],
+                          "LHEScaleWeight" : ["LHEScaleWeight_muR0p5_muF0p5", "LHEScaleWeight_muR0p5_muF1p0","LHEScaleWeight_muR1p0_muF0p5","LHEScaleWeight_muR1p0_muF2p0","LHEScaleWeight_muR2p0_muF1p0","LHEScaleWeight_muR2p0_muF2p0"],
+                          "WQT" : ["LHEScaleWeight_muR0p5_muF0p5_WQTlow", "LHEScaleWeight_muR0p5_muF1p0_WQTlow","LHEScaleWeight_muR1p0_muF0p5_WQTlow","LHEScaleWeight_muR1p0_muF2p0_WQTlow","LHEScaleWeight_muR2p0_muF1p0_WQTlow","LHEScaleWeight_muR2p0_muF2p0_WQTlow", 
+                                "LHEScaleWeight_muR0p5_muF0p5_WQTmid", "LHEScaleWeight_muR0p5_muF1p0_WQTmid","LHEScaleWeight_muR1p0_muF0p5_WQTmid","LHEScaleWeight_muR1p0_muF2p0_WQTmid","LHEScaleWeight_muR2p0_muF1p0_WQTmid","LHEScaleWeight_muR2p0_muF2p0_WQTmid", 
+                                "LHEScaleWeight_muR0p5_muF0p5_WQThigh", "LHEScaleWeight_muR0p5_muF1p0_WQThigh","LHEScaleWeight_muR1p0_muF0p5_WQThigh","LHEScaleWeight_muR1p0_muF2p0_WQThigh","LHEScaleWeight_muR2p0_muF1p0_WQThigh","LHEScaleWeight_muR2p0_muF2p0_WQThigh"],
+                        #   'ptScale': set(["Eta{}zptsyst".format(j) for j in range(1, 5)] + ["Eta{}Ewksyst".format(j) for j in range(1, 5)] + ["Eta{}deltaMsyst".format(j) for j in range(1, 5)]+["Eta{}stateig{}".format(j, i) for i in range(0, 99) for j in range(1, 5)]),
                          }  # <type 'dict'>
         
         self.DC.shapeMap = 	{self.channel: {'*': [self.channel+'.root', '$PROCESS', '$PROCESS_$SYSTEMATIC']},\
