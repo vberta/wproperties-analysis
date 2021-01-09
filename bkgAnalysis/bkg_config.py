@@ -70,7 +70,7 @@ CORRFITFINAL= True #correlated fit in the final plots
 STATANA = CORRFITFINAL  #or False or CORRFITFINAL
 TEMPLATE = True
 NOM = ['Nominal','']
-EXTRAP = True #extrapolation syst
+EXTRAP = False #extrapolation syst
 EXTRAPCORR = False #extrapolation correction. not applied by default 
 NCORES=ncores
 if NCORES>1 :

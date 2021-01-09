@@ -55,15 +55,18 @@ def RDFprocessMC(fvec, outputDir, sample, xsec, fileSF, ncores, systType, preten
   
        #weight variations
         for s,variations in systematicsFinal.items():
-            if "LHEScaleWeight" in s and systType != 2 :  continue
+            if 'WQT' in s : continue 
+            if "LHEScaleWeight" in s and systType != 2 :  continue #==2 --> DY (and W)
             if "LHEPdfWeight"   in s and systType != 2 :  continue
             if "alphaS"         in s and systType != 2 :  continue
-
-            if "LHEPdfWeight" in s or "LHEScaleWeight" in s :
-                var_weight = weight
-            else:
-                if 'aiso' in region: continue
-                var_weight = weight.replace(s, "1.")
+            if 'WHSF' in s and 'aiso' in region: continue
+            
+            # if s not in weight :  #qui entra aiso-WHSF e non deve!
+            #     var_weight = weight
+            # else:
+                # if 'WHSF' in s and 'aiso' in region: continue
+                # var_weight = weight.replace(s, "1.")
+            var_weight = weight.replace(s, "1.")
 
             vars_vec = ROOT.vector('string')()
             for var in variations[0]:

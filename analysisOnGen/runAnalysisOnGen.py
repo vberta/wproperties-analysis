@@ -12,21 +12,21 @@ from getLumiWeight import getLumiWeight
 
 ROOT.gSystem.Load('bin/libSignalAnalysis.so')
 
-c=128
-
-ROOT.ROOT.EnableImplicitMT(c)
-
-print("running with {} cores".format(c))
-
 filePt = ROOT.TFile.Open("../analysisOnData/data/histoUnfoldingSystPt_nsel2_dy3_rebin1_default.root")
 fileY = ROOT.TFile.Open("../analysisOnData/data/histoUnfoldingSystRap_nsel2_dy3_rebin1_default.root")
 
 parser = argparse.ArgumentParser('')
-parser.add_argument('-runAC', '--runAC', default=False, action='store_true', help='Use to run the Angular Coefficients with all the variations')
-parser.add_argument('-runTemplates', '--runTemplates', default=False, action='store_true', help='Use to run the templates')
+parser.add_argument('-a', '--runAC', default=False, action='store_true', help='Use to run the Angular Coefficients with all the variations')
+parser.add_argument('-t', '--runTemplates', default=False, action='store_true', help='Use to run the templates')
+parser.add_argument('-c', '--ncores',type=int, default=128, help="number of cores used")
+
 args = parser.parse_args()
 runAC = args.runAC
 runTemplates = args.runTemplates
+ncores = args.ncores
+
+ROOT.ROOT.EnableImplicitMT(ncores)
+print("running with {} cores".format(ncores))
 
 inputFile = '/scratchnvme/wmass/WJetsNoCUT_v2/tree_*_*.root'
 
@@ -45,7 +45,7 @@ if runAC:
             for var in variations[0]:
                 vars_vec.push_back(var)
         
-            p.branch(nodeToStart='basicSelection', nodeToEnd='angularCoefficients_{}_{}'.format(charge, s), modules=[ROOT.accMap(filter),ROOT.AngCoeff(filter, vars_vec, variations[1])])
+            p.branch(nodeToStart='basicSelection', nodeToEnd='angularCoefficients_{}_{}'.format(charge, s), modules=[ROOT.accMap(filter),ROOT.getMassWeights(), ROOT.AngCoeff(filter, vars_vec, variations[1])])
 
     p.getOutput()
 

@@ -50,9 +50,13 @@ class bkg_prepareHistos:
                 for sKind, sList in self.systDict.items():  
                     if sKind!='Nominal' and regExtrapFlag : #extrap region only for nominal
                         continue
+                    # if 'Nom_WQT' in sKind: continue # used in LHEScaleWeight_WQt case, not useful as standalone. Commented because has been removed from the bkg_syst_dict
                     if not outFile.GetDirectory('templates_'+r+'/'+sKind):                           
                         outFile.mkdir('templates_'+r+'/'+sKind)
                     for sName in sList : 
+                        if '_WQT' in sKind :
+                            #  sName = sName+'_'+sKind.replace('LHEScaleWeight_','')
+                             sName = sName.replace(sKind.replace('LHEScaleWeight',''),'') #replace for instance: LHEScaleWeight_muR0p5_muF0p5_WQTlow-> LHEScaleWeight_muR0p5_muF0p5
                         inFile.cd()
                         if sKind!=self.sKindNom :
                             systName = '_'+sName
@@ -65,6 +69,19 @@ class bkg_prepareHistos:
                             h.SetName(varName+systName)
                         else :
                             h = inFile.Get('templates_'+r+'/'+sKind+'/'+varName+systName)
+                            
+                            #Wpt shape systematics block
+                            if sKind=='LHEScaleWeight_WQTlow' :
+                                h.Add(inFile.Get('templates_'+r+'/Nom_WQTmid/'+varName+self.sNameNom))
+                                h.Add(inFile.Get('templates_'+r+'/Nom_WQThigh/'+varName+self.sNameNom))
+                            if sKind=='LHEScaleWeight_WQTmid' :
+                                h.Add(inFile.Get('templates_'+r+'/Nom_WQTlow/'+varName+self.sNameNom))
+                                h.Add(inFile.Get('templates_'+r+'/Nom_WQThigh/'+varName+self.sNameNom))
+                            if sKind=='LHEScaleWeight_WQThigh' :
+                                h.Add(inFile.Get('templates_'+r+'/Nom_WQTlow/'+varName+self.sNameNom))
+                                h.Add(inFile.Get('templates_'+r+'/Nom_WQTmid/'+varName+self.sNameNom))
+                        if '_WQT' in sKind : 
+                            h.SetName(h.GetName()+sKind.replace('LHEScaleWeight',''))   
                         outFile.cd('templates_'+r+'/'+sKind)
                         h.Write()
                         

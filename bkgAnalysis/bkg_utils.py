@@ -20,12 +20,13 @@ from systematics import systematics
 def buildBkgSyst() :
     out = {}
     for key, val in systematics.items() :
+        if 'Nom_WQT' in key : continue
         out[key] = [var[1:] for var in val[0]]
     
     out['jme'] = ["jesTotalUp", "jesTotalDown", "unclustEnUp","unclustEnDown"]
     out['ptScale'] = [ "correctedUp", "correctedDown"]
     
-    print("dictionary=", out)
+    # print("dictionary=", out)
     return out 
 
 bkg_systematics = buildBkgSyst()

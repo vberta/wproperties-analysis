@@ -75,6 +75,9 @@ class plotter:
             "Nominal" : [1, 'Stat. Unc.'],
             "PrefireWeight" : [ROOT.kSpring+10, 'Prefire'],
             "alphaS" : [ROOT.kOrange-3, 'Alpha Strong'],
+            "LHEScaleWeight_WQTlow" : [ROOT.kViolet+7, "MC Scale Wqt<5"],
+            "LHEScaleWeight_WQTmid" : [ROOT.kViolet+7, "MC Scale 5<Wqt<15"],
+            "LHEScaleWeight_WQThigh" : [ROOT.kViolet+7, "q_{T}^{W}"], #it contains also two previous lines (not plotted)
         }
 
 
@@ -108,11 +111,31 @@ class plotter:
                 for sName in sList :
                     for var, varInfo in self.variableDict.items() :
                         inFile.cd()
+                        if '_WQT' in sKind and f!='SIGNAL_Fake' :
+                            sName = sName.replace(sKind.replace('LHEScaleWeight',''),'') #replace for instance: LHEScaleWeight_muR0p5_muF0p5_WQTlow-> LHEScaleWeight_muR0p5_muF0p5
                         if ROOT.gDirectory.Get(fileInfo[1]+'/'+sKind+'/'+varInfo[0]+'_'+sName)==None : #this syst is missing --> take the nominal
                             if sName!='' or f!='Data': print("missing syst:", sName, " for file", f)
                             h2 = inFile.Get(fileInfo[1]+'/Nominal/'+varInfo[0])
                         else : 
                             h2 = inFile.Get(fileInfo[1]+'/'+sKind+'/'+varInfo[0]+'_'+sName)
+                            
+                            if f!='SIGNAL_Fake' : #WtoTau should be the only with WQT syst, except fake (WJets skipped, not needed)
+                                if sKind=='LHEScaleWeight_WQTlow' :
+                                    h2.Add(inFile.Get(fileInfo[1]+'/Nom_WQTmid/'+varInfo[0]))
+                                    h2.Add(inFile.Get(fileInfo[1]+'/Nom_WQThigh/'+varInfo[0]))
+                                if sKind=='LHEScaleWeight_WQTmid' :
+                                    h2.Add(inFile.Get(fileInfo[1]+'/Nom_WQTlow/'+varInfo[0]))
+                                    h2.Add(inFile.Get(fileInfo[1]+'/Nom_WQThigh/'+varInfo[0]))
+                                if sKind=='LHEScaleWeight_WQThigh' :
+                                    h2.Add(inFile.Get(fileInfo[1]+'/Nom_WQTlow/'+varInfo[0]))
+                                    h2.Add(inFile.Get(fileInfo[1]+'/Nom_WQTmid/'+varInfo[0]))
+                            
+                        if '_WQT' in sKind and f!='SIGNAL_Fake' :
+                            print("special cane")
+                            if f=='WToMu' : 
+                                h2 = inFile.Get(fileInfo[1]+'/Nominal/'+varInfo[0]) #get the nominal for the signal, wqt should not be used for it
+                            sName=sName+sKind.replace('LHEScaleWeight','')
+                        
                         for s,sInfo in self.signDict.items() :
                             self.histoDict[f+s+var+sName] = h2.ProjectionX(h2.GetName() + s, sInfo[0],sInfo[0])
                             self.varBinWidth_modifier(self.histoDict[f+s+var+sName])
@@ -179,7 +202,7 @@ class plotter:
                         if (hRatioDict[systDown].GetBinContent(i)<hRatio.GetBinContent(i) and hRatioDict[syst].GetBinContent(i)<hRatio.GetBinContent(i)) or (hRatioDict[systDown].GetBinContent(i)>hRatio.GetBinContent(i) and hRatioDict[syst].GetBinContent(i)>hRatio.GetBinContent(i)) : #nominal not in between systs
                             print(var,"WARNING: systematic", syst," up/down not around nominal in bin", i, hRatioDict[systDown].GetBinContent(i), hRatio.GetBinContent(i), hRatioDict[syst].GetBinContent(i))
                             
-                delta = 0.25*delta
+                delta = 0.25*delta #1/2 for up/down, 1/2 for sqrt
                 
                 deltaPDF=0 #LHE PDF variations (wrt nominal)
                 for syst, hsyst in hRatioDict.items() : 
@@ -192,10 +215,22 @@ class plotter:
                 deltaScale=0 #LHE Scale variations (envelope)
                 for syst, hsyst in hRatioDict.items() : 
                     if not 'LHEScale' in syst: continue 
+                    # if 'WQT' in syst: continue
                     deltaScale_temp= (hsyst.GetBinContent(i)-hRatio.GetBinContent(i))**2
                     if deltaScale_temp>deltaScale : 
                         deltaScale = deltaScale_temp
                 
+                # deltaWQT = 0 #if i want to sum wqt linearly and not **2
+                # for Bin in ['low', 'mid', 'high'] :
+                #     deltaWQT_Bin = 0
+                #     for syst, hsyst in hRatioDict.items() : 
+                #         if 'WQT' in syst: continue
+                #         if Bin not in syst : continue 
+                #         deltaWQT_temp= abs(hsyst.GetBinContent(i)-hRatio.GetBinContent(i))
+                #         if deltaWQT_temp>deltaWQT : 
+                #             deltaWQT_Bin = deltaWQT_temp
+                #     deltaWQT+=deltaWQT_bin
+                        
                 deltaSum = math.sqrt(delta+deltaPDF+deltaScale)
                 hRatioBand.SetBinError(i, deltaSum)
     
@@ -345,7 +380,7 @@ class plotter:
             # legend.SetBorderSize(0)
             legend.SetNColumns(3)
             
-            colorList = [600,616,416,632,432,800,900]
+            colorList = [600,616,416,632,432,800,900,880,840,820]
             colorNumber = 1
             colorCounter = 0
             modSyst = copy.deepcopy(bkg_utils.bkg_systematics)
@@ -424,7 +459,13 @@ class plotter:
                     hdict[sKind].SetBinContent(i, delta) 
                 hdict[sKind].SetFillStyle(0)
                 hdict[sKind].SetFillColor(0)
-            
+            sKind = 'LHEScaleWeight_WQThigh'  
+            for ipt in range(1,hdict[sKind].GetNbinsX()+1) :
+                deltaSumWQT = hdict[sKind].GetBinContent(ipt)**2
+                deltaSumWQT += hdict[sKind.replace('high','mid')].GetBinContent(ipt)**2
+                deltaSumWQT += hdict[sKind.replace('high','low')].GetBinContent(ipt)**2
+                deltaSumWQT = math.sqrt(deltaSumWQT)
+                hdict[sKind].SetBinContent(ipt , deltaSumWQT)
   
             #build the canvas
             can2 = ROOT.TCanvas('prefit_'+var+'_systComparison','prefit_'+var+'_systComparison',800,600)
@@ -460,6 +501,7 @@ class plotter:
                 sumOfDelta=0
                 for sKind, sList in bkg_utils.bkg_systematics.items():
                     if sKind in skipSyst : continue #skipped systs
+                    if 'WQTlow' in sKind or 'WQTmid' in sKind: continue #high is the sum
                     sumOfDelta+= hdict[sKind].GetBinContent(i)**2
                 sumOfDelta = math.sqrt(sumOfDelta)
                 hdict['sum'].SetBinContent(i,sumOfDelta) 
@@ -472,6 +514,7 @@ class plotter:
                     # if colorNumber==5 : colorNumber+=1
 
                     if sKind in skipSyst : continue #skipped systs
+                    if 'WQTlow' in sKind or 'WQTmid' in sKind: continue #high is the sum
                     
                     hdict[sKind].SetLineWidth(3)
                     hdict[sKind].SetLineColor(self.groupedSystColors[sKind][0])

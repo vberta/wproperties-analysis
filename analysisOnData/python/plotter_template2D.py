@@ -33,7 +33,10 @@ class plotter:
         self.selectionFake = ['fakes']       
         self.extSyst = copy.deepcopy(systematics)
         self.extSyst['Nominal'] = ['']
-        self.extSyst['jme'] = ['_jesTotalUp', '_jesTotalDown','_unclustEnUp', '_unclustEnDown'],
+        self.extSyst['jme'] = (['_jesTotalUp', '_jesTotalDown', '_unclustEnUp', '_unclustEnDown'],"jme")
+        del self.extSyst['Nom_WQTlow'] #remove wqt-shape "nom" variation (already included in fake vars)
+        del self.extSyst['Nom_WQTmid'] 
+        del self.extSyst['Nom_WQThigh'] 
         self.histoDict ={} 
 
     def unroll2D(self, th2):
@@ -53,14 +56,27 @@ class plotter:
     def getHistoforSample(self, sample, infile, chargeBin) :
         # if not 'Fake' in sample:
             for sKind in self.extSyst:
+                if 'WQT' in sKind and sample not in ['Fake','LowAcc','WtoTau']: continue
                 self.histoDict[sample][sKind] = []
                 basepath = 'templates_Signal/' + sKind
                 if 'LowAcc' in sample: basepath = 'templatesLowAcc_Signal/' + sKind
                 if 'Fake' in sample: basepath = 'templates_fakes/' + sKind
-                if 'Fake' in sample and sKind!='Nominal' and sKind!='LHEScaleWeight' and sKind!='jme' : continue  
+                # if 'Fake' in sample and sKind!='Nominal' and sKind!='LHEScaleWeight' and sKind!='jme' : continue  
                 if infile.GetDirectory(basepath):
                     for key in infile.Get(basepath).GetListOfKeys():
                         th3=infile.Get(basepath+'/'+key.GetName())
+                        if sample!='Fake' :
+                            if sKind=='LHEScaleWeight_WQTlow' :
+                                print(basepath.replace(sKind,'Nom_WQTmid')+'/'+key.GetName(), sample)
+                                th3.Add(infile.Get(basepath.replace(sKind,'Nom_WQTmid')+'/'+key.GetName().split('_')[0]))
+                                th3.Add(infile.Get(basepath.replace(sKind,'Nom_WQThigh')+'/'+key.GetName().split('_')[0]))
+                            if sKind=='LHEScaleWeight_WQTmid' :
+                                th3.Add(infile.Get(basepath.replace(sKind,'Nom_WQTlow')+'/'+key.GetName().split('_')[0]))
+                                th3.Add(infile.Get(basepath.replace(sKind,'Nom_WQThigh')+'/'+key.GetName().split('_')[0]))
+                            if sKind=='LHEScaleWeight_WQThigh' :
+                                th3.Add(infile.Get(basepath.replace(sKind,'Nom_WQTlow')+'/'+key.GetName().split('_')[0]))
+                                th3.Add(infile.Get(basepath.replace(sKind,'Nom_WQTmid')+'/'+key.GetName().split('_')[0]))
+                        
                         #plus charge bin 2, minus bin 1
                         th3.GetZaxis().SetRange(chargeBin,chargeBin)
                         th2=th3.Project3D("yx")
@@ -142,6 +158,72 @@ class plotter:
                     aux['LHEPdfWeight'].append(th2Up)
                     aux['LHEPdfWeight'].append(th2Down)
             self.histoDict[sample].update(aux)
+    def symmetriseSyst(self,sample):
+        for sKind,sList in self.extSyst.items() :
+            if not "LHE" in sKind : continue #oly pDF, MCscale need symmetrization
+            # if 'WQT' in sKind and sample!='Fake' : continue
+            if 'WQT' in sKind and sample not in ['Fake','LowAcc','WtoTau']: continue
+            if not self.histoDict[sample][sKind]==[]:
+                aux = {}
+                aux[sKind]=[]
+                for h in self.histoDict[sample]['Nominal']:
+                    if 'mass' in h.GetName(): continue
+                    for sName in sList[0]:
+                        for hvar in self.histoDict[sample][sKind]:
+                            if hvar.GetName() == h.GetName()+ sName:
+                                th2var = hvar
+                                break
+                        th2c = h.Clone()
+                        th2varD = th2var.Clone()
+                        th2var.Divide(th2c)
+                        th2c.Divide(th2varD)
+                        nbinsX = h.GetXaxis().GetNbins()
+                        nbinsY = h.GetYaxis().GetNbins()
+                        th2Up = ROOT.TH2D("up","up",nbinsX,h.GetXaxis().GetBinLowEdge(1),h.GetXaxis().GetBinUpEdge(nbinsX),nbinsY,h.GetYaxis().GetBinLowEdge(1),h.GetYaxis().GetBinUpEdge(nbinsY))
+                        th2Up.Sumw2()
+                        th2Down =ROOT.TH2D("down","down",nbinsX,h.GetXaxis().GetBinLowEdge(1),h.GetXaxis().GetBinUpEdge(nbinsX),nbinsY,h.GetYaxis().GetBinLowEdge(1),h.GetYaxis().GetBinUpEdge(nbinsY))
+                        th2Down.Sumw2()
+                        for j in range(1,h.GetNbinsX()+1):
+                            for k in range(1,h.GetNbinsY()+1):
+                                th2Up.SetBinContent(j,k,h.GetBinContent(j,k)*th2var.GetBinContent(j,k))
+                                th2Down.SetBinContent(j,k,h.GetBinContent(j,k)*th2c.GetBinContent(j,k))
+                        th2Up.SetName(h.GetName()+ sName+'Up')
+                        th2Down.SetName(h.GetName()+ sName+'Down')
+                        aux[sKind].append(th2Up)
+                        aux[sKind].append(th2Down)
+                self.histoDict[sample].update(aux)
+    def symmetriseSyst_shift(self,sample): #nom+-var (insted of nom*(nom/var), nom*(var/nom))
+        for sKind,sList in self.extSyst.items() :
+            if not "LHE" in sKind : continue #oly pDF, MCscale need symmetrization
+            # if 'WQT' in sKind and sample!='Fake' : continue
+            if 'WQT' in sKind and sample not in ['Fake','LowAcc','WtoTau']: continue
+            if not self.histoDict[sample][sKind]==[]:
+                aux = {}
+                aux[sKind]=[]
+                for h in self.histoDict[sample]['Nominal']:
+                    if 'mass' in h.GetName(): continue
+                    for sName in sList[0]:
+                        for hvar in self.histoDict[sample][sKind]:
+                            if hvar.GetName() == h.GetName()+ sName:
+                                th2var = hvar
+                                break
+                        hdiff = hvar.Clone()
+                        hdiff.Add(h,-1)
+                        nbinsX = h.GetXaxis().GetNbins()
+                        nbinsY = h.GetYaxis().GetNbins()
+                        th2Up = ROOT.TH2D("up","up",nbinsX,h.GetXaxis().GetBinLowEdge(1),h.GetXaxis().GetBinUpEdge(nbinsX),nbinsY,h.GetYaxis().GetBinLowEdge(1),h.GetYaxis().GetBinUpEdge(nbinsY))
+                        th2Up.Sumw2()
+                        th2Down =ROOT.TH2D("down","down",nbinsX,h.GetXaxis().GetBinLowEdge(1),h.GetXaxis().GetBinUpEdge(nbinsX),nbinsY,h.GetYaxis().GetBinLowEdge(1),h.GetYaxis().GetBinUpEdge(nbinsY))
+                        th2Down.Sumw2()
+                        for j in range(1,h.GetNbinsX()+1):
+                            for k in range(1,h.GetNbinsY()+1):
+                                th2Up.SetBinContent(j, k, h.GetBinContent(j, k)+hdiff.GetBinContent(j, k))
+                                th2Down.SetBinContent(j, k, h.GetBinContent(j, k)-hdiff.GetBinContent(j, k))
+                        th2Up.SetName(h.GetName()+ sName+'Up')
+                        th2Down.SetName(h.GetName()+ sName+'Down')
+                        aux[sKind].append(th2Up)
+                        aux[sKind].append(th2Down)
+                self.histoDict[sample].update(aux)
     def alphaVariations(self,sample):
         aux = {}
         aux['alphaS'] = []
@@ -173,6 +255,8 @@ class plotter:
                 print("No histo dict for sample:", sample, " What have you done??!!!!")
                 continue
             self.symmetrisePDF(sample)
+            # self.symmetriseSyst(sample)
+            self.symmetriseSyst_shift(sample)
             self.uncorrelateEff(sample)
             self.alphaVariations(sample)
             for syst, hlist in self.histoDict[sample].items():

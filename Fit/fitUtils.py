@@ -66,36 +66,69 @@ class fitUtils:
         bkg_list = ["DYJets","DiBoson","Top","Fake","WtoTau","LowAcc"]  # bkg_list = ["Fake","LowAcc"] # bkg_list = ["LowAcc"]
         self.processes.extend(bkg_list)
     def shapeFile(self):
+        
+        if self.doSyst :
+            xsecVarDict = {
+            '_mass': ['_massUp','_massDown'],
+            '_LHEPdfWeight' : set(['_LHEPdfWeightHess{}Up'.format(i+1) for i in range(60)]+['_LHEPdfWeightHess{}Down'.format(i+1) for i in range(60)]),
+            '_alphaS' : ['_alphaSUp', '_alphaSDown'],
+            '' : ['']
+            }
+        else :
+            xsecVarDict = {'' : ['']}
 
         shapeOutxsec = ROOT.TFile(self.channel+'_xsec.root', 'recreate')
 
-        self.xsec.Scale(61526.7*1000.*35.9) #xsec in fb x integrated luminosity
+        # self.xsec.Scale(61526.7*1000.*35.9) #xsec in fb x integrated luminosity
+        self.xsec = self.fmap.Get("accMaps/mapTot") #xsec in fb x integrated luminosity
         self.xsec.Write()
+        
+        NevTot ={}
+        for sKind,sList in xsecVarDict.items() :
+            if sKind=='' : continue 
+            for sName in sList :
+                NevTot[sKind+sName] = self.fmap.Get("angularCoefficients"+sKind+"/mapTot"+sName)
+                # NevTot[sKind+sName].Scale(61526.7*1000.*35.9) #xsec in fb x integrated luminosity
+                NevTot[sKind+sName].Write()
+                # NevTot[sKind+sName] = self.xsec#temporary to test
         
         for proc in self.processes:
             if proc in self.signals: #give the correct xsec to unfold
-                
-                iY = int(proc.split('_')[2])
-                iQt = int(proc.split('_')[4])
-                coeff = proc.split('_')[0].replace('helXsecs','')
+                for sKind,sList in xsecVarDict.items() :
+                    for sName in sList :
+                        # for ud in ['Up','Down'] :
+                        #     if sName =='nom' and ud=='Down' : continue
+                        #     if sName =='nom' : ud=''
+                            
+                        iY = int(proc.split('_')[2])
+                        iQt = int(proc.split('_')[4])
+                        coeff = proc.split('_')[0].replace('helXsecs','')
+                        # print('coeff=',coeff, "----", proc, "---",sName)
 
-                tmp = ROOT.TH1D(proc,proc, 1, 0., 1.)
-                cont = self.xsec.GetBinContent(iY,iQt)
-                tmp.SetBinContent(1, cont)
-                nsum = (3./16./math.pi)
-                
-                if not "UL" in proc: #rescale for the releative xsec
-                    hAC = self.fmap.Get("angularCoefficients/harmonics{}_nom_nom".format(self.helXsecs[coeff]))
-                    nsum = nsum*hAC.GetBinContent(iY,iQt)/self.factors[self.helXsecs[coeff]]
-                tmp.Scale(nsum)
-                shapeOutxsec.cd()
-                tmp.Write()
+                        # tmp = ROOT.TH1D(proc,proc, 1, 0., 1.)
+                        tmp = ROOT.TH1D(proc+sName,proc+sName, 1, 0., 1.)
+                        if sName =='' :
+                            cont = self.xsec.GetBinContent(iY,iQt)
+                        else :
+                            cont = NevTot[sKind+sName].GetBinContent(iY,iQt)
+                        tmp.SetBinContent(1, cont)
+                        nsum = (3./16./math.pi)
+                        
+                        if not "UL" in proc: #rescale for the releative xsec
+                            # hAC = self.fmap.Get("angularCoefficients{}/harmonics{}_{}_{}".format(sKind,self.helXsecs[coeff],sName+ud))
+                            hAC = self.fmap.Get("angularCoefficients/harmonics{}_nom_nom".format(self.helXsecs[coeff]))
+                            nsum = nsum*hAC.GetBinContent(iY,iQt)/self.factors[self.helXsecs[coeff]]
+                        tmp.Scale(nsum)
+                        shapeOutxsec.cd()
+                        tmp.Write()
             else:
-                tmp = ROOT.TH1D(proc, proc, 1, 0.,1.)
-                if proc == "data_obs": tmp.SetBinContent(1, 1.)
-                else: tmp.SetBinContent(1, 0.)
-                shapeOutxsec.cd()
-                tmp.Write()
+                for sKind,sList in xsecVarDict.items() :
+                    for sName in sList :
+                        tmp = ROOT.TH1D(proc+sName, proc+sName, 1, 0.,1.)
+                        if proc == "data_obs": tmp.SetBinContent(1, 1.)
+                        else: tmp.SetBinContent(1, 0.)
+                        shapeOutxsec.cd()
+                        tmp.Write()
     def fillHelGroup(self):
 
         for i in range(1, self.imap.GetNbinsX()+1):
@@ -196,7 +229,10 @@ class fitUtils:
                         else:
                             if "Signal" in self.templSystematics[syst]["procs"] and "hel" in proc:
                                 aux[self.channel][proc] = self.templSystematics[syst]["weight"]
-                                aux[self.channel+'_xsec'][proc] = 0.0
+                                if syst in ["alphaS", "LHEPdfWeight", 'mass'] : #theo nuis. applied to signal
+                                    aux[self.channel+'_xsec'][proc] = self.templSystematics[syst]["weight"]
+                                else :
+                                    aux[self.channel+'_xsec'][proc] = 0.0
                             else:
                                 aux[self.channel][proc] = 0.0
                                 aux[self.channel+'_xsec'][proc] = 0.0
@@ -242,7 +278,7 @@ class fitUtils:
         coeff = [0,2]
         for j in coeff:
             testnames = []
-            for i in range(1, 7):
+            for i in range(1, self.nBinsY+1):
                 testnames.append("y_{}_helmeta_A{}".format(i,j))
 
             etas = [0.2, 0.6, 1.0, 1.4, 1.8, 2.2]
@@ -251,7 +287,7 @@ class fitUtils:
             #self.poly1DRegGroups["poly1dyA{}".format(j)] = {"names": testnames, "bincenters": etas, "firstorder": 0, "lastorder": 2}
 
             testnames = []
-            for i in range(1, 9):
+            for i in range(1, self.nBinsQt+1):
                 testnames.append("qt_{}_helmeta_A{}".format(i, j))
 
             pts = [2., 6., 10., 14., 18., 22., 26., 30.]
@@ -262,7 +298,7 @@ class fitUtils:
         coeff = [1, 3, 4]
         for j in coeff:
             testnames = []
-            for i in range(1, 7):
+            for i in range(1, self.nBinsY+1):
                 testnames.append("y_{}_helmeta_A{}".format(i, j))
 
             etas = [0.2, 0.6, 1.0, 1.4, 1.8, 2.2]
@@ -273,7 +309,7 @@ class fitUtils:
         coeff = [1, 3]
         for j in coeff:
             testnames = []
-            for i in range(1, 9):
+            for i in range(1, self.nBinsQt+1):
                 testnames.append("qt_{}_helmeta_A{}".format(i, j))
 
             pts = [2., 6., 10., 14., 18., 22., 26., 30.]
@@ -282,7 +318,7 @@ class fitUtils:
             #self.poly1DRegGroups["poly1dqtA{}".format(j)] = {"names": testnames, "bincenters": pts, "firstorder": 1, "lastorder": 3}
 
         testnames = []
-        for i in range(1, 9):
+        for i in range(1, self.nBinsQt+1):
             testnames.append("qt_{}_helmeta_A4".format(i))
 
         pts = [2., 6., 10., 14., 18., 22., 26., 30.]
@@ -294,15 +330,16 @@ class fitUtils:
         #etas = np.array([0.2/2.4, 0.6/2.4, 1.0/2.4, 1.4/2.4, 1.8/2.4, 2.2/2.4])
         #pts = np.array([2./32., 6./32., 10./32., 14./32., 18./32., 22./32., 26./32., 30./32.])
         etas = np.array([0.2, 0.6, 1.0, 1.4, 1.8, 2.2])
-        pts = np.array([2., 6., 10., 14., 18., 22., 26., 30.])
+        # etas = np.array([0.2, 0.6, 1.0, 1.4, 1.8, 2.2])
+        pts = np.array([1., 3., 5., 7., 9., 11., 14., 19., 27.])
 
         #etas = etas/2.4
         #pts = pts/32.
 
         testnames = []
         bincenters = []
-        for i in range(6):
-            for j in range(8):
+        for i in range(self.nBinsY):
+            for j in range(self.nBinsQt):
                 testnames.append("y_%i_qt_%i_A4" % (i+1, j+1))
                 bincenters.append([etas[i], pts[j]])
 
@@ -311,8 +348,8 @@ class fitUtils:
         coeff = [1, 3]
         for c in coeff:
             testnames = []
-            for i in range(6):
-                for j in range(8):
+            for i in range(self.nBinsY):
+                for j in range(self.nBinsQt):
                     testnames.append("y_%i_qt_%i_A%i" % (i+1, j+1,c))
 
         self.poly2DRegGroups["poly2dA%i"%c] = {"names": testnames, "bincenters": bincenters, "firstorder": (1, 1), "lastorder": (3, 4), "fullorder": (5, 7)}
@@ -320,8 +357,8 @@ class fitUtils:
         coeff = [0, 2]
         for c in coeff:
             testnames = []
-            for i in range(6):
-                for j in range(8):
+            for i in range(self.nBinsY):
+                for j in range(self.nBinsQt):
                     testnames.append("y_%i_qt_%i_A%i" % (i+1, j+1, c))
 
         self.poly2DRegGroups["poly2dA%i" % c] = {"names": testnames, "bincenters": bincenters, "firstorder": (0, 1), "lastorder": (3, 4), "fullorder": (5, 7)}

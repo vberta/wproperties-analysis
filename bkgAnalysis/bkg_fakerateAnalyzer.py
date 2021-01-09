@@ -255,7 +255,7 @@ class bkg_analyzer:
                                             deltaPP = abs(histo_fake_dict['nom'+s+e+'reb'].GetBinContent(pp+1)-histo_fake_dict[systUp+s+e+'reb'].GetBinContent(pp+1))
                                             deltaP2 = abs(histo_fake_dict['nom'+s+e+'reb'].GetBinContent(p2+1)-histo_fake_dict[systUp+s+e+'reb'].GetBinContent(p2+1))
                                         # erv = (histo_fake_dict['nom'+s+e+'reb'].GetBinContent(pp+1)-histo_fake_dict[systList[syst]+s+e].GetBinContent(pp+1))*(histo_fake_dict['nom'+s+e+'reb'].GetBinContent(p2+1)-histo_fake_dict[systList[syst]+s+e].GetBinContent(p2+1))
-                                        if deltaPP > 1e-7 and deltaP2 > 1e-7 :
+                                        if abs(histo_fake_dict['nom'+s+e+'reb'].GetBinContent(pp+1)-histo_fake_dict[systUp+s+e+'reb'].GetBinContent(pp+1)) > 1e-7 and abs(histo_fake_dict['nom'+s+e+'reb'].GetBinContent(p2+1)-histo_fake_dict[systUp+s+e+'reb'].GetBinContent(p2+1)) > 1e-7 :
                                             signPP = (histo_fake_dict['nom'+s+e+'reb'].GetBinContent(pp+1)-histo_fake_dict[systUp+s+e+'reb'].GetBinContent(pp+1))/abs(histo_fake_dict['nom'+s+e+'reb'].GetBinContent(pp+1)-histo_fake_dict[systUp+s+e+'reb'].GetBinContent(pp+1))#Chosen the UP sign!
                                             signP2 = (histo_fake_dict['nom'+s+e+'reb'].GetBinContent(p2+1)-histo_fake_dict[systUp+s+e+'reb'].GetBinContent(p2+1))/abs(histo_fake_dict['nom'+s+e+'reb'].GetBinContent(p2+1)-histo_fake_dict[systUp+s+e+'reb'].GetBinContent(p2+1))#Chosen the UP sign!
                                         else :
@@ -521,6 +521,9 @@ class bkg_analyzer:
             "Nominal" : [1, 'Stat. Unc.'],
             "PrefireWeight" : [ROOT.kSpring+10, 'Prefire'],
             "alphaS" : [ROOT.kOrange-3, 'Alpha Strong'],
+            "LHEScaleWeight_WQTlow" : [ROOT.kViolet+7, "MC Scale Wqt<5"],
+            "LHEScaleWeight_WQTmid" : [ROOT.kViolet+7, "MC Scale 5<Wqt<15"],
+            "LHEScaleWeight_WQThigh" : [ROOT.kViolet+7, "q_{T}^{W}"], #it contains also two previous lines (not plotted)
         }
             
         #getting canvas and histoss
@@ -707,7 +710,7 @@ class bkg_analyzer:
 
                             sameFlag = True
                             colorNumber = 1
-                            colorList = [600,616,416,632,432,800,900]
+                            colorList = [600,616,416,632,432,800,900,880,840,820]
                             colorCounter = 0
 
                             for sKind, sList in modSystDict.items():
@@ -901,9 +904,23 @@ class bkg_analyzer:
                                     # finalHistoDict[sKind+canvas+histo+s+e+'group'].SetLineWidth(1)
                                     finalLegDict[e+s+canvas+histo+"groupSyst"].AddEntry(finalHistoDict[sKind+canvas+histo+s+e+'group'], 'Stat. Unc.')
                                 else :
-                                    finalHistoDict[sKind+canvas+histo+s+e+'group'].SetLineColor(groupedSystColors[sKind][0])
-                                    finalLegDict[e+s+canvas+histo+"groupSyst"].AddEntry(finalHistoDict[sKind+canvas+histo+s+e+'group'], groupedSystColors[sKind][1])
+                                    if not 'WQTlow' in sKind and not 'WQTmid' in sKind: 
+                                        finalHistoDict[sKind+canvas+histo+s+e+'group'].SetLineColor(groupedSystColors[sKind][0])
+                                        finalLegDict[e+s+canvas+histo+"groupSyst"].AddEntry(finalHistoDict[sKind+canvas+histo+s+e+'group'], groupedSystColors[sKind][1])
                             
+                            # set in 'LHEScaleWeight_WQThigh'  the sum of Wqt
+                            sKind = 'LHEScaleWeight_WQThigh'  
+                            for ipt in range(1,finalHistoDict[sKind+canvas+histo+s+e+'group'].GetNbinsX()+1) :
+                                deltaSumWQT = finalHistoDict[sKind+canvas+histo+s+e+'group'].GetBinContent(ipt)**2
+                                deltaSumWQT += finalHistoDict[sKind.replace('high','mid')+canvas+histo+s+e+'group'].GetBinContent(ipt)**2
+                                deltaSumWQT += finalHistoDict[sKind.replace('high','low')+canvas+histo+s+e+'group'].GetBinContent(ipt)**2
+                                deltaSumWQT = math.sqrt(deltaSumWQT)
+                                # deltaSumWQT = finalHistoDict[sKind+canvas+histo+s+e+'group'].GetBinContent(ipt)
+                                # deltaSumWQT += finalHistoDict[sKind.replace('high','mid')+canvas+histo+s+e+'group'].GetBinContent(ipt)
+                                # deltaSumWQT += finalHistoDict[sKind.replace('high','low')+canvas+histo+s+e+'group'].GetBinContent(ipt)
+                                finalHistoDict[sKind+canvas+histo+s+e+'group'].SetBinContent(ipt , deltaSumWQT)
+                            
+                            #sum of groups
                             finalHistoDict['sum'+canvas+histo+s+e+'group'] = finalHistoDict['Nominal'+canvas+histo+s+e+'group'].Clone(finalHistoDict['Nominal'+canvas+histo+s+e+'group'].GetName().replace('Nominal','sum'))
                             finalHistoDict['sum'+canvas+histo+s+e+'group'].SetFillStyle(0)
                             finalHistoDict['sum'+canvas+histo+s+e+'group'].SetFillColor(800)
@@ -913,15 +930,17 @@ class bkg_analyzer:
                                 sumOfDelta = 0
                                 for sKind, sList in nomSystDict.items():
                                     if sKind=='Nominal' : continue
+                                    if 'WQTlow' in sKind or 'WQTmid' in sKind: continue 
                                     sumOfDelta+= finalHistoDict[sKind+canvas+histo+s+e+'group'].GetBinContent(ipt)**2
                                 sumOfDelta = math.sqrt(sumOfDelta)
                                 finalHistoDict['sum'+canvas+histo+s+e+'group'].SetBinContent(ipt,sumOfDelta)
                             finalLegDict[e+s+canvas+histo+"groupSyst"].AddEntry(finalHistoDict['sum'+canvas+histo+s+e+'group'], 'Squared Sum of Syst.')
-
+                                                            
                             c_groupSyst.cd()
                             finalHistoDict['sum'+canvas+histo+s+e+'group'].Draw("hist")
                             finalHistoDict['Nominal'+canvas+histo+s+e+'group'].Draw('hist SAME')
                             for sKind, sList in systDict.items():
+                                if 'WQTlow' in sKind or 'WQTmid' in sKind: continue 
                                 finalHistoDict[sKind+canvas+histo+s+e+'group'].Draw("hist SAME")
                             finalLegDict[e+s+canvas+histo+"groupSyst"].Draw("SAME")
                             
@@ -1155,8 +1174,9 @@ class bkg_analyzer:
                                 finalLegDict[s+canvas+histo+"groupSyst_unrolled"].AddEntry(finalHistoDict[sKind+s+canvas+histo+'group_unrolled'], 'Squared Sum of Syst.')
                                 # finalHistoDict[sKind+s+canvas+histo+'group_unrolled'].SetLineWidth(finalHistoDict[sKind+canvas+histo+s+'0group'].GetLineWidth())
                             else :
-                                finalLegDict[s+canvas+histo+"groupSyst_unrolled"].AddEntry(finalHistoDict[sKind+s+canvas+histo+'group_unrolled'], groupedSystColors[sKind][1])
-
+                                if not 'WQTlow' in sKind and not 'WQTmid' in sKind: 
+                                    finalLegDict[s+canvas+histo+"groupSyst_unrolled"].AddEntry(finalHistoDict[sKind+s+canvas+histo+'group_unrolled'], groupedSystColors[sKind][1])
+                                    
                             for e in self.etaBinningS :
                                 for p in self.ptBinningS :
                                     indexUNR = self.etaBinning.index(float(e))*len(self.ptBinningS)+self.ptBinning.index(float(p))
@@ -1168,6 +1188,7 @@ class bkg_analyzer:
                         finalHistoDict['sum'+s+canvas+histo+'group_unrolled'].Draw("hist")
                         finalHistoDict['Nominal'+s+canvas+histo+'group_unrolled'].Draw('hist SAME')
                         for sKind, sList in systDict.items():
+                            if 'WQTlow' in sKind or 'WQTmid' in sKind: continue  
                             finalHistoDict[sKind+s+canvas+histo+'group_unrolled'].Draw("hist SAME")
                         finalLegDict[s+canvas+histo+"groupSyst_unrolled"].Draw("SAME")
                         
@@ -1344,7 +1365,7 @@ class bkg_analyzer:
 
                             sameFlag = True
                             colorNumber = 1
-                            colorList = [600,616,416,632,432,800,900]
+                            colorList = [600,616,416,632,432,800,900,880,840,820]
                             colorCounter = 0
 
                             for sKind, sList in modSystDict.items():

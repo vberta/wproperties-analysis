@@ -76,25 +76,26 @@ systematicsDict = {
     },
      "LHEScaleWeight" :{
        "vars": ["LHEScaleWeight_muR0p5_muF0p5", "LHEScaleWeight_muR0p5_muF1p0","LHEScaleWeight_muR1p0_muF0p5","LHEScaleWeight_muR1p0_muF2p0","LHEScaleWeight_muR2p0_muF1p0","LHEScaleWeight_muR2p0_muF2p0"],
-       "procs": ["DYJets", "Fake", "WtoTau", "LowAcc"],
+       "procs": ["DYJets"],
+      #  "procs": ["DYJets", "Fake", "WtoTau", "LowAcc"],
        "type": "shape",
        "weight" : 1.
     },
      "LHEScaleWeight_WQTlow" :{
        "vars": ["LHEScaleWeight_muR0p5_muF0p5_WQTlow", "LHEScaleWeight_muR0p5_muF1p0_WQTlow","LHEScaleWeight_muR1p0_muF0p5_WQTlow","LHEScaleWeight_muR1p0_muF2p0_WQTlow","LHEScaleWeight_muR2p0_muF1p0_WQTlow","LHEScaleWeight_muR2p0_muF2p0_WQTlow"],
-       "procs": ["Fake"],
+       "procs": ["Fake", "WtoTau", "LowAcc"],
        "type": "shape",
        "weight" : 1.
     },
      "LHEScaleWeight_WQTmid" :{
        "vars": ["LHEScaleWeight_muR0p5_muF0p5_WQTmid", "LHEScaleWeight_muR0p5_muF1p0_WQTmid","LHEScaleWeight_muR1p0_muF0p5_WQTmid","LHEScaleWeight_muR1p0_muF2p0_WQTmid","LHEScaleWeight_muR2p0_muF1p0_WQTmid","LHEScaleWeight_muR2p0_muF2p0_WQTmid"],
-       "procs": ["Fake"],
+       "procs": ["Fake", "WtoTau", "LowAcc"],
        "type": "shape",
        "weight" : 1.
     },
      "LHEScaleWeight_WQThigh" :{
        "vars": ["LHEScaleWeight_muR0p5_muF0p5_WQThigh", "LHEScaleWeight_muR0p5_muF1p0_WQThigh","LHEScaleWeight_muR1p0_muF0p5_WQThigh","LHEScaleWeight_muR1p0_muF2p0_WQThigh","LHEScaleWeight_muR2p0_muF1p0_WQThigh","LHEScaleWeight_muR2p0_muF2p0_WQThigh"],
-       "procs": ["Fake"],
+       "procs": ["Fake", "WtoTau", "LowAcc"],
        "type": "shape",
        "weight" : 1.
     },

@@ -7,7 +7,7 @@ ROOT.gROOT.SetBatch()
 np.set_printoptions(linewidth=np.inf,precision=1)
 
 ###############################################################################################
-#                                      RESULTS
+#                                      RESULTS and instructions
 #
 #
 # With acceptance: python quantileBinBuilder.py --ycut 1 --qtcut 1
@@ -21,6 +21,13 @@ np.set_printoptions(linewidth=np.inf,precision=1)
 # centers Plus = [ 2.6  5.8  9.5 14.8 24.3  0. ]
 # edges Minus = [ 0.   4.2  7.5 11.8 18.5 32. ]
 # centers Minus = [ 2.6  5.8  9.5 14.9 24.3  0.]
+#
+# with 8 qt bins: python quantileBinBuilder.py --ycut 1 --qtcut 1 --nqt 8
+# -----------Qt quantiles --------------
+# edges Plus = [ 0.   3.1  5.   7.   9.4 12.4 16.5 22.3 32. ]
+# centers Plus = [ 2.   4.   5.9  8.2 10.9 14.3 19.2 26.7  0. ]
+# edges Minus = [ 0.   3.1  5.   7.   9.4 12.5 16.5 22.3 32. ]
+# centers Minus = [ 2.   4.1  6.   8.2 10.9 14.3 19.2 26.7  0. ]
 #
 #
 # Without acceptance: python quantileBinBuilder.py --ycut 0 --qtcut 0 -ny 9 -nq 6
@@ -39,7 +46,7 @@ np.set_printoptions(linewidth=np.inf,precision=1)
 parser = argparse.ArgumentParser("")
 
 parser.add_argument('-o','--output', type=str, default='quantileBinBuilder',help="name of the output file")
-parser.add_argument('-i','--input', type=str, default='../GenInfo/genInfo_fine4quantiles.root',help="name of the fit result root file, after plotter_fitResult")
+parser.add_argument('-i','--input', type=str, default='../GenInfo_backup/genInfo_fine4quantiles.root',help="name of the fit result root file, after plotter_fitResult")
 parser.add_argument('-y','--ycut', type=int, default=True,help="cut at Y= Y acceptance (2.4)")
 parser.add_argument('-q','--qtcut', type=int, default=True,help="cut at qt= qt acceptance (32 GeV)")
 parser.add_argument('-ny','--ny', type=int, default=6,help="number of y quantiles")

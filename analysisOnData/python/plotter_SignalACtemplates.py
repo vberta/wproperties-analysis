@@ -45,14 +45,25 @@ class plotter:
 
         self.extSyst = copy.deepcopy(systematics)
         self.extSyst['Nominal'] =  (['', '_massUp', '_massDown'],"Nom")
-        self.extSyst['jme'] = ['_jesTotalUp', '_jesTotalDown', '_unclustEnUp', '_unclustEnDown'],
+        self.extSyst['jme'] = (['_jesTotalUp', '_jesTotalDown', '_unclustEnUp', '_unclustEnDown'],"jme")
+        
+        del self.extSyst['LHEScaleWeight_WQTlow'] #remove wqt-shape variation (because we are fitting the wqt)
+        del self.extSyst['LHEScaleWeight_WQTmid'] 
+        del self.extSyst['LHEScaleWeight_WQThigh'] 
+        del self.extSyst['Nom_WQTlow'] 
+        del self.extSyst['Nom_WQTmid'] 
+        del self.extSyst['Nom_WQThigh'] 
+
         self.charges = ["Wplus", "Wminus"]
         self.yields = {}
         self.yields["Wplus"] = {}
         self.yields["Wminus"] = {}
         self.bins = []
-        for iY in range(1, 7):
-            for iQt in range(1, 9):
+        self.nBinsQt = 9
+        self.nBinsY = 6
+        
+        for iY in range(1, self.nBinsY+1):
+            for iQt in range(1, self.nBinsQt+1):
                 self.yields["Wplus"][(iY, iQt)] = 0.
                 self.yields["Wminus"][(iY, iQt)] = 0.
                 self.bins.append("y_{}_qt_{}".format(iY,iQt))
@@ -152,14 +163,14 @@ class plotter:
             if syst=="":
                 self.yields[charge][(iY,iQt)]+=th2slice.Integral(0,th2slice.GetNbinsX()+2,0,th2slice.GetNbinsY()+2)
     def closureMap(self):
-        for iY in range(1, 7):
-            for iQt in range(1, 9):
+        for iY in range(1, self.nBinsY+1):
+            for iQt in range(1, self.nBinsQt+1):
                 self.closPlus.SetBinContent(iY,iQt, self.yields["Wplus"][(iY,iQt)])
                 self.closMinus.SetBinContent(iY,iQt, self.yields["Wminus"][(iY, iQt)])
         self.closPlus.Divide(self.imapPlus)
         self.closMinus.Divide(self.imapMinus)
-        for iY in range(1, 7):
-            for iQt in range(1, 9):
+        for iY in range(1, self.nBinsY+1):
+            for iQt in range(1, self.nBinsQt+1):
                 print(colored(self.closPlus.GetBinContent(iY,iQt),'magenta'))
         fout = ROOT.TFile("accMap.root","recreate")
         fout.cd()
@@ -172,7 +183,7 @@ class plotter:
         basepath="templatesAC_Signal/"
         for charge in self.charges:
             for c in self.clist:
-                for iQt in range(1, 9):
+                for iQt in range(1, self.nBinsQt+1):
                     for sKind, sList in self.extSyst.items():
                         for sname in sList[0]:  # variations of each sKind
                             fpath = basepath + sKind + '/'+charge+ '_qt_{}_helXsecs_'.format(iQt) + c + sname
@@ -182,7 +193,8 @@ class plotter:
                             self.makeTH3slices(th3, sKind)
                             #assert(0)
         self.uncorrelateEff()
-        self.symmetrisePDF()
+        # self.symmetrisePDF()
+        self.symmetrisePDF_shift()
         self.alphaVariations()
         # self.uncorrelatePtVars() ALWAYS COMMENTED, ROCHESTER CORR. NOT RUN
         self.closureMap()
@@ -264,6 +276,31 @@ class plotter:
                         hlist.append(th2Up)
                         hlist.append(th2Down)
                     self.histoDict[charge][c][bin]['LHEPdfWeight'] = hlist
+    def symmetrisePDF_shift(self): #nom+-var (insted of nom*(nom/var), nom*(var/nom))
+        for charge in self.charges:
+            for c in self.clist:
+                for bin in self.bins:
+                    hlist = []
+                    hnom = [h for h in self.histoDict[charge][c][bin]['Nominal'] if not 'mass' in h.GetName()][0]
+                    for hvar in self.histoDict[charge][c][bin]['LHEPdfWeight']:
+                        print(hvar.GetName())
+                        hdiff = hvar.Clone()
+                        hdiff.Add(hnom,-1)
+                        nbinsX = hnom.GetXaxis().GetNbins()
+                        nbinsY = hnom.GetYaxis().GetNbins()
+                        th2Up = ROOT.TH2D("up", "up", nbinsX, hnom.GetXaxis().GetBinLowEdge(1), hnom.GetXaxis().GetBinUpEdge(nbinsX), nbinsY, hnom.GetYaxis().GetBinLowEdge(1), hnom.GetYaxis().GetBinUpEdge(nbinsY))
+                        th2Up.Sumw2()
+                        th2Down = ROOT.TH2D("down", "down", nbinsX, hnom.GetXaxis().GetBinLowEdge(1), hnom.GetXaxis().GetBinUpEdge(nbinsX), nbinsY, hnom.GetYaxis().GetBinLowEdge(1), hnom.GetYaxis().GetBinUpEdge(nbinsY))
+                        th2Down.Sumw2()
+                        for j in range(1, hnom.GetNbinsX()+1):
+                            for k in range(1, hnom.GetNbinsY()+1):
+                                th2Up.SetBinContent(j, k, hnom.GetBinContent(j, k)+hdiff.GetBinContent(j, k))
+                                th2Down.SetBinContent(j, k, hnom.GetBinContent(j, k)-hdiff.GetBinContent(j, k))
+                        th2Up.SetName(hvar.GetName() + 'Up')
+                        th2Down.SetName(hvar.GetName() + 'Down')
+                        hlist.append(th2Up)
+                        hlist.append(th2Down)
+                        self.histoDict[charge][c][bin]['LHEPdfWeight'] = hlist
     def alphaVariations(self):
         for charge in self.charges:
             for c in self.clist:

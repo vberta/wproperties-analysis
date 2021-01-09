@@ -50,7 +50,7 @@ RNode templateBuilder::bookNominalhistos(RNode d)
   std::vector<std::string> total = stringMultiplication(mass, helXsecs);
 
   // templates for the fit
-  auto h = new TH2F("h", "h", nBinsY, 0, 2.4, nBinsQt, 0, 32.);
+  auto h = new TH2F("h", "h", nBinsY, _yArr.data(), nBinsQt, _qTArr.data());
 
   for (int j = 1; j < h->GetNbinsY() + 1; j++)
   { // for each W pt bin
@@ -80,7 +80,7 @@ RNode templateBuilder::bookWeightVariatedhistos(RNode d)
   std::vector<std::string> total = stringMultiplication(_syst_name, helXsecs);
 
   // templates for the fit
-  auto h = new TH2F("h", "h", nBinsY, 0, 2.4, nBinsQt, 0, 32.);
+  auto h = new TH2F("h", "h", nBinsY, _yArr.data(), nBinsQt, _qTArr.data());
 
   for (int j = 1; j < h->GetNbinsY() + 1; j++)
   { // for each W pt bin
@@ -114,7 +114,7 @@ RNode templateBuilder::bookptCorrectedhistos(RNode d)
     std::vector<std::string> total = stringMultiplication(tmp, helXsecs);
 
     // templates for the fit
-    auto h = new TH2F("h", "h", nBinsY, 0, 2.4, nBinsQt, 0, 32.);
+    auto h = new TH2F("h", "h", nBinsY, _yArr.data(), nBinsQt, _qTArr.data());
 
     for (int j = 1; j < h->GetNbinsY() + 1; j++)
     { // for each W pt bin
@@ -148,7 +148,7 @@ RNode templateBuilder::bookJMEvarhistos(RNode d)
     std::vector<std::string> total = stringMultiplication(tmp, helXsecs);
 
     // templates for the fit
-    auto h = new TH2F("h", "h", nBinsY, 0, 2.4, nBinsQt, 0, 32.);
+    auto h = new TH2F("h", "h", nBinsY, _yArr.data(), nBinsQt, _qTArr.data());
 
     for (int j = 1; j < h->GetNbinsY() + 1; j++)
     { // for each W pt bin

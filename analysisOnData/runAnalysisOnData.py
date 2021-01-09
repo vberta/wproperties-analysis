@@ -59,9 +59,9 @@ def RDFprocessfakefromData(fvec, outputDir, bkgFile, ncores, pretendJob=True, SB
 
         #now add fake variations
         for s,variations in systematics.items():
+            if 'Nom_WQT' in s : continue
             #only required systs
             # if "LHEPdfWeight" not in s and "LHEScaleWeight" not in s: continue
-            if "LHEScaleWeight" not in s: continue
             print("branching weight variations", s)
             vars_vec = ROOT.vector('string')()
             for var in variations[0]:
@@ -69,12 +69,16 @@ def RDFprocessfakefromData(fvec, outputDir, bkgFile, ncores, pretendJob=True, SB
                 weight="float(1)"
             print("fakeRate_"+variations[1])
             print(vars_vec)
-            p.branch(nodeToStart = 'defs'.format(region), nodeToEnd = 'prefit_{}/{}'.format(region,s), modules = [ROOT.muonHistos(cut,weight,vars_vec,"fakeRate_"+variations[1], 0)])
-            p.branch(nodeToStart = 'defs'.format(region), nodeToEnd = 'templates_{}/{}'.format(region,s), modules = [ROOT.templates(cut,weight,vars_vec,"fakeRate_"+variations[1], 0)])
+            if "WQT" in s :
+                variationMod = variations[1]+s.replace('LHEScaleWeight','')
+            else :
+                variationMod = variations[1]
+            p.branch(nodeToStart = 'defs'.format(region), nodeToEnd = 'prefit_{}/{}'.format(region,s), modules = [ROOT.muonHistos(cut,weight,vars_vec,"fakeRate_"+variationMod, 0)])
+            p.branch(nodeToStart = 'defs'.format(region), nodeToEnd = 'templates_{}/{}'.format(region,s), modules = [ROOT.templates(cut,weight,vars_vec,"fakeRate_"+variationMod, 0)])
         
         #fake column variations since the cut won't change in data
         for vartype, vardict in selectionVars.items():
-            if vartype != 'jme' : continue
+            # if vartype != 'jme' : continue
             vars_vec = ROOT.vector('string')()
             for selvar, hcat in vardict.items() :
                 vars_vec.push_back(selvar)
@@ -91,7 +95,7 @@ def main():
     parser.add_argument('-p', '--pretend',type=int, default=False, help="run over a small number of event")
     parser.add_argument('-i', '--inputDir',type=str, default='/scratchnvme/wmass/NanoAOD2016-V2/', help="input dir name")
     parser.add_argument('-o', '--outputDir',type=str, default='./output/', help="output dir name")
-    parser.add_argument('-c', '--ncores',type=int, default=64, help="number of cores used")
+    parser.add_argument('-c', '--ncores',type=int, default=128, help="number of cores used")
     parser.add_argument('-sb', '--SBana',type=int, default=False, help="run also on the sideband (clousure test)")
     parser.add_argument('-b', '--runBKG',type=int, default=False, help="prepare the input of the bkg analysis, if =false run the prefit Plots")
     parser.add_argument('-f', '--bkgFile',type=str, default='/scratch/bertacch/wmass/wproperties-analysis/bkgAnalysis/TEST_runTheMatrix/bkg_parameters_CFstatAna.root', help="bkg parameters file path/name.root")

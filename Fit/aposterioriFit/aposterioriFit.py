@@ -370,15 +370,15 @@ def plotterPostReg(fitResult, output, save, coeffList,histo) :
 
 parser = argparse.ArgumentParser("")
 
-parser.add_argument('-o','--output', type=str, default='aposterioriFit',help="name of the output file")
-parser.add_argument('-f','--fitInput', type=str, default='fitResult.root',help="name of the fit result root file, after plotter_fitResult")
-parser.add_argument('-r','--regInput', type=str, default='../../regularization/OUTPUT_poly/regularizationFit_range11_rebuild____nom_nom.root',help="name of the regularization study result root file")
+parser.add_argument('-o','--output', type=str, default='aposterioriFit_Wplus',help="name of the output file")
+parser.add_argument('-f','--fitInput', type=str, default='fitPlots_Wplus.root',help="name of the fit result root file, after plotter_fitResult")
+# parser.add_argument('-r','--regInput', type=str, default='../../regularization/OUTPUT_poly/regularizationFit_range11_rebuild____nom_nom.root',help="name of the regularization study result root file")
 parser.add_argument('-s','--save', type=int, default=False,help="save .png and .pdf canvas")
 
 args = parser.parse_args()
 OUTPUT = args.output
 FITINPUT = args.fitInput
-REGINPUT = args.regInput
+# REGINPUT = args.regInput
 SAVE= args.save
 
 print("have you done cmsenv in CMSSW_11_2_0_pre8 instead of nightlies? (jax incomatibility)")
@@ -397,8 +397,19 @@ coeffList.append(['A2', 2,5,2,4, 0,1,1, 0])
 coeffList.append(['A3', 3,4,3,3, 0,1,0, 0])
 coeffList.append(['A4', 4,5,4,6, 1,0,0, 0]) #5-->7 but no convergence! and last number=1
 
-fitResDict = getFitRes(inFile=FITINPUT, coeffList=coeffList)
-# regFuncDict = getRegFunc(inFile=REGINPUT, coeffList=coeffList)
-# fitPostRegResult = polyFit(fitRes=fitResDict, regFunc=regFuncDict, coeffList=coeffList)
-fitPostRegResult = polyFit(fitRes=fitResDict, coeffList=coeffList)
-plotterPostReg(fitResult = fitPostRegResult, output=OUTPUT,save=SAVE, coeffList=coeffList,histo=fitResDict)
+plusOnly=False
+if plusOnly :
+    signList = ['plus']
+else :
+    signList = ['plus', 'minus']
+print("WARNING: used wplus parameterization also for wminus, and not the dictionary above (ok if in the fit has been done the same)")
+
+for s in signList : 
+    FITINPUT_s = FITINPUT.replace('plus',s)
+    OUTPUT_s = OUTPUT.replace('plus',s)
+    
+    fitResDict = getFitRes(inFile=FITINPUT_s, coeffList=coeffList)
+    # regFuncDict = getRegFunc(inFile=REGINPUT, coeffList=coeffList)
+    # fitPostRegResult = polyFit(fitRes=fitResDict, regFunc=regFuncDict, coeffList=coeffList)
+    fitPostRegResult = polyFit(fitRes=fitResDict, coeffList=coeffList)
+    plotterPostReg(fitResult = fitPostRegResult, output=OUTPUT_s, save=SAVE, coeffList=coeffList,histo=fitResDict)
