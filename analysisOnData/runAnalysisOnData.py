@@ -60,6 +60,7 @@ def RDFprocessfakefromData(fvec, outputDir, bkgFile, ncores, pretendJob=True, SB
         #now add fake variations
         for s,variations in systematics.items():
             if 'Nom_WQT' in s : continue
+            if s=='LHEScaleWeight' : continue
             #only required systs
             # if "LHEPdfWeight" not in s and "LHEScaleWeight" not in s: continue
             print("branching weight variations", s)

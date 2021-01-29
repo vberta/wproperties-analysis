@@ -131,10 +131,12 @@ class plotter:
                                     h2.Add(inFile.Get(fileInfo[1]+'/Nom_WQTmid/'+varInfo[0]))
                             
                         if '_WQT' in sKind and f!='SIGNAL_Fake' :
-                            print("special cane")
                             if f=='WToMu' : 
                                 h2 = inFile.Get(fileInfo[1]+'/Nominal/'+varInfo[0]) #get the nominal for the signal, wqt should not be used for it
                             sName=sName+sKind.replace('LHEScaleWeight','')
+                        
+                        if sKind=='LHEScaleWeight' and f!='DYJets' :
+                            h2 = inFile.Get(fileInfo[1]+'/Nominal/'+varInfo[0])#use the LHEscale only for the Z (this should be automatically included in analysisOnMC/WJets step) 
                         
                         for s,sInfo in self.signDict.items() :
                             self.histoDict[f+s+var+sName] = h2.ProjectionX(h2.GetName() + s, sInfo[0],sInfo[0])

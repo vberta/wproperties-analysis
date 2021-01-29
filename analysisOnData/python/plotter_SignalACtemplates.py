@@ -59,7 +59,7 @@ class plotter:
         self.yields["Wplus"] = {}
         self.yields["Wminus"] = {}
         self.bins = []
-        self.nBinsQt = 9
+        self.nBinsQt = 9#8
         self.nBinsY = 6
         
         for iY in range(1, self.nBinsY+1):

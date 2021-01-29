@@ -130,6 +130,7 @@ for reg in regionList :
         if systAna :
             processesMain = []
             for sKind, sList in bkg_utils.bkg_systematics.items():
+                if sKind=='LHEScaleWeight' : continue 
                 for sName in sList :
                     print("-> systematic:", sKind,sName)
                     if MULTICORE :
@@ -149,6 +150,7 @@ for reg in regionList :
         if systAna :
             processesCF = []
             for sKind, sList in bkg_utils.bkg_systematics.items():
+                if sKind=='LHEScaleWeight' : continue 
                 for sName in sList : 
                     print("-> systematatic:", sKind,sName)
                     if MULTICORE :

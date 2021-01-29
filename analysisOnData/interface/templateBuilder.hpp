@@ -25,6 +25,7 @@ private:
   std::vector<float> _etaArr = std::vector<float>(49);
   // std::vector<float> _yArr = std::vector<float>(7);
   std::vector<float> _yArr = {0, 0.4, 0.8, 1.2, 1.6, 2.0, 2.4};
+  // std::vector<float> _qTArr = {0., 4., 8., 12., 16., 20., 24., 28., 32.};
   // std::vector<float> _qTArr = {0.,   3.1,  5.,   7.,   9.4, 12.4, 16.5, 22.3, 32.};  //quantile
   std::vector<float> _qTArr = {0., 2., 4., 6.,8.,   10,   12., 16., 22, 32.}; //2 GeV
   const int nBinsY = _yArr.size()-1;

@@ -22,7 +22,7 @@ import time
 #         yield
 
 parser = argparse.ArgumentParser("")
-parser.add_argument('-i',   '--inputDir',           type=str, default='/scratchnvme/wmass/NanoAOD2016-V2/',    help="input dir name with the trees")
+parser.add_argument('-i',   '--inputDir',           type=str, default='/scratchnvme/wmass/NanoAOD2016-V2/',    help="input dir name with the trees (data+bkg)")
 parser.add_argument('-o',   '--outputDir',          type=str, default='output/',    help="output dir name of step1 and step3 (inside analysisOnData/)")
 parser.add_argument('-bo',  '--bkgOutput',          type=str, default='bkg/',       help="output dir name for bkgAna (inside bkgAnalysis/)")
 parser.add_argument('-f',   '--bkgFile',            type=str, default='MYBKG',      help="bkg parameters file path/name.root, or the special 'MYBKG' for the one produced in the same loop")
@@ -118,7 +118,7 @@ if step3 :
     os.chdir('analysisOnData')
     if not os.path.isdir(outputDir): os.system('mkdir '+ outputDir)
     #ncores is optimized and set in the config itself, so no need to pass here
-    os.system('python runAnalysisOnWJetsMC.py   -i='+inputDir+' -o='+outputDir+' -c='+ncores+' -sb='+SBana+' -b=0')
+    # os.system('python runAnalysisOnWJetsMC.py   -i='+inputDir+' -o='+outputDir+' -c='+ncores+' -sb='+SBana+' -b=0')
     os.system('python runAnalysisOnData.py      -i='+inputDir+' -o='+outputDir+' -c='+ncores+' -sb='+SBana+' -b=0 -f'+bkgFile)
     os.chdir('../')
     s3end=time.time()

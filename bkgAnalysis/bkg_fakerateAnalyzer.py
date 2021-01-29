@@ -497,6 +497,8 @@ class bkg_analyzer:
         
         # noratio=True --> In the ratio plots are plotted fake and prompt rate of systematics and nominals
         # symBans=True --> symmetric bands around nominal: 1/2*sqrt[sum_syst (up-down)^2]
+        systDict = copy.deepcopy(systDict)
+        del systDict['LHEScaleWeight']
         
         if statAna :
             statAnaSuff = 'statAna'
@@ -1904,6 +1906,7 @@ class bkg_analyzer:
         
         systDict = copy.deepcopy(bkg_utils.bkg_systematics)
         systDict['Nominal'] = ['']
+        del systDict['LHEScaleWeight']
         
         # if self.extrapCorr :
         #     self.nameSuff = self.nameSuff.replace('_extrapCorr','')

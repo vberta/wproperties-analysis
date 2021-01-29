@@ -4,6 +4,7 @@ systematicsDict = {
     "CMSlumi": {
        "vars":["CMSlumi"],
        "procs": ["Signal", "DYJets","DiBoson","Top","WtoTau","LowAcc","Fake"],
+      #  "procs": [ "DYJets","DiBoson","Top","WtoTau","LowAcc","Fake"],
        "type": "lnN",
        "weight" : 1.025 
     },
@@ -34,6 +35,7 @@ systematicsDict = {
     "mass" : {
         "vars":["mass"],
         "procs": ["Signal", "LowAcc"],
+      #   "procs": ["LowAcc"],
         "type": "shapeNoConstraint",
         # "type": "shape"
         "weight" : 1.
@@ -41,36 +43,44 @@ systematicsDict = {
     "WHSFStat"  : {
        "vars": ["WHSFSyst0Eta{}".format(i) for i in range(1, 49)]+["WHSFSyst1Eta{}".format(i) for i in range(1, 49)]+["WHSFSyst2Eta{}".format(i) for i in range(1, 49)],
        "procs": ["Signal", "DYJets","DiBoson","Top","Fake","WtoTau","LowAcc"],
+      #  "procs": [ "DYJets","DiBoson","Top","Fake","WtoTau","LowAcc"],
        "type": "shape",
        "weight" : 1.
     },
     "WHSFSyst":{
        "vars": ["WHSFSystFlat"],
        "procs": ["Signal","DYJets","DiBoson","Top","Fake","WtoTau","LowAcc"],
+      #  "procs": ["DYJets","DiBoson","Top","Fake","WtoTau","LowAcc"],
        "type": "shape",
        "weight" : 1.
     },
     "jme" : {
        "vars":["jesTotal", "unclustEn"],
        "procs": ["Signal", "DYJets","DiBoson","Top","Fake","WtoTau","LowAcc"],
+      #  "procs": ["DYJets","DiBoson","Top","Fake","WtoTau","LowAcc"],
        "type": "shape",
        "weight" : 1.
     },
     "PrefireWeight":{
        "vars":["PrefireWeight"],
        "procs": ["Signal", "DYJets","DiBoson","Top","Fake","WtoTau","LowAcc"],
+      #  "procs": ["DYJets","DiBoson","Top","Fake","WtoTau","LowAcc"],
        "type": "shape",
        "weight" : 1.
     },
     "LHEPdfWeight" : {
        "vars":["LHEPdfWeightHess{}".format(i+1) for i in range(60)],
        "procs": ["Signal", "DYJets", "Fake", "WtoTau", "LowAcc"],
+      #  "procs": [ "DYJets", "Fake", "WtoTau", "LowAcc"],
+      #  "procs": ["Signal", "DYJets", "Fake", "WtoTau"],
+      #  "procs": ["LowAcc"],
        "type": "shape",
        "weight" : 1.
     },
     "alphaS" :{
        "vars": ["alphaS"],
        "procs": ["Signal", "DYJets", "Fake", "WtoTau", "LowAcc"],
+      #  "procs": ["DYJets", "Fake", "WtoTau", "LowAcc"],
        "type": "shape",
        "weight" : 1.
     },
