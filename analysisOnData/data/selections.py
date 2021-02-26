@@ -16,8 +16,8 @@ selections_bkg = {
 } #IsTObjmatched_mu1==1
 
 selections_fakes = {
-  "fakes": "HLT_SingleMu24 && MT>=40.0 && MET_filters==1 && nVetoElectrons==0 && && 1", 
-  "fakes_SideBand": "HLT_SingleMu24 && MT<30.0 && MET_filters==1 && nVetoElectrons==0 && && 1", 
+  "fakes": "HLT_SingleMu24 && MT>=40.0 && MET_filters==1 && nVetoElectrons==0 && 1", 
+  "fakes_SideBand": "HLT_SingleMu24 && MT<30.0 && MET_filters==1 && nVetoElectrons==0 && 1", 
   }
 
 selectionVars = { 

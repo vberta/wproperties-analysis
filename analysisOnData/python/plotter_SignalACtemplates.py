@@ -86,6 +86,8 @@ class plotter:
             sys.exit(1)
         self.fileACplus = ROOT.TFile.Open("../../analysisOnGen/genInput_Wplus.root")
         self.fileACminus = ROOT.TFile.Open("../../analysisOnGen/genInput_Wminus.root")
+        # self.fileACplus = ROOT.TFile.Open("../../analysisOnGen/genInput_4GeVBinning_udShift_Wplus.root")
+        # self.fileACminus = ROOT.TFile.Open("../../analysisOnGen/genInput_4GeVBinning_udShift_Wminus.root")
         self.imapPlus = self.fileACplus.Get("angularCoefficients/mapTot")
         self.imapMinus = self.fileACminus.Get("angularCoefficients/mapTot")
         self.closPlus = copy.deepcopy(ROOT.TH2D("closPlus", "closPlus", self.imapPlus.GetXaxis().GetNbins(),self.imapPlus.GetXaxis().GetXbins().GetArray(),self.imapPlus.GetYaxis().GetNbins(),self.imapPlus.GetYaxis().GetXbins().GetArray()))
@@ -112,6 +114,7 @@ class plotter:
         self.factors["A5"]=2.
         self.factors["A6"]=2.*math.sqrt(2)
         self.factors["A7"]=4.*math.sqrt(2)
+        self.factors["AUL"]=1.
     def unroll2D(self, th2):
 
         nbins = th2.GetNbinsX()*th2.GetNbinsY()
@@ -126,11 +129,17 @@ class plotter:
                 unrolledth2.SetBinContent(bin1D, th2.GetBinContent(ibin, jbin))
                 unrolledth2.SetBinError(bin1D, th2.GetBinError(ibin, jbin))
         return unrolledth2
-    def normaliseYields(self, th2, coeff, iY, iQt, imap, fAC):
+    def normaliseYields(self, th2, coeff, iY, iQt, imap, fAC, sKind,sName):
         #normalise templates to its helicity xsec
+        if sKind in ['LHEScaleWeight','LHEPdfWeight','alphaS']:
+            imap = fAC.Get("angularCoefficients_"+sKind+"/mapTot"+sName)
+        
         nsum = (3./16./math.pi)*imap.GetBinContent(iY, iQt)
         if not 'UL' in coeff:
-            hAC = fAC.Get("angularCoefficients/harmonics{}_nom_nom".format(self.helXsecs[coeff]))
+            if sKind in ['LHEScaleWeight','LHEPdfWeight','alphaS']:
+                hAC = fAC.Get("angularCoefficients_"+sKind+"/harmonics"+str(self.helXsecs[coeff])+sName+""+sName)
+            else :
+                hAC = fAC.Get("angularCoefficients/harmonics{}_nom_nom".format(self.helXsecs[coeff]))
             nsum = nsum * hAC.GetBinContent(iY, iQt)/self.factors[self.helXsecs[coeff]]
         th2.Scale(nsum)
         return
@@ -142,10 +151,11 @@ class plotter:
         coeff = hname.split('_')[4]
         
         try:
-            syst = "_" + hname.split('_')[5]
+            # syst = "_" + hname.split('_')[5]
+            syst = "_" + '_'.join(hname.split('_')[5:])
         except IndexError:
             syst = ""
-        
+        if syst == '_' : syst=''        
         for iY in range(1, th3.GetNbinsZ()+1):
             
             slicename = 'helXsecs'+ coeff + '_y_{}'.format(iY)+'_qt_{}'.format(iQt) + syst
@@ -154,9 +164,9 @@ class plotter:
             th2slice=th3.Project3D("y_{iY}_yxe".format(iY=iY))
             th2slice.SetName(slicename)
             if charge == "Wplus":
-                self.normaliseYields(th2slice, coeff, iY, iQt, self.imapPlus, self.fileACplus)
+                self.normaliseYields(th2slice, coeff, iY, iQt, self.imapPlus, self.fileACplus,systname,syst)
             else:
-                self.normaliseYields(th2slice, coeff, iY, iQt, self.imapMinus, self.fileACminus)
+                self.normaliseYields(th2slice, coeff, iY, iQt, self.imapMinus, self.fileACminus,systname,syst)
             th2slice.SetDirectory(0)
             self.histoDict[charge][coeff]["y_{}_qt_{}".format(iY, iQt)][systname].append(th2slice)
 

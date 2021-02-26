@@ -115,9 +115,16 @@ class fitUtils:
                         nsum = (3./16./math.pi)
                         
                         if not "UL" in proc: #rescale for the releative xsec
-                            # hAC = self.fmap.Get("angularCoefficients{}/harmonics{}_{}_{}".format(sKind,self.helXsecs[coeff],sName+ud))
-                            hAC = self.fmap.Get("angularCoefficients/harmonics{}_nom_nom".format(self.helXsecs[coeff]))
-                            nsum = nsum*hAC.GetBinContent(iY,iQt)/self.factors[self.helXsecs[coeff]]
+                            if 'mass' not in sKind and sKind!='': 
+                                if 'alpha' not in sName :
+                                    sNameMod = sName.replace('Up','').replace('Down','')
+                                else :
+                                    sNameMod = sName
+                                hAC = self.fmap.Get("angularCoefficients{}/harmonics{}{}{}".format(sKind,self.helXsecs[coeff],sNameMod,sName))
+                                nsum = nsum*hAC.GetBinContent(iY,iQt)/self.factors[self.helXsecs[coeff]]
+                            else : 
+                                hAC = self.fmap.Get("angularCoefficients/harmonics{}_nom_nom".format(self.helXsecs[coeff]))
+                                nsum = nsum*hAC.GetBinContent(iY,iQt)/self.factors[self.helXsecs[coeff]]
                         tmp.Scale(nsum)
                         shapeOutxsec.cd()
                         tmp.Write()
@@ -229,7 +236,7 @@ class fitUtils:
                         else:
                             if "Signal" in self.templSystematics[syst]["procs"] and "hel" in proc:
                                 aux[self.channel][proc] = self.templSystematics[syst]["weight"]
-                                if syst in ["alphaS", "LHEPdfWeight", 'mass'] : #theo nuis. applied to signal
+                                if syst in ["alphaS", "LHEPdfWeight", "mass"] : #theo nuis. applied to signal
                                     aux[self.channel+'_xsec'][proc] = self.templSystematics[syst]["weight"]
                                 else :
                                     aux[self.channel+'_xsec'][proc] = 0.0

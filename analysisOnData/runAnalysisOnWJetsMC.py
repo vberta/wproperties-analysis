@@ -4,6 +4,7 @@ import ROOT
 import json
 import argparse
 import subprocess
+sys.path.append('../RDFprocessor/framework')
 from RDFtree import RDFtree
 sys.path.append('python/')
 sys.path.append('data/')
@@ -26,11 +27,13 @@ def RDFprocessWJetsMCSignalACtempl(fvec, outputDir, sample, xsec, fileSF, fileSc
     fileY = ROOT.TFile.Open("data/histoUnfoldingSystRap_nsel2_dy3_rebin1_default.root")
     fileACplus = ROOT.TFile.Open("../analysisOnGen/genInput_Wplus.root")
     fileACminus = ROOT.TFile.Open("../analysisOnGen/genInput_Wminus.root")
+    # fileACplus = ROOT.TFile.Open("../analysisOnGen/genInput_4GeVBinning_udShift_Wminus.root")
+    # fileACminus = ROOT.TFile.Open("../analysisOnGen/genInput_4GeVBinning_udShift_Wplus.root")
     #Will only ber run on signal region
     region = 'Signal'
     weight = 'float(puWeight*PrefireWeight*lumiweight*WHSF*weightPt)'
     wtomu_cut =  selections_bkg[region] + wdecayselections['WToMu']
-    wtomu_lowAcc_cut = wtomu_cut + "&& Wpt_preFSR>32. && Wrap_preFSR_abs>2.4"
+    wtomu_lowAcc_cut = wtomu_cut + "&& (Wpt_preFSR>32. || Wrap_preFSR_abs>2.4)"
     #print weight, "NOMINAL WEIGHT"
     nom = ROOT.vector('string')()
     nom.push_back("")
@@ -69,9 +72,16 @@ def RDFprocessWJetsMCSignalACtempl(fvec, outputDir, sample, xsec, fileSF, fileSc
             vars_vec.push_back(var)
             print(weight,"\t",var_weight, "MODIFIED WEIGHT")
         #reco templates with AC reweighting
-        p.branch(nodeToStart = 'defsAC', nodeToEnd = 'templatesAC_{}/{}'.format(region, s), modules = [ROOT.templateBuilder(wtomu_modcut, var_weight,vars_vec,variations[1], 3)])
+        nodeToStartName = 'defsAC'
+        if s=='LHEScaleWeight' or s=='LHEPdfWeight' or s=='alphaS' :
+            steps = [ROOT.getACValues(fileACplus,fileACminus,s, variations[0]), ROOT.defineHarmonics(), ROOT.getMassWeights(), ROOT.getWeights(s, variations[0])]
+            p.branch(nodeToStart = 'defs', nodeToEnd = 'defsAC{}'.format(s), modules = steps)
+            nodeToStartName+=s
+            p.branch(nodeToStart = nodeToStartName, nodeToEnd = 'templatesAC_{}/{}'.format(region, s), modules = [ROOT.templateBuilder(wtomu_modcut, var_weight,vars_vec,variations[1], 4)])
+        else :
+            p.branch(nodeToStart = nodeToStartName, nodeToEnd = 'templatesAC_{}/{}'.format(region, s), modules = [ROOT.templateBuilder(wtomu_modcut, var_weight,vars_vec,variations[1], 3)])
         #reco templates for out of acceptance events
-        p.branch(nodeToStart = 'defsAC', nodeToEnd = 'templatesLowAcc_{}/{}'.format(region,s), modules = [ROOT.templates(wtomu_lowAcc_modcut, var_weight,vars_vec,variations[1], 0)])
+        p.branch(nodeToStart = nodeToStartName, nodeToEnd = 'templatesLowAcc_{}/{}'.format(region,s), modules = [ROOT.templates(wtomu_lowAcc_modcut, var_weight,vars_vec,variations[1], 0)])
     #column variations#weight will be nominal, cut will vary
     for vartype, vardict in selectionVars.items():
         wtomu_cut_vec = ROOT.vector('string')()
@@ -88,7 +98,7 @@ def RDFprocessWJetsMCSignalACtempl(fvec, outputDir, sample, xsec, fileSF, fileSc
         #reco templates for out of acceptance events
         print('low Acc')
         for cut in wtomu_cut_vec:
-            cut+= "&& Wpt_preFSR>32. && Wrap_preFSR_abs>2.4"
+            cut+= "&& (Wpt_preFSR>32. || Wrap_preFSR_abs>2.4)"
             #print "Low acc cut vec vars:", wtomu_cut_vec
         p.branch(nodeToStart = 'defsAC', nodeToEnd = 'templatesLowAcc_{}/{}'.format(region,vartype), modules = [ROOT.templates(wtomu_cut_vec, weight, nom,"Nom",hcat,wtomu_var_vec)])
     p.getOutput()
@@ -108,6 +118,7 @@ def RDFprocessWJetsMC(fvec, outputDir, sample, xsec, fileSF, fileScale, ncores, 
     #fileAC = ROOT.TFile.Open("../analysisOnGen/genInput.root")
     p.branch(nodeToStart = 'input', nodeToEnd = 'defs', modules = [ROOT.reweightFromZ(filePt,fileY),ROOT.baseDefinitions(True, True),ROOT.rochesterVariations(fileScale), ROOT.weightDefinitions(fileSF),getLumiWeight(xsec=xsec, inputFile=fvec, genEvsbranch = "genEventSumw"),ROOT.Replica2Hessian()])
     for region,cut in selections_bkg.items():
+        # cut = cut.replace("&& HLT_SingleMu24","&& IsTObjmatched_mu1")#do not use, IsTObjmatched_mu1 is bugged in wjets sample
         if 'aiso' in region:
             weight = 'float(puWeight*PrefireWeight*lumiweight*weightPt)'
         else:

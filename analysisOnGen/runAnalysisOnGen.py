@@ -2,6 +2,7 @@ import os
 import sys
 import ROOT
 import argparse
+sys.path.append('../RDFprocessor/framework')
 
 from RDFtree import RDFtree
 sys.path.append('python/')
@@ -34,6 +35,7 @@ p = RDFtree(outputDir = 'GenInfo', inputFile = inputFile, outputFile="genInfo.ro
 p.branch(nodeToStart='input', nodeToEnd='basicSelection', modules=[getLumiWeight(xsec=61526.7, inputFile=inputFile), ROOT.reweightFromZ(filePt, fileY),ROOT.baseDefinitions(), ROOT.defineHarmonics(), ROOT.Replica2Hessian()])
 
 Wcharge = {"Wplus":"GenPart_pdgId[GenPart_preFSRMuonIdx]<0","Wminus":"GenPart_pdgId[GenPart_preFSRMuonIdx]>0"}
+# Wcharge = {"Wplus":"GenPart_pdgId[GenPart_preFSRMuonIdx]<0 && abs(genVtype)==14","Wminus":"GenPart_pdgId[GenPart_preFSRMuonIdx]>0 && abs(genVtype)==14"}
 if runAC:
     for charge,filter in Wcharge.items():
         p.branch(nodeToStart='basicSelection', nodeToEnd='angularCoefficients_{}'.format(charge), modules=[ROOT.accMap(filter), ROOT.AngCoeff(filter)])

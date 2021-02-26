@@ -8,10 +8,10 @@ class AngCoeff : public Module
 
 private:
   std::vector<float> _yArr = {0, 0.4, 0.8, 1.2, 1.6, 2.0, 2.4, 3.0, 6.0};
-  std::vector<float> _ptArr = {0., 4., 8., 12., 16., 20., 24., 28., 32., 40., 60., 100., 200.};
+  // std::vector<float> _ptArr = {0., 4., 8., 12., 16., 20., 24., 28., 32., 40., 60., 100., 200.};
   // std::vector<float> _ptArr = {0., 4.2, 7.5, 11.8, 18.5, 32., 200.}; //quantile-optimized
   // std::vector<float> _ptArr = {0., 3.1,  5.,   7.,   9.4, 12.4, 16.5, 22.3, 32.,200}; //quantile-optimized (TESTED)
-  // std::vector<float> _ptArr = {0., 2., 4., 6.,8.,   10,   12., 16., 22, 32.,200}; //2 GeV
+  std::vector<float> _ptArr = {0., 2., 4., 6.,8.,   10,   12., 16., 22, 32.,200}; //2 GeV
   // std::vector<float> _yArr = {0,0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.2, 2.4, 3.0, 6.0}; //for regularization optimization
   // std::vector<float> _ptArr = {0. ,2., 4., 6., 8., 10., 12., 14., 16., 18., 20., 22., 24., 26., 28., 30., 32., 40., 60., 100., 200.}; //for regularization optimization
   // std::vector<float> _ptArr;

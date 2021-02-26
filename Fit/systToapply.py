@@ -8,12 +8,12 @@ systematicsDict = {
        "type": "lnN",
        "weight" : 1.025 
     },
-    "DYxsec":{
-       "vars":["DYxsec"],
-       "procs": ["DYJets"],
-       "type": "lnN",
-       "weight" : 1.038 
-    },
+    # "DYxsec":{
+    #    "vars":["DYxsec"],
+    #    "procs": ["DYJets"],
+    #    "type": "lnN",
+    #    "weight" : 1.038 
+    # },
     "Topxsec":{
        "vars":["Topxsec"],
        "procs": ["Top"],
@@ -35,9 +35,9 @@ systematicsDict = {
     "mass" : {
         "vars":["mass"],
         "procs": ["Signal", "LowAcc"],
-      #   "procs": ["LowAcc"],
+        # "procs": ["Signal"],
         "type": "shapeNoConstraint",
-        # "type": "shape"
+        # "type": "shape",
         "weight" : 1.
     },
     "WHSFStat"  : {

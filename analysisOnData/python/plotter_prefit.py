@@ -544,7 +544,7 @@ def prepareHistos(inDir,outDir) :
     cmdList.append('cp  '+inDir+'/WToMu_plots.root '+outDir+'/hadded/WToMu_plots.root')
     cmdList.append('cp  '+inDir+'/WToTau_plots.root '+outDir+'/hadded/WToTau_plots.root')
     cmdList.append('hadd -f '+outDir+'/hadded/DYJets_plots.root '+inDir+'/DYJetsToLL_M-*')
-    cmdList.append('hadd -f '+outDir+'/hadded/Top_plots.root '+inDir+'/TTJets* ' +inDir+'/ST* '+inDir+'/ST_tW_* ')
+    cmdList.append('hadd -f '+outDir+'/hadded/Top_plots.root '+inDir+'/TTJets* ' +inDir+'/ST* ')
     cmdList.append('hadd -f '+outDir+'/hadded/Diboson_plots.root '+inDir+'/WW_TuneCUETP8M1_13TeV-pythia8_plots.root '+inDir+'/WZ_TuneCUETP8M1_13TeV-pythia8_plots.root '+inDir+'/ZZ_TuneCUETP8M1_13TeV-pythia8_plots.root')
 
     for i in cmdList :

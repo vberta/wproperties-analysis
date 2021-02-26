@@ -43,7 +43,6 @@ class plotter :
                 if ('0p5' in scNum and '2p0' in scDen) or ('2p0' in scNum and '0p5' in scDen): 
                     self.vetoScaleList.append([scNum,scDen])        
         
-        # self.hels = ['L', 'I', 'T', 'A', 'P', 'UL']
         if not self.helXsec : 
             self.coeffDict = {
                 'A0' : [1.,'A0'],
@@ -64,8 +63,20 @@ class plotter :
                 'UL' : [1., 'unpolarizedxsec']
             }
             self.coeffList = ['L', 'I', 'T', 'A', 'P', 'UL']
-        # for ind,val in self.coeffDict.iteritems() :
-        #     self.coeffList.append(ind)
+        
+        #DEBUG josh
+        # if not self.helXsec : 
+        #     self.coeffDict = {
+        #         'unpolarizedxsec' : [1,'unpolarizedxsec']
+        #     }
+        #     self.coeffList = ['unpolarizedxsec' ]
+        # else :
+        #     self.coeffDict = {
+        #         'UL' : [1., 'unpolarizedxsec']
+        #     }
+        #     self.coeffList = ['UL']
+        # self.coeffArr = [0]
+        ############################################################ END OF DEBUG
         
         self.histos = {}
         self.canvas = {}
@@ -92,7 +103,7 @@ class plotter :
             "PrefireWeight" : [ROOT.kSpring+10, 'Prefire weight', 28],
             "jme"       : [ROOT.kAzure+10, 'MET uncert.',45],
             # "ptScale"       : [ROOT.kRed + 3, 'p_{T} scale',43],
-            # "binByBinStat" : [1, 'Bin stat', 46],
+            "binByBinStat" : [1, 'Bin stat', 46],
             "FakeNorm" : [ROOT.kViolet, 'QCD norm.', 22],
             "CMSlumi" : [ROOT.kOrange-7,"Lumi",41],
             "DYxsec" : [ROOT.kCyan+2,"#sigma_{DY}",3],
@@ -324,7 +335,8 @@ class plotter :
                         pass
         
         if not self.helXsec : covString = ['helpois','helmetapois'] 
-        else : covString = ['pmaskedexp','sumpois'] 
+        else : covString = ['pmaskedexp','sumpois']
+        # else : covString = ['mu','sumpois']  #josh debug
             
         #covariance and correlation matrices 
         self.histos[suff+'corrMat'] = FitFile.Get('correlation_matrix_channel'+covString[0])
@@ -769,7 +781,7 @@ class plotter :
                         if j==1 : systValy = self.histos[suff+'MCy'+sName+c].GetBinContent(i)
                         errPDF+= (MCVal - systVal)**2  
                         if i==1 : errPDFqt+= (MCValqt - systValqt)**2  
-                        if j==1 : errPDFy+= (MCValy - systValy)**2  
+                        if j==1 : errPDFy+= (MCValy - systValy)**2                  
                     self.histos[suff+'FitBandPDF'+c].SetBinError(i,j,math.sqrt(errPDF)) 
                     if i==1 : self.histos[suff+'FitBandPDFqt'+c].SetBinError(j,math.sqrt(errPDFqt)) 
                     if j==1 : self.histos[suff+'FitBandPDFy'+c].SetBinError(i,math.sqrt(errPDFy)) 
@@ -1193,14 +1205,16 @@ class plotter :
                             indexUNRqty = (q-1)*(len(self.yArr)-1)+y
                             if not self.helXsec : impBin = 'y_'+str(y)+'_qt_'+str(q)+'_'+c
                             else : impBin = 'helXsecs'+c+'_'+'y_'+str(y)+'_qt_'+str(q)+'_pmaskedexp'                            
-                            relImp = abs(impactVals[impBin+nui]/self.histos[suff+'FitAC'+c].GetBinContent(y, q))
-                            # relImp = abs(impactVals[impBin+nui])
+                            # else : impBin = 'helXsecs'+c+'_'+'y_'+str(y)+'_qt_'+str(q)+'_mu'  #josh debug     
+                            relImp =   abs(impactVals[impBin+nui])
+                            relImp = relImp/abs(self.histos[suff+'FitAC'+c].GetBinContent(y, q))                   
                             if ('unpol' in c or self.helXsec ) and varWidth_X : 
                                 relImp = relImp/self.histos[suff+'FitAC'+c].GetXaxis().GetBinWidth(y) 
                             if ('unpol' in c or self.helXsec ) and varWidth_Y : 
                                 relImp = relImp/self.histos[suff+'FitAC'+c].GetYaxis().GetBinWidth(q)  
                             if 'unpol' in c  or self.helXsec :
-                                relImp = relImp/(self.lumi*3./16./math.pi)   
+                                relImp = relImp/(self.lumi*3./16./math.pi)  
+                            # if self.helXsec : relImp = abs(impactVals[impBin+nui]) #josh debug 
                             self.histos[suff+'impact'+'UNR'+c+nui].SetBinContent(indexUNRqty,relImp)
             
                     self.histos[suff+'impact'+'y'+c+nui] = ROOT.TH1D('impact_'+c+'_'+nui+'_y', 'impact_'+c+'_'+nui+'_y', len(self.yArr)-1, array('f',self.yArr))
@@ -1239,6 +1253,8 @@ class plotter :
                 relImp = abs(impactVals['mass'+nui]*100) #in MeV, since the weight is +/- is 100MeV.
                 self.histos[suff+'impact'+'mass'+nui].SetBinContent(1,relImp) 
                 self.histos[suff+'impact'+'mass'+nui].SetBinError(1,0.0000000001) 
+            
+            
             # print("DEBUG impact (sum in quadrature")
             # sumOfPdf = 0.
             # labelX = self.histos[suff+'impact2D'+'UNR'].GetXaxis().GetBinLabel(2)
@@ -1258,7 +1274,36 @@ class plotter :
             # # print("sum of PDF=",sumOfPdf) 
             # # print("grouped=",valGroupPdf/unpol_divider)
             # # print("value",  self.histos[suff+'impact'+'UNR'+'unpolarizedxsec'+'pdfs'].GetBinContent(7))
-                
+            
+            # print("DEBUG impact: max pdf") #josh debug
+            # for x in range(1,self.histos[suff+'impact2D'+'UNR'].GetNbinsX()+1) :
+            #     labelX = self.histos[suff+'impact2D'+'UNR'].GetXaxis().GetBinLabel(x)
+            #     if not 'A4' in labelX : continue
+            #     maxCounter=0 
+            #     maxBinY = 0
+            #     maxBinqT=0 
+            #     maxName = ''
+            #     quadSum = 0
+            #     for x2 in range(1,self.histos[suff+'impact2D'+'UNR'].GetNbinsY()+1) :
+            #         labelY = self.histos[suff+'impact2D'+'UNR'].GetYaxis().GetBinLabel(x2)
+            #         if "Pdf" in labelY: 
+            #             impVal = abs(self.histos[suff+'impact2D'+'UNR'].GetBinContent(x,x2)  )
+            #             y = int(labelX.split('_')[1])
+            #             qt = int(labelX.split('_')[3])
+            #             impVal = impVal/abs(self.histos[suff+'FitAC'+'A4'].GetBinContent(y, qt))  
+            #             quadSum+=impVal**2
+            #             # if labelY=='LHEPdfWeightHess3'  : print("inside", impVal, maxCounter)
+            #             if abs(impVal) > maxCounter :
+            #                 maxCounter = abs(impVal)
+            #                 maxBinqtY = labelX
+            #                 maxName = labelY
+            #             refVal = abs(self.histos[suff+'impact2D'+'UNR'].GetBinContent(x,self.histos[suff+'impact2D'+'UNR'].GetYaxis().FindBin("LHEPdfWeightHess3")))
+            #             refVal = abs(refVal/self.histos[suff+'FitAC'+'A4'].GetBinContent(y, qt))   
+            #             # refVal = (MCVal - refVal)**2/(MCVal**2)   
+            #             if labelX=='y_1_qt_1_A4' :
+            #                 print(labelX, labelY, impVal,impVal*abs(self.histos[suff+'FitAC'+'A4'].GetBinContent(y, qt)), x,x2, y, qt, self.histos[suff+'FitAC'+'A4'].GetBinContent(y, qt))
+            #     print("Impact: name=",maxName, "value=", maxCounter, "bin qty=", maxBinqtY, "hess3=", refVal, "quadSum=",math.sqrt(quadSum))#"val3/val=",refVal/maxCounter)
+    
                 
             
           

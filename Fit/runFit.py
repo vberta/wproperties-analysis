@@ -42,13 +42,17 @@ for charge in charges:
     text2hd5f = 'text2hdf5.py --allowNegativeExpectation --doSystematics 1 --maskedChan={}_xsec {}.pkl'.format(f.channel,f.channel)
     print('executing', text2hd5f) 
     os.system(text2hd5f) 
+    
+    #OLD
     # combinetf = 'combinetf.py --allowNegativePOI --binByBinStat --correlateXsecStat --doRegularization --regularizationTau=1e1 -t-1 {}.pkl.hdf5 -o fit_{}.root'.format(
     # combinetf = 'combinetf.py --allowNegativePOI --binByBinStat -t -1 {}.pkl.hdf5 -o fit_{}.root --doImpacts --saveHists'.format(
     # combinetf = 'combinetf.py --allowNegativePOI --binByBinStat --doRegularization --regularizationTau=1e4 --doImpacts --saveHists -t -1 {}.pkl.hdf5 -o fit_{}.root'.format(
         # f.channel, f.channel)
     
+    #WITH PARAMS
     combinetf = 'combinetf.py --allowNegativePOI --binByBinStat -t {} {}.pkl.hdf5 -o fit_{}.root {} --nThreads {} --correlateXsecStat'.format(toy, f.channel, f.channel, CTFmodifier,cores)
     # combinetf = 'combinetf.py --allowNegativePOI -t {} {}.pkl.hdf5 -o fit_{}.root {} --nThreads {}'.format(toy, f.channel, f.channel, CTFmodifier,cores)
+    # combinetf = 'combinetf.py -t {} {}.pkl.hdf5 -o fit_{}.root {} --nThreads {}'.format(toy, f.channel, f.channel, CTFmodifier,cores)
     # combinetf = 'combinetf.py --allowNegativePOI --binByBinStat -t {} {}.pkl.hdf5 -o fit_{}.root {} --nThreads {}'.format(toy, f.channel, f.channel, CTFmodifier,cores)
     # combinetf = 'combinetf.py --allowNegativePOI --binByBinStat -t {} {}.pkl.hdf5 -o fit_{}.root {} --nThreads {} --POIMode none'.format(toy, f.channel, f.channel, CTFmodifier,cores)
     print('executing', combinetf)

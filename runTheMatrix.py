@@ -71,6 +71,7 @@ tic=time.time()
 runTimes=[]
 if bkgFile == 'MYBKG' :
     bkgFile = '../bkgAnalysis/'+bkgOutput+'/bkg_parameters_CFstatAna.root'
+    # bkgFile = '../bkgAnalysis/'+bkgOutput+'/bkg_parameters.root'
     #if not step2 :
     #    raw_input('You are using self-produced bkg file but you are not running step2, are you sure? [press Enter to continue]')
 
@@ -118,7 +119,7 @@ if step3 :
     os.chdir('analysisOnData')
     if not os.path.isdir(outputDir): os.system('mkdir '+ outputDir)
     #ncores is optimized and set in the config itself, so no need to pass here
-    # os.system('python runAnalysisOnWJetsMC.py   -i='+inputDir+' -o='+outputDir+' -c='+ncores+' -sb='+SBana+' -b=0')
+    os.system('python runAnalysisOnWJetsMC.py   -i='+inputDir+' -o='+outputDir+' -c='+ncores+' -sb='+SBana+' -b=0')
     os.system('python runAnalysisOnData.py      -i='+inputDir+' -o='+outputDir+' -c='+ncores+' -sb='+SBana+' -b=0 -f'+bkgFile)
     os.chdir('../')
     s3end=time.time()
