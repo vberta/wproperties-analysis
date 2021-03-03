@@ -115,8 +115,8 @@ class fitUtils:
                         nsum = (3./16./math.pi)
                         
                         if not "UL" in proc: #rescale for the releative xsec
-                            if 'mass' not in sKind and sKind!='': 
-                                if 'alpha' not in sName :
+                            if sKind!='': 
+                                if 'alpha' not in sName and 'mass' not in sName:
                                     sNameMod = sName.replace('Up','').replace('Down','')
                                 else :
                                     sNameMod = sName
@@ -252,18 +252,21 @@ class fitUtils:
                          'WHSFSyst': ['WHSFSystFlat'],
                          'jme': set(['jesTotal', 'unclustEn']),
                          'PrefireWeight':['PrefireWeight'],
-                          'CMSlumi' :['CMSlumi'],
-                          "DYxsec" :["DYxsec"],
-                          "Topxsec" :["Topxsec"],
-                          "Dibosonxsec" :["Dibosonxsec"],
-                          "Tauxsec" :["Tauxsec"],
+                          'CMSlumi' :['CMSlumi','lumi'],
+                        #   "DYxsec" :["DYxsec"],
+                        #   "Topxsec" :["Topxsec"],
+                        #   "Dibosonxsec" :["Dibosonxsec"],
+                        #   "Tauxsec" :["Tauxsec"],
+                          "ewkXsec" : set(["Topxsec","Dibosonxsec","Tauxsec"]),
                           "LeptonVeto" : ["LeptonVeto"],
-                          "FakeNorm" :['FakeNorm'],
-                          "LHEScaleWeight" : ["LHEScaleWeight_muR0p5_muF0p5", "LHEScaleWeight_muR0p5_muF1p0","LHEScaleWeight_muR1p0_muF0p5","LHEScaleWeight_muR1p0_muF2p0","LHEScaleWeight_muR2p0_muF1p0","LHEScaleWeight_muR2p0_muF2p0"],
-                          "WQT" : ["LHEScaleWeight_muR0p5_muF0p5_WQTlow", "LHEScaleWeight_muR0p5_muF1p0_WQTlow","LHEScaleWeight_muR1p0_muF0p5_WQTlow","LHEScaleWeight_muR1p0_muF2p0_WQTlow","LHEScaleWeight_muR2p0_muF1p0_WQTlow","LHEScaleWeight_muR2p0_muF2p0_WQTlow", 
+                        #   "FakeLumi" :['lumi'],
+                        #   "LHEScaleWeight" : set(["LHEScaleWeight_muR0p5_muF0p5", "LHEScaleWeight_muR0p5_muF1p0","LHEScaleWeight_muR1p0_muF0p5","LHEScaleWeight_muR1p0_muF2p0","LHEScaleWeight_muR2p0_muF1p0","LHEScaleWeight_muR2p0_muF2p0"]),
+                          "WQT" : set(["LHEScaleWeight_muR0p5_muF0p5_WQTlow", "LHEScaleWeight_muR0p5_muF1p0_WQTlow","LHEScaleWeight_muR1p0_muF0p5_WQTlow","LHEScaleWeight_muR1p0_muF2p0_WQTlow","LHEScaleWeight_muR2p0_muF1p0_WQTlow","LHEScaleWeight_muR2p0_muF2p0_WQTlow", 
                                 "LHEScaleWeight_muR0p5_muF0p5_WQTmid", "LHEScaleWeight_muR0p5_muF1p0_WQTmid","LHEScaleWeight_muR1p0_muF0p5_WQTmid","LHEScaleWeight_muR1p0_muF2p0_WQTmid","LHEScaleWeight_muR2p0_muF1p0_WQTmid","LHEScaleWeight_muR2p0_muF2p0_WQTmid", 
-                                "LHEScaleWeight_muR0p5_muF0p5_WQThigh", "LHEScaleWeight_muR0p5_muF1p0_WQThigh","LHEScaleWeight_muR1p0_muF0p5_WQThigh","LHEScaleWeight_muR1p0_muF2p0_WQThigh","LHEScaleWeight_muR2p0_muF1p0_WQThigh","LHEScaleWeight_muR2p0_muF2p0_WQThigh"],
+                                "LHEScaleWeight_muR0p5_muF0p5_WQThigh", "LHEScaleWeight_muR0p5_muF1p0_WQThigh","LHEScaleWeight_muR1p0_muF0p5_WQThigh","LHEScaleWeight_muR1p0_muF2p0_WQThigh","LHEScaleWeight_muR2p0_muF1p0_WQThigh","LHEScaleWeight_muR2p0_muF2p0_WQThigh",
+                                "LHEScaleWeight_muR0p5_muF0p5", "LHEScaleWeight_muR0p5_muF1p0","LHEScaleWeight_muR1p0_muF0p5","LHEScaleWeight_muR1p0_muF2p0","LHEScaleWeight_muR2p0_muF1p0","LHEScaleWeight_muR2p0_muF2p0"]),
                         #   'ptScale': set(["Eta{}zptsyst".format(j) for j in range(1, 5)] + ["Eta{}Ewksyst".format(j) for j in range(1, 5)] + ["Eta{}deltaMsyst".format(j) for j in range(1, 5)]+["Eta{}stateig{}".format(j, i) for i in range(0, 99) for j in range(1, 5)]),
+                          'ptScale':set(["corrected","corrected"]), 
                          }  # <type 'dict'>
         
         self.DC.shapeMap = 	{self.channel: {'*': [self.channel+'.root', '$PROCESS', '$PROCESS_$SYSTEMATIC']},\

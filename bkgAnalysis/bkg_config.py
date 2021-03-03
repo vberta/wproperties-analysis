@@ -93,15 +93,6 @@ def getPtEtaBinning(fileName, histoPathName='templates_Signal/Nominal/templates'
     return etaBins,ptBins
     
 etaBins,ptBins = getPtEtaBinning(fileName=inputDir+'/WToMuNu.root')
-
-# pt2 = [ (25. + 0.5*x)  for x in range(0, 61)] 
-# eta2 = [-2.4,-2.3,-2.2,-2.1,-2.0,-1.9,-1.8,-1.7,-1.6,-1.5,-1.4,-1.3,-1.2,-1.1,-1.0,-0.9,-0.8,-0.7,-0.6,-0.5,-0.4,-0.3,-0.2,-0.1,0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.1,2.2,2.3,2.4]
-
-
-# for i in range(len(pt2)) : 
-#     print(pt2[i], ptBins[i], pt2[i]-ptBins[i])
-# for i in range(len(eta2)) : 
-#     print(eta2[i], etaBins[i], eta2[i]-etaBins[i])
    
 def fakerate_analysis(systKind, systName,correlatedFit,statAna, template, ptBinning=ptBins, etaBinning=etaBins, outdir=outputDir, indir=inputDir, extrapSuff='',regionSuff='') :
     outdirBkg = outdir+'/bkg_'+systName+extrapSuff        
@@ -130,7 +121,7 @@ for reg in regionList :
         if systAna :
             processesMain = []
             for sKind, sList in bkg_utils.bkg_systematics.items():
-                if sKind=='LHEScaleWeight' : continue 
+                # if sKind=='LHEScaleWeight' : continue 
                 for sName in sList :
                     print("-> systematic:", sKind,sName)
                     if MULTICORE :
@@ -150,7 +141,7 @@ for reg in regionList :
         if systAna :
             processesCF = []
             for sKind, sList in bkg_utils.bkg_systematics.items():
-                if sKind=='LHEScaleWeight' : continue 
+                # if sKind=='LHEScaleWeight' : continue 
                 for sName in sList : 
                     print("-> systematatic:", sKind,sName)
                     if MULTICORE :

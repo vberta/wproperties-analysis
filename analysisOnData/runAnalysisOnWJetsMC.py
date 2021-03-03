@@ -47,10 +47,10 @@ def RDFprocessWJetsMCSignalACtempl(fvec, outputDir, sample, xsec, fileSF, fileSc
     p.branch(nodeToStart = 'defsAC', nodeToEnd = 'templatesAC_{}/Nominal'.format(region), modules = [ROOT.templateBuilder(wtomu_cut, weight,nom,"Nom",0)])
     #reco templates for out of acceptance events
     p.branch(nodeToStart = 'defsAC', nodeToEnd = 'templatesLowAcc_{}/Nominal'.format(region), modules = [ROOT.templates(wtomu_lowAcc_cut, weight, nom,"Nom",0)])
-    mass = ROOT.vector('string')()
-    mass.push_back("_massUp")
-    mass.push_back("_massDown")
-    p.branch(nodeToStart = 'defsAC', nodeToEnd = 'templatesLowAcc_{}/Nominal'.format(region), modules = [ROOT.templates(wtomu_lowAcc_cut, weight, mass,"massWeights",0)])
+    # mass = ROOT.vector('string')()
+    # mass.push_back("_massUp")
+    # mass.push_back("_massDown")
+    # p.branch(nodeToStart = 'defsAC', nodeToEnd = 'templatesLowAcc_{}/Nominal'.format(region), modules = [ROOT.templates(wtomu_lowAcc_cut, weight, mass,"massWeights",0)])
     #weight variations
     for s,variations in systematics.items():
         # if '_WQT' in s: continue  #not needed for the fit
@@ -70,10 +70,11 @@ def RDFprocessWJetsMCSignalACtempl(fvec, outputDir, sample, xsec, fileSF, fileSc
                 var = var.replace("_WQTmid","")
                 var = var.replace("_WQThigh","")
             vars_vec.push_back(var)
-            print(weight,"\t",var_weight, "MODIFIED WEIGHT")
+            # print(weight,"\t",var_weight, "MODIFIED WEIGHT")
         #reco templates with AC reweighting
         nodeToStartName = 'defsAC'
-        if s=='LHEScaleWeight' or s=='LHEPdfWeight' or s=='alphaS' :
+        # if s=='LHEScaleWeight' or s=='LHEPdfWeight' or s=='alphaS':
+        if s=='LHEScaleWeight' or s=='LHEPdfWeight' or s=='alphaS' or s=='mass':
             steps = [ROOT.getACValues(fileACplus,fileACminus,s, variations[0]), ROOT.defineHarmonics(), ROOT.getMassWeights(), ROOT.getWeights(s, variations[0])]
             p.branch(nodeToStart = 'defs', nodeToEnd = 'defsAC{}'.format(s), modules = steps)
             nodeToStartName+=s
@@ -116,7 +117,7 @@ def RDFprocessWJetsMC(fvec, outputDir, sample, xsec, fileSF, fileScale, ncores, 
     filePt = ROOT.TFile.Open("data/histoUnfoldingSystPt_nsel2_dy3_rebin1_default.root")
     fileY = ROOT.TFile.Open("data/histoUnfoldingSystRap_nsel2_dy3_rebin1_default.root")
     #fileAC = ROOT.TFile.Open("../analysisOnGen/genInput.root")
-    p.branch(nodeToStart = 'input', nodeToEnd = 'defs', modules = [ROOT.reweightFromZ(filePt,fileY),ROOT.baseDefinitions(True, True),ROOT.rochesterVariations(fileScale), ROOT.weightDefinitions(fileSF),getLumiWeight(xsec=xsec, inputFile=fvec, genEvsbranch = "genEventSumw"),ROOT.Replica2Hessian()])
+    p.branch(nodeToStart = 'input', nodeToEnd = 'defs', modules = [ROOT.reweightFromZ(filePt,fileY),ROOT.baseDefinitions(True, True),ROOT.rochesterVariations(fileScale), ROOT.weightDefinitions(fileSF),getLumiWeight(xsec=xsec, inputFile=fvec, genEvsbranch = "genEventSumw"),ROOT.Replica2Hessian(),ROOT.getMassWeights()])
     for region,cut in selections_bkg.items():
         # cut = cut.replace("&& HLT_SingleMu24","&& IsTObjmatched_mu1")#do not use, IsTObjmatched_mu1 is bugged in wjets sample
         if 'aiso' in region:
@@ -151,6 +152,7 @@ def RDFprocessWJetsMC(fvec, outputDir, sample, xsec, fileSF, fileScale, ncores, 
             if 'WHSF' in s and 'aiso' in region: continue
             print("branching weight variations", s)
             #if "LHEScaleWeight" in s and samples[sample]['systematics'] != 2 :  continue
+            if s=='LHEScaleWeight' : continue #no correlated MCscale for W
             
             if '_WQT' in s:# Wqt syst using scale
                 wtomu_modcut = wtomu_cut + variations[2]

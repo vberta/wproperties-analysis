@@ -7,7 +7,7 @@ import argparse
 from RDFtree import RDFtree
 sys.path.append('python/')
 sys.path.append('data/')
-from systematics import systematics
+from systematics import systematics, systFlat
 from selections import selections, selections_bkg, selections_fakes, selectionVars
 from getLumiWeight import getLumiWeight
 ROOT.gSystem.Load('bin/libAnalysisOnData.so')
@@ -86,6 +86,15 @@ def RDFprocessfakefromData(fvec, outputDir, bkgFile, ncores, pretendJob=True, SB
             print("branching fake column variations", vartype)
             p.branch(nodeToStart = 'defs'.format(region), nodeToEnd = 'prefit_{}/{}'.format(region,vartype), modules = [ROOT.muonHistos(cut,weight,vars_vec,"fakeRate_"+vartype, 0)])
             p.branch(nodeToStart = 'defs'.format(region), nodeToEnd = 'templates_{}/{}'.format(region,vartype), modules = [ROOT.templates(cut,weight,vars_vec,"fakeRate_"+vartype, 0)])
+        
+        for s,variations in systFlat.items():
+            print("branching weight variations", s)
+            vars_vec = ROOT.vector('string')()
+            for var in variations[0]:
+                vars_vec.push_back(var)
+                weight="float(1)"
+            p.branch(nodeToStart = 'defs'.format(region), nodeToEnd = 'prefit_{}/{}'.format(region,s), modules = [ROOT.muonHistos(cut,weight,vars_vec,"fakeRate_"+variations[1], 0)])
+            p.branch(nodeToStart = 'defs'.format(region), nodeToEnd = 'templates_{}/{}'.format(region,s), modules = [ROOT.templates(cut,weight,vars_vec,"fakeRate_"+variations[1], 0)]) 
 
     #save output
     p.getOutput()

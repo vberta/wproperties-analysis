@@ -44,12 +44,13 @@ RNode templateBuilder::bookNominalhistos(RNode d)
 {    
   auto cut = [](float pt, float y) { return pt < 32. && y < 2.4; };
 
-  auto d1 = d.Filter(cut, {"Wpt_preFSR", "Wrap_preFSR_abs"}, "cut").Define("harmonicsWeightsMass", vecMultiplication, {"massWeights", "harmonicsWeights"});
+  // auto d1 = d.Filter(cut, {"Wpt_preFSR", "Wrap_preFSR_abs"}, "cut").Define("harmonicsWeightsMass", vecMultiplication, {"massWeights", "harmonicsWeights"});
+  auto d1 = d.Filter(cut, {"Wpt_preFSR", "Wrap_preFSR_abs"}, "cut");
   // auto cutReport1 = d1.Report();
   // cutReport1->Print();
 
-  std::vector<std::string> mass = {"_massDown", "", "_massUp"};
-  std::vector<std::string> total = stringMultiplication(mass, helXsecs);
+  // std::vector<std::string> mass = {"_massDown", "", "_massUp"};
+  // std::vector<std::string> total = stringMultiplication(mass, helXsecs);
 
   // templates for the fit
   auto h = new TH2F("h", "h", nBinsY, _yArr.data(), nBinsQt, _qTArr.data());
@@ -62,11 +63,15 @@ RNode templateBuilder::bookNominalhistos(RNode d)
 
     auto sel = [lowEdgePt, upEdgePt](float pt) { return (pt > lowEdgePt && pt < upEdgePt); };
 
-    TH3weightsHelper helperHelXsecs_plus(std::string("Wplus_")+std::string("qt_") + std::to_string(j) + std::string("_helXsecs_"), std::string("Wplus_")+std::string("qt_") + std::to_string(j) + std::string("_helXsecs_"), nBinsEta, _etaArr, nBinsPt, _pTArr, nBinsY, _yArr, total);
-    auto htmp_plus = d1.Filter(_filter).Filter("Mu1_charge>0").Filter(sel, {"Wpt_preFSR"}).Book<float, float, float, float, ROOT::VecOps::RVec<float>>(std::move(helperHelXsecs_plus), {"Mu1_eta", "Mu1_pt", "Wrap_preFSR_abs", "weight", "harmonicsWeightsMass"});
+    TH3weightsHelper helperHelXsecs_plus(std::string("Wplus_")+std::string("qt_") + std::to_string(j) + std::string("_helXsecs_"), std::string("Wplus_")+std::string("qt_") + std::to_string(j) + std::string("_helXsecs_"), nBinsEta, _etaArr, nBinsPt, _pTArr, nBinsY, _yArr, helXsecs);
+    // TH3weightsHelper helperHelXsecs_plus(std::string("Wplus_")+std::string("qt_") + std::to_string(j) + std::string("_helXsecs_"), std::string("Wplus_")+std::string("qt_") + std::to_string(j) + std::string("_helXsecs_"), nBinsEta, _etaArr, nBinsPt, _pTArr, nBinsY, _yArr, total);
+    auto htmp_plus = d1.Filter(_filter).Filter("Mu1_charge>0").Filter(sel, {"Wpt_preFSR"}).Book<float, float, float, float, ROOT::VecOps::RVec<float>>(std::move(helperHelXsecs_plus), {"Mu1_eta", "Mu1_pt", "Wrap_preFSR_abs", "weight", "harmonicsWeights"});
+    // auto htmp_plus = d1.Filter(_filter).Filter("Mu1_charge>0").Filter(sel, {"Wpt_preFSR"}).Book<float, float, float, float, ROOT::VecOps::RVec<float>>(std::move(helperHelXsecs_plus), {"Mu1_eta", "Mu1_pt", "Wrap_preFSR_abs", "weight", "harmonicsWeightsMass"});
     _h3Group.push_back(htmp_plus);
-    TH3weightsHelper helperHelXsecs_minus(std::string("Wminus_")+std::string("qt_") + std::to_string(j) + std::string("_helXsecs_"), std::string("Wminus_")+std::string("qt_") + std::to_string(j) + std::string("_helXsecs_"), nBinsEta, _etaArr, nBinsPt, _pTArr, nBinsY, _yArr, total);
-    auto htmp_minus = d1.Filter(_filter).Filter("Mu1_charge<0").Filter(sel, {"Wpt_preFSR"}).Book<float, float, float, float, ROOT::VecOps::RVec<float>>(std::move(helperHelXsecs_minus), {"Mu1_eta", "Mu1_pt", "Wrap_preFSR_abs", "weight", "harmonicsWeightsMass"});
+    TH3weightsHelper helperHelXsecs_minus(std::string("Wminus_")+std::string("qt_") + std::to_string(j) + std::string("_helXsecs_"), std::string("Wminus_")+std::string("qt_") + std::to_string(j) + std::string("_helXsecs_"), nBinsEta, _etaArr, nBinsPt, _pTArr, nBinsY, _yArr, helXsecs);
+    // TH3weightsHelper helperHelXsecs_minus(std::string("Wminus_")+std::string("qt_") + std::to_string(j) + std::string("_helXsecs_"), std::string("Wminus_")+std::string("qt_") + std::to_string(j) + std::string("_helXsecs_"), nBinsEta, _etaArr, nBinsPt, _pTArr, nBinsY, _yArr, total);
+    auto htmp_minus = d1.Filter(_filter).Filter("Mu1_charge<0").Filter(sel, {"Wpt_preFSR"}).Book<float, float, float, float, ROOT::VecOps::RVec<float>>(std::move(helperHelXsecs_minus), {"Mu1_eta", "Mu1_pt", "Wrap_preFSR_abs", "weight", "harmonicsWeights"});
+    // auto htmp_minus = d1.Filter(_filter).Filter("Mu1_charge<0").Filter(sel, {"Wpt_preFSR"}).Book<float, float, float, float, ROOT::VecOps::RVec<float>>(std::move(helperHelXsecs_minus), {"Mu1_eta", "Mu1_pt", "Wrap_preFSR_abs", "weight", "harmonicsWeightsMass"});
     _h3Group.push_back(htmp_minus);
   }
   return d1;

@@ -3,7 +3,7 @@ systematicsDict = {
     },
     "CMSlumi": {
        "vars":["CMSlumi"],
-       "procs": ["Signal", "DYJets","DiBoson","Top","WtoTau","LowAcc","Fake"],
+       "procs": ["Signal", "DYJets","DiBoson","Top","WtoTau","LowAcc"], #Fake
       #  "procs": [ "DYJets","DiBoson","Top","WtoTau","LowAcc","Fake"],
        "type": "lnN",
        "weight" : 1.025 
@@ -34,7 +34,7 @@ systematicsDict = {
     },
     "mass" : {
         "vars":["mass"],
-        "procs": ["Signal", "LowAcc"],
+        "procs": ["Signal", "LowAcc", "Fake"],
         # "procs": ["Signal"],
         "type": "shapeNoConstraint",
         # "type": "shape",
@@ -115,6 +115,13 @@ systematicsDict = {
     #    "type": "shape"
     #},
     
+   "ptScale" : {
+       "vars": ["corrected"],
+       "procs": ["Signal", "DYJets","DiBoson","Top","Fake","WtoTau","LowAcc"],
+       "type": "shape",
+       "weight" : 1.
+    },
+    
     "LeptonVeto":{
        "vars":["LeptonVeto"],
        "procs": ["DYJets"],
@@ -122,11 +129,11 @@ systematicsDict = {
        "weight" : 1.020 
     },
     
-    "FakeNorm":{
-       "vars":["FakeNorm"],
+    "FakeLumi":{
+       "vars":["lumi"],
        "procs": ["Fake"],
-       "type": "lnN",
-       "weight" : 1.2
+       "type": "shape",
+       "weight" : 1.
        #1.05 
     },
 }

@@ -60,6 +60,7 @@ def RDFprocessMC(fvec, outputDir, sample, xsec, fileSF, ncores, systType, preten
             if "LHEPdfWeight"   in s and systType != 2 :  continue
             if "alphaS"         in s and systType != 2 :  continue
             if 'WHSF' in s and 'aiso' in region: continue
+            if 'mass' in s : continue
             
             # if s not in weight :  #qui entra aiso-WHSF e non deve!
             #     var_weight = weight

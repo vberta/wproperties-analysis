@@ -62,7 +62,7 @@ step8 = args.aposteriori
 step10 = args.regularize
 
 if step6 and (step0 or step1 or step3) :
-    print("step6 (Fit) cannot be runned in the same configuration of RDF related steps (0,1,3)")
+    print("step6 (Fit) cannot be runned in the same configuration of RDF related steps 0,1,3 (RDF)")
     assert(0)
 if not step6 :
     os.system( 'source /cvmfs/sft-nightlies.cern.ch/lcg/views/dev3/latest/x86_64-centos7-gcc9-opt/setup.sh')
@@ -119,8 +119,8 @@ if step3 :
     os.chdir('analysisOnData')
     if not os.path.isdir(outputDir): os.system('mkdir '+ outputDir)
     #ncores is optimized and set in the config itself, so no need to pass here
-    os.system('python runAnalysisOnWJetsMC.py   -i='+inputDir+' -o='+outputDir+' -c='+ncores+' -sb='+SBana+' -b=0')
     os.system('python runAnalysisOnData.py      -i='+inputDir+' -o='+outputDir+' -c='+ncores+' -sb='+SBana+' -b=0 -f'+bkgFile)
+    os.system('python runAnalysisOnWJetsMC.py   -i='+inputDir+' -o='+outputDir+' -c='+ncores+' -sb='+SBana+' -b=0')
     os.chdir('../')
     s3end=time.time()
     runTimes.append(s3end - s3start)
@@ -175,8 +175,7 @@ if step6 :
     else :
         print('missing Fit/CMSSW_10_6_18/CMSSW_10_6_18/src/HiggsAnalysis/CombinedLimit/src/')
         assert(0)
-    os.system('python ../runFit.py --impacts 1 --postfit 1 --regularize '+regFit+' --tau=1e4 --toy '+toy)
-    # os.system('python ../runFit.py --impact 1 --postfit 1 --toy -1 --regularize 1 --tau=1e4')
+    os.system('python ../runFit.py --impact 1 --postfit 1 --regularize '+regFit+' --tau=1e3 --toy '+toy)
     os.chdir('../../')
     s6end=time.time()
     runTimes.append(s6end - s6start)

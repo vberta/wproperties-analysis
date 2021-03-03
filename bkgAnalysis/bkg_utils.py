@@ -15,16 +15,24 @@ import copy
 import sys
 sys.path.append('../analysisOnData/data/')
 sys.path.append('../data/') #for the prefit plotter only
-from systematics import systematics
+from systematics import systematics, systFlat
 
 def buildBkgSyst() :
     out = {}
     for key, val in systematics.items() :
         if 'Nom_WQT' in key : continue
         out[key] = [var[1:] for var in val[0]]
+    for key, val in systFlat.items() : #if doesnt work see below explicit expression
+        out[key] = [var[1:] for var in val[0]]
     
     out['jme'] = ["jesTotalUp", "jesTotalDown", "unclustEnUp","unclustEnDown"]
     out['ptScale'] = [ "correctedUp", "correctedDown"]
+    
+    # out['lumi'] = ['lumiUp', 'lumiDown']
+    # out['topXSec'] = ['topXSecUp', 'topXSecDown']
+    # out['dibosonXSec'] = ['dibosonXSecUp', 'dibosonXSecDown']
+    # out['tauXSec'] = ['tauXSecUp', 'tauXSecDown']
+    # out['lepVeto'] = ['lepVetoUp', 'lepVetoDown']
     
     # print("dictionary=", out)
     return out 

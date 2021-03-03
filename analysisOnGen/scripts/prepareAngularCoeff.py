@@ -25,7 +25,7 @@ OUTPUT = args.output
 INPUT = args.input
 UNCORR = args.uncorrelate
 
-SHIFT = True #up/down as nom+/-var (insted of nom*(nom/var), nom*(var/nom))
+SHIFT = False #up/down as nom+/-var (insted of nom*(nom/var), nom*(var/nom))
 
 coeffDict = {
     'A0' : 1.,

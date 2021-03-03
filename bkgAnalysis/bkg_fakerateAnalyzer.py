@@ -77,7 +77,8 @@ class bkg_analyzer:
         arglist = array('d',2*[0])
         arglist[0] =1.0
         ierflg = ctypes.c_int(0)
-        minuit.SetPrintLevel(-1)
+        # minuit.SetPrintLevel(-1)
+        minuit.SetPrintLevel(0)
         minuit.mnexcm("SET ERR",arglist,1,ierflg)
         minuit.mnparm(0, 'offset',q0,p0Err,-1,1,ierflg)
         minuit.mnparm(1, 'slope',p0,q0Err,-0.3,0.3,ierflg)          
@@ -140,7 +141,7 @@ class bkg_analyzer:
         bin4corFitS = ['{:.2g}'.format(x) for x in bin4corFit[:-1]]
 
         for sKind, sList in systDict.items():
-            if 'LHE' in sKind or 'alphaS' in sKind : continue #Theory uncertainity skipped in the correlated fit
+            if 'LHE' in sKind or 'alphaS' in sKind  or 'Xsec' in sKind or 'mass' in sKind: continue #Theory uncertainity  and flat unc. skipped in the correlated fit #or 'lumi' in sKind
             for sName in sList :
                 systList.append(sName)
                 systdir = self.outdir.replace("bkg_"+self.systName,"bkg_"+sName+'/')
@@ -302,7 +303,50 @@ class bkg_analyzer:
                     minuitDict[s+e+'offset'+'Minuit'+'Err'] = histoToy.GetStdDev(1)
                     minuitDict[s+e+'slope'+'Minuit'+'Err'] = histoToy.GetStdDev(2)
                     minuitDict[s+e+'offset*slope'+'Minuit'] = histoToy.GetCovariance()    
-                correlatedFitterDict.update(minuitDict)            
+                correlatedFitterDict.update(minuitDict)
+        
+                #safety check of the fit results :
+                print(s,e, "chi2Red=", correlatedFitterDict[s+e+'chi2red'+'Minuit'], "vs old" , fakedict[s+e+'chi2red'], "slope=", correlatedFitterDict[s+e+'slope'+'Minuit'], "offset=",correlatedFitterDict[s+e+'offset'+'Minuit'])
+                if correlatedFitterDict[s+e+'chi2red'+'Minuit'] > 5. :
+                    print("WARNING: very sevrere problem. the CF fit of bin", s, "eta=",e," has a chi2/ndf=",correlatedFitterDict[s+e+'chi2red'+'Minuit'], ". Standard fit results will be used." )
+                    # correlatedFitterDict[s+e+'offset'+'Minuit'] = fakedict[s+e+'offset']
+                    # correlatedFitterDict[s+e+'slope'+'Minuit'] = fakedict[s+e+'slope']
+                    # correlatedFitterDict[s+e+'offset'+'Minuit'+'Err'] = fakedict[s+e+'offsetErr']
+                    # correlatedFitterDict[s+e+'slope'+'Minuit'+'Err'] = fakedict[s+e+'slopeErr']
+                    # correlatedFitterDict[s+e+'chi2red'+'Minuit'] = fakedict[s+e+'chi2red']
+                    # correlatedFitterDict[s+e+'chi2red'+'Minuit'+'Err'] = fakedict[s+e+'chi2redErr']
+                    # correlatedFitterDict[s+e+'offset*slope'+'Minuit'] = fakedict[s+e+'offset*slope']
+                    
+                    #patch = nomCF*var_noCF/nom_noCF
+                    parList = ['offset','slope', 'offsetErr', 'slopeErr', 'chi2red','chi2redErr','offset*slope']
+                    fileNom_noCF = ROOT.TFile.Open(self.outdir.replace("bkg_"+self.systName, 'bkg_')+'/bkg_parameters_file'+self.nameSuff+".root")
+                    fileNom_CF = ROOT.TFile.Open(self.outdir.replace("bkg_"+self.systName, 'bkg_')+'/bkg_parameters_file_CF'+self.nameSuff+".root")
+                    patchParDict = {}
+                    for par in parList :
+                        hNom_noCF = fileNom_noCF.Get('fake_'+par.replace('Err',''))
+                        hNom_CF = fileNom_CF.Get('fake_'+par.replace('Err',''))
+                        if not 'Err' in par :
+                            patchParDict[par+'Nom_noCF'] =  hNom_noCF.GetBinContent(self.signList.index(s)+1,self.etaBinningS.index(e)+1)   
+                            patchParDict[par+'Nom_CF'] =  hNom_CF.GetBinContent(self.signList.index(s)+1,self.etaBinningS.index(e)+1)   
+                        else :
+                            patchParDict[par+'Nom_noCF'] =  hNom_noCF.GetBinError(self.signList.index(s)+1,self.etaBinningS.index(e)+1)   
+                            patchParDict[par+'Nom_CF'] =  hNom_CF.GetBinError(self.signList.index(s)+1,self.etaBinningS.index(e)+1)      
+                        patchParDict[par] = patchParDict[par+'Nom_CF']*patchParDict[par+'Nom_noCF']/fakedict[s+e+par] 
+                        print("DEBUG:",par, " nomCF=",patchParDict[par+'Nom_CF'], ", nom_noCF=",patchParDict[par+'Nom_noCF'], ", var_noCF=",fakedict[s+e+par], ", patch=",patchParDict[par] )
+                        
+                    correlatedFitterDict[s+e+'offset'+'Minuit'] = patchParDict['offset']
+                    correlatedFitterDict[s+e+'slope'+'Minuit'] = patchParDict['slope']
+                    correlatedFitterDict[s+e+'offset'+'Minuit'+'Err'] = patchParDict['offsetErr']
+                    correlatedFitterDict[s+e+'slope'+'Minuit'+'Err'] = patchParDict['slopeErr']
+                    correlatedFitterDict[s+e+'chi2red'+'Minuit'] = patchParDict['chi2red']
+                    correlatedFitterDict[s+e+'chi2red'+'Minuit'+'Err'] = patchParDict['chi2redErr']
+                    correlatedFitterDict[s+e+'offset*slope'+'Minuit'] = patchParDict['offset*slope']
+                    
+                            
+                            
+                    
+                    
+                    
         return correlatedFitterDict
     
     
@@ -498,7 +542,7 @@ class bkg_analyzer:
         # noratio=True --> In the ratio plots are plotted fake and prompt rate of systematics and nominals
         # symBans=True --> symmetric bands around nominal: 1/2*sqrt[sum_syst (up-down)^2]
         systDict = copy.deepcopy(systDict)
-        del systDict['LHEScaleWeight']
+        # del systDict['LHEScaleWeight']
         
         if statAna :
             statAnaSuff = 'statAna'
@@ -517,16 +561,24 @@ class bkg_analyzer:
         groupedSystColors = {
             "WHSF"  : [ROOT.kGreen+1, 'Scale Factors'],
             "LHEScaleWeight" : [ROOT.kViolet-2, 'MC Scale'],
-            "ptScale" : [ROOT.kBlue-4, 'pT Scale'],
+            "ptScale" : [ROOT.kYellow+2, 'p_{T} Scale'],
             "jme" : [ROOT.kAzure+10, 'MET'],
-            "LHEPdfWeight" : [ROOT.kRed+1, 'PDF'],
+            "LHEPdfWeight" : [ROOT.kRed+1, 'PDF+#alpha_{s}'],#not plotted 
             "Nominal" : [1, 'Stat. Unc.'],
             "PrefireWeight" : [ROOT.kSpring+10, 'Prefire'],
-            "alphaS" : [ROOT.kOrange-3, 'Alpha Strong'],
-            "LHEScaleWeight_WQTlow" : [ROOT.kViolet+7, "MC Scale Wqt<5"],
-            "LHEScaleWeight_WQTmid" : [ROOT.kViolet+7, "MC Scale 5<Wqt<15"],
-            "LHEScaleWeight_WQThigh" : [ROOT.kViolet+7, "q_{T}^{W}"], #it contains also two previous lines (not plotted)
+            "alphaS" : [ROOT.kOrange-3, '#alpha_{s}'], #not plotted 
+            "LHEScaleWeight_WQTlow" : [ROOT.kViolet+7, "MC Scale Wqt<5"],#not plotted 
+            "LHEScaleWeight_WQTmid" : [ROOT.kViolet+7, "MC Scale 5<Wqt<15"],#not plotted 
+            "LHEScaleWeight_WQThigh" : [ROOT.kViolet+7, "q_{T}^{V}"], #it contains also two previous lines and Z (not plotted)
+            "mass" : [ROOT.kBlue-4, 'm_{W}', 35],
+            "lumi" : [ROOT.kOrange-7,"Lumi"],
+            "topXSec" : [ROOT.kCyan-6,"#sigma_{t}"],#not plotted
+            "dibosonXSec" : [ROOT.kCyan-1,"#sigma_{diboson}"],#not plotted
+            "tauXSec" : [ROOT.kTeal,"#sigma_{W#rightarrow#tau#nu}+#sigma_{t}+#sigma_{diboson}"],
+            "lepVeto" : [ROOT.kMagenta-7,"Lepton veto"],
         }
+        
+        doNotPlotGroup = ["LHEScaleWeight_WQTlow", "LHEScaleWeight_WQTmid","LHEScaleWeight", "topXSec", "dibosonXSec", "alphaS" ] #already included in other groups (summed)
             
         #getting canvas and histoss
         finalCanvasDict = {}
@@ -712,7 +764,7 @@ class bkg_analyzer:
 
                             sameFlag = True
                             colorNumber = 1
-                            colorList = [600,616,416,632,432,800,900,880,840,820]
+                            colorList = [600,616,416,632,432,800,900,880,840,820,920,800,850,950,840,920,640,690]
                             colorCounter = 0
 
                             for sKind, sList in modSystDict.items():
@@ -906,7 +958,8 @@ class bkg_analyzer:
                                     # finalHistoDict[sKind+canvas+histo+s+e+'group'].SetLineWidth(1)
                                     finalLegDict[e+s+canvas+histo+"groupSyst"].AddEntry(finalHistoDict[sKind+canvas+histo+s+e+'group'], 'Stat. Unc.')
                                 else :
-                                    if not 'WQTlow' in sKind and not 'WQTmid' in sKind: 
+                                    # if not 'WQTlow' in sKind and not 'WQTmid' in sKind: 
+                                    if not sKind in doNotPlotGroup:  
                                         finalHistoDict[sKind+canvas+histo+s+e+'group'].SetLineColor(groupedSystColors[sKind][0])
                                         finalLegDict[e+s+canvas+histo+"groupSyst"].AddEntry(finalHistoDict[sKind+canvas+histo+s+e+'group'], groupedSystColors[sKind][1])
                             
@@ -916,11 +969,29 @@ class bkg_analyzer:
                                 deltaSumWQT = finalHistoDict[sKind+canvas+histo+s+e+'group'].GetBinContent(ipt)**2
                                 deltaSumWQT += finalHistoDict[sKind.replace('high','mid')+canvas+histo+s+e+'group'].GetBinContent(ipt)**2
                                 deltaSumWQT += finalHistoDict[sKind.replace('high','low')+canvas+histo+s+e+'group'].GetBinContent(ipt)**2
+                                deltaSumWQT += finalHistoDict['LHEScaleWeight'+canvas+histo+s+e+'group'].GetBinContent(ipt)**2 #Z flat LHEScale here
                                 deltaSumWQT = math.sqrt(deltaSumWQT)
                                 # deltaSumWQT = finalHistoDict[sKind+canvas+histo+s+e+'group'].GetBinContent(ipt)
                                 # deltaSumWQT += finalHistoDict[sKind.replace('high','mid')+canvas+histo+s+e+'group'].GetBinContent(ipt)
                                 # deltaSumWQT += finalHistoDict[sKind.replace('high','low')+canvas+histo+s+e+'group'].GetBinContent(ipt)
                                 finalHistoDict[sKind+canvas+histo+s+e+'group'].SetBinContent(ipt , deltaSumWQT)
+                            
+                            sKind = 'LHEPdfWeight' 
+                            for ipt in range(1,finalHistoDict[sKind+canvas+histo+s+e+'group'].GetNbinsX()+1) :
+                                deltaSumPDF = finalHistoDict[sKind+canvas+histo+s+e+'group'].GetBinContent(ipt)**2
+                                deltaSumPDF += finalHistoDict['alphaS'+canvas+histo+s+e+'group'].GetBinContent(ipt)**2
+                                deltaSumPDF = math.sqrt(deltaSumPDF)
+                                finalHistoDict[sKind+canvas+histo+s+e+'group'].SetBinContent(ipt , deltaSumPDF)
+                            
+                            sKind = 'tauXSec' 
+                            for ipt in range(1,finalHistoDict[sKind+canvas+histo+s+e+'group'].GetNbinsX()+1) :
+                                deltaSumXSec = finalHistoDict[sKind+canvas+histo+s+e+'group'].GetBinContent(ipt)**2
+                                deltaSumXSec += finalHistoDict['dibosonXSec'+canvas+histo+s+e+'group'].GetBinContent(ipt)**2
+                                deltaSumXSec += finalHistoDict['topXSec'+canvas+histo+s+e+'group'].GetBinContent(ipt)**2
+                                deltaSumXSec = math.sqrt(deltaSumXSec)
+                                finalHistoDict[sKind+canvas+histo+s+e+'group'].SetBinContent(ipt , deltaSumXSec)
+                            
+                            
                             
                             #sum of groups
                             finalHistoDict['sum'+canvas+histo+s+e+'group'] = finalHistoDict['Nominal'+canvas+histo+s+e+'group'].Clone(finalHistoDict['Nominal'+canvas+histo+s+e+'group'].GetName().replace('Nominal','sum'))
@@ -932,7 +1003,8 @@ class bkg_analyzer:
                                 sumOfDelta = 0
                                 for sKind, sList in nomSystDict.items():
                                     if sKind=='Nominal' : continue
-                                    if 'WQTlow' in sKind or 'WQTmid' in sKind: continue 
+                                    # if 'WQTlow' in sKind or 'WQTmid' in sKind: continue 
+                                    if sKind in doNotPlotGroup: continue 
                                     sumOfDelta+= finalHistoDict[sKind+canvas+histo+s+e+'group'].GetBinContent(ipt)**2
                                 sumOfDelta = math.sqrt(sumOfDelta)
                                 finalHistoDict['sum'+canvas+histo+s+e+'group'].SetBinContent(ipt,sumOfDelta)
@@ -942,7 +1014,8 @@ class bkg_analyzer:
                             finalHistoDict['sum'+canvas+histo+s+e+'group'].Draw("hist")
                             finalHistoDict['Nominal'+canvas+histo+s+e+'group'].Draw('hist SAME')
                             for sKind, sList in systDict.items():
-                                if 'WQTlow' in sKind or 'WQTmid' in sKind: continue 
+                                # if 'WQTlow' in sKind or 'WQTmid' in sKind: continue 
+                                if sKind in doNotPlotGroup: continue 
                                 finalHistoDict[sKind+canvas+histo+s+e+'group'].Draw("hist SAME")
                             finalLegDict[e+s+canvas+histo+"groupSyst"].Draw("SAME")
                             
@@ -1176,7 +1249,8 @@ class bkg_analyzer:
                                 finalLegDict[s+canvas+histo+"groupSyst_unrolled"].AddEntry(finalHistoDict[sKind+s+canvas+histo+'group_unrolled'], 'Squared Sum of Syst.')
                                 # finalHistoDict[sKind+s+canvas+histo+'group_unrolled'].SetLineWidth(finalHistoDict[sKind+canvas+histo+s+'0group'].GetLineWidth())
                             else :
-                                if not 'WQTlow' in sKind and not 'WQTmid' in sKind: 
+                                # if not 'WQTlow' in sKind and not 'WQTmid' in sKind: 
+                                if not sKind in doNotPlotGroup:  
                                     finalLegDict[s+canvas+histo+"groupSyst_unrolled"].AddEntry(finalHistoDict[sKind+s+canvas+histo+'group_unrolled'], groupedSystColors[sKind][1])
                                     
                             for e in self.etaBinningS :
@@ -1190,7 +1264,8 @@ class bkg_analyzer:
                         finalHistoDict['sum'+s+canvas+histo+'group_unrolled'].Draw("hist")
                         finalHistoDict['Nominal'+s+canvas+histo+'group_unrolled'].Draw('hist SAME')
                         for sKind, sList in systDict.items():
-                            if 'WQTlow' in sKind or 'WQTmid' in sKind: continue  
+                            # if 'WQTlow' in sKind or 'WQTmid' in sKind: continue 
+                            if sKind in doNotPlotGroup: continue  
                             finalHistoDict[sKind+s+canvas+histo+'group_unrolled'].Draw("hist SAME")
                         finalLegDict[s+canvas+histo+"groupSyst_unrolled"].Draw("SAME")
                         
@@ -1302,7 +1377,7 @@ class bkg_analyzer:
                             for sKind, sList in systDict.items():
                                 for sName in sList :
                                     if not 'LHEPdf' in sName: continue 
-                                    Nrepl=1.
+                                    Nrepl=1.#hessian, not needed-->set to 1.
                                     # if sKind=='LHEPdfWeightVars' :
                                     #     Nrepl = float(len(sList))                                    
                                     deltaPDF += (1/Nrepl)*(finalHistoDict[sName+kind+par+s].GetBinContent(self.etaBinning.index(float(e))+1)-finalHistoDict['nom'+kind+par+s].GetBinContent(self.etaBinning.index(float(e))+1))**2
@@ -1367,7 +1442,7 @@ class bkg_analyzer:
 
                             sameFlag = True
                             colorNumber = 1
-                            colorList = [600,616,416,632,432,800,900,880,840,820]
+                            colorList = [600,616,416,632,432,800,900,880,840,820,920,800,850,950,840,920,640,690]
                             colorCounter = 0
 
                             for sKind, sList in modSystDict.items():
@@ -1906,7 +1981,7 @@ class bkg_analyzer:
         
         systDict = copy.deepcopy(bkg_utils.bkg_systematics)
         systDict['Nominal'] = ['']
-        del systDict['LHEScaleWeight']
+        # del systDict['LHEScaleWeight']
         
         # if self.extrapCorr :
         #     self.nameSuff = self.nameSuff.replace('_extrapCorr','')

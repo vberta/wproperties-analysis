@@ -69,16 +69,48 @@ class plotter:
         self.groupedSystColors = {
             "WHSF"  : [ROOT.kGreen+1, 'Scale Factors'],
             "LHEScaleWeight" : [ROOT.kViolet-2, 'MC Scale'],
-            "ptScale" : [ROOT.kBlue-4, 'pT Scale'],
+            "ptScale" : [ROOT.kYellow+2, 'p_{T} Scale'],
             "jme" : [ROOT.kAzure+10, 'MET'],
-            "LHEPdfWeight" : [ROOT.kRed+1, 'PDF'],
+            "LHEPdfWeight" : [ROOT.kRed+1, 'PDF+#alpha_{s}'],
             "Nominal" : [1, 'Stat. Unc.'],
             "PrefireWeight" : [ROOT.kSpring+10, 'Prefire'],
-            "alphaS" : [ROOT.kOrange-3, 'Alpha Strong'],
+            "alphaS" : [ROOT.kOrange-3, '#alpha_{s}'],
             "LHEScaleWeight_WQTlow" : [ROOT.kViolet+7, "MC Scale Wqt<5"],
             "LHEScaleWeight_WQTmid" : [ROOT.kViolet+7, "MC Scale 5<Wqt<15"],
-            "LHEScaleWeight_WQThigh" : [ROOT.kViolet+7, "q_{T}^{W}"], #it contains also two previous lines (not plotted)
+            "LHEScaleWeight_WQThigh" : [ROOT.kViolet+7, "q_{T}^{V}"], #it contains also two previous lines (not plotted)
+            "mass" : [ROOT.kBlue-4, 'm_{W}', 35],
+            "lumi" : [ROOT.kOrange-7,"Lumi"],
+            "topXSec" : [ROOT.kCyan-6,"#sigma_{t}"],
+            "dibosonXSec" : [ROOT.kCyan-1,"#sigma_{diboson}"],
+            "tauXSec" : [ROOT.kTeal,"#sigma_{W#rightarrow#tau#nu}+#sigma_{t}+#sigma_{diboson}"],
+            "lepVeto" : [ROOT.kMagenta-7,"Lepton veto"],
         }
+        
+        self.flatDict = {
+            "lumi": {
+                "procs": ["WToMu", 'Top','DiBoson',"WtoTau","DYJets","SIGNAL_Fake"],
+                "weight" : 1.025 
+            },
+            "topXSec":{
+                "procs": ['Top'],
+                "weight" : 1.060 
+            },
+            "dibosonXSec":{
+                "procs": ['DiBoson'],
+                "weight" : 1.160 
+            },
+            "tauXSec":{
+                "procs": ["WtoTau"],
+                "weight" : 1.040 
+            },
+            "lepVeto":{
+                "procs": ["DYJets"],
+                "weight" : 1.020 
+            }
+        }
+        
+        self.doNotPlotGroup = ["LHEScaleWeight_WQTlow", "LHEScaleWeight_WQTmid","LHEScaleWeight", "topXSec", "dibosonXSec", "alphaS" ] #already included in other groups (summed)
+
 
 
         if not os.path.exists(self.outdir):
@@ -108,6 +140,8 @@ class plotter:
         for f,fileInfo in self.sampleDict.items() :
             inFile = ROOT.TFile.Open(self.indir+'/hadded/'+fileInfo[0])
             for sKind, sList in self.extSyst.items():
+                if sKind in self.flatDict and f!='SIGNAL_Fake' :
+                        continue
                 for sName in sList :
                     for var, varInfo in self.variableDict.items() :
                         inFile.cd()
@@ -141,7 +175,26 @@ class plotter:
                         for s,sInfo in self.signDict.items() :
                             self.histoDict[f+s+var+sName] = h2.ProjectionX(h2.GetName() + s, sInfo[0],sInfo[0])
                             self.varBinWidth_modifier(self.histoDict[f+s+var+sName])
-                                         
+            
+            for sKind, sList in self.extSyst.items():  #flat syst building
+                if sKind not in self.flatDict : continue 
+                if f=='SIGNAL_Fake' : continue
+                for sName in sList : 
+                    for var, varInfo in self.variableDict.items() :
+                        h2 = inFile.Get(fileInfo[1]+'/Nominal/'+varInfo[0])    
+                        procFlag = False 
+                        for proc in self.flatDict[sKind]['procs'] :
+                            if proc in f : #proc are part of the full filename of f
+                                procFlag = True 
+                        if procFlag :
+                            if 'Up' in sName :
+                                h2.Scale(self.flatDict[sKind]['weight'])
+                            if 'Down' in sName :
+                                h2.Scale(1/self.flatDict[sKind]['weight'])
+                        for s,sInfo in self.signDict.items() :
+                            self.histoDict[f+s+var+sName] = h2.ProjectionX(h2.GetName() + s, sInfo[0],sInfo[0])
+                            self.varBinWidth_modifier(self.histoDict[f+s+var+sName])         
+                                            
     def plotStack(self,skipSyst=[]):
 
         self.getHistos()
@@ -382,7 +435,7 @@ class plotter:
             # legend.SetBorderSize(0)
             legend.SetNColumns(3)
             
-            colorList = [600,616,416,632,432,800,900,880,840,820]
+            colorList = [600,616,416,632,432,800,900,880,840,820,920,800,850,950,840,920,640,690]
             colorNumber = 1
             colorCounter = 0
             modSyst = copy.deepcopy(bkg_utils.bkg_systematics)
@@ -466,8 +519,24 @@ class plotter:
                 deltaSumWQT = hdict[sKind].GetBinContent(ipt)**2
                 deltaSumWQT += hdict[sKind.replace('high','mid')].GetBinContent(ipt)**2
                 deltaSumWQT += hdict[sKind.replace('high','low')].GetBinContent(ipt)**2
+                deltaSumWQT += hdict['LHEScaleWeight'].GetBinContent(ipt)**2
                 deltaSumWQT = math.sqrt(deltaSumWQT)
                 hdict[sKind].SetBinContent(ipt , deltaSumWQT)
+            
+            sKind = 'LHEPdfWeight'  
+            for ipt in range(1,hdict[sKind].GetNbinsX()+1) :
+                deltaSumPDF = hdict[sKind].GetBinContent(ipt)**2
+                deltaSumPDF += hdict["alphaS"].GetBinContent(ipt)**2
+                deltaSumPDF = math.sqrt(deltaSumPDF)
+                hdict[sKind].SetBinContent(ipt , deltaSumPDF)
+            
+            sKind = 'tauXSec'  
+            for ipt in range(1,hdict[sKind].GetNbinsX()+1) :
+                deltaSumXsec = hdict[sKind].GetBinContent(ipt)**2
+                deltaSumXsec += hdict["dibosonXSec"].GetBinContent(ipt)**2
+                deltaSumXsec += hdict["topXSec"].GetBinContent(ipt)**2
+                deltaSumXsec = math.sqrt(deltaSumXsec)
+                hdict[sKind].SetBinContent(ipt , deltaSumXsec)
   
             #build the canvas
             can2 = ROOT.TCanvas('prefit_'+var+'_systComparison','prefit_'+var+'_systComparison',800,600)
@@ -503,7 +572,8 @@ class plotter:
                 sumOfDelta=0
                 for sKind, sList in bkg_utils.bkg_systematics.items():
                     if sKind in skipSyst : continue #skipped systs
-                    if 'WQTlow' in sKind or 'WQTmid' in sKind: continue #high is the sum
+                    # if 'WQTlow' in sKind or 'WQTmid' in sKind: continue #high is the sum
+                    if sKind in self.doNotPlotGroup: continue
                     sumOfDelta+= hdict[sKind].GetBinContent(i)**2
                 sumOfDelta = math.sqrt(sumOfDelta)
                 hdict['sum'].SetBinContent(i,sumOfDelta) 
@@ -516,7 +586,8 @@ class plotter:
                     # if colorNumber==5 : colorNumber+=1
 
                     if sKind in skipSyst : continue #skipped systs
-                    if 'WQTlow' in sKind or 'WQTmid' in sKind: continue #high is the sum
+                    # if 'WQTlow' in sKind or 'WQTmid' in sKind: continue #high is the sum
+                    if sKind in self.doNotPlotGroup: continue
                     
                     hdict[sKind].SetLineWidth(3)
                     hdict[sKind].SetLineColor(self.groupedSystColors[sKind][0])

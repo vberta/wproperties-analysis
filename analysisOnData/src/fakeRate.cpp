@@ -91,6 +91,13 @@ RNode fakeRate::run(RNode d)
                   fR.emplace_back(f2);
                   return fR;
 		            }, {"fakeRate_alphaS_alphaSUp","fakeRate_alphaS_alphaSDown"})
+                
+                .Define("fakeRate_massWeights", [](float f1, float f2) {
+                  ROOT::VecOps::RVec<float> fR;
+                  fR.emplace_back(f1);
+                  fR.emplace_back(f2);
+                  return fR;
+		            }, {"fakeRate_mass_massUp","fakeRate_mass_massDown"})
             
                 // .Define("fakeRate_LHEPdfWeight", bookFakeRate_LHEPdfWeightHess, LHEPdfWeightHess_names);
                 // .Define("fakeRate_LHEPdfWeight", [](ROOT::VecOps::RVec<float> names) {
@@ -206,6 +213,41 @@ RNode fakeRate::run(RNode d)
                   return fR;
                 },
                         {"fakeRate_LHEScaleWeight_WQThigh_LHEScaleWeight_muR0p5_muF0p5_WQThigh", "fakeRate_LHEScaleWeight_WQThigh_LHEScaleWeight_muR0p5_muF1p0_WQThigh", "fakeRate_LHEScaleWeight_WQThigh_LHEScaleWeight_muR1p0_muF0p5_WQThigh", "fakeRate_LHEScaleWeight_WQThigh_LHEScaleWeight_muR1p0_muF2p0_WQThigh", "fakeRate_LHEScaleWeight_WQThigh_LHEScaleWeight_muR2p0_muF1p0_WQThigh", "fakeRate_LHEScaleWeight_WQThigh_LHEScaleWeight_muR2p0_muF2p0_WQThigh"})                  
+                 
+                .Define("fakeRate_lumi", [](float f1, float f2) {
+                  ROOT::VecOps::RVec<float> fR;
+                  fR.emplace_back(f1);
+                  fR.emplace_back(f2);
+                  return fR;
+		            }, {"fakeRate_lumi_lumiUp", "fakeRate_lumi_lumiDown"})
+                
+                .Define("fakeRate_topXSec", [](float f1, float f2) {
+                  ROOT::VecOps::RVec<float> fR;
+                  fR.emplace_back(f1);
+                  fR.emplace_back(f2);
+                  return fR;
+		            }, {"fakeRate_topXSec_topXSecUp", "fakeRate_topXSec_topXSecDown"})
+                 
+                .Define("fakeRate_dibosonXSec", [](float f1, float f2) {
+                  ROOT::VecOps::RVec<float> fR;
+                  fR.emplace_back(f1);
+                  fR.emplace_back(f2);
+                  return fR;
+		            }, {"fakeRate_dibosonXSec_dibosonXSecUp", "fakeRate_dibosonXSec_dibosonXSecDown"})
+                
+                .Define("fakeRate_tauXSec", [](float f1, float f2) {
+                  ROOT::VecOps::RVec<float> fR;
+                  fR.emplace_back(f1);
+                  fR.emplace_back(f2);
+                  return fR;
+		            }, {"fakeRate_tauXSec_tauXSecUp", "fakeRate_tauXSec_tauXSecDown"})
+                
+                .Define("fakeRate_lepVeto", [](float f1, float f2) {
+                  ROOT::VecOps::RVec<float> fR;
+                  fR.emplace_back(f1);
+                  fR.emplace_back(f2);
+                  return fR;
+		            }, {"fakeRate_lepVeto_lepVetoUp", "fakeRate_lepVeto_lepVetoDown"}) 
                   ;                    
                 
   

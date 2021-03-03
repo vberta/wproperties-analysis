@@ -17,6 +17,29 @@ class bkg_prepareHistos:
         self.sNameNom = ''
         self.sKindNom = 'Nominal'
         self.systDict.update({self.sKindNom:[self.sNameNom]})
+        
+        self.flatDict = {
+            "lumi": {
+                "procs": ["WToMu", "ST_","TTJets_","WW_","WZ_","ZZ_","WToTau","DYJets"],
+                "weight" : 1.025 
+            },
+            "topXSec":{
+                "procs": ["ST_","TTJets_"],
+                "weight" : 1.060 
+            },
+            "dibosonXSec":{
+                "procs": ["WW_","WZ_","ZZ_"],
+                "weight" : 1.160 
+            },
+            "tauXSec":{
+                "procs": ["WToTau"],
+                "weight" : 1.040 
+            },
+            "lepVeto":{
+                "procs": ["DYJets"],
+                "weight" : 1.020 
+            }
+        }
     
     
     def fileListBuilder(self) :
@@ -48,6 +71,8 @@ class bkg_prepareHistos:
             for r in regList :
                 regExtrapFlag = self.isExtrapReg(r)
                 for sKind, sList in self.systDict.items():  
+                    if sKind in self.flatDict :
+                        continue
                     if sKind!='Nominal' and regExtrapFlag : #extrap region only for nominal
                         continue
                     # if 'Nom_WQT' in sKind: continue # used in LHEScaleWeight_WQt case, not useful as standalone. Commented because has been removed from the bkg_syst_dict
@@ -84,6 +109,29 @@ class bkg_prepareHistos:
                             h.SetName(h.GetName()+sKind.replace('LHEScaleWeight',''))   
                         outFile.cd('templates_'+r+'/'+sKind)
                         h.Write()
+                        
+                for sKind, sList in self.systDict.items():  #flat syst building
+                    if sKind not in self.flatDict : continue 
+                    if regExtrapFlag : continue
+                    if not outFile.GetDirectory('templates_'+r+'/'+sKind):                           
+                        outFile.mkdir('templates_'+r+'/'+sKind)
+                    for sName in sList : 
+                        h = inFile.Get('templates_'+r+'/'+self.sKindNom+'/'+varName+self.sNameNom)
+                        h = h.Clone(varName+'_'+sName)
+                        procFlag = False 
+                        for proc in self.flatDict[sKind]['procs'] :
+                            if proc in f : #proc are part of the full filename of f
+                                procFlag = True 
+                        if procFlag :
+                            if 'Up' in sName :
+                                h.Scale(self.flatDict[sKind]['weight'])
+                            if 'Down' in sName :
+                                h.Scale(1/self.flatDict[sKind]['weight'])
+                        outFile.cd('templates_'+r+'/'+sKind)
+                        h.Write()
+                    
+                
+                
                         
     def h_add(self) :
         cmdList = []

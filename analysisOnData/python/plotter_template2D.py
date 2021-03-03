@@ -34,6 +34,8 @@ class plotter:
         self.extSyst = copy.deepcopy(systematics)
         self.extSyst['Nominal'] = ['']
         self.extSyst['jme'] = (['_jesTotalUp', '_jesTotalDown', '_unclustEnUp', '_unclustEnDown'],"jme")
+        self.extSyst["ptScale"] =  (["_correctedUp", "_correctedDown"],"ptScale") 
+        self.extSyst["lumi"] =  (['_lumiUp', '_lumiDown'], 'lumi'),
         del self.extSyst['Nom_WQTlow'] #remove wqt-shape "nom" variation (already included in fake vars)
         del self.extSyst['Nom_WQTmid'] 
         del self.extSyst['Nom_WQThigh'] 
@@ -56,6 +58,7 @@ class plotter:
     def getHistoforSample(self, sample, infile, chargeBin) :
         # if not 'Fake' in sample:
             for sKind in self.extSyst:
+                if 'lumi' in sKind and 'Fake' not in sample : continue 
                 if 'WQT' in sKind and sample not in ['Fake','LowAcc','WtoTau']: continue
                 self.histoDict[sample][sKind] = []
                 basepath = 'templates_Signal/' + sKind
@@ -67,7 +70,7 @@ class plotter:
                         th3=infile.Get(basepath+'/'+key.GetName())
                         if sample!='Fake' :
                             if sKind=='LHEScaleWeight_WQTlow' :
-                                print(basepath.replace(sKind,'Nom_WQTmid')+'/'+key.GetName(), sample)
+                                print(basepath.replace(sKind,'Nom_WQTmid')+'/'+key.GetName().split('_')[0], sample)
                                 th3.Add(infile.Get(basepath.replace(sKind,'Nom_WQTmid')+'/'+key.GetName().split('_')[0]))
                                 th3.Add(infile.Get(basepath.replace(sKind,'Nom_WQThigh')+'/'+key.GetName().split('_')[0]))
                             if sKind=='LHEScaleWeight_WQTmid' :
@@ -76,13 +79,14 @@ class plotter:
                             if sKind=='LHEScaleWeight_WQThigh' :
                                 th3.Add(infile.Get(basepath.replace(sKind,'Nom_WQTlow')+'/'+key.GetName().split('_')[0]))
                                 th3.Add(infile.Get(basepath.replace(sKind,'Nom_WQTmid')+'/'+key.GetName().split('_')[0]))
+                            if 'WQT' in sKind : 
+                                th3.SetName(th3.GetName()+sKind.replace('LHEScaleWeight','') )# add WQTlow/mid/high at the end of the name
                         
                         #plus charge bin 2, minus bin 1
                         th3.GetZaxis().SetRange(chargeBin,chargeBin)
                         th2=th3.Project3D("yx")
                         th2.SetDirectory(0)
                         th2.SetName(th3.GetName().replace('templates',sample))
-                        print(th2.GetName())
                         self.histoDict[sample][sKind].append(th2)
                         
         # else:
@@ -160,9 +164,10 @@ class plotter:
             self.histoDict[sample].update(aux)
     def symmetriseSyst(self,sample):
         for sKind,sList in self.extSyst.items() :
-            if not "LHE" in sKind : continue #oly pDF, MCscale need symmetrization
+            if not "LHEScale" in sKind : continue #oly pDF, MCscale need symmetrization
             # if 'WQT' in sKind and sample!='Fake' : continue
             if 'WQT' in sKind and sample not in ['Fake','LowAcc','WtoTau']: continue
+            if sKind == 'LHEScaleWeight' and sample!='DYJets' : continue # only DY has flat scale
             if not self.histoDict[sample][sKind]==[]:
                 aux = {}
                 aux[sKind]=[]
@@ -197,6 +202,7 @@ class plotter:
             if not "LHE" in sKind : continue #oly pDF, MCscale need symmetrization
             # if 'WQT' in sKind and sample!='Fake' : continue
             if 'WQT' in sKind and sample not in ['Fake','LowAcc','WtoTau']: continue
+            if sKind == 'LHEScaleWeight' and sample!='DYJets' : continue # only DY has flat scale
             if not self.histoDict[sample][sKind]==[]:
                 aux = {}
                 aux[sKind]=[]
@@ -255,8 +261,8 @@ class plotter:
                 print("No histo dict for sample:", sample, " What have you done??!!!!")
                 continue
             self.symmetrisePDF(sample)
-            # self.symmetriseSyst(sample)
-            self.symmetriseSyst_shift(sample)
+            self.symmetriseSyst(sample)
+            # self.symmetriseSyst_shift(sample)
             self.uncorrelateEff(sample)
             self.alphaVariations(sample)
             for syst, hlist in self.histoDict[sample].items():

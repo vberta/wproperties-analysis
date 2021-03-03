@@ -44,8 +44,11 @@ class plotter:
         self.sampleFile = 'WToMu_AC_plots.root'
 
         self.extSyst = copy.deepcopy(systematics)
-        self.extSyst['Nominal'] =  (['', '_massUp', '_massDown'],"Nom")
+        # self.extSyst['Nominal'] =  (['', '_massUp', '_massDown'],"Nom")
+        self.extSyst['Nominal'] =  ([''],"Nom")
         self.extSyst['jme'] = (['_jesTotalUp', '_jesTotalDown', '_unclustEnUp', '_unclustEnDown'],"jme")
+        self.extSyst["ptScale"] =  (["_correctedUp", "_correctedDown"],"ptScale") 
+
         
         del self.extSyst['LHEScaleWeight_WQTlow'] #remove wqt-shape variation (because we are fitting the wqt)
         del self.extSyst['LHEScaleWeight_WQTmid'] 
@@ -203,8 +206,8 @@ class plotter:
                             self.makeTH3slices(th3, sKind)
                             #assert(0)
         self.uncorrelateEff()
-        # self.symmetrisePDF()
-        self.symmetrisePDF_shift()
+        self.symmetrisePDF()
+        # self.symmetrisePDF_shift()
         self.alphaVariations()
         # self.uncorrelatePtVars() ALWAYS COMMENTED, ROCHESTER CORR. NOT RUN
         self.closureMap()

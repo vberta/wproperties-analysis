@@ -94,25 +94,26 @@ class plotter :
         }
         
         self.nuisanceDict = {
-            "mass"      : [ROOT.kBlue-4, 'mass', 35],
+            "mass"      : [ROOT.kBlue-4, 'm_{W}', 35],
             "WHSFSyst"  : [ROOT.kGreen+1, 'SF syst', 36],
             # "alphaS"    : [ROOT.kOrange-3, '#alpha_{s}', 38],
-            "pdfs"      : [ROOT.kRed+1, 'PDF', 25],
+            "pdfs"      : [ROOT.kRed+1, 'PDF+#alpha_{s}', 25],
             "WHSFStat"  : [ROOT.kGreen+10, 'SF stat', 32],
             "stat"      : [ROOT.kGray+1, 'stat', 31],
             "PrefireWeight" : [ROOT.kSpring+10, 'Prefire weight', 28],
             "jme"       : [ROOT.kAzure+10, 'MET uncert.',45],
-            # "ptScale"       : [ROOT.kRed + 3, 'p_{T} scale',43],
+            "ptScale"       : [ROOT.kYellow+2, 'p_{T} Scale',43],
             "binByBinStat" : [1, 'Bin stat', 46],
-            "FakeNorm" : [ROOT.kViolet, 'QCD norm.', 22],
+            # "FakeNorm" : [ROOT.kViolet, 'QCD norm.', 22],
             "CMSlumi" : [ROOT.kOrange-7,"Lumi",41],
-            "DYxsec" : [ROOT.kCyan+2,"#sigma_{DY}",3],
-            "Topxsec" : [ROOT.kCyan-6,"#sigma_{t}",3],
-            "Dibosonxsec" : [ROOT.kCyan-1,"#sigma_{diboson}",3],
-            "Tauxsec" : [ROOT.kTeal,"#sigma_{W#rightarrow#tau#nu}",3],
+            # "DYxsec" : [ROOT.kCyan+2,"#sigma_{DY}",3],
+            # "Topxsec" : [ROOT.kCyan-6,"#sigma_{t}",3],
+            # "Dibosonxsec" : [ROOT.kCyan-1,"#sigma_{diboson}",3],
+            # "Tauxsec" : [ROOT.kTeal,"#sigma_{W#rightarrow#tau#nu}",3],
+            "ewkXsec" : [ROOT.kTeal,"#sigma_{W#rightarrow#tau#nu}+#sigma_{t}+#sigma_{diboson}",3],
             "LeptonVeto" : [ROOT.kMagenta-7,"Lepton veto",23],
-            "WQT": [ROOT.kViolet+7,"q_{T}^{W} (QCD)",27],
-            "LHEScaleWeight" : [ROOT.kViolet-2,"MC Scales",43],   
+            "WQT": [ROOT.kViolet+7,"q_{T}^{V}",27],
+            # "LHEScaleWeight" : [ROOT.kViolet-2,"MC Scales",43],   
         }
         
         self.category = {
@@ -1244,13 +1245,13 @@ class plotter :
                         self.histos[suff+'impact'+'qt'+c+nui].SetBinContent(qt,relImp)
             
             #print("WARNING: used hardcoded value of the Wmass for the impact, mW=",self.mass," GeV")    
-            print("WARNING: used hardcoded value of the up/down mass variation (100 MeV)")    
+            print("WARNING: used hardcoded value of the up/down mass variation (50 MeV)")    
             for nui in self.nuisanceDict:
                 self.histos[suff+'impact'+'mass'+nui] = ROOT.TH1D('impact_mass_'+nui, 'impact_mass_'+nui, 1, 0,1)
                 if skipMassImpact : continue   
                 # relImp = abs(impactVals['mass'+nui]/self.histos[suff+'mass'].GetBinContent(1))
                 # relImp = abs(impactVals['mass'+nui]/self.mass)
-                relImp = abs(impactVals['mass'+nui]*100) #in MeV, since the weight is +/- is 100MeV.
+                relImp = abs(impactVals['mass'+nui]*50) #in MeV, since the weight is +/- is 50MeV.
                 self.histos[suff+'impact'+'mass'+nui].SetBinContent(1,relImp) 
                 self.histos[suff+'impact'+'mass'+nui].SetBinError(1,0.0000000001) 
             
@@ -1344,16 +1345,16 @@ class plotter :
                     # self.histos[suff+'FitAC'+'qt'+str(i)+c].GetYaxis().SetRangeUser(-4,4)
                     self.histos[suff+'FitAC'+'qt'+str(i)+c].GetYaxis().SetTitle(c)
                 elif self.helXsec:
-                     self.histos[suff+'FitAC'+'qt'+str(i)+c].GetYaxis().SetTitle('#sigma_{c} [fb/GeV]]'.format(c=c))
+                     self.histos[suff+'FitAC'+'qt'+str(i)+c].GetYaxis().SetTitle('d#sigma_'+c+'/dq_{T}^{W} [fb/GeV]')
                 else :
-                    self.histos[suff+'FitAC'+'qt'+str(i)+c].GetYaxis().SetTitle('#sigma^{U+L} [fb/GeV]')
+                    self.histos[suff+'FitAC'+'qt'+str(i)+c].GetYaxis().SetTitle('d#sigma^{U+L}/dq_{T}^{W} [fb/GeV]')
                     maxvalMain = self.histos[suff+'FitAC'+'qt'+str(i)+c].GetMaximum()
                     self.histos[suff+'FitAC'+'qt'+str(i)+c].GetYaxis().SetRangeUser(0,maxvalMain*1.5)
                 self.histos[suff+'FitBand'+'qt'+str(i)+c].SetFillColor(ROOT.kOrange)
                 self.histos[suff+'FitBand'+'qt'+str(i)+c].SetFillStyle(0)
                 self.histos[suff+'FitBand'+'qt'+str(i)+c].SetLineColor(ROOT.kOrange)
                 self.histos[suff+'FitBand'+'qt'+str(i)+c].SetLineWidth(2)
-                self.histos[suff+'FitAC'+'qt'+str(i)+c].GetYaxis().SetTitleOffset(0.7)
+                self.histos[suff+'FitAC'+'qt'+str(i)+c].GetYaxis().SetTitleOffset(0.8)
                 self.histos[suff+'FitAC'+'qt'+str(i)+c].GetXaxis().SetTitleOffset(3)
                 self.histos[suff+'FitAC'+'qt'+str(i)+c].GetXaxis().SetLabelOffset(3)
                 self.histos[suff+'FitBand'+'qt'+str(i)+c].DrawCopy("E2 same")
@@ -1476,16 +1477,16 @@ class plotter :
                     # self.histos[suff+'FitAC'+'y'+str(j)+c].GetYaxis().SetRangeUser(-4,4)
                     self.histos[suff+'FitAC'+'y'+str(j)+c].GetYaxis().SetTitle(c)
                 elif self.helXsec:
-                    self.histos[suff+'FitAC'+'y'+str(j)+c].GetYaxis().SetTitle('#sigma_{c} [fb/GeV]]'.format(c=c))
+                    self.histos[suff+'FitAC'+'y'+str(j)+c].GetYaxis().SetTitle('d#sigma_'+c+'/dY_{W} [fb]')
                 else :
-                    self.histos[suff+'FitAC'+'y'+str(j)+c].GetYaxis().SetTitle('#sigma^{U+L} [fb/GeV]')
+                    self.histos[suff+'FitAC'+'y'+str(j)+c].GetYaxis().SetTitle('d#sigma^{U+L}/dY_{W} [fb]')
                     maxvalMain = self.histos[suff+'FitAC'+'y'+str(j)+c].GetMaximum()
                     self.histos[suff+'FitAC'+'y'+str(j)+c].GetYaxis().SetRangeUser(0,maxvalMain*1.5)
                 self.histos[suff+'FitBand'+'y'+str(j)+c].SetFillColor(ROOT.kOrange)#kMagenta-7)
                 self.histos[suff+'FitBand'+'y'+str(j)+c].SetFillStyle(0)
                 self.histos[suff+'FitBand'+'y'+str(j)+c].SetLineColor(ROOT.kOrange)#kMagenta-7)
                 self.histos[suff+'FitBand'+'y'+str(j)+c].SetLineWidth(2)
-                self.histos[suff+'FitAC'+'y'+str(j)+c].GetYaxis().SetTitleOffset(0.7)
+                self.histos[suff+'FitAC'+'y'+str(j)+c].GetYaxis().SetTitleOffset(0.8)
                 self.histos[suff+'FitAC'+'y'+str(j)+c].GetXaxis().SetTitleOffset(3)
                 self.histos[suff+'FitAC'+'y'+str(j)+c].GetXaxis().SetLabelOffset(3)
                 self.histos[suff+'FitBand'+'y'+str(j)+c].DrawCopy("E2 same")
@@ -1644,9 +1645,9 @@ class plotter :
                 # self.histos[suff+'FitAC'+'UNRqty'+c].GetYaxis().SetRangeUser(-4,4)
                 self.histos[suff+'FitAC'+'UNRqty'+c].GetYaxis().SetTitle(c)
             elif self.helXsec:
-                self.histos[suff+'FitAC'+'UNRqty'+c].GetYaxis().SetTitle('#sigma_{c} [fb/GeV]]'.format(c=c))
+                self.histos[suff+'FitAC'+'UNRqty'+c].GetYaxis().SetTitle('d#sigma_'+c+'/dq_{T}^{W}dY_{W} [fb/GeV]')
             else :
-                self.histos[suff+'FitAC'+'UNRqty'+c].GetYaxis().SetTitle('#sigma^{U+L} [fb/GeV]')
+                self.histos[suff+'FitAC'+'UNRqty'+c].GetYaxis().SetTitle('d#sigma^{U+L}/dq_{T}^{W}dY_{W} [fb/GeV]')
                 maxvalMain = self.histos[suff+'FitAC'+'UNRqty'+c].GetMaximum()
                 self.histos[suff+'FitAC'+'UNRqty'+c].GetYaxis().SetRangeUser(0,maxvalMain*1.5)
             self.histos[suff+'FitAC'+'UNRqty'+c].SetLineWidth(2)
@@ -1658,7 +1659,7 @@ class plotter :
             self.histos[suff+'FitAC'+'UNRqty'+c].SetLineColor(1)
             self.histos[suff+'FitAC'+'UNRqty'+c].SetMarkerStyle(20)
             self.histos[suff+'FitAC'+'UNRqty'+c].SetMarkerSize(0.5)
-            self.histos[suff+'FitAC'+'UNRqty'+c].GetYaxis().SetTitleOffset(0.7)
+            self.histos[suff+'FitAC'+'UNRqty'+c].GetYaxis().SetTitleOffset(0.8)
             self.histos[suff+'FitAC'+'UNRqty'+c].GetXaxis().SetTitleOffset(3)
             self.histos[suff+'FitAC'+'UNRqty'+c].GetXaxis().SetLabelOffset(3)
             self.histos[suff+'FitAC'+'UNRqty'+c].SetLabelSize(0.05,'y')
@@ -1834,9 +1835,9 @@ class plotter :
                 # self.histos[suff+'FitAC'+'UNRyqt'+c].GetYaxis().SetRangeUser(-4,4)
                 self.histos[suff+'FitAC'+'UNRyqt'+c].GetYaxis().SetTitle(c)
             elif self.helXsec:
-                self.histos[suff+'FitAC'+'UNRyqt'+c].GetYaxis().SetTitle('#sigma_{c} [fb/GeV]]'.format(c=c))
+                self.histos[suff+'FitAC'+'UNRyqt'+c].GetYaxis().SetTitle('d#sigma_'+c+'/dq_{T}^{W}dY_{W} [fb/GeV]')
             else :
-                self.histos[suff+'FitAC'+'UNRyqt'+c].GetYaxis().SetTitle('#sigma^{U+L} [fb/GeV]')
+                self.histos[suff+'FitAC'+'UNRyqt'+c].GetYaxis().SetTitle('d#sigma^{U+L}/dq_{T}^{W}dY_{W} [fb/GeV]')
                 maxvalMain = self.histos[suff+'FitAC'+'UNRyqt'+c].GetMaximum()
                 self.histos[suff+'FitAC'+'UNRyqt'+c].GetYaxis().SetRangeUser(0,maxvalMain*1.5)
             self.histos[suff+'FitAC'+'UNRyqt'+c].SetLineWidth(2)
@@ -1848,7 +1849,7 @@ class plotter :
             self.histos[suff+'FitAC'+'UNRyqt'+c].SetLineColor(1)
             self.histos[suff+'FitAC'+'UNRyqt'+c].SetMarkerStyle(20)
             self.histos[suff+'FitAC'+'UNRyqt'+c].SetMarkerSize(0.5)
-            self.histos[suff+'FitAC'+'UNRyqt'+c].GetYaxis().SetTitleOffset(0.7)
+            self.histos[suff+'FitAC'+'UNRyqt'+c].GetYaxis().SetTitleOffset(0.8)
             self.histos[suff+'FitAC'+'UNRyqt'+c].GetXaxis().SetTitleOffset(3)
             self.histos[suff+'FitAC'+'UNRyqt'+c].GetXaxis().SetLabelOffset(3)
             self.histos[suff+'FitAC'+'UNRyqt'+c].SetLabelSize(0.05,'y')
@@ -1990,16 +1991,16 @@ class plotter :
                 # self.histos[suff+'FitAC'+'qt'+c].GetYaxis().SetRangeUser(-4,4)
                 self.histos[suff+'FitAC'+'qt'+c].GetYaxis().SetTitle(c)
             elif self.helXsec:
-                self.histos[suff+'FitAC'+'qt'+c].GetYaxis().SetTitle('#sigma_{c} [fb/GeV]]'.format(c=c))
+                self.histos[suff+'FitAC'+'qt'+c].GetYaxis().SetTitle('d#sigma_'+c+'/dq_{T} [fb/GeV]')
             else :
-                 self.histos[suff+'FitAC'+'qt'+c].GetYaxis().SetTitle('#sigma^{U+L} [fb/GeV]')
+                 self.histos[suff+'FitAC'+'qt'+c].GetYaxis().SetTitle('d#sigma^{U+L}/dq_{T} [fb/GeV]')
                  maxvalMain = self.histos[suff+'FitAC'+'qt'+c].GetMaximum()
                  self.histos[suff+'FitAC'+'qt'+c].GetYaxis().SetRangeUser(0,maxvalMain*1.5)
             self.histos[suff+'FitBand'+'qt'+c].SetFillColor(ROOT.kOrange)
             self.histos[suff+'FitBand'+'qt'+c].SetFillStyle(0)
             self.histos[suff+'FitBand'+'qt'+c].SetLineColor(ROOT.kOrange)
             self.histos[suff+'FitBand'+'qt'+c].SetLineWidth(2)
-            self.histos[suff+'FitAC'+'qt'+c].GetYaxis().SetTitleOffset(0.7)
+            self.histos[suff+'FitAC'+'qt'+c].GetYaxis().SetTitleOffset(0.8)
             self.histos[suff+'FitAC'+'qt'+c].GetXaxis().SetTitleOffset(3)
             self.histos[suff+'FitAC'+'qt'+c].GetXaxis().SetLabelOffset(3)
             self.histos[suff+'FitBand'+'qt'+c].DrawCopy("E2 same")
@@ -2112,16 +2113,16 @@ class plotter :
                 # self.histos[suff+'FitAC'+'y'+c].GetYaxis().SetRangeUser(-4,4)
                 self.histos[suff+'FitAC'+'y'+c].GetYaxis().SetTitle(c)
             elif self.helXsec:
-                self.histos[suff+'FitAC'+'y'+c].GetYaxis().SetTitle('#sigma_{c} [fb/GeV]]'.format(c=c))
+                self.histos[suff+'FitAC'+'y'+c].GetYaxis().SetTitle('d#sigma_'+c+'/dY_{W} [fb]')
             else :
-                self.histos[suff+'FitAC'+'y'+c].GetYaxis().SetTitle('#sigma^{U+L} [fb/GeV]')
+                self.histos[suff+'FitAC'+'y'+c].GetYaxis().SetTitle('d#sigma^{U+L}/dY_{W} [fb]')
                 maxvalMain = self.histos[suff+'FitAC'+'y'+c].GetMaximum()
                 self.histos[suff+'FitAC'+'y'+c].GetYaxis().SetRangeUser(0,maxvalMain*1.5)
             self.histos[suff+'FitBand'+'y'+c].SetFillColor(ROOT.kOrange)#kMagenta-7)
             self.histos[suff+'FitBand'+'y'+c].SetFillStyle(0)
             self.histos[suff+'FitBand'+'y'+c].SetLineColor(ROOT.kOrange)#kMagenta-7)
             self.histos[suff+'FitBand'+'y'+c].SetLineWidth(2)
-            self.histos[suff+'FitAC'+'y'+c].GetYaxis().SetTitleOffset(0.7)
+            self.histos[suff+'FitAC'+'y'+c].GetYaxis().SetTitleOffset(0.8)
             self.histos[suff+'FitAC'+'y'+c].GetXaxis().SetTitleOffset(3)
             self.histos[suff+'FitAC'+'y'+c].GetXaxis().SetLabelOffset(3)
             self.histos[suff+'FitBand'+'y'+c].DrawCopy("E2 same")
