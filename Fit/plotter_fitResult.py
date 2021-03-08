@@ -635,78 +635,95 @@ class plotter :
     def varBinWidth_modifier(self) :
         for k,histo in self.histos.items() :
             
-
+            if 'A0' in k or 'A1' in k  or 'A2' in k or 'A3' in k or 'A4' in k: continue 
             # if not 'unpol' in k and not 'mapTot' in k : continue #only unpol and maptot are plotted as absolute value
-            if not self.helXsec and (not 'unpol' in k and not 'mapTot' in k) : continue
+            # if not self.helXsec and (not 'unpol' in k and not 'mapTot' in k) : continue
             if 'corrMat' in k or 'covMat' in k: continue
             if 'impact' in k : continue 
             if 'NuiConstr' in k : continue
+            if 'mass' in k : continue
             
             if not (type(histo)==ROOT.TH1F or type(histo)==ROOT.TH1D or type(histo)==ROOT.TH2F or type(histo)==ROOT.TH2D) : continue
             # print(k)
+            
+            #the following line rebin only if variable bin width is present in the histogram
+            #########################################################################################################################
             # if 'unpol' in k :
-            if not 'MC' in k :
-                maxBinX = histo.GetNbinsX()+1
-                maxBinY = histo.GetNbinsY()+1
-            else : #this is needed because these histograms extend to qt=200, Y=6
-                if 'MCqt' in k : 
-                    maxBinX = len(self.qtArr)
-                else : 
-                    maxBinX = len(self.yArr)
-                maxBinY = len(self.qtArr)
+            # if not 'MC' in k :
+            #     maxBinX = histo.GetNbinsX()+1
+            #     maxBinY = histo.GetNbinsY()+1
+            # else : #this is needed because these histograms extend to qt=200, Y=6
+            #     if 'MCqt' in k : 
+            #         maxBinX = len(self.qtArr)
+            #     else : 
+            #         maxBinX = len(self.yArr)
+            #     maxBinY = len(self.qtArr)
 
-            # if 'MCqt' in k : 
-            #     maxBinX = len(self.qtArr)
-            # else : 
-            #     maxBinX = len(self.yArr)
-            # maxBinY = len(self.qtArr)
+            # # if 'MCqt' in k : 
+            # #     maxBinX = len(self.qtArr)
+            # # else : 
+            # #     maxBinX = len(self.yArr)
+            # # maxBinY = len(self.qtArr)
             
             
-            if type(histo)==ROOT.TH1F or type(histo)==ROOT.TH1D :
-                varWidth_X = False
-                for i in range(1, maxBinX-1) :
-                    for j in range(i+1,maxBinX) :
-                        if abs(histo.GetXaxis().GetBinWidth(j)-histo.GetXaxis().GetBinWidth(i))>0.0001:
-                            varWidth_X = True
-                            break
-                if varWidth_X :
-                    # print("1D, k=", k)
-                    for i in range(1, maxBinX):
-                        # print("pre", histo.GetBinContent(i))
-                        histo.SetBinContent(i, histo.GetBinContent(i)/histo.GetXaxis().GetBinWidth(i))
-                        histo.SetBinError(i, histo.GetBinError(i)/histo.GetXaxis().GetBinWidth(i))
-                        # print("post", histo.GetBinContent(i),histo.GetXaxis().GetBinWidth(i))
+            # if type(histo)==ROOT.TH1F or type(histo)==ROOT.TH1D :
+            #     varWidth_X = False
+            #     for i in range(1, maxBinX-1) :
+            #         for j in range(i+1,maxBinX) :
+            #             if abs(histo.GetXaxis().GetBinWidth(j)-histo.GetXaxis().GetBinWidth(i))>0.0001:
+            #                 varWidth_X = True
+            #                 break
+            #     if varWidth_X :
+            #         # print("1D, k=", k)
+            #         for i in range(1, maxBinX):
+            #             # print("pre", histo.GetBinContent(i))
+            #             histo.SetBinContent(i, histo.GetBinContent(i)/histo.GetXaxis().GetBinWidth(i))
+            #             histo.SetBinError(i, histo.GetBinError(i)/histo.GetXaxis().GetBinWidth(i))
+            #             # print("post", histo.GetBinContent(i),histo.GetXaxis().GetBinWidth(i))
                         
+            # elif type(histo)==ROOT.TH2F or type(histo)==ROOT.TH2D :
+            #     varWidth_X = False
+            #     for i in range(1, maxBinX-1) :
+            #         for j in range(i+1,maxBinX) :
+            #             if abs(histo.GetXaxis().GetBinWidth(j)-histo.GetXaxis().GetBinWidth(i))>0.0001:
+            #                 varWidth_X = True
+            #                 break
+            #     if varWidth_X :
+            #         # print("2Dx, k=", k)
+            #         for y in range(1, maxBinY) :
+            #             for i in range(1, maxBinX):
+            #                 # print("pre", histo.GetBinContent(i,y))
+            #                 histo.SetBinContent(i,y, histo.GetBinContent(i,y)/histo.GetXaxis().GetBinWidth(i))
+            #                 histo.SetBinError(i,y, histo.GetBinError(i,y)/histo.GetXaxis().GetBinWidth(i))
+            #                 # print("post", histo.GetBinContent(i,y), histo.GetXaxis().GetBinWidth(i))
+            #     varWidth_Y = False
+            #     for i in range(1, maxBinY-1) :
+            #         for j in range(i+1,maxBinY) :
+            #             if abs(histo.GetYaxis().GetBinWidth(j)-histo.GetYaxis().GetBinWidth(i))>0.0001:
+            #                 varWidth_Y = True
+            #                 break
+            #     if varWidth_Y :
+            #         # print("2Dy, k=", k)
+            #         for j in range(1, maxBinY) :
+            #             for x in range(1, maxBinX):
+            #                 # print("pre", histo.GetBinContent(x,j))
+            #                 histo.SetBinContent(x,j, histo.GetBinContent(x,j)/histo.GetYaxis().GetBinWidth(j))
+            #                 histo.SetBinError(x,j, histo.GetBinError(x,j)/histo.GetYaxis().GetBinWidth(j))
+            #                 # print("post", histo.GetBinContent(x,j), histo.GetYaxis().GetBinWidth(j))
+            ####################################################################################################################
+            
+            #this rebin always
+            if type(histo)==ROOT.TH1F or type(histo)==ROOT.TH1D :
+                for i in range(1, histo.GetNbinsX()+1):
+                    histo.SetBinContent(i, histo.GetBinContent(i)/histo.GetXaxis().GetBinWidth(i))
+                    histo.SetBinError(i, histo.GetBinError(i)/histo.GetXaxis().GetBinWidth(i))    
             elif type(histo)==ROOT.TH2F or type(histo)==ROOT.TH2D :
-                varWidth_X = False
-                for i in range(1, maxBinX-1) :
-                    for j in range(i+1,maxBinX) :
-                        if abs(histo.GetXaxis().GetBinWidth(j)-histo.GetXaxis().GetBinWidth(i))>0.0001:
-                            varWidth_X = True
-                            break
-                if varWidth_X :
-                    # print("2Dx, k=", k)
-                    for y in range(1, maxBinY) :
-                        for i in range(1, maxBinX):
-                            # print("pre", histo.GetBinContent(i,y))
-                            histo.SetBinContent(i,y, histo.GetBinContent(i,y)/histo.GetXaxis().GetBinWidth(i))
-                            histo.SetBinError(i,y, histo.GetBinError(i,y)/histo.GetXaxis().GetBinWidth(i))
-                            # print("post", histo.GetBinContent(i,y), histo.GetXaxis().GetBinWidth(i))
-                varWidth_Y = False
-                for i in range(1, maxBinY-1) :
-                    for j in range(i+1,maxBinY) :
-                        if abs(histo.GetYaxis().GetBinWidth(j)-histo.GetYaxis().GetBinWidth(i))>0.0001:
-                            varWidth_Y = True
-                            break
-                if varWidth_Y :
-                    # print("2Dy, k=", k)
-                    for j in range(1, maxBinY) :
-                        for x in range(1, maxBinX):
-                            # print("pre", histo.GetBinContent(x,j))
-                            histo.SetBinContent(x,j, histo.GetBinContent(x,j)/histo.GetYaxis().GetBinWidth(j))
-                            histo.SetBinError(x,j, histo.GetBinError(x,j)/histo.GetYaxis().GetBinWidth(j))
-                            # print("post", histo.GetBinContent(x,j), histo.GetYaxis().GetBinWidth(j))
-                    
+                for i in range(1, histo.GetNbinsX()+1):
+                    for j in range(1,  histo.GetNbinsY()+1):
+                        histo.SetBinContent(i,j, histo.GetBinContent(i,j)/histo.GetXaxis().GetBinWidth(i)/histo.GetYaxis().GetBinWidth(j))
+                        histo.SetBinError(i,j, histo.GetBinError(i,j)/histo.GetXaxis().GetBinWidth(i)/histo.GetYaxis().GetBinWidth(j)) 
+                
+                 
                 
                 
             
@@ -1169,31 +1186,32 @@ class plotter :
                 skipMassImpact = True
                 print('missing mass impact')
             
-            unp = self.coeffList[-1]
-            varWidth_X = False 
-            for i in range(1, len(self.yArr)-1) :
-                    for j in range(i+1,len(self.yArr)) :
-                        if abs(self.histos[suff+'FitAC'+unp].GetXaxis().GetBinWidth(j)-self.histos[suff+'FitAC'+unp].GetXaxis().GetBinWidth(i))>0.0001:
-                            varWidth_X = True
-                            break
-            varWidth_Y = False
-            for i in range(1, len(self.qtArr)-1) :
-                for j in range(i+1,len(self.qtArr)) :
-                    if abs(self.histos[suff+'FitAC'+unp].GetYaxis().GetBinWidth(j)-self.histos[suff+'FitAC'+unp].GetYaxis().GetBinWidth(i))>0.0001:
-                        varWidth_Y = True
-                        break
-            varWidth_qt = False
-            for i in range(1, len(self.qtArr)-1) :
-                for j in range(i+1,len(self.qtArr)) :
-                    if abs(self.histos[suff+'FitACqt'+unp].GetXaxis().GetBinWidth(j)-self.histos[suff+'FitACqt'+unp].GetXaxis().GetBinWidth(i))>0.0001:
-                        varWidth_qt = True
-                        break
-            varWidth_y = False
-            for i in range(1, len(self.yArr)-1) :
-                for j in range(i+1,len(self.yArr)) :
-                    if abs(self.histos[suff+'FitACy'+unp].GetXaxis().GetBinWidth(j)-self.histos[suff+'FitACy'+unp].GetXaxis().GetBinWidth(i))>0.0001:
-                        varWidth_y = True
-                        break
+            ###### This for rebin only if variable width histogram
+            # unp = self.coeffList[-1]
+            # varWidth_X = False 
+            # for i in range(1, len(self.yArr)-1) :
+            #         for j in range(i+1,len(self.yArr)) :
+            #             if abs(self.histos[suff+'FitAC'+unp].GetXaxis().GetBinWidth(j)-self.histos[suff+'FitAC'+unp].GetXaxis().GetBinWidth(i))>0.0001:
+            #                 varWidth_X = True
+            #                 break
+            # varWidth_Y = False
+            # for i in range(1, len(self.qtArr)-1) :
+            #     for j in range(i+1,len(self.qtArr)) :
+            #         if abs(self.histos[suff+'FitAC'+unp].GetYaxis().GetBinWidth(j)-self.histos[suff+'FitAC'+unp].GetYaxis().GetBinWidth(i))>0.0001:
+            #             varWidth_Y = True
+            #             break
+            # varWidth_qt = False
+            # for i in range(1, len(self.qtArr)-1) :
+            #     for j in range(i+1,len(self.qtArr)) :
+            #         if abs(self.histos[suff+'FitACqt'+unp].GetXaxis().GetBinWidth(j)-self.histos[suff+'FitACqt'+unp].GetXaxis().GetBinWidth(i))>0.0001:
+            #             varWidth_qt = True
+            #             break
+            # varWidth_y = False
+            # for i in range(1, len(self.yArr)-1) :
+            #     for j in range(i+1,len(self.yArr)) :
+            #         if abs(self.histos[suff+'FitACy'+unp].GetXaxis().GetBinWidth(j)-self.histos[suff+'FitACy'+unp].GetXaxis().GetBinWidth(i))>0.0001:
+            #             varWidth_y = True
+            #             break
             
                      
             for c in self.coeffDict: 
@@ -1209,12 +1227,13 @@ class plotter :
                             # else : impBin = 'helXsecs'+c+'_'+'y_'+str(y)+'_qt_'+str(q)+'_mu'  #josh debug     
                             relImp =   abs(impactVals[impBin+nui])
                             relImp = relImp/abs(self.histos[suff+'FitAC'+c].GetBinContent(y, q))                   
-                            if ('unpol' in c or self.helXsec ) and varWidth_X : 
-                                relImp = relImp/self.histos[suff+'FitAC'+c].GetXaxis().GetBinWidth(y) 
-                            if ('unpol' in c or self.helXsec ) and varWidth_Y : 
-                                relImp = relImp/self.histos[suff+'FitAC'+c].GetYaxis().GetBinWidth(q)  
+                            # if ('unpol' in c or self.helXsec ) and varWidth_X : 
+                            #     relImp = relImp/self.histos[suff+'FitAC'+c].GetXaxis().GetBinWidth(y) 
+                            # if ('unpol' in c or self.helXsec ) and varWidth_Y : 
+                            #     relImp = relImp/self.histos[suff+'FitAC'+c].GetYaxis().GetBinWidth(q)  
                             if 'unpol' in c  or self.helXsec :
-                                relImp = relImp/(self.lumi*3./16./math.pi)  
+                                relImp = relImp/(self.lumi*3./16./math.pi)
+                                relImp = relImp/self.histos[suff+'FitAC'+c].GetYaxis().GetBinWidth(q)/self.histos[suff+'FitAC'+c].GetXaxis().GetBinWidth(y)   
                             # if self.helXsec : relImp = abs(impactVals[impBin+nui]) #josh debug 
                             self.histos[suff+'impact'+'UNR'+c+nui].SetBinContent(indexUNRqty,relImp)
             
@@ -1225,10 +1244,11 @@ class plotter :
                         else : impBin = 'helXsecs'+c+'_'+'y_'+str(y)+'_sumxsec'
                         relImp = abs(impactVals[impBin+nui]/self.histos[suff+'FitACy'+c].GetBinContent(y))
                         # relImp = abs(impactVals[impBin+nui])
-                        if ('unpol' in c or self.helXsec ) and varWidth_y : 
-                            relImp = relImp/self.histos[suff+'FitACy'+c].GetXaxis().GetBinWidth(y) 
+                        # if ('unpol' in c or self.helXsec ) and varWidth_y : 
+                        #     relImp = relImp/self.histos[suff+'FitACy'+c].GetXaxis().GetBinWidth(y) 
                         if 'unpol' in c  or self.helXsec :
-                            relImp = relImp/(self.lumi*3./16./math.pi)  
+                            relImp = relImp/(self.lumi*3./16./math.pi) 
+                            relImp = relImp/self.histos[suff+'FitACy'+c].GetXaxis().GetBinWidth(y)  
                         self.histos[suff+'impact'+'y'+c+nui].SetBinContent(y,relImp)
                     
                     self.histos[suff+'impact'+'qt'+c+nui] = ROOT.TH1D('impact_'+c+'_'+nui+'_qt', 'impact_'+c+'_'+nui+'_qt', len(self.qtArr)-1, array('f',self.qtArr))
@@ -1238,10 +1258,11 @@ class plotter :
                         else : impBin = 'helXsecs'+c+'_'+'qt_'+str(qt)+'_sumxsec'
                         relImp = abs(impactVals[impBin+nui]/self.histos[suff+'FitACqt'+c].GetBinContent(qt))
                         # relImp = abs(impactVals[impBin+nui])
-                        if ('unpol' in c or self.helXsec ) and varWidth_qt : 
-                            relImp = relImp/self.histos[suff+'FitACqt'+c].GetXaxis().GetBinWidth(qt) 
+                        # if ('unpol' in c or self.helXsec ) and varWidth_qt : 
+                        #     relImp = relImp/self.histos[suff+'FitACqt'+c].GetXaxis().GetBinWidth(qt) 
                         if 'unpol' in c  or self.helXsec :
-                            relImp = relImp/(self.lumi*3./16./math.pi)  
+                            relImp = relImp/(self.lumi*3./16./math.pi) 
+                            relImp = relImp/self.histos[suff+'FitACqt'+c].GetXaxis().GetBinWidth(qt) 
                         self.histos[suff+'impact'+'qt'+c+nui].SetBinContent(qt,relImp)
             
             #print("WARNING: used hardcoded value of the Wmass for the impact, mW=",self.mass," GeV")    

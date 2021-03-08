@@ -120,7 +120,7 @@ if step3 :
     if not os.path.isdir(outputDir): os.system('mkdir '+ outputDir)
     #ncores is optimized and set in the config itself, so no need to pass here
     os.system('python runAnalysisOnData.py      -i='+inputDir+' -o='+outputDir+' -c='+ncores+' -sb='+SBana+' -b=0 -f'+bkgFile)
-    os.system('python runAnalysisOnWJetsMC.py   -i='+inputDir+' -o='+outputDir+' -c='+ncores+' -sb='+SBana+' -b=0')
+    # os.system('python runAnalysisOnWJetsMC.py   -i='+inputDir+' -o='+outputDir+' -c='+ncores+' -sb='+SBana+' -b=0')
     os.chdir('../')
     s3end=time.time()
     runTimes.append(s3end - s3start)
@@ -142,6 +142,7 @@ if step4 :
             else : skipList+= ' '+str(sKindInt)
         print("Skipped systematics:", skipList) 
         os.system('python plotter_prefit.py --hadd 0 --output ../'+outputDir+'/plot_only_'+str(sKind)+' --input ../'+outputDir+'/plot/  --systComp 1 --skipSyst '+skipList+' -sb='+SBana)
+    os.system('python plotter_prefit.py --hadd 0 --output ../'+outputDir+'/plot_bkgOnlySyst/ --input ../'+outputDir+'/plot/  --systComp 1'+' -sb='+SBana+' --bkgOnlySyst 1')
     os.chdir('../../')
     s4end=time.time()
     runTimes.append(s4end - s4start)
@@ -150,6 +151,9 @@ else :   runTimes.append(0.)
 if step5 :
     s5start=time.time()
     print("step5: fit shape file preparation...")
+    os.chdir('analysisOnData')
+    os.system('python runAnalysisOnWJetsMC.py   -i='+inputDir+' -o='+outputDir+' -c='+ncores+' -sb='+SBana+' -b=0')
+    os.chdir('../')
     os.chdir('analysisOnData/python/')
     if not os.path.isdir('../'+outputDir+'/plot/hadded/'): 
         print('missing input directory ../'+outputDir+'/plot/hadded/')

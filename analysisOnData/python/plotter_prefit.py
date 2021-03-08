@@ -14,12 +14,13 @@ ROOT.gStyle.SetOptStat(0)
 
 class plotter:
     
-    def __init__(self, outDir, inDir = '',SBana=False):
+    def __init__(self, outDir, inDir = '',SBana=False,bkgOnlySyst=False):
 
         self.indir = inDir # indir containig the various outputs
         self.outdir = outDir
         self.PDFvar = 'LHEPdfWeight'
         self.SBana = SBana
+        self.bkgOnlySyst = bkgOnlySyst
         
         if not self.SBana :
             dirMC = 'prefit_Signal'
@@ -42,12 +43,12 @@ class plotter:
             }    
         
         self.variableDict = {
-            "Mu1_pt_plus"   :  ["Mu1_pt",   "p_{T} (#mu^{+})",    "Events /binWidth", " [GeV]"],
-            "Mu1_pt_minus"  :  ["Mu1_pt",   "p_{T} (#mu^{-})",    "Events /binWidth", " [GeV]"],
-            "Mu1_eta_plus"  :  ["Mu1_eta",  "#eta (#mu^{+})",     "Events /binWidth", ""],
-            "Mu1_eta_minus" :  ["Mu1_eta",  "#eta (#mu^{-})",     "Events /binWidth", ""],
-            "MT_plus"       :  ["MT",       "M_{T} (#mu^{+})",    "Events /binWidth", " [GeV]"],      
-            "MT_minus"      :  ["MT",       "M_{T} (#mu^{-})",    "Events /binWidth", " [GeV]"],      
+            "Mu1_pt_plus"   :  ["Mu1_pt",   "p_{T} (#mu^{+})",    "dN/dp_{T} [GeV^{-1}]", " [GeV]"],
+            "Mu1_pt_minus"  :  ["Mu1_pt",   "p_{T} (#mu^{-})",    "dN/dp_{T} [GeV^{-1}]", " [GeV]"],
+            "Mu1_eta_plus"  :  ["Mu1_eta",  "#eta (#mu^{+})",     "dN/d#eta", ""],
+            "Mu1_eta_minus" :  ["Mu1_eta",  "#eta (#mu^{-})",     "dN/d#eta", ""],
+            "MT_plus"       :  ["MT",       "M_{T} (#mu^{+})",    "dN/dm_{T} [GeV^{-1}]", " [GeV]"],      
+            "MT_minus"      :  ["MT",       "M_{T} (#mu^{-})",    "dN/dm_{T} [GeV^{-1}]", " [GeV]"],      
         }
         
         self.signDict = {
@@ -123,7 +124,7 @@ class plotter:
             if histo.GetXaxis().GetBinWidth(i)!=bin_width:
                 variable_width = True
                 break
-        if variable_width :
+        if variable_width or 1 : #all the histograms expressed as a d N/dX
             for i in range(1, histo.GetNbinsX()+1):
                 old = histo.GetBinContent(i)
                 bin_width = histo.GetXaxis().GetBinWidth(i)
@@ -140,14 +141,14 @@ class plotter:
         for f,fileInfo in self.sampleDict.items() :
             inFile = ROOT.TFile.Open(self.indir+'/hadded/'+fileInfo[0])
             for sKind, sList in self.extSyst.items():
-                if sKind in self.flatDict and f!='SIGNAL_Fake' :
+                if sKind in self.flatDict and f!='SIGNAL_Fake' and not (self.bkgOnlySyst and f=='WToMu'):
                         continue
                 for sName in sList :
                     for var, varInfo in self.variableDict.items() :
                         inFile.cd()
                         if '_WQT' in sKind and f!='SIGNAL_Fake' :
                             sName = sName.replace(sKind.replace('LHEScaleWeight',''),'') #replace for instance: LHEScaleWeight_muR0p5_muF0p5_WQTlow-> LHEScaleWeight_muR0p5_muF0p5
-                        if ROOT.gDirectory.Get(fileInfo[1]+'/'+sKind+'/'+varInfo[0]+'_'+sName)==None : #this syst is missing --> take the nominal
+                        if ROOT.gDirectory.Get(fileInfo[1]+'/'+sKind+'/'+varInfo[0]+'_'+sName)==None or (self.bkgOnlySyst and f=='WToMu') : #this syst is missing --> take the nominal or (skip syst because bkgOnlySyst)
                             if sName!='' or f!='Data': print("missing syst:", sName, " for file", f)
                             h2 = inFile.Get(fileInfo[1]+'/Nominal/'+varInfo[0])
                         else : 
@@ -179,6 +180,7 @@ class plotter:
             for sKind, sList in self.extSyst.items():  #flat syst building
                 if sKind not in self.flatDict : continue 
                 if f=='SIGNAL_Fake' : continue
+                if self.bkgOnlySyst and f=='WToMu' : continue 
                 for sName in sList : 
                     for var, varInfo in self.variableDict.items() :
                         h2 = inFile.Get(fileInfo[1]+'/Nominal/'+varInfo[0])    
@@ -206,7 +208,7 @@ class plotter:
             if var.endswith('minus') : s='minus'  
             else : s='plus'  
             
-            legend = ROOT.TLegend(0.5, 0.5, 0.90, 0.85)            
+            legend = ROOT.TLegend(0.5, 0.55, 0.90, 0.85)            
             hStack = ROOT.THStack('stack_'+var,varInfo[1])
             hSum = self.CloneEmpty(self.histoDict[self.sampleOrder[0]+s+var],'hsum_'+var) #sum of MC for ratio evaluation
             hData = self.histoDict['Data'+s+var].Clone('hData_'+var)
@@ -297,7 +299,7 @@ class plotter:
             pad_histo.SetBottomMargin(0.02)
             pad_histo.Draw()
             pad_ratio.SetTopMargin(0)
-            pad_ratio.SetBottomMargin(0.25)
+            pad_ratio.SetBottomMargin(0.32)
             pad_ratio.Draw()
             
             pad_histo.cd()
@@ -334,7 +336,7 @@ class plotter:
             hRatio.SetLineWidth(2)
             
             hRatioBand.SetLineWidth(0)
-            hRatioBand.SetFillColor(ROOT.kCyan-4)#ROOT.kOrange
+            hRatioBand.SetFillColor(ROOT.kOrange)#(ROOT.kCyan-4)
             hRatioBand.SetFillStyle(3001)
             hRatioBand.SetMarkerStyle(1)
             hRatioBand.SetTitle("")
@@ -344,7 +346,7 @@ class plotter:
             hRatioBand.SetTitleSize(0.15,'y')
             hRatioBand.SetLabelSize(0.12,'y')
             hRatioBand.GetXaxis().SetTitle(varInfo[1]+varInfo[3])
-            hRatioBand.GetXaxis().SetTitleOffset(0.6)
+            hRatioBand.GetXaxis().SetTitleOffset(0.8)
             hRatioBand.SetTitleSize(0.18,'x')
             hRatioBand.SetLabelSize(0.15,'x')
             if var.startswith('MT') :
@@ -549,8 +551,11 @@ class plotter:
             hdict['Nominal'].SetLineColor(1)
             # hdict['Nominal'].Draw()
             # hdict['Nominal'].Draw()# same 0P5
-            hdict['Nominal'].SetTitle(varInfo[1]+', grouped systematic breakdown')
-            hdict['Nominal'].GetYaxis().SetTitle('Syst/Nom')
+            if not self.bkgOnlySyst :
+                hdict['Nominal'].SetTitle(varInfo[1]+', systematics breakdown')
+            else :
+                hdict['Nominal'].SetTitle(varInfo[1]+', systematics breakdown (QCD syst only)')
+            hdict['Nominal'].GetYaxis().SetTitle('|Var-Nom| / Nom')
             hdict['Nominal'].GetXaxis().SetTitle(varInfo[1]+varInfo[3])
             # if 'MT' in var :
             hdict['Nominal'].GetYaxis().SetRangeUser(0.0001,1)
@@ -640,6 +645,7 @@ parser.add_argument('-i','--input', type=str, default='TEST',help="name of the i
 parser.add_argument('-s','--skipSyst', type=str, default='',nargs='*', help="list of skipped syst class as in bkgAnalysis/bkg_utils.py, separated by space")
 parser.add_argument('-c','--systComp', type=int, default=True,help="systematic uncertainity comparison plots")
 parser.add_argument('-sb', '--SBana',type=int, default=False, help="run also on the sideband (clousure test)")
+parser.add_argument('-bos', '--bkgOnlySyst',type=int, default=False, help="rrun with syst only for Bkg")
 
 
 args = parser.parse_args()
@@ -649,18 +655,19 @@ INPUT = args.input
 skippedSyst =args.skipSyst
 SYSTCOMP = args.systComp
 SBana = args.SBana
+BKGONLYSYST = args.bkgOnlySyst
 
 if HADD :
     prepareHistos(inDir=INPUT,outDir=OUTPUT)
     INPUT=OUTPUT
 
-p=plotter(outDir=OUTPUT, inDir = INPUT)
+p=plotter(outDir=OUTPUT, inDir = INPUT,bkgOnlySyst=BKGONLYSYST)
 p.plotStack(skipSyst=skippedSyst)
 if SYSTCOMP :
     p.plotSyst(skipSyst=skippedSyst)
 
 if SBana :
-    pSB=plotter(outDir=OUTPUT, inDir = INPUT,SBana=SBana)
+    pSB=plotter(outDir=OUTPUT, inDir = INPUT,SBana=SBana,bkgOnlySyst=BKGONLYSYST)
     pSB.plotStack(skipSyst=skippedSyst)
     if SYSTCOMP :
         pSB.plotSyst(skipSyst=skippedSyst)

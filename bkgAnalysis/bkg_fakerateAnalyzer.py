@@ -115,6 +115,13 @@ class bkg_analyzer:
         
         minuit.mnstat(chi2min,vertDist,errdef,npars,nparsEx,infoFit)
         # print "chi2=", chi2min, " npars=", npars, nparsEx, " ndf=", ndf
+        
+        # def debugChi2(par0,par1):
+        #     vec = yy-(par0+par1*(xx-25))#SLOPEOFFSETUNCORR
+        #     chi2 = np.linalg.multi_dot( [vec.T, invCov, vec] )
+        #     return chi2
+        # print(s,e, chi2min, debugChi2(outdict[s+e+'offset'+'Minuit'],outdict[s+e+'slope'+'Minuit']), "ndf=",ndf)
+        
         outdict[s+e+'chi2red'+'Minuit'] = float(chi2min.value)/ndf
         outdict[s+e+'chi2red'+'Minuit'+'Err'] = math.sqrt(2*ndf)/ndf
         return outdict
@@ -122,7 +129,8 @@ class bkg_analyzer:
 
     def correlatedFitter(self, fakedict) :
        
-        DONT_REBIN = True
+        DONT_REBIN = False
+        print("note: correlated fit rebin active")
 
         #load the histos
         file_dict = {}
@@ -130,18 +138,21 @@ class bkg_analyzer:
         systList = []
         systDict = bkg_utils.bkg_systematics
         # bin4corFit =  [26,28,30,32,34,36,38,40,42,44,46,48,50,52,55] #LoreHistos
-        bin4corFit =  [25,27,29,31,33,35,37,39,41,43,45,47,49,51,53,55] #redesign
+        bin4corFit =  [25,27,29,31,33,35,37,39,41,43,45,47,49,51,53,55] #redesign, in new FW must use /4
+        # bin4corFit =  [25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55] #new FW
+        # bin4corFit = [25,26.5,28,29.5,31,32.5,34,35.5,37,38.5,40,41.5,43,44.5,46,47.5,49,50.5,52,53.5,55]
         
         if DONT_REBIN : 
             bin4corFit = self.ptBinning
 
         # binChange = 13 #LoreHistos
-        binChange = 17 #redesign
+        binChange = 100#17 #redesign
 
         bin4corFitS = ['{:.2g}'.format(x) for x in bin4corFit[:-1]]
 
         for sKind, sList in systDict.items():
-            if 'LHE' in sKind or 'alphaS' in sKind  or 'Xsec' in sKind or 'mass' in sKind: continue #Theory uncertainity  and flat unc. skipped in the correlated fit #or 'lumi' in sKind
+            if 'LHE' in sKind or 'alphaS' in sKind  or 'XSec' in sKind or 'mass' in sKind: continue #Theory uncertainity  and flat unc. skipped in the correlated fit #or 'lumi' in sKind
+            print(self.systName, "used in CF", sKind)
             for sName in sList :
                 systList.append(sName)
                 systdir = self.outdir.replace("bkg_"+self.systName,"bkg_"+sName+'/')
@@ -156,8 +167,12 @@ class bkg_analyzer:
                                 valueBinRebinned = histo_fake_dict[sName+s+e].GetBinContent(r)
                                 valueBinRebinnedErr = histo_fake_dict[sName+s+e].GetBinError(r) 
                             elif r<binChange :
-                                valueBinRebinned = (histo_fake_dict[sName+s+e].GetBinContent(2*r)+histo_fake_dict[sName+s+e].GetBinContent(2*r-1))/2
-                                valueBinRebinnedErr = (histo_fake_dict[sName+s+e].GetBinError(2*r)+histo_fake_dict[sName+s+e].GetBinError(2*r-1))/2
+                                # valueBinRebinned = (histo_fake_dict[sName+s+e].GetBinContent(2*r)+histo_fake_dict[sName+s+e].GetBinContent(2*r-1))/2
+                                # valueBinRebinnedErr = (histo_fake_dict[sName+s+e].GetBinError(2*r)+histo_fake_dict[sName+s+e].GetBinError(2*r-1))/2
+                                valueBinRebinned = (histo_fake_dict[sName+s+e].GetBinContent(4*r)+histo_fake_dict[sName+s+e].GetBinContent(4*r-1)+histo_fake_dict[sName+s+e].GetBinContent(4*r-2)+histo_fake_dict[sName+s+e].GetBinContent(4*r-3))/4
+                                valueBinRebinnedErr = (histo_fake_dict[sName+s+e].GetBinError(4*r)+histo_fake_dict[sName+s+e].GetBinError(4*r-1)+histo_fake_dict[sName+s+e].GetBinError(4*r-2)+histo_fake_dict[sName+s+e].GetBinError(4*r-3))/4
+                                # valueBinRebinned = (histo_fake_dict[sName+s+e].GetBinContent(3*r)+histo_fake_dict[sName+s+e].GetBinContent(3*r-1)+histo_fake_dict[sName+s+e].GetBinContent(3*r-2))/3
+                                # valueBinRebinnedErr = (histo_fake_dict[sName+s+e].GetBinError(3*r)+histo_fake_dict[sName+s+e].GetBinError(3*r-1)+histo_fake_dict[sName+s+e].GetBinError(3*r-2))/3
                             else :
                                 valueBinRebinned = (histo_fake_dict[sName+s+e].GetBinContent(3*r-binChange)+histo_fake_dict[sName+s+e].GetBinContent(3*r-binChange-1)+histo_fake_dict[sName+s+e].GetBinContent(3*r-binChange-2))/3 #the not-simplified value of the bin number is: 2*N+3*(r-N), -1, -2.
                                 valueBinRebinnedErr = (histo_fake_dict[sName+s+e].GetBinError(3*r-binChange)+histo_fake_dict[sName+s+e].GetBinError(3*r-binChange-1)+histo_fake_dict[sName+s+e].GetBinError(3*r-binChange-2))/3 #the not-simplified value of the bin number is: 2*N+3*(r-N), -1, -2.
@@ -181,8 +196,12 @@ class bkg_analyzer:
                         valueBinRebinned = histo_fake_dict[sName+s+e].GetBinContent(r)
                         valueBinRebinnedErr = histo_fake_dict[sName+s+e].GetBinError(r) 
                     elif r<binChange :
-                        valueBinRebinned = (histo_fake_dict[sName+s+e].GetBinContent(2*r)+histo_fake_dict[sName+s+e].GetBinContent(2*r-1))/2
-                        valueBinRebinnedErr = (histo_fake_dict[sName+s+e].GetBinError(2*r)+histo_fake_dict[sName+s+e].GetBinError(2*r-1))/2
+                        # valueBinRebinned = (histo_fake_dict[sName+s+e].GetBinContent(2*r)+histo_fake_dict[sName+s+e].GetBinContent(2*r-1))/2
+                        # valueBinRebinnedErr = (histo_fake_dict[sName+s+e].GetBinError(2*r)+histo_fake_dict[sName+s+e].GetBinError(2*r-1))/2
+                        valueBinRebinned = (histo_fake_dict[sName+s+e].GetBinContent(4*r)+histo_fake_dict[sName+s+e].GetBinContent(4*r-1)+histo_fake_dict[sName+s+e].GetBinContent(4*r-2)+histo_fake_dict[sName+s+e].GetBinContent(4*r-3))/4
+                        valueBinRebinnedErr = (histo_fake_dict[sName+s+e].GetBinError(4*r)+histo_fake_dict[sName+s+e].GetBinError(4*r-1)+histo_fake_dict[sName+s+e].GetBinError(4*r-2)+histo_fake_dict[sName+s+e].GetBinError(4*r-3))/4
+                        # valueBinRebinned = (histo_fake_dict[sName+s+e].GetBinContent(3*r)+histo_fake_dict[sName+s+e].GetBinContent(3*r-1)+histo_fake_dict[sName+s+e].GetBinContent(3*r-2))/3
+                        # valueBinRebinnedErr = (histo_fake_dict[sName+s+e].GetBinError(3*r)+histo_fake_dict[sName+s+e].GetBinError(3*r-1)+histo_fake_dict[sName+s+e].GetBinError(3*r-2))/3
                     else :
                         valueBinRebinned = (histo_fake_dict[sName+s+e].GetBinContent(3*r-binChange)+histo_fake_dict[sName+s+e].GetBinContent(3*r-binChange-1)+histo_fake_dict[sName+s+e].GetBinContent(3*r-binChange-2))/3 #the not-simplified value of the bin number is: 2*N+3*(r-N), -1, -2.
                         valueBinRebinnedErr = (histo_fake_dict[sName+s+e].GetBinError(3*r-binChange)+histo_fake_dict[sName+s+e].GetBinError(3*r-binChange-1)+histo_fake_dict[sName+s+e].GetBinError(3*r-binChange-2))/3 #the not-simplified value of the bin number is: 2*N+3*(r-N), -1, -2.
@@ -232,7 +251,7 @@ class bkg_analyzer:
                     yy_[pp] = histo_fake_dict['current'+s+e+'reb'].GetBinContent(pp+1)
 
                 for pp in range(xx_.size) : #separate loop because needed xx,yy fully filled
-                    for p2 in range(xx_.size) :
+                    for p2 in range(yy_.size) :
                         for syst in range(len(systList)+1) :
                             if pp==p2 and syst==len(systList):
 
@@ -260,6 +279,7 @@ class bkg_analyzer:
                                             signPP = (histo_fake_dict['nom'+s+e+'reb'].GetBinContent(pp+1)-histo_fake_dict[systUp+s+e+'reb'].GetBinContent(pp+1))/abs(histo_fake_dict['nom'+s+e+'reb'].GetBinContent(pp+1)-histo_fake_dict[systUp+s+e+'reb'].GetBinContent(pp+1))#Chosen the UP sign!
                                             signP2 = (histo_fake_dict['nom'+s+e+'reb'].GetBinContent(p2+1)-histo_fake_dict[systUp+s+e+'reb'].GetBinContent(p2+1))/abs(histo_fake_dict['nom'+s+e+'reb'].GetBinContent(p2+1)-histo_fake_dict[systUp+s+e+'reb'].GetBinContent(p2+1))#Chosen the UP sign!
                                         else :
+                                            # print("WARNING: sign of the element of the matrix set to one, since the shift is zero!", s, e, ", momenta=", pp, p2, "syst=",syst, "of list", systList)
                                             signPP =1
                                             signP2 =1
                                         erv = deltaPP*deltaP2*signPP*signP2
@@ -306,7 +326,7 @@ class bkg_analyzer:
                 correlatedFitterDict.update(minuitDict)
         
                 #safety check of the fit results :
-                print(s,e, "chi2Red=", correlatedFitterDict[s+e+'chi2red'+'Minuit'], "vs old" , fakedict[s+e+'chi2red'], "slope=", correlatedFitterDict[s+e+'slope'+'Minuit'], "offset=",correlatedFitterDict[s+e+'offset'+'Minuit'])
+                # print(s,e, "chi2Red=", correlatedFitterDict[s+e+'chi2red'+'Minuit'], "vs old" , fakedict[s+e+'chi2red'], "slope=", correlatedFitterDict[s+e+'slope'+'Minuit'], "offset=",correlatedFitterDict[s+e+'offset'+'Minuit'])
                 if correlatedFitterDict[s+e+'chi2red'+'Minuit'] > 5. :
                     print("WARNING: very sevrere problem. the CF fit of bin", s, "eta=",e," has a chi2/ndf=",correlatedFitterDict[s+e+'chi2red'+'Minuit'], ". Standard fit results will be used." )
                     # correlatedFitterDict[s+e+'offset'+'Minuit'] = fakedict[s+e+'offset']
@@ -886,7 +906,7 @@ class bkg_analyzer:
                             finalHistoDict['nom'+canvas+histo+s+e+'sum2'].SetLineWidth(1)
                             finalHistoDict['nom'+canvas+histo+s+e+'sum2'].SetTitle("Square Sum of Errors: "+canvas+', '+s+', #eta='+e)
                             finalHistoDict['nom'+canvas+histo+s+e+'sum2'].GetXaxis().SetTitle("p_{T} [GeV]")
-                            finalHistoDict['nom'+canvas+histo+s+e+'sum2'].GetYaxis().SetTitle("Events/1 GeV^{-1}")
+                            finalHistoDict['nom'+canvas+histo+s+e+'sum2'].GetYaxis().SetTitle("Events")
 
                             # finalLegDict[e+s+'errCompare'].AddEntry(finalHistoDict['nom'+canvas+histo+s+e+'sum2'], histo)
                 finalLegDict[e+s+'errCompare'].Draw("SAME")
@@ -908,10 +928,10 @@ class bkg_analyzer:
                             c_groupSyst.SetGridy()
                             c_groupSyst.SetTicky()
                             c_groupSyst.SetLogy()
-                            finalLegDict[e+s+canvas+histo+"groupSyst"] = ROOT.TLegend(0.12,0.7,0.7,0.9)
+                            finalLegDict[e+s+canvas+histo+"groupSyst"] = ROOT.TLegend(0.12,0.7,0.88,0.9)
                             finalLegDict[e+s+canvas+histo+"groupSyst"].SetFillStyle(0)
                             finalLegDict[e+s+canvas+histo+"groupSyst"].SetBorderSize(0)
-                            finalLegDict[e+s+canvas+histo+"groupSyst"].SetNColumns(2)
+                            finalLegDict[e+s+canvas+histo+"groupSyst"].SetNColumns(3)
 
                             for sKind, sList in nomSystDict.items():
                                 finalHistoDict[sKind+canvas+histo+s+e+'group'] = ROOT.TH1F(canvas+'_'+finalHistoDict[sList[0]+canvas+histo+s+e].GetName()+'_'+sKind+'_ratio',canvas+'_'+finalHistoDict[sList[0]+canvas+histo+s+e].GetName()+'_'+sKind+'_ratio',len(self.ptBinning)-1, array('f',self.ptBinning))
@@ -1038,10 +1058,13 @@ class bkg_analyzer:
         #final plot and syst
         for s in self.signList :
             for canvas in histoNameDict :
-                c_unrolled = ROOT.TCanvas("c_unrolled_{canvas}_{sign}".format(canvas=canvas,sign=s),"c_unrolled_{canvas}_{sign}".format(canvas=canvas,sign=s),800,600)
+                c_unrolled = ROOT.TCanvas("c_unrolled_{canvas}_{sign}".format(canvas=canvas,sign=s),"c_unrolled_{canvas}_{sign}".format(canvas=canvas,sign=s),2400,600)
                 c_unrolled.cd()
-                c_unrolled.SetGridx()
+                # c_unrolled.SetGridx()
                 c_unrolled.SetGridy()
+                c_unrolled.SetBottomMargin(0.25)
+                c_unrolled.SetRightMargin(0.02)
+                c_unrolled.SetLeftMargin(0.05)
                 finalLegDict[s+canvas+'unrolled'] = ROOT.TLegend(0.1,0.7,0.48,0.9)
                 sameFlagUNR=True
                 for name in histoNameDict[canvas] :
@@ -1052,6 +1075,7 @@ class bkg_analyzer:
                         finalHistoDict[s+canvas+histo+'unrolled'].GetXaxis().SetTitle('Unrolled #eta, p_{T}')
                         finalHistoDict[s+canvas+histo+'unrolled'].GetYaxis().SetTitle(finalHistoDict['nom'+canvas+histo+s+'0'].GetYaxis().GetTitle())
                         finalHistoDict[s+canvas+histo+'unrolled'].SetTitle('Unorlled '+canvas+', W '+s)
+                        finalHistoDict[s+canvas+histo+'unrolled'].GetYaxis().SetTitleOffset(0.5)
 
                         finalHistoDict[s+canvas+histo+'unrolled'+'error'] = ROOT.TGraphAsymmErrors()
                         finalHistoDict[s+canvas+histo+'unrolled'+'error'].SetName(finalHistoDict[s+canvas+histo+'unrolled'].GetName()+'_error')
@@ -1074,6 +1098,20 @@ class bkg_analyzer:
                                 finalHistoDict[s+canvas+histo+'unrolled'+'error'].SetPointEYlow(indexUNR,finalHistoDict['nom'+canvas+histo+s+e+'error'].GetErrorYlow(self.ptBinning.index(float(p))))
                                 finalHistoDict[s+canvas+histo+'unrolled'+'error'].SetPointEXhigh(indexUNR,finalHistoDict[s+canvas+histo+'unrolled'].GetBinWidth(indexUNR+1)/2)
                                 finalHistoDict[s+canvas+histo+'unrolled'+'error'].SetPointEXlow(indexUNR,finalHistoDict[s+canvas+histo+'unrolled'].GetBinWidth(indexUNR+1)/2)
+                                
+                                if self.ptBinningS.index(p)==len(self.ptBinningS)/2 and self.etaBinningS.index(e)%2==0:
+                                    if e == self.etaBinningS[-1] :
+                                        eup = '2.4'
+                                    else :
+                                        eup = self.etaBinningS[self.etaBinningS.index(e)+1]   
+                                    finalHistoDict[s+canvas+histo+'unrolled'].GetXaxis().SetTickLength(0)
+                                    finalHistoDict[s+canvas+histo+'unrolled'].GetXaxis().SetBinLabel(indexUNR+1,"#eta#in["+e+","+eup+"]")
+                                    finalHistoDict[s+canvas+histo+'unrolled'].GetXaxis().SetTitle('fine binning: p_{T} 25 GeV#rightarrow 55 GeV')
+                                    finalHistoDict[s+canvas+histo+'unrolled'].LabelsOption("v")
+                                    finalHistoDict[s+canvas+histo+'unrolled'].GetXaxis().SetTitleOffset(3.5)
+                                    finalHistoDict[s+canvas+histo+'unrolled'].SetTitleSize(0.04,'x')
+                                    finalHistoDict[s+canvas+histo+'unrolled'].SetLabelSize(0.06,'x')
+                                    finalHistoDict[s+canvas+histo+'unrolled'].SetLabelOffset(0.005,'x')
 
                         if sameFlagUNR :
                             finalHistoDict[s+canvas+histo+'unrolled'].Draw()
@@ -1093,10 +1131,13 @@ class bkg_analyzer:
             for canvas in histoNameDict :
                 for name in histoNameDict[canvas] :
                     for histo in histoNameDict[canvas][name] :
-                        c_ratioSyst_unrolled = ROOT.TCanvas("c_ratioSyst_unrolled_{sign}_{canvas}_{histo}".format(sign=s,canvas=canvas,histo=histo),"c_ratioSyst_unrolled_{sign}_{canvas}_{histo}".format(sign=s,canvas=canvas,histo=histo),800,600)
+                        c_ratioSyst_unrolled = ROOT.TCanvas("c_ratioSyst_unrolled_{sign}_{canvas}_{histo}".format(sign=s,canvas=canvas,histo=histo),"c_ratioSyst_unrolled_{sign}_{canvas}_{histo}".format(sign=s,canvas=canvas,histo=histo),2400,600)
                         c_ratioSyst_unrolled.cd()
-                        c_ratioSyst_unrolled.SetGridx()
+                        # c_ratioSyst_unrolled.SetGridx()
                         c_ratioSyst_unrolled.SetGridy()
+                        c_ratioSyst_unrolled.SetBottomMargin(0.25)
+                        c_ratioSyst_unrolled.SetRightMargin(0.02)
+                        c_ratioSyst_unrolled.SetLeftMargin(0.05)
                         finalLegDict[s+canvas+histo+"ratioSyst_unrolled"] = ROOT.TLegend(0.1,0.7,0.48,0.9)
 
                         sameFlagUNR = True
@@ -1110,12 +1151,29 @@ class bkg_analyzer:
                                 finalHistoDict[sName+s+canvas+histo+'ratio_unrolled'].GetXaxis().SetTitle('Unrolled #eta, p_{T}')
                                 finalHistoDict[sName+s+canvas+histo+'ratio_unrolled'].GetYaxis().SetTitle(finalHistoDict[sName+canvas+histo+s+'0ratio'].GetYaxis().GetTitle())
                                 finalHistoDict[sName+s+canvas+histo+'ratio_unrolled'].SetTitle('Ratio Syst/Nom: Unorlled '+canvas+', W'+s)
+                                finalHistoDict[sName+s+canvas+histo+'ratio_unrolled'].GetYaxis().SetTitleOffset(0.5)
 
                                 for e in self.etaBinningS :
                                     for p in self.ptBinningS :
                                         indexUNR = self.etaBinning.index(float(e))*len(self.ptBinningS)+self.ptBinning.index(float(p))
                                         finalHistoDict[sName+s+canvas+histo+'ratio_unrolled'].SetBinContent(indexUNR+1,finalHistoDict[sName+canvas+histo+s+e+'ratio'].GetBinContent(self.ptBinning.index(float(p))+1))
                                         finalHistoDict[sName+s+canvas+histo+'ratio_unrolled'].SetBinError(indexUNR+1,finalHistoDict[sName+canvas+histo+s+e+'ratio'].GetBinError(self.ptBinning.index(float(p))+1))
+                                        
+                                        if self.ptBinningS.index(p)==len(self.ptBinningS)/2 and self.etaBinningS.index(e)%2==0:
+                                            if e == self.etaBinningS[-1] :
+                                                eup = '2.4'
+                                            else :
+                                                eup = self.etaBinningS[self.etaBinningS.index(e)+1]   
+                                            finalHistoDict[sName+s+canvas+histo+'ratio_unrolled'].GetXaxis().SetTickLength(0)
+                                            finalHistoDict[sName+s+canvas+histo+'ratio_unrolled'].GetXaxis().SetBinLabel(indexUNR+1,"#eta#in["+e+","+eup+"]")
+                                            finalHistoDict[sName+s+canvas+histo+'ratio_unrolled'].GetXaxis().SetTitle('fine binning: p_{T} 25 GeV#rightarrow 55 GeV')
+                                            finalHistoDict[sName+s+canvas+histo+'ratio_unrolled'].LabelsOption("v")
+                                            finalHistoDict[sName+s+canvas+histo+'ratio_unrolled'].GetXaxis().SetTitleOffset(3.5)
+                                            finalHistoDict[sName+s+canvas+histo+'ratio_unrolled'].SetTitleSize(0.04,'x')
+                                            finalHistoDict[sName+s+canvas+histo+'ratio_unrolled'].SetLabelSize(0.06,'x')
+                                            finalHistoDict[sName+s+canvas+histo+'ratio_unrolled'].SetLabelOffset(0.005,'x')
+                                
+                                
                                 c_ratioSyst_unrolled.cd()
                                 if sameFlagUNR :
                                     finalHistoDict[sName+s+canvas+histo+'ratio_unrolled'].Draw()
@@ -1134,6 +1192,7 @@ class bkg_analyzer:
                         finalHistoDict['nom'+s+canvas+histo+'ratio_unrolled'].GetXaxis().SetTitle('Unrolled #eta, p_{T}')
                         finalHistoDict['nom'+s+canvas+histo+'ratio_unrolled'].GetYaxis().SetTitle(finalHistoDict['nom'+canvas+histo+s+'0ratio'].GetYaxis().GetTitle())
                         finalHistoDict['nom'+s+canvas+histo+'ratio_unrolled'].SetTitle('Ratio Syst/Nom: Unorlled '+canvas+', W '+s)
+                        finalHistoDict['nom'+s+canvas+histo+'ratio_unrolled'].GetYaxis().SetTitleOffset(0.5)
 
                         for e in self.etaBinningS :
                             for p in self.ptBinningS :
@@ -1178,8 +1237,11 @@ class bkg_analyzer:
         for s in self.signList :
             c_errCompare_unrolled = ROOT.TCanvas("c_errCompare_unrolled_{sign}".format(sign=s),"c_errCompare_unrolled_{sign}".format(sign=s),800,600)
             c_errCompare_unrolled.cd()
-            c_errCompare_unrolled.SetGridx()
+            # c_errCompare_unrolled.SetGridx()
             c_errCompare_unrolled.SetGridy()
+            c_errCompare_unrolled.SetBottomMargin(0.25)
+            c_errCompare_unrolled.SetRightMargin(0.02)
+            c_errCompare_unrolled.SetLeftMargin(0.05)
             finalLegDict[s+'errCompare_unrolled'] = ROOT.TLegend(0.1,0.7,0.48,0.9)
             canvas = 'template'
             for histo in ['fake','prompt'] :
@@ -1193,6 +1255,7 @@ class bkg_analyzer:
                             finalHistoDict[s+canvas+histo+'unrolled'+'sum2'].GetXaxis().SetTitle('Unrolled #eta, p_{T}')
                             finalHistoDict[s+canvas+histo+'unrolled'+'sum2'].GetYaxis().SetTitle(finalHistoDict['nom'+canvas+histo+s+'0'+'sum2'].GetYaxis().GetTitle())
                             finalHistoDict[s+canvas+histo+'unrolled'+'sum2'].SetTitle('Square Sum of Errors: Unrolled, '+ canvas+', W '+s)
+                            finalHistoDict[s+canvas+histo+'unrolled'+'sum2'].GetYaxis().SetTitleOffset(0.5)
                             
                             for e in self.etaBinningS :
                                 for p in self.ptBinningS :
@@ -1202,6 +1265,22 @@ class bkg_analyzer:
                                     finalHistoDict[s+canvas+histo+'unrolled'+'sum2'].SetPointEYlow(indexUNR,finalHistoDict['nom'+canvas+histo+s+e+'sum2'].GetErrorYlow(self.ptBinning.index(float(p))))
                                     finalHistoDict[s+canvas+histo+'unrolled'+'sum2'].SetPointEXhigh(indexUNR,finalHistoDict[s+canvas+histo+'unrolled'].GetBinWidth(indexUNR+1)/2)
                                     finalHistoDict[s+canvas+histo+'unrolled'+'sum2'].SetPointEXlow(indexUNR,finalHistoDict[s+canvas+histo+'unrolled'].GetBinWidth(indexUNR+1)/2)
+                                    
+                                    if self.ptBinningS.index(p)==len(self.ptBinningS)/2 and self.etaBinningS.index(e)%2==0:
+                                        if e == self.etaBinningS[-1] :
+                                            eup = '2.4'
+                                        else :
+                                            eup = self.etaBinningS[self.etaBinningS.index(e)+1]   
+                                        finalHistoDict[s+canvas+histo+'unrolled'+'sum2'].GetXaxis().SetTickLength(0)
+                                        finalHistoDict[s+canvas+histo+'unrolled'+'sum2'].GetXaxis().SetBinLabel(indexUNR+1,"#eta#in["+e+","+eup+"]")
+                                        finalHistoDict[s+canvas+histo+'unrolled'+'sum2'].GetXaxis().SetTitle('fine binning: p_{T} 25 GeV#rightarrow 55 GeV')
+                                        finalHistoDict[s+canvas+histo+'unrolled'+'sum2'].GetXaxis().LabelsOption("v")
+                                        finalHistoDict[s+canvas+histo+'unrolled'+'sum2'].GetXaxis().SetTitleOffset(3.5)
+                                        finalHistoDict[s+canvas+histo+'unrolled'+'sum2'].GetXaxis().SetTitleSize(0.04)
+                                        finalHistoDict[s+canvas+histo+'unrolled'+'sum2'].GetXaxis().SetLabelSize(0.04)
+                                        finalHistoDict[s+canvas+histo+'unrolled'+'sum2'].GetXaxis().SetLabelOffset(0.005)
+                            
+                            
                             if histo=='fake' :
                                 finalHistoDict[s+canvas+histo+'unrolled'+'sum2'].Draw("")
                                 finalLegDict[s+'errCompare_unrolled'].AddEntry(finalHistoDict[s+canvas+histo+'unrolled'+'sum2'], 'QCD bkg')
@@ -1224,14 +1303,17 @@ class bkg_analyzer:
                     for histo in histoNameDict[canvas][name] :
                         c_groupSyst_unrolled = ROOT.TCanvas("c_groupSyst_unrolled_{sign}_{canvas}_{histo}".format(sign=s,canvas=canvas,histo=histo),"c_groupSyst_unrolled_{sign}_{canvas}_{histo}".format(sign=s,canvas=canvas,histo=histo),2400,600)
                         c_groupSyst_unrolled.cd()
-                        c_groupSyst_unrolled.SetGridx()
+                        # c_groupSyst_unrolled.SetGridx()
                         c_groupSyst_unrolled.SetGridy()
                         c_groupSyst_unrolled.SetTicky()
                         # c_groupSyst_unrolled.SetLogy()
-                        finalLegDict[s+canvas+histo+"groupSyst_unrolled"] = ROOT.TLegend(0.6,0.7,0.95,0.9)
+                        c_groupSyst_unrolled.SetBottomMargin(0.25)
+                        c_groupSyst_unrolled.SetRightMargin(0.02)
+                        c_groupSyst_unrolled.SetLeftMargin(0.05)
+                        finalLegDict[s+canvas+histo+"groupSyst_unrolled"] = ROOT.TLegend(0.5,0.7,1.0,0.9)
                         finalLegDict[s+canvas+histo+"groupSyst_unrolled"].SetFillStyle(0)
                         finalLegDict[s+canvas+histo+"groupSyst_unrolled"].SetBorderSize(0)
-                        finalLegDict[s+canvas+histo+"groupSyst_unrolled"].SetNColumns(2)
+                        finalLegDict[s+canvas+histo+"groupSyst_unrolled"].SetNColumns(3)
                         
                         for sKind, sList in nomExtSystDict.items():
                             finalHistoDict[sKind+s+canvas+histo+'group_unrolled'] = ROOT.TH1F(finalHistoDict[sKind+canvas+histo+s+'0group'].GetName()+'_group_unrolled',finalHistoDict[sKind+canvas+histo+s+'0group'].GetName()+'_group_unrolled',len(unrolledPtEta)-1, array('f',unrolledPtEta))
@@ -1244,6 +1326,7 @@ class bkg_analyzer:
                             finalHistoDict[sKind+s+canvas+histo+'group_unrolled'].SetLineWidth(2)
                             finalHistoDict[sKind+s+canvas+histo+'group_unrolled'].SetFillStyle(finalHistoDict[sKind+canvas+histo+s+'0group'].GetFillStyle())
                             finalHistoDict[sKind+s+canvas+histo+'group_unrolled'].SetFillColor(finalHistoDict[sKind+canvas+histo+s+'0group'].GetFillColor())
+                            finalHistoDict[sKind+s+canvas+histo+'group_unrolled'].GetYaxis().SetTitleOffset(0.5)
                             
                             if sKind =='sum' :
                                 finalLegDict[s+canvas+histo+"groupSyst_unrolled"].AddEntry(finalHistoDict[sKind+s+canvas+histo+'group_unrolled'], 'Squared Sum of Syst.')
@@ -1258,6 +1341,20 @@ class bkg_analyzer:
                                     indexUNR = self.etaBinning.index(float(e))*len(self.ptBinningS)+self.ptBinning.index(float(p))
                                     finalHistoDict[sKind+s+canvas+histo+'group_unrolled'].SetBinContent(indexUNR+1,finalHistoDict[sKind+canvas+histo+s+e+'group'].GetBinContent(self.ptBinning.index(float(p))+1))
                                     finalHistoDict[sKind+s+canvas+histo+'group_unrolled'].SetBinError(indexUNR+1,finalHistoDict[sKind+canvas+histo+s+e+'group'].GetBinError(self.ptBinning.index(float(p))+1))
+                                    
+                                    if self.ptBinningS.index(p)==len(self.ptBinningS)/2 and self.etaBinningS.index(e)%2==0:
+                                        if e == self.etaBinningS[-1] :
+                                            eup = '2.4'
+                                        else :
+                                            eup = self.etaBinningS[self.etaBinningS.index(e)+1]   
+                                        finalHistoDict[sKind+s+canvas+histo+'group_unrolled'].GetXaxis().SetTickLength(0)
+                                        finalHistoDict[sKind+s+canvas+histo+'group_unrolled'].GetXaxis().SetBinLabel(indexUNR+1,"#eta#in["+e+","+eup+"]")
+                                        finalHistoDict[sKind+s+canvas+histo+'group_unrolled'].GetXaxis().SetTitle('fine binning: p_{T} 25 GeV#rightarrow 55 GeV')
+                                        finalHistoDict[sKind+s+canvas+histo+'group_unrolled'].LabelsOption("v")
+                                        finalHistoDict[sKind+s+canvas+histo+'group_unrolled'].GetXaxis().SetTitleOffset(3.5)
+                                        finalHistoDict[sKind+s+canvas+histo+'group_unrolled'].SetTitleSize(0.04,'x')
+                                        finalHistoDict[sKind+s+canvas+histo+'group_unrolled'].SetLabelSize(0.06,'x')
+                                        finalHistoDict[sKind+s+canvas+histo+'group_unrolled'].SetLabelOffset(0.005,'x')
                            
                         c_groupSyst_unrolled.cd()
                         
