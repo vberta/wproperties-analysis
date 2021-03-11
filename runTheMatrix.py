@@ -179,7 +179,7 @@ if step6 :
     else :
         print('missing Fit/CMSSW_10_6_18/CMSSW_10_6_18/src/HiggsAnalysis/CombinedLimit/src/')
         assert(0)
-    os.system('python ../runFit.py --impact 1 --postfit 1 --regularize '+regFit+' --tau=1e3 --toy '+toy)
+    os.system('python ../runFit.py --impact 1 --postfit 1 --regularize '+regFit+' --tau=1e3 --toy '+toy+ ' --cores '+ncores)
     os.chdir('../../')
     s6end=time.time()
     runTimes.append(s6end - s6start)

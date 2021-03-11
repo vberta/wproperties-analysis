@@ -208,7 +208,7 @@ class plotter:
         self.uncorrelateEff()
         self.symmetrisePDF()
         # self.symmetrisePDF_shift()
-        self.alphaVariations()
+        # self.alphaVariations()
         # self.uncorrelatePtVars() ALWAYS COMMENTED, ROCHESTER CORR. NOT RUN
         self.closureMap()
         self.writeHistos()

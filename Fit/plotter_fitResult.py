@@ -104,7 +104,7 @@ class plotter :
             "jme"       : [ROOT.kAzure+10, 'MET uncert.',45],
             "ptScale"       : [ROOT.kYellow+2, 'p_{T} Scale',43],
             "binByBinStat" : [1, 'Bin stat', 46],
-            # "FakeNorm" : [ROOT.kViolet, 'QCD norm.', 22],
+            "QCDnorm" : [ROOT.kViolet, 'QCD norm.', 22],
             "CMSlumi" : [ROOT.kOrange-7,"Lumi",41],
             # "DYxsec" : [ROOT.kCyan+2,"#sigma_{DY}",3],
             # "Topxsec" : [ROOT.kCyan-6,"#sigma_{t}",3],
@@ -299,6 +299,7 @@ class plotter :
                         try:
                             if not self.helXsec : coeffString = 'ev.y_{i}_qt_{j}_{c}{g}'.format(c=c, j=j, i=i,g=genMod)
                             else : coeffString = 'ev.helXsecs{c}_y_{i}_qt_{j}_pmaskedexp{g}'.format(c=c, i=i, j=j,g=genMod)
+                            # else : coeffString = 'ev.helXsecs{c}_y_{i}_qt_{j}_mu{g}'.format(c=c, i=i, j=j,g=genMod)
                             coeff = eval(coeffString)
                             coeff_err = eval(coeffString+'_err') #doesn't work fit genMod!=0
                             if 'unpol' in c or self.helXsec:
@@ -3244,6 +3245,7 @@ for s in signList :
     APO_s = APO.replace('plus',s)
     
     for helXsec in [False,True] :
+        if helXsec : APO_s = '' #we do not regularize helXsec, but Ai
 
         p=plotter(helXsec=helXsec)
         p.AngCoeffPlots(inputFile=INPUT_s, fitFile=FITFILE_s, uncorrelate=UNCORR,suff=SUFFL[0],aposteriori=APO_s,toy=TOY,impact=IMPACT)

@@ -23,8 +23,8 @@ cores = args.cores
 
 CTFmodifier = ''
 if impact :     CTFmodifier+= ' --doImpacts '
-# if postfit :    CTFmodifier+= ' --saveHists --computeHistErrors'
-if postfit :    CTFmodifier+= ' --saveHists'
+if postfit :    CTFmodifier+= ' --saveHists --computeHistErrors'
+# if postfit :    CTFmodifier+= ' --saveHists'
 if regularize : CTFmodifier+= ' --doRegularization '
 if regularize : CTFmodifier+= ' --regularizationTau='+tau
 
@@ -51,6 +51,10 @@ for charge in charges:
     
     #WITH PARAMS
     combinetf = 'combinetf.py --allowNegativePOI --binByBinStat -t {} {}.pkl.hdf5 -o fit_{}.root {} --nThreads {} --correlateXsecStat'.format(toy, f.channel, f.channel, CTFmodifier,cores)
+    # combinetf = 'combinetf.py --allowNegativePOI --binByBinStat -t {} {}.pkl.hdf5 -o fit_{}.root {} --nThreads {} --correlateXsecStat --yieldProtectionCutoff 1'.format(toy, f.channel, f.channel, CTFmodifier,cores)
+    # combinetf = 'combinetf.py --allowNegativePOI -t {} {}.pkl.hdf5 -o fit_{}.root {} --nThreads {}'.format(toy, f.channel, f.channel, CTFmodifier,cores)
+    # combinetf = 'combinetf.py --binByBinStat -t {} {}.pkl.hdf5 -o fit_{}.root {} --nThreads {} --correlateXsecStat'.format(toy, f.channel, f.channel, CTFmodifier,cores)
+    # combinetf = 'combinetf.py --binByBinStat -t {} {}.pkl.hdf5 -o fit_{}.root {} --nThreads {} --correlateXsecStat'.format(toy, f.channel, f.channel, CTFmodifier,cores)
     # combinetf = 'combinetf.py --allowNegativePOI -t {} {}.pkl.hdf5 -o fit_{}.root {} --nThreads {}'.format(toy, f.channel, f.channel, CTFmodifier,cores)
     # combinetf = 'combinetf.py -t {} {}.pkl.hdf5 -o fit_{}.root {} --nThreads {}'.format(toy, f.channel, f.channel, CTFmodifier,cores)
     # combinetf = 'combinetf.py --allowNegativePOI --binByBinStat -t {} {}.pkl.hdf5 -o fit_{}.root {} --nThreads {}'.format(toy, f.channel, f.channel, CTFmodifier,cores)

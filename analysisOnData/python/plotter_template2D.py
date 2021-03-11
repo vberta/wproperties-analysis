@@ -264,7 +264,7 @@ class plotter:
             self.symmetriseSyst(sample)
             # self.symmetriseSyst_shift(sample)
             self.uncorrelateEff(sample)
-            self.alphaVariations(sample)
+            # self.alphaVariations(sample)
             for syst, hlist in self.histoDict[sample].items():
                 #fout.mkdir(syst)
                 #fout.cd(syst)

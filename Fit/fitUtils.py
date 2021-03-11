@@ -253,20 +253,14 @@ class fitUtils:
                          'jme': set(['jesTotal', 'unclustEn']),
                          'PrefireWeight':['PrefireWeight'],
                           'CMSlumi' :['CMSlumi','lumi'],
-                        #   "DYxsec" :["DYxsec"],
-                        #   "Topxsec" :["Topxsec"],
-                        #   "Dibosonxsec" :["Dibosonxsec"],
-                        #   "Tauxsec" :["Tauxsec"],
                           "ewkXsec" : set(["Topxsec","Dibosonxsec","Tauxsec"]),
                           "LeptonVeto" : ["LeptonVeto"],
-                        #   "FakeLumi" :['lumi'],
-                        #   "LHEScaleWeight" : set(["LHEScaleWeight_muR0p5_muF0p5", "LHEScaleWeight_muR0p5_muF1p0","LHEScaleWeight_muR1p0_muF0p5","LHEScaleWeight_muR1p0_muF2p0","LHEScaleWeight_muR2p0_muF1p0","LHEScaleWeight_muR2p0_muF2p0"]),
                           "WQT" : set(["LHEScaleWeight_muR0p5_muF0p5_WQTlow", "LHEScaleWeight_muR0p5_muF1p0_WQTlow","LHEScaleWeight_muR1p0_muF0p5_WQTlow","LHEScaleWeight_muR1p0_muF2p0_WQTlow","LHEScaleWeight_muR2p0_muF1p0_WQTlow","LHEScaleWeight_muR2p0_muF2p0_WQTlow", 
                                 "LHEScaleWeight_muR0p5_muF0p5_WQTmid", "LHEScaleWeight_muR0p5_muF1p0_WQTmid","LHEScaleWeight_muR1p0_muF0p5_WQTmid","LHEScaleWeight_muR1p0_muF2p0_WQTmid","LHEScaleWeight_muR2p0_muF1p0_WQTmid","LHEScaleWeight_muR2p0_muF2p0_WQTmid", 
                                 "LHEScaleWeight_muR0p5_muF0p5_WQThigh", "LHEScaleWeight_muR0p5_muF1p0_WQThigh","LHEScaleWeight_muR1p0_muF0p5_WQThigh","LHEScaleWeight_muR1p0_muF2p0_WQThigh","LHEScaleWeight_muR2p0_muF1p0_WQThigh","LHEScaleWeight_muR2p0_muF2p0_WQThigh",
                                 "LHEScaleWeight_muR0p5_muF0p5", "LHEScaleWeight_muR0p5_muF1p0","LHEScaleWeight_muR1p0_muF0p5","LHEScaleWeight_muR1p0_muF2p0","LHEScaleWeight_muR2p0_muF1p0","LHEScaleWeight_muR2p0_muF2p0"]),
-                        #   'ptScale': set(["Eta{}zptsyst".format(j) for j in range(1, 5)] + ["Eta{}Ewksyst".format(j) for j in range(1, 5)] + ["Eta{}deltaMsyst".format(j) for j in range(1, 5)]+["Eta{}stateig{}".format(j, i) for i in range(0, 99) for j in range(1, 5)]),
                           'ptScale':set(["corrected","corrected"]), 
+                          'QCDnorm' : set(['QCDnorm'])
                          }  # <type 'dict'>
         
         self.DC.shapeMap = 	{self.channel: {'*': [self.channel+'.root', '$PROCESS', '$PROCESS_$SYSTEMATIC']},\
@@ -300,7 +294,7 @@ class fitUtils:
             for i in range(1, self.nBinsQt+1):
                 testnames.append("qt_{}_helmeta_A{}".format(i, j))
 
-            pts = [2., 6., 10., 14., 18., 22., 26., 30.]
+            pts = [1., 3., 5., 7., 9., 11., 14., 19., 27.]
 
 
             #self.poly1DRegGroups["poly1dqtA{}".format(j)] = {"names": testnames, "bincenters": pts, "firstorder": 1, "lastorder": 3}
@@ -322,7 +316,7 @@ class fitUtils:
             for i in range(1, self.nBinsQt+1):
                 testnames.append("qt_{}_helmeta_A{}".format(i, j))
 
-            pts = [2., 6., 10., 14., 18., 22., 26., 30.]
+            pts = [1., 3., 5., 7., 9., 11., 14., 19., 27.]
 
 
             #self.poly1DRegGroups["poly1dqtA{}".format(j)] = {"names": testnames, "bincenters": pts, "firstorder": 1, "lastorder": 3}
@@ -331,20 +325,103 @@ class fitUtils:
         for i in range(1, self.nBinsQt+1):
             testnames.append("qt_{}_helmeta_A4".format(i))
 
-        pts = [2., 6., 10., 14., 18., 22., 26., 30.]
+        pts = [1., 3., 5., 7., 9., 11., 14., 19., 27.]
 
         #self.poly1DRegGroups["poly1dqtA4"] = {"names": testnames, "bincenters": pts, "firstorder": 0, "lastorder": 3}
+
+        ################################################################################################        
+        # self.DC.poly1DRegGroups = self.poly1DRegGroups
+
+        # #etas = np.array([0.2/2.4, 0.6/2.4, 1.0/2.4, 1.4/2.4, 1.8/2.4, 2.2/2.4])
+        # #pts = np.array([2./32., 6./32., 10./32., 14./32., 18./32., 22./32., 26./32., 30./32.])
+        # etas = np.array([0.2, 0.6, 1.0, 1.4, 1.8, 2.2])
+        # # etas = np.array([0.2, 0.6, 1.0, 1.4, 1.8, 2.2])
+        # pts = np.array([1., 3., 5., 7., 9., 11., 14., 19., 27.])
+
+        # #etas = etas/2.4
+        # #pts = pts/32.
+
+        # testnames = []
+        # bincenters = []
+        # for i in range(self.nBinsY):
+        #     for j in range(self.nBinsQt):
+        #         testnames.append("y_%i_qt_%i_A4" % (i+1, j+1))
+        #         bincenters.append([etas[i], pts[j]])
+
+        # self.poly2DRegGroups["poly2dA4"] = {"names": testnames, "bincenters": bincenters, "firstorder": (1, 0), "lastorder": (3, 4), "fullorder": (5, 7)}
+
+        # coeff = [1, 3]
+        # for c in coeff:
+        #     testnames = []
+        #     for i in range(self.nBinsY):
+        #         for j in range(self.nBinsQt):
+        #             testnames.append("y_%i_qt_%i_A%i" % (i+1, j+1,c))
+
+        # self.poly2DRegGroups["poly2dA%i"%c] = {"names": testnames, "bincenters": bincenters, "firstorder": (1, 1), "lastorder": (3, 4), "fullorder": (5, 7)}
+        
+        # coeff = [0, 2]
+        # for c in coeff:
+        #     testnames = []
+        #     for i in range(self.nBinsY):
+        #         for j in range(self.nBinsQt):
+        #             testnames.append("y_%i_qt_%i_A%i" % (i+1, j+1, c))
+
+        # self.poly2DRegGroups["poly2dA%i" % c] = {"names": testnames, "bincenters": bincenters, "firstorder": (0, 1), "lastorder": (3, 4), "fullorder": (5, 7)}
+        
+        # self.DC.poly2DRegGroups = self.poly2DRegGroups
+        # filehandler = open('{}.pkl'.format(self.channel), 'w')
+        # pickle.dump(self.DC, filehandler)
+        ################################################################################################        
+
+        
+        
+        
         
         self.DC.poly1DRegGroups = self.poly1DRegGroups
-
-        #etas = np.array([0.2/2.4, 0.6/2.4, 1.0/2.4, 1.4/2.4, 1.8/2.4, 2.2/2.4])
-        #pts = np.array([2./32., 6./32., 10./32., 14./32., 18./32., 22./32., 26./32., 30./32.])
         etas = np.array([0.2, 0.6, 1.0, 1.4, 1.8, 2.2])
-        # etas = np.array([0.2, 0.6, 1.0, 1.4, 1.8, 2.2])
         pts = np.array([1., 3., 5., 7., 9., 11., 14., 19., 27.])
+        
+        
+        testnames = []
+        bincenters = []
+        for i in range(self.nBinsY):
+            for j in range(self.nBinsQt):
+                testnames.append("y_%i_qt_%i_A0" % (i+1, j+1))
+                bincenters.append([etas[i], pts[j]])
 
-        #etas = etas/2.4
-        #pts = pts/32.
+        self.poly2DRegGroups["poly2dA0"] = {"names": testnames, "bincenters": bincenters, "firstorder": (0, 1), "lastorder": (3, 4), "fullorder": (5, 8)}
+        # self.poly2DRegGroups["poly2dA0"] = {"names": testnames, "bincenters": bincenters, "firstorder": (0, 1), "lastorder": (3, 4), "fullorder": (5, 8)} #full=max number of pars=nbins-1
+        
+        
+        testnames = []
+        bincenters = []
+        for i in range(self.nBinsY):
+            for j in range(self.nBinsQt):
+                testnames.append("y_%i_qt_%i_A1" % (i+1, j+1))
+                bincenters.append([etas[i], pts[j]])
+
+        self.poly2DRegGroups["poly2dA1"] = {"names": testnames, "bincenters": bincenters, "firstorder": (1, 1), "lastorder": (4, 4), "fullorder": (5, 8)} 
+        # self.poly2DRegGroups["poly2dA1"] = {"names": testnames, "bincenters": bincenters, "firstorder": (0, 1), "lastorder": (3, 4), "fullorder": (5, 8)} 
+        
+        testnames = []
+        bincenters = []
+        for i in range(self.nBinsY):
+            for j in range(self.nBinsQt):
+                testnames.append("y_%i_qt_%i_A2" % (i+1, j+1))
+                bincenters.append([etas[i], pts[j]])
+
+        self.poly2DRegGroups["poly2dA2"] = {"names": testnames, "bincenters": bincenters, "firstorder": (0, 1), "lastorder": (3, 5), "fullorder": (5, 8)} 
+        # self.poly2DRegGroups["poly2dA2"] = {"names": testnames, "bincenters": bincenters, "firstorder": (0, 1), "lastorder": (3, 4), "fullorder": (5, 8)} 
+        
+        testnames = []
+        bincenters = []
+        for i in range(self.nBinsY):
+            for j in range(self.nBinsQt):
+                testnames.append("y_%i_qt_%i_A3" % (i+1, j+1))
+                bincenters.append([etas[i], pts[j]])
+
+        self.poly2DRegGroups["poly2dA3"] = {"names": testnames, "bincenters": bincenters, "firstorder": (0, 1), "lastorder": (3, 4), "fullorder": (5, 8)} 
+        # self.poly2DRegGroups["poly2dA3"] = {"names": testnames, "bincenters": bincenters, "firstorder": (0, 1), "lastorder": (3, 4), "fullorder": (5, 8)} 
 
         testnames = []
         bincenters = []
@@ -353,26 +430,9 @@ class fitUtils:
                 testnames.append("y_%i_qt_%i_A4" % (i+1, j+1))
                 bincenters.append([etas[i], pts[j]])
 
-        self.poly2DRegGroups["poly2dA4"] = {"names": testnames, "bincenters": bincenters, "firstorder": (1, 0), "lastorder": (3, 4), "fullorder": (5, 7)}
+        self.poly2DRegGroups["poly2dA4"] = {"names": testnames, "bincenters": bincenters, "firstorder": (1, 0), "lastorder": (4, 5), "fullorder": (5, 8)} 
+        # self.poly2DRegGroups["poly2dA4"] = {"names": testnames, "bincenters": bincenters, "firstorder": (1, 0), "lastorder": (3, 4), "fullorder": (5, 8)} 
 
-        coeff = [1, 3]
-        for c in coeff:
-            testnames = []
-            for i in range(self.nBinsY):
-                for j in range(self.nBinsQt):
-                    testnames.append("y_%i_qt_%i_A%i" % (i+1, j+1,c))
-
-        self.poly2DRegGroups["poly2dA%i"%c] = {"names": testnames, "bincenters": bincenters, "firstorder": (1, 1), "lastorder": (3, 4), "fullorder": (5, 7)}
-        
-        coeff = [0, 2]
-        for c in coeff:
-            testnames = []
-            for i in range(self.nBinsY):
-                for j in range(self.nBinsQt):
-                    testnames.append("y_%i_qt_%i_A%i" % (i+1, j+1, c))
-
-        self.poly2DRegGroups["poly2dA%i" % c] = {"names": testnames, "bincenters": bincenters, "firstorder": (0, 1), "lastorder": (3, 4), "fullorder": (5, 7)}
-        
         self.DC.poly2DRegGroups = self.poly2DRegGroups
         filehandler = open('{}.pkl'.format(self.channel), 'w')
         pickle.dump(self.DC, filehandler)

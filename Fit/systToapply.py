@@ -109,12 +109,6 @@ systematicsDict = {
        "type": "shape",
        "weight" : 1.
     },
-        #"ptScale" : {
-    #    "vars": ["Eta{}zptsyst".format(j) for j in range(1, 5)] + ["Eta{}Ewksyst".format(j) for j in range(1, 5)] + ["Eta{}deltaMsyst".format(j) for j in range(1, 5)]+["Eta{}stateig{}".format(j, i) for i in range(0, 99) for j in range(1, 5)],
-    #    "procs": ["Signal"],
-    #    "type": "shape"
-    #},
-    
    "ptScale" : {
        "vars": ["corrected"],
        "procs": ["Signal", "DYJets","DiBoson","Top","Fake","WtoTau","LowAcc"],
@@ -134,6 +128,11 @@ systematicsDict = {
        "procs": ["Fake"],
        "type": "shape",
        "weight" : 1.
-       #1.05 
+    },
+     "QCDnorm":{
+       "vars":["QCDnorm"],
+       "procs": ["Fake"],
+       "type": "lnN",
+       "weight" : 1.1
     },
 }
