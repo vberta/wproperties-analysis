@@ -42,7 +42,8 @@ RNode templateBuilder::run(RNode d)
 RNode templateBuilder::bookNominalhistos(RNode d)
 //books nominal histos (=nominal + mass variations)
 {    
-  auto cut = [](float pt, float y) { return pt < 32. && y < 2.4; };
+  // auto cut = [](float pt, float y) { return pt < 32. && y < 2.4; };
+  auto cut = [](float pt, float y) { return pt < 80. && y < 2.4; };
 
   // auto d1 = d.Filter(cut, {"Wpt_preFSR", "Wrap_preFSR_abs"}, "cut").Define("harmonicsWeightsMass", vecMultiplication, {"massWeights", "harmonicsWeights"});
   auto d1 = d.Filter(cut, {"Wpt_preFSR", "Wrap_preFSR_abs"}, "cut");
@@ -79,7 +80,8 @@ RNode templateBuilder::bookNominalhistos(RNode d)
 
 RNode templateBuilder::bookWeightVariatedhistos(RNode d)
 {
-  auto cut = [](float pt, float y) { return pt < 32. && y < 2.4; };
+  // auto cut = [](float pt, float y) { return pt < 32. && y < 2.4; };
+  auto cut = [](float pt, float y) { return pt < 80. && y < 2.4; };
 
   auto d1 = d.Filter(cut, {"Wpt_preFSR", "Wrap_preFSR_abs"}, "cut").Define("harmonicsWeightsSyst", vecMultiplication, {_syst_weight, "harmonicsWeights"});
 
@@ -109,7 +111,8 @@ RNode templateBuilder::bookWeightVariatedhistos(RNode d)
 
 RNode templateBuilder::bookWeightVariatedhistosVariedCoeff(RNode d)
 {
-  auto cut = [](float pt, float y) { return pt < 32. && y < 2.4; };
+  // auto cut = [](float pt, float y) { return pt < 32. && y < 2.4; };
+  auto cut = [](float pt, float y) { return pt < 80. && y < 2.4; };
 
   auto d1 = d.Filter(cut, {"Wpt_preFSR", "Wrap_preFSR_abs"}, "cut").Define("harmonicsWeightsSyst", vecMultiplicationVariedCoeff, {_syst_weight, "harmonicsWeights"}); //this is the only line different from bookWeightVariatedhistos
   
@@ -141,7 +144,8 @@ RNode templateBuilder::bookWeightVariatedhistosVariedCoeff(RNode d)
 RNode templateBuilder::bookptCorrectedhistos(RNode d)
 
 {
-  auto cut = [](float pt, float y) { return pt < 32. && y < 2.4; };
+  // auto cut = [](float pt, float y) { return pt < 32. && y < 2.4; };
+  auto cut = [](float pt, float y) { return pt < 80. && y < 2.4; };
 
   auto d1 = d.Filter(cut, {"Wpt_preFSR", "Wrap_preFSR_abs"}, "cut");
   for (unsigned int i = 0; i < _colvarvec.size(); i++)
@@ -175,7 +179,8 @@ RNode templateBuilder::bookptCorrectedhistos(RNode d)
 RNode templateBuilder::bookJMEvarhistos(RNode d)
 
 {
-  auto cut = [](float pt, float y) { return pt < 32. && y < 2.4; };
+  // auto cut = [](float pt, float y) { return pt < 32. && y < 2.4; };
+  auto cut = [](float pt, float y) { return pt < 80. && y < 2.4; };
 
   auto d1 = d.Filter(cut, {"Wpt_preFSR", "Wrap_preFSR_abs"}, "cut");
   for (unsigned int i = 0; i < _colvarvec.size(); i++)

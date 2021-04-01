@@ -46,7 +46,7 @@ np.set_printoptions(linewidth=np.inf,precision=1)
 parser = argparse.ArgumentParser("")
 
 parser.add_argument('-o','--output', type=str, default='quantileBinBuilder',help="name of the output file")
-parser.add_argument('-i','--input', type=str, default='../GenInfo_backup/genInfo_fine4quantiles.root',help="name of the fit result root file, after plotter_fitResult")
+parser.add_argument('-i','--input', type=str, default='../TEST_GenInfo_backup/genInfo_fine4quantiles.root',help="name of the fit result root file, after plotter_fitResult")
 parser.add_argument('-y','--ycut', type=int, default=True,help="cut at Y= Y acceptance (2.4)")
 parser.add_argument('-q','--qtcut', type=int, default=True,help="cut at qt= qt acceptance (32 GeV)")
 parser.add_argument('-ny','--ny', type=int, default=6,help="number of y quantiles")
@@ -72,7 +72,9 @@ binYcut=-1
 binQtcut=-1
 
 if YCUT : binYcut = h2['Plus'].GetXaxis().FindBin(2.39)
-if QTCUT : binQtcut = h2['Plus'].GetYaxis().FindBin(31.99)
+# if QTCUT : binQtcut = h2['Plus'].GetYaxis().FindBin(31.99)
+# if YCUT : binYcut = h2['Plus'].GetXaxis().FindBin(2.79)
+if QTCUT : binQtcut = h2['Plus'].GetYaxis().FindBin(79.99)
 
 print("binYcut=",binYcut, "  binQtcut=",binQtcut)
 h1 = {}

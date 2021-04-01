@@ -34,21 +34,21 @@ class plotter:
                 
         self.sampleDict = {
             "WToMu"      :  ['WToMu_plots.root',        dirMC,         ROOT.kRed+2,       "W^{+}#rightarrow #mu^{+}#nu_{#mu}"],         
-            "DYJets"      : ['DYJets_plots.root',       dirMC,         ROOT.kAzure+2,     "DYJets"],              
+            "DYJets"      : ['DYJets_plots.root',       dirMC,         ROOT.kAzure+2,     "Drell-Yan"],              
             "WtoTau"      : ['WToTau_plots.root',       dirMC,         ROOT.kSpring+9,    "W^{#pm}#rightarrow #tau^{#pm}#nu_{#tau}"],   
             "Top"       : ['Top_plots.root',            dirMC,         ROOT.kGreen+3,     "Top"],    
-            "DiBoson"     : ['Diboson_plots.root',      dirMC,         ROOT.kViolet+2,    "di-boson"],     
+            "DiBoson"     : ['Diboson_plots.root',      dirMC,         ROOT.kViolet+2,    "Diboson"],     
             "SIGNAL_Fake" : ['FakeFromData_plots.root', dirFakes,      ROOT.kGray,        "QCD"],     
             "Data"        : ['Data_plots.root',         dirMC,         1,                 "Data"]
             }    
         
         self.variableDict = {
-            "Mu1_pt_plus"   :  ["Mu1_pt",   "p_{T} (#mu^{+})",    "dN/dp_{T} [GeV^{-1}]", " [GeV]"],
-            "Mu1_pt_minus"  :  ["Mu1_pt",   "p_{T} (#mu^{-})",    "dN/dp_{T} [GeV^{-1}]", " [GeV]"],
-            "Mu1_eta_plus"  :  ["Mu1_eta",  "#eta (#mu^{+})",     "dN/d#eta", ""],
-            "Mu1_eta_minus" :  ["Mu1_eta",  "#eta (#mu^{-})",     "dN/d#eta", ""],
-            "MT_plus"       :  ["MT",       "M_{T} (#mu^{+})",    "dN/dm_{T} [GeV^{-1}]", " [GeV]"],      
-            "MT_minus"      :  ["MT",       "M_{T} (#mu^{-})",    "dN/dm_{T} [GeV^{-1}]", " [GeV]"],      
+            "Mu1_pt_plus"   :  ["Mu1_pt",   "p_{T}^{#mu} distribution, W^{+}",    "dN/dp_{T}^{#mu} [GeV^{-1}]", "p_{T}^{#mu} [GeV]"],
+            "Mu1_pt_minus"  :  ["Mu1_pt",   "p_{T}^{#mu} distribution, W^{-}",    "dN/dp_{T} [GeV^{-1}]", "p_{T}^{#mu} [GeV]"],
+            "Mu1_eta_plus"  :  ["Mu1_eta",  "#eta distribution, W^{+}",            "dN/d#eta", "#eta^{#mu}"],
+            "Mu1_eta_minus" :  ["Mu1_eta",  "#eta distribution, W^{-}",            "dN/d#eta", "#eta^{#mu}"],
+            "MT_plus"       :  ["MT",       "m_{T} distribution, W^{+}",           "dN/dm_{T} [GeV^{-1}]", "m_{T} [GeV]"],      
+            "MT_minus"      :  ["MT",       "m_{T} distribution, W^{-}",           "dN/dm_{T} [GeV^{-1}]", "m_{T} [GeV]"],      
         }
         
         self.signDict = {
@@ -312,7 +312,10 @@ class plotter:
             pad_ratio.cd()
             pad_ratio.SetGridx()
             pad_ratio.SetGridy()
-            hRatioBand.Draw('E3')
+            if 'MT' in var :
+                hRatioBand.Draw('E2')
+            else :
+                hRatioBand.Draw('E3')
             hRatio.Draw("PE1SAME")
             
             #aesthetic features
@@ -324,7 +327,7 @@ class plotter:
             hStack.SetMaximum(1.7*max(hData.GetMaximum(),hStack.GetMaximum())) 
             hStack.GetYaxis().SetTitle(varInfo[2])
             hStack.GetYaxis().SetTitleOffset(1.3)
-            hStack.GetXaxis().SetTitle(varInfo[1]+varInfo[3])
+            hStack.GetXaxis().SetTitle(varInfo[3])
             hStack.GetXaxis().SetTitleOffset(3)
             hStack.GetXaxis().SetLabelOffset(3)
             
@@ -345,7 +348,7 @@ class plotter:
             hRatioBand.GetYaxis().SetNdivisions(506)
             hRatioBand.SetTitleSize(0.15,'y')
             hRatioBand.SetLabelSize(0.12,'y')
-            hRatioBand.GetXaxis().SetTitle(varInfo[1]+varInfo[3])
+            hRatioBand.GetXaxis().SetTitle(varInfo[3])
             hRatioBand.GetXaxis().SetTitleOffset(0.8)
             hRatioBand.SetTitleSize(0.18,'x')
             hRatioBand.SetLabelSize(0.15,'x')
@@ -427,7 +430,7 @@ class plotter:
             hdict[''].Draw("same E2")# same 0P5
             hdict[''].SetTitle(varInfo[1]+', systematic breakdown')
             hdict[''].GetYaxis().SetTitle('Syst/Nom')
-            hdict[''].GetXaxis().SetTitle(varInfo[1]+varInfo[3])
+            hdict[''].GetXaxis().SetTitle(varInfo[3])
             if 'MT' in var :
                 hdict[''].GetYaxis().SetRangeUser(0.8,1.3)
             else :
@@ -556,7 +559,7 @@ class plotter:
             else :
                 hdict['Nominal'].SetTitle(varInfo[1]+', systematics breakdown (QCD syst only)')
             hdict['Nominal'].GetYaxis().SetTitle('|Var-Nom| / Nom')
-            hdict['Nominal'].GetXaxis().SetTitle(varInfo[1]+varInfo[3])
+            hdict['Nominal'].GetXaxis().SetTitle(varInfo[3])
             # if 'MT' in var :
             hdict['Nominal'].GetYaxis().SetRangeUser(0.0001,1)
             hdict['Nominal'].SetFillColor(1)

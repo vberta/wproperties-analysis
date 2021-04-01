@@ -76,16 +76,19 @@ class bkg_analyzer:
         minuit.SetFCN(linearChi2)
         arglist = array('d',2*[0])
         arglist[0] =1.0
+        # arglist[1] =1.0
         ierflg = ctypes.c_int(0)
-        # minuit.SetPrintLevel(-1)
-        minuit.SetPrintLevel(0)
+        minuit.SetPrintLevel(-1)
+        # minuit.SetPrintLevel(0)
         minuit.mnexcm("SET ERR",arglist,1,ierflg)
         minuit.mnparm(0, 'offset',q0,p0Err,-1,1,ierflg)
         minuit.mnparm(1, 'slope',p0,q0Err,-0.3,0.3,ierflg)          
         arglist[0] = 500000 #call limit
-        # arglist[1] = 0.01 #tolerance
+        arglist[1] = 0.01 #tolerance
         minuit.mnexcm("MIGRAD", arglist, 2,ierflg)
         # minuit.mnexcm("SEEk", arglist, 2,ierflg)
+        # minuit.mnexcm("MINOS", arglist, 1,ierflg)
+        # minuit.mnexcm("HESSE", arglist, 0,ierflg)
 
 
         out_cov = ROOT.TMatrixDSym(2)
@@ -120,7 +123,11 @@ class bkg_analyzer:
         #     vec = yy-(par0+par1*(xx-25))#SLOPEOFFSETUNCORR
         #     chi2 = np.linalg.multi_dot( [vec.T, invCov, vec] )
         #     return chi2
-        # print(s,e, chi2min, debugChi2(outdict[s+e+'offset'+'Minuit'],outdict[s+e+'slope'+'Minuit']), "ndf=",ndf)
+        # def debugChi2NoCor(par0,par1):
+        #     vec = yy-(par0+par1*(xx-25))#SLOPEOFFSETUNCORR
+        #     chi2 = np.linalg.multi_dot( [vec.T, vec] )
+        #     return chi2
+        # print("noCor", s,e, chi2min.value, debugChi2NoCor(outdict[s+e+'offset'+'Minuit'],outdict[s+e+'slope'+'Minuit']), "ndf=",ndf)
         
         outdict[s+e+'chi2red'+'Minuit'] = float(chi2min.value)/ndf
         outdict[s+e+'chi2red'+'Minuit'+'Err'] = math.sqrt(2*ndf)/ndf
@@ -129,8 +136,9 @@ class bkg_analyzer:
 
     def correlatedFitter(self, fakedict) :
        
-        DONT_REBIN = False
-        print("note: correlated fit rebin active")
+        DONT_REBIN = True
+        if not DONT_REBIN :
+            print("note: correlated fit rebin active")
 
         #load the histos
         file_dict = {}
@@ -151,7 +159,7 @@ class bkg_analyzer:
         bin4corFitS = ['{:.2g}'.format(x) for x in bin4corFit[:-1]]
 
         for sKind, sList in systDict.items():
-            if 'LHE' in sKind or 'alphaS' in sKind  or 'XSec' in sKind or 'mass' in sKind: continue #Theory uncertainity  and flat unc. skipped in the correlated fit #or 'lumi' in sKind
+            # if 'LHE' in sKind or 'alphaS' in sKind  or 'XSec' in sKind or 'mass' in sKind: continue #Theory uncertainity  and flat unc. skipped in the correlated fit #or 'lumi' in sKind
             print(self.systName, "used in CF", sKind)
             for sName in sList :
                 systList.append(sName)
@@ -167,10 +175,10 @@ class bkg_analyzer:
                                 valueBinRebinned = histo_fake_dict[sName+s+e].GetBinContent(r)
                                 valueBinRebinnedErr = histo_fake_dict[sName+s+e].GetBinError(r) 
                             elif r<binChange :
-                                # valueBinRebinned = (histo_fake_dict[sName+s+e].GetBinContent(2*r)+histo_fake_dict[sName+s+e].GetBinContent(2*r-1))/2
-                                # valueBinRebinnedErr = (histo_fake_dict[sName+s+e].GetBinError(2*r)+histo_fake_dict[sName+s+e].GetBinError(2*r-1))/2
-                                valueBinRebinned = (histo_fake_dict[sName+s+e].GetBinContent(4*r)+histo_fake_dict[sName+s+e].GetBinContent(4*r-1)+histo_fake_dict[sName+s+e].GetBinContent(4*r-2)+histo_fake_dict[sName+s+e].GetBinContent(4*r-3))/4
-                                valueBinRebinnedErr = (histo_fake_dict[sName+s+e].GetBinError(4*r)+histo_fake_dict[sName+s+e].GetBinError(4*r-1)+histo_fake_dict[sName+s+e].GetBinError(4*r-2)+histo_fake_dict[sName+s+e].GetBinError(4*r-3))/4
+                                valueBinRebinned = (histo_fake_dict[sName+s+e].GetBinContent(2*r)+histo_fake_dict[sName+s+e].GetBinContent(2*r-1))/2
+                                valueBinRebinnedErr = (math.sqrt(histo_fake_dict[sName+s+e].GetBinError(2*r)**2+histo_fake_dict[sName+s+e].GetBinError(2*r-1)**2))/2
+                                # valueBinRebinned = (histo_fake_dict[sName+s+e].GetBinContent(4*r)+histo_fake_dict[sName+s+e].GetBinContent(4*r-1)+histo_fake_dict[sName+s+e].GetBinContent(4*r-2)+histo_fake_dict[sName+s+e].GetBinContent(4*r-3))/4
+                                # valueBinRebinnedErr = (math.sqrt(histo_fake_dict[sName+s+e].GetBinError(4*r)**2+histo_fake_dict[sName+s+e].GetBinError(4*r-1)**2+histo_fake_dict[sName+s+e].GetBinError(4*r-2)**2+histo_fake_dict[sName+s+e].GetBinError(4*r-3)**2))/4
                                 # valueBinRebinned = (histo_fake_dict[sName+s+e].GetBinContent(3*r)+histo_fake_dict[sName+s+e].GetBinContent(3*r-1)+histo_fake_dict[sName+s+e].GetBinContent(3*r-2))/3
                                 # valueBinRebinnedErr = (histo_fake_dict[sName+s+e].GetBinError(3*r)+histo_fake_dict[sName+s+e].GetBinError(3*r-1)+histo_fake_dict[sName+s+e].GetBinError(3*r-2))/3
                             else :
@@ -196,10 +204,10 @@ class bkg_analyzer:
                         valueBinRebinned = histo_fake_dict[sName+s+e].GetBinContent(r)
                         valueBinRebinnedErr = histo_fake_dict[sName+s+e].GetBinError(r) 
                     elif r<binChange :
-                        # valueBinRebinned = (histo_fake_dict[sName+s+e].GetBinContent(2*r)+histo_fake_dict[sName+s+e].GetBinContent(2*r-1))/2
-                        # valueBinRebinnedErr = (histo_fake_dict[sName+s+e].GetBinError(2*r)+histo_fake_dict[sName+s+e].GetBinError(2*r-1))/2
-                        valueBinRebinned = (histo_fake_dict[sName+s+e].GetBinContent(4*r)+histo_fake_dict[sName+s+e].GetBinContent(4*r-1)+histo_fake_dict[sName+s+e].GetBinContent(4*r-2)+histo_fake_dict[sName+s+e].GetBinContent(4*r-3))/4
-                        valueBinRebinnedErr = (histo_fake_dict[sName+s+e].GetBinError(4*r)+histo_fake_dict[sName+s+e].GetBinError(4*r-1)+histo_fake_dict[sName+s+e].GetBinError(4*r-2)+histo_fake_dict[sName+s+e].GetBinError(4*r-3))/4
+                        valueBinRebinned = (histo_fake_dict[sName+s+e].GetBinContent(2*r)+histo_fake_dict[sName+s+e].GetBinContent(2*r-1))/2
+                        valueBinRebinnedErr = (math.sqrt(histo_fake_dict[sName+s+e].GetBinError(2*r)**2+histo_fake_dict[sName+s+e].GetBinError(2*r-1)**2))/2
+                        # valueBinRebinned = (histo_fake_dict[sName+s+e].GetBinContent(4*r)+histo_fake_dict[sName+s+e].GetBinContent(4*r-1)+histo_fake_dict[sName+s+e].GetBinContent(4*r-2)+histo_fake_dict[sName+s+e].GetBinContent(4*r-3))/4
+                        # valueBinRebinnedErr = (math.sqrt(histo_fake_dict[sName+s+e].GetBinError(4*r)**2+histo_fake_dict[sName+s+e].GetBinError(4*r-1)**2+histo_fake_dict[sName+s+e].GetBinError(4*r-2)**2+histo_fake_dict[sName+s+e].GetBinError(4*r-3)**2))/4
                         # valueBinRebinned = (histo_fake_dict[sName+s+e].GetBinContent(3*r)+histo_fake_dict[sName+s+e].GetBinContent(3*r-1)+histo_fake_dict[sName+s+e].GetBinContent(3*r-2))/3
                         # valueBinRebinnedErr = (histo_fake_dict[sName+s+e].GetBinError(3*r)+histo_fake_dict[sName+s+e].GetBinError(3*r-1)+histo_fake_dict[sName+s+e].GetBinError(3*r-2))/3
                     else :
@@ -216,12 +224,14 @@ class bkg_analyzer:
         correlatedFitterDict = {}
         for s in self.signList :
             for e in self.etaBinningS :
+                # print(s,"eta",e)
                 np.set_printoptions(threshold=np.inf)
 
                 dimFit = len(bin4corFitS)
                 xx_ = np.zeros(dimFit)
                 yy_ = np.zeros(dimFit)
                 cov_ = np.zeros(( len(systList)+1,dimFit,dimFit))
+                # cov_DIAG = np.zeros(( len(systList)+1,dimFit,dimFit))
 
                 #debug lines -----------------------
                 # covdict = {}
@@ -237,7 +247,11 @@ class bkg_analyzer:
                         valueBinRebinnedErr = fakedict[s+e].GetBinError(r) 
                     elif r<binChange :
                         valueBinRebinned = (fakedict[s+e].GetBinContent(2*r)+fakedict[s+e].GetBinContent(2*r-1))/2
-                        valueBinRebinnedErr = (fakedict[s+e].GetBinError(2*r)+fakedict[s+e].GetBinError(2*r-1))/2
+                        valueBinRebinnedErr = (math.sqrt(fakedict[s+e].GetBinError(2*r)**2+fakedict[s+e].GetBinError(2*r-1)**2))/2
+                        # valueBinRebinned = (histo_fake_dict[sName+s+e].GetBinContent(4*r)+histo_fake_dict[sName+s+e].GetBinContent(4*r-1)+histo_fake_dict[sName+s+e].GetBinContent(4*r-2)+histo_fake_dict[sName+s+e].GetBinContent(4*r-3))/4
+                        # valueBinRebinnedErr = (math.sqrt(histo_fake_dict[sName+s+e].GetBinError(4*r)**2+histo_fake_dict[sName+s+e].GetBinError(4*r-1)**2+histo_fake_dict[sName+s+e].GetBinError(4*r-2)**2+histo_fake_dict[sName+s+e].GetBinError(4*r-3)**2))/4
+
+
                     else :
                         valueBinRebinned = (fakedict[s+e].GetBinContent(3*r-binChange)+fakedict[s+e].GetBinContent(3*r-binChange-1)+fakedict[s+e].GetBinContent(3*r-binChange-2))/3 #the not-simplified value of the bin number is: 2*N+3*(r-N), -1, -2.
                         valueBinRebinnedErr = (fakedict[s+e].GetBinError(3*r-binChange)+fakedict[s+e].GetBinError(3*r-binChange-1)+fakedict[s+e].GetBinError(3*r-binChange-2))/3 #the not-simplified value of the bin number is: 2*N+3*(r-N), -1, -2.
@@ -249,17 +263,26 @@ class bkg_analyzer:
 
                     xx_[pp] = histo_fake_dict['current'+s+e+'reb'].GetBinCenter(pp+1)
                     yy_[pp] = histo_fake_dict['current'+s+e+'reb'].GetBinContent(pp+1)
-
+                
+                #to divide per number of syst ####################################################
+                # effective_systLen = 0 #number of syst variations (module up/down)
+                # for syst in range(len(systList)) : 
+                #     if 'Up' in systList[syst] or  'LHE' in systList[syst]:
+                #         effective_systLen+=1 
+                ####################################################
+                
                 for pp in range(xx_.size) : #separate loop because needed xx,yy fully filled
                     for p2 in range(yy_.size) :
                         for syst in range(len(systList)+1) :
                             if pp==p2 and syst==len(systList):
-
                                 erv = histo_fake_dict['nom'+s+e+'reb'].GetBinError(pp+1)**2
                                 cov_[syst][pp][p2] = erv
                                 # covdict['nom'][pp][p2] = erv
                             elif syst<len(systList):
+                                # if pp > xx_.size-5 or p2 > yy_.size-5 : continue #protection against high-fluctuations at high pt (due to EWK high subtraction --> coherent in all syst)
+                                # if pp==p2 : continue 
                                 # if 'Up' in systList[syst] or  systList[syst] in self.LHEdict['Up']:#do not use down syst, will be symmetrized with up later
+                                
                                 if 'Up' in systList[syst] or  'LHE' in systList[syst]:#do not use down syst, will be symmetrized with up later
                                         systUp =systList[syst]
                                         if 'Up' in systUp :
@@ -267,32 +290,88 @@ class bkg_analyzer:
                                         # else :
                                         #     for ilhe in range(len(self.LHEdict['Up'])) :
                                         #         if systUp == self.LHEdict['Up'][ilhe] :
-                                        #                 systDown = self.LHEdict['Down'][ilhe]   
+                                        #                 systDown = self.LHEdict['Down'][ilhe]  
+                                            
+                                            #a la combine
+                                            # deltaPP = (histo_fake_dict[systUp+s+e+'reb'].GetBinContent(pp+1)-histo_fake_dict[systDown+s+e+'reb'].GetBinContent(pp+1))/2
+                                            # deltaP2 = (histo_fake_dict[systUp+s+e+'reb'].GetBinContent(p2+1)-histo_fake_dict[systDown+s+e+'reb'].GetBinContent(p2+1))/2
 
                                             deltaPP = (abs(histo_fake_dict['nom'+s+e+'reb'].GetBinContent(pp+1)-histo_fake_dict[systUp+s+e+'reb'].GetBinContent(pp+1))+ abs(histo_fake_dict['nom'+s+e+'reb'].GetBinContent(pp+1)-histo_fake_dict[systDown+s+e+'reb'].GetBinContent(pp+1)))/2
                                             deltaP2 = (abs(histo_fake_dict['nom'+s+e+'reb'].GetBinContent(p2+1)-histo_fake_dict[systUp+s+e+'reb'].GetBinContent(p2+1))+ abs(histo_fake_dict['nom'+s+e+'reb'].GetBinContent(p2+1)-histo_fake_dict[systDown+s+e+'reb'].GetBinContent(p2+1)))/2
-                                        elif 'LHE' in systList[syst] :
-                                            deltaPP = abs(histo_fake_dict['nom'+s+e+'reb'].GetBinContent(pp+1)-histo_fake_dict[systUp+s+e+'reb'].GetBinContent(pp+1))
+                                          
+                                            # deltaPP = (abs(histo_fake_dict['current'+s+e+'reb'].GetBinContent(pp+1)-histo_fake_dict[systUp+s+e+'reb'].GetBinContent(pp+1))+ abs(histo_fake_dict['current'+s+e+'reb'].GetBinContent(pp+1)-histo_fake_dict[systDown+s+e+'reb'].GetBinContent(pp+1)))/2
+                                            # deltaP2 = (abs(histo_fake_dict['current'+s+e+'reb'].GetBinContent(p2+1)-histo_fake_dict[systUp+s+e+'reb'].GetBinContent(p2+1))+ abs(histo_fake_dict['current'+s+e+'reb'].GetBinContent(p2+1)-histo_fake_dict[systDown+s+e+'reb'].GetBinContent(p2+1)))/2
+                                        elif 'LHE' in systList[syst] : #kept as backup, never used (not present in systList[syst])
+                                            
+                                            #a la combine
+                                            # deltaPP = histo_fake_dict['nom'+s+e+'reb'].GetBinContent(pp+1)-histo_fake_dict[systUp+s+e+'reb'].GetBinContent(pp+1)
+                                            # deltaP2 = histo_fake_dict['nom'+s+e+'reb'].GetBinContent(p2+1)-histo_fake_dict[systUp+s+e+'reb'].GetBinContent(p2+1)
+                                            
                                             deltaP2 = abs(histo_fake_dict['nom'+s+e+'reb'].GetBinContent(p2+1)-histo_fake_dict[systUp+s+e+'reb'].GetBinContent(p2+1))
+                                            deltaP2 = abs(histo_fake_dict['nom'+s+e+'reb'].GetBinContent(p2+1)-histo_fake_dict[systUp+s+e+'reb'].GetBinContent(p2+1))
+                                            
+                                            # deltaPP = abs(histo_fake_dict['current'+s+e+'reb'].GetBinContent(pp+1)-histo_fake_dict[systUp+s+e+'reb'].GetBinContent(pp+1))
+                                            # deltaP2 = abs(histo_fake_dict['current'+s+e+'reb'].GetBinContent(p2+1)-histo_fake_dict[systUp+s+e+'reb'].GetBinContent(p2+1))
+                                        else :
+                                            print("strange syst:", systList[syst])
                                         # erv = (histo_fake_dict['nom'+s+e+'reb'].GetBinContent(pp+1)-histo_fake_dict[systList[syst]+s+e].GetBinContent(pp+1))*(histo_fake_dict['nom'+s+e+'reb'].GetBinContent(p2+1)-histo_fake_dict[systList[syst]+s+e].GetBinContent(p2+1))
+                                        
                                         if abs(histo_fake_dict['nom'+s+e+'reb'].GetBinContent(pp+1)-histo_fake_dict[systUp+s+e+'reb'].GetBinContent(pp+1)) > 1e-7 and abs(histo_fake_dict['nom'+s+e+'reb'].GetBinContent(p2+1)-histo_fake_dict[systUp+s+e+'reb'].GetBinContent(p2+1)) > 1e-7 :
                                             signPP = (histo_fake_dict['nom'+s+e+'reb'].GetBinContent(pp+1)-histo_fake_dict[systUp+s+e+'reb'].GetBinContent(pp+1))/abs(histo_fake_dict['nom'+s+e+'reb'].GetBinContent(pp+1)-histo_fake_dict[systUp+s+e+'reb'].GetBinContent(pp+1))#Chosen the UP sign!
                                             signP2 = (histo_fake_dict['nom'+s+e+'reb'].GetBinContent(p2+1)-histo_fake_dict[systUp+s+e+'reb'].GetBinContent(p2+1))/abs(histo_fake_dict['nom'+s+e+'reb'].GetBinContent(p2+1)-histo_fake_dict[systUp+s+e+'reb'].GetBinContent(p2+1))#Chosen the UP sign!
+                                            # print("eta",e,signPP,signP2)
+                                        # if abs(histo_fake_dict['current'+s+e+'reb'].GetBinContent(pp+1)-histo_fake_dict[systUp+s+e+'reb'].GetBinContent(pp+1)) > 1e-7 and abs(histo_fake_dict['current'+s+e+'reb'].GetBinContent(p2+1)-histo_fake_dict[systUp+s+e+'reb'].GetBinContent(p2+1)) > 1e-7 :
+                                        #     signPP = (histo_fake_dict['current'+s+e+'reb'].GetBinContent(pp+1)-histo_fake_dict[systUp+s+e+'reb'].GetBinContent(pp+1))/abs(histo_fake_dict['current'+s+e+'reb'].GetBinContent(pp+1)-histo_fake_dict[systUp+s+e+'reb'].GetBinContent(pp+1))#Chosen the UP sign!
+                                        #     signP2 = (histo_fake_dict['current'+s+e+'reb'].GetBinContent(p2+1)-histo_fake_dict[systUp+s+e+'reb'].GetBinContent(p2+1))/abs(histo_fake_dict['current'+s+e+'reb'].GetBinContent(p2+1)-histo_fake_dict[systUp+s+e+'reb'].GetBinContent(p2+1))#Chosen the UP sign!
                                         else :
                                             # print("WARNING: sign of the element of the matrix set to one, since the shift is zero!", s, e, ", momenta=", pp, p2, "syst=",syst, "of list", systList)
                                             signPP =1
                                             signP2 =1
                                         erv = deltaPP*deltaP2*signPP*signP2
-                                        
-                                        cov_[syst][pp][p2] = erv
+                                        # erv = deltaPP*deltaP2/len(systList)# a la combine
+                                        # erv = deltaPP*deltaP2/(effective_systLen)# a la combine
                                         # covdict[systList[syst]][pp][p2] = erv
-
+                                        # erv = signP2*signPP*deltaPP*deltaP2
+                                        cov_[syst][pp][p2] = erv
+                
+                ####################################################
+                #for correlation matrix
+                # for pp in range(xx_.size) : #separate loop because needed xx,yy fully filled
+                #     for p2 in range(yy_.size) :
+                #         for syst in range(len(systList)+1) :
+                #             # cov_DIAG[syst][pp][p2] = math.sqrt(deltaPP*deltaP2) #math.sqrt(deltaPP**2*deltaP2**2)
+                #             # cov_DIAG[syst][pp][p2] = 1#math.sqrt(cov_[syst][pp][pp]*cov_[syst][p2][p2]) = sqrt( deltaPP*deltaPP
+                #             cov_DIAG[syst][pp][p2] = math.sqrt(cov_[syst][p2][p2]*cov_[syst][pp][pp])
+                ####################################################
+                
                 q0_ = fakedict[s+e+'offset']
                 p0_ = fakedict[s+e+'slope']
                 q0Err_ = fakedict[s+e+'offsetErr']
                 p0Err_ = fakedict[s+e+'slopeErr']
                 cov_proj = cov_.sum(axis=0) #square sum of syst
-
+            
+            
+            
+                #plotter correlation matrix ############################
+                # if s=='Plus': 
+                #     cov_DIAG_proj = cov_DIAG.sum(axis=0)
+                    
+                #     histocov = ROOT.TH2F("histocov",'histocov',15,25,55,15,25,55) 
+                #     for pp in range(0,15) :
+                #         for p2 in range(0,15) :
+                #             histocov.SetBinContent(pp+1,p2+1,cov_proj[pp][p2]/cov_DIAG_proj[pp][p2])
+                #             # histocov.SetBinContent(pp+1,p2+1,cov_DIAG_proj[pp][p2])
+                #             # if e=="-2.3" : print(cov_proj[pp][p2], cov_DIAG_proj[pp][p2])
+                #     ccc = ROOT.TCanvas("c","c",3200,800)
+                #     ccc.cd()
+                #     ROOT.gStyle.SetPaintTextFormat("4.4f")
+                #     histocov.Draw("colztext")
+                #     histocov.SetStats(0)
+                #     ccc.SaveAs('covariance_CF/histocov_plus_'+e+'.png')  
+                ####################################################
+                
+                
+    
                 #uncomment here -----------------------------------
                 # matt = np.zeros((dimFit,dimFit)) 
                 # for syst in  systList :
@@ -305,12 +384,10 @@ class bkg_analyzer:
                 # matt = matt- cov_proj
                 # print "debugg", matt
                 #end of good debug ----------------------------
-
+                continue
                 invCov_ = np.linalg.inv(cov_proj)
-
                 #do the fit
                 minuitDict = self.MinuitLinearFit( yy=yy_, xx=xx_, invCov=invCov_, p0=p0_, q0=q0_,p0Err=p0Err_, q0Err=q0Err_,s=s,e=e)
-                
                 if self.statAna :
                     histoToy = ROOT.TH2F("histoToy"+s+e,"histoToy"+s+e,100,minuitDict[s+e+'offset'+'Minuit']-5*minuitDict[s+e+'offset'+'Minuit'+'Err'],minuitDict[s+e+'offset'+'Minuit']+5*minuitDict[s+e+'offset'+'Minuit'+'Err'],100,minuitDict[s+e+'slope'+'Minuit']-5*minuitDict[s+e+'slope'+'Minuit'+'Err'],minuitDict[s+e+'slope'+'Minuit']+5*minuitDict[s+e+'slope'+'Minuit'+'Err'])
                     Ntoys = 100
@@ -327,8 +404,9 @@ class bkg_analyzer:
         
                 #safety check of the fit results :
                 # print(s,e, "chi2Red=", correlatedFitterDict[s+e+'chi2red'+'Minuit'], "vs old" , fakedict[s+e+'chi2red'], "slope=", correlatedFitterDict[s+e+'slope'+'Minuit'], "offset=",correlatedFitterDict[s+e+'offset'+'Minuit'])
-                if correlatedFitterDict[s+e+'chi2red'+'Minuit'] > 5. :
-                    print("WARNING: very sevrere problem. the CF fit of bin", s, "eta=",e," has a chi2/ndf=",correlatedFitterDict[s+e+'chi2red'+'Minuit'], ". Standard fit results will be used." )
+                # print(s,e, "chi2Red=", correlatedFitterDict[s+e+'chi2red'+'Minuit'], "+/-", correlatedFitterDict[s+e+'chi2red'+'Minuit'+'Err'], "vs old" , fakedict[s+e+'chi2red'], "+/-", fakedict[s+e+'chi2redErr'])
+                if correlatedFitterDict[s+e+'chi2red'+'Minuit'] > 100.:
+                    print("WARNING: very severe problem. the CF fit of bin", s, "eta=",e," has a chi2/ndf=",correlatedFitterDict[s+e+'chi2red'+'Minuit'], ". Standard fit results will be used." )
                     # correlatedFitterDict[s+e+'offset'+'Minuit'] = fakedict[s+e+'offset']
                     # correlatedFitterDict[s+e+'slope'+'Minuit'] = fakedict[s+e+'slope']
                     # correlatedFitterDict[s+e+'offset'+'Minuit'+'Err'] = fakedict[s+e+'offsetErr']
@@ -360,13 +438,9 @@ class bkg_analyzer:
                     correlatedFitterDict[s+e+'slope'+'Minuit'+'Err'] = patchParDict['slopeErr']
                     correlatedFitterDict[s+e+'chi2red'+'Minuit'] = patchParDict['chi2red']
                     correlatedFitterDict[s+e+'chi2red'+'Minuit'+'Err'] = patchParDict['chi2redErr']
-                    correlatedFitterDict[s+e+'offset*slope'+'Minuit'] = patchParDict['offset*slope']
+                    correlatedFitterDict[s+e+'offset*slope'+'Minuit'] = patchParDict['offset*slope']                    
                     
-                            
-                            
-                    
-                    
-                    
+
         return correlatedFitterDict
     
     

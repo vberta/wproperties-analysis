@@ -8,12 +8,6 @@ systematicsDict = {
        "type": "lnN",
        "weight" : 1.025 
     },
-    # "DYxsec":{
-    #    "vars":["DYxsec"],
-    #    "procs": ["DYJets"],
-    #    "type": "lnN",
-    #    "weight" : 1.038 
-    # },
     "Topxsec":{
        "vars":["Topxsec"],
        "procs": ["Top"],
@@ -36,8 +30,8 @@ systematicsDict = {
         "vars":["mass"],
         "procs": ["Signal", "LowAcc", "Fake"],
         # "procs": ["Signal"],
-        "type": "shapeNoConstraint",
-        # "type": "shape",
+      #   "type": "shapeNoConstraint",
+        "type": "shape",
         "weight" : 1.
     },
     "WHSFStat"  : {
@@ -133,6 +127,6 @@ systematicsDict = {
        "vars":["QCDnorm"],
        "procs": ["Fake"],
        "type": "lnN",
-       "weight" : 1.1
+       "weight" : 1.05
     },
 }

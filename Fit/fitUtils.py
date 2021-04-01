@@ -11,8 +11,8 @@ import numpy as np
 class fitUtils:
     def __init__(self, fmap, channel ="WPlus", doSyst=False):
         
-        self.nBinsQt = 9
-        self.nBinsY = 6
+        self.nBinsQt = 13#9#8#29
+        self.nBinsY = 6#7
         
         self.doSyst = doSyst
         self.processes = []
@@ -63,7 +63,7 @@ class fitUtils:
                     self.processes.append(proc)
                     if not "helXsecs7" in proc and not "helXsecs8" in proc and not "helXsecs9" in proc:
                         self.signals.append(proc)
-        bkg_list = ["DYJets","DiBoson","Top","Fake","WtoTau","LowAcc"]  # bkg_list = ["Fake","LowAcc"] # bkg_list = ["LowAcc"]
+        bkg_list = ["DYJets","DiBoson","Top","Fake","WtoTau","LowAcc"] 
         self.processes.extend(bkg_list)
     def shapeFile(self):
         
@@ -125,7 +125,46 @@ class fitUtils:
                             else : 
                                 hAC = self.fmap.Get("angularCoefficients/harmonics{}_nom_nom".format(self.helXsecs[coeff]))
                                 nsum = nsum*hAC.GetBinContent(iY,iQt)/self.factors[self.helXsecs[coeff]]
+                        
+                        
+                        # else : #sigma UL must be corrected for: kUL=(6*sigmaUL-sum(sigma_i))/sigmaUL, because of the division/6, = 6-sum(Ai/ki)
+                        # kUL = 6#*cont
+                        # for cc in self.factors :
+                        #     if sKind!='': 
+                        #         if 'alpha' not in sName and 'mass' not in sName:
+                        #             sNameMod = sName.replace('Up','').replace('Down','')
+                        #         else :
+                        #             sNameMod = sName
+                        #         hh = self.fmap.Get("angularCoefficients{}/harmonics{}{}{}".format(sKind,cc,sNameMod,sName))
+                        #         sigma_cc = hh.GetBinContent(iY,iQt)/self.factors[cc]#*cont
+                        #     else : 
+                        #         hh = self.fmap.Get("angularCoefficients/harmonics{}_nom_nom".format(cc))
+                        #         sigma_cc = hh.GetBinContent(iY,iQt)/self.factors[cc]#*cont
+                        #     kUL=kUL-sigma_cc
+                        # kUL/=cont
+                        
+                        # if not "UL" in proc: 
+                        #      nsum = nsum/kUL
+                        # else : 
+                        #     nsum=nsum/kUL 
+                        
+                        # if 'UL' in proc : 
+                        #     # nsum = nsum/kUL
+                        #     nsum = nsum/6.
+                        
+                        
+                        
                         tmp.Scale(nsum)
+                        
+                        # if not "UL" in proc: #DOES NOT WORK
+                        #     tmp.SetBinContent(1, tmp.GetBinContent(1)+cont*(3./16./math.pi)/6.) 
+                        # else :  #DOES NOT WORK
+                        #     tmp.Scale(1/6.)
+                        
+                        # if not "UL" in proc:
+                        #     tmp.SetBinContent(1, tmp.GetBinContent(1)-cont*(3./16./math.pi)/6.)
+                        # else :
+                        #     tmp.Scale(6.)
                         shapeOutxsec.cd()
                         tmp.Write()
             else:
@@ -379,7 +418,14 @@ class fitUtils:
         
         self.DC.poly1DRegGroups = self.poly1DRegGroups
         etas = np.array([0.2, 0.6, 1.0, 1.4, 1.8, 2.2])
-        pts = np.array([1., 3., 5., 7., 9., 11., 14., 19., 27.])
+        # etas = np.array([0.2, 0.6, 1.0, 1.4, 1.8, 2.2, 2.6])
+        # pts = np.array([1., 3., 5., 7., 9., 11., 14., 19., 27.])
+        pts = np.array([1., 3., 5., 7., 9., 11., 13., 15., 18., 22., 28., 38., 60.])#Extended
+        # pts =np.array([0.5, 1.25, 1.75, 2.25, 2.75, 3.25, 3.75, 4.25, 4.75, 5.25, 5.75, 6.25, 6.75, 7.25, 7.75, 8.25, 8.75, 9.25, 9.75, 10.25, 10.75, 11.25, 11.75, 12.5, 13.5, 14.5, 15.5,19.,27.])   # len=32-->29 fitted bin
+
+        
+        # etas = etas/2.4
+        # pts = pts/32.
         
         
         testnames = []
@@ -389,9 +435,10 @@ class fitUtils:
                 testnames.append("y_%i_qt_%i_A0" % (i+1, j+1))
                 bincenters.append([etas[i], pts[j]])
 
-        self.poly2DRegGroups["poly2dA0"] = {"names": testnames, "bincenters": bincenters, "firstorder": (0, 1), "lastorder": (3, 4), "fullorder": (5, 8)}
-        # self.poly2DRegGroups["poly2dA0"] = {"names": testnames, "bincenters": bincenters, "firstorder": (0, 1), "lastorder": (3, 4), "fullorder": (5, 8)} #full=max number of pars=nbins-1
-        
+        self.poly2DRegGroups["poly2dA0"] = {"names": testnames, "bincenters": bincenters, "firstorder": (0, 1), "lastorder": (2, 3), "fullorder": (5, 12)}#full=max number of pars=nbins-1
+        # self.poly2DRegGroups["poly2dA0"] = {"names": testnames, "bincenters": bincenters, "firstorder": (0, 1), "lastorder": (2, 3), "fullorder": (5, 8)}#full=max number of pars=nbins-1
+
+
         
         testnames = []
         bincenters = []
@@ -400,8 +447,8 @@ class fitUtils:
                 testnames.append("y_%i_qt_%i_A1" % (i+1, j+1))
                 bincenters.append([etas[i], pts[j]])
 
-        self.poly2DRegGroups["poly2dA1"] = {"names": testnames, "bincenters": bincenters, "firstorder": (1, 1), "lastorder": (4, 4), "fullorder": (5, 8)} 
-        # self.poly2DRegGroups["poly2dA1"] = {"names": testnames, "bincenters": bincenters, "firstorder": (0, 1), "lastorder": (3, 4), "fullorder": (5, 8)} 
+        self.poly2DRegGroups["poly2dA1"] = {"names": testnames, "bincenters": bincenters, "firstorder": (1, 1), "lastorder": (3, 3), "fullorder": (5, 12)} 
+        # self.poly2DRegGroups["poly2dA1"] = {"names": testnames, "bincenters": bincenters, "firstorder": (1, 1), "lastorder": (3, 3), "fullorder": (5, 8)} 
         
         testnames = []
         bincenters = []
@@ -410,8 +457,8 @@ class fitUtils:
                 testnames.append("y_%i_qt_%i_A2" % (i+1, j+1))
                 bincenters.append([etas[i], pts[j]])
 
-        self.poly2DRegGroups["poly2dA2"] = {"names": testnames, "bincenters": bincenters, "firstorder": (0, 1), "lastorder": (3, 5), "fullorder": (5, 8)} 
-        # self.poly2DRegGroups["poly2dA2"] = {"names": testnames, "bincenters": bincenters, "firstorder": (0, 1), "lastorder": (3, 4), "fullorder": (5, 8)} 
+        self.poly2DRegGroups["poly2dA2"] = {"names": testnames, "bincenters": bincenters, "firstorder": (0, 1), "lastorder": (2, 4), "fullorder": (5, 12)} 
+        # self.poly2DRegGroups["poly2dA2"] = {"names": testnames, "bincenters": bincenters, "firstorder": (0, 1), "lastorder": (2, 4), "fullorder": (5, 8)} 
         
         testnames = []
         bincenters = []
@@ -420,8 +467,8 @@ class fitUtils:
                 testnames.append("y_%i_qt_%i_A3" % (i+1, j+1))
                 bincenters.append([etas[i], pts[j]])
 
-        self.poly2DRegGroups["poly2dA3"] = {"names": testnames, "bincenters": bincenters, "firstorder": (0, 1), "lastorder": (3, 4), "fullorder": (5, 8)} 
-        # self.poly2DRegGroups["poly2dA3"] = {"names": testnames, "bincenters": bincenters, "firstorder": (0, 1), "lastorder": (3, 4), "fullorder": (5, 8)} 
+        self.poly2DRegGroups["poly2dA3"] = {"names": testnames, "bincenters": bincenters, "firstorder": (0, 1), "lastorder": (2, 3), "fullorder": (5, 12)} 
+        # self.poly2DRegGroups["poly2dA3"] = {"names": testnames, "bincenters": bincenters, "firstorder": (0, 1), "lastorder": (2, 3), "fullorder": (5, 8)} 
 
         testnames = []
         bincenters = []
@@ -430,7 +477,7 @@ class fitUtils:
                 testnames.append("y_%i_qt_%i_A4" % (i+1, j+1))
                 bincenters.append([etas[i], pts[j]])
 
-        self.poly2DRegGroups["poly2dA4"] = {"names": testnames, "bincenters": bincenters, "firstorder": (1, 0), "lastorder": (4, 5), "fullorder": (5, 8)} 
+        self.poly2DRegGroups["poly2dA4"] = {"names": testnames, "bincenters": bincenters, "firstorder": (1, 0), "lastorder": (3, 4), "fullorder": (5, 12)} 
         # self.poly2DRegGroups["poly2dA4"] = {"names": testnames, "bincenters": bincenters, "firstorder": (1, 0), "lastorder": (3, 4), "fullorder": (5, 8)} 
 
         self.DC.poly2DRegGroups = self.poly2DRegGroups

@@ -70,8 +70,8 @@ if not step6 :
 tic=time.time()
 runTimes=[]
 if bkgFile == 'MYBKG' :
-    bkgFile = '../bkgAnalysis/'+bkgOutput+'/bkg_parameters_CFstatAna.root'
-    # bkgFile = '../bkgAnalysis/'+bkgOutput+'/bkg_parameters.root'
+    # bkgFile = '../bkgAnalysis/'+bkgOutput+'/bkg_parameters_CFstatAna.root'
+    bkgFile = '../bkgAnalysis/'+bkgOutput+'/bkg_parameters.root'
     #if not step2 :
     #    raw_input('You are using self-produced bkg file but you are not running step2, are you sure? [press Enter to continue]')
 
@@ -107,7 +107,7 @@ if step2 :
     os.chdir('bkgAnalysis')
     #inputDir for bkgAnalysis is the outputDir of step1
     os.system('python bkg_prepareHistos.py --inputDir ../analysisOnData/'+outputDir+' --outputDir '+bkgOutput+'/bkgInput/')
-    os.system('python bkg_config.py --mainAna 1 --CFAna 1 --inputDir '+bkgOutput+'/bkgInput/hadded/ --outputDir '+bkgOutput+' --syst 1 --compAna 1 --ncores '+ncores+ ' --SBana '+SBana)
+    os.system('python bkg_config.py --mainAna 1 --CFAna 0 --inputDir '+bkgOutput+'/bkgInput/hadded/ --outputDir '+bkgOutput+' --syst 1 --compAna 1 --ncores '+ncores+ ' --SBana '+SBana)
     os.chdir('../')
     s2end=time.time()
     runTimes.append(s2end - s2start)

@@ -23,6 +23,19 @@ RNode reweightFromZ::run(RNode d)
         else
             return _hY->GetBinContent(bin);
     };
+    
+    // auto getQtweights = [&](float Pt) { // used only for 10Mev study
+    //     ROOT::VecOps::RVec<float> v;
+    //     float vUp = 1.;//Pt;
+    //     float vDown = 1.;//#Pt;
+    //     if(Pt< 10) {
+    //         vUp = vUp*1.04;
+    //         vDown = vDown/1.04;
+    //     }
+    //     v.emplace_back(vUp);
+    //     v.emplace_back(vDown);  
+    //     return v;
+    // };
 
     if(!_WJets) {
         auto d1 = d.Define("Wpt_dress", "GenV_dress[0]").Define("Wrap_dress", "GenV_dress[1]")
@@ -30,6 +43,7 @@ RNode reweightFromZ::run(RNode d)
         return d1;
         }
     auto d1 = d.Define("weightPt", getWeightPt, {"Wpt_dress"}).Define("weightY", getWeightY, {"Wrap_dress"});
+    // auto d1 = d.Define("weightPt", getWeightPt, {"Wpt_dress"}).Define("weightY", getWeightY, {"Wrap_dress"}).Define("Qtweights", getQtweights, {"Wpt_dress"}); // used only for 10Mev study
 
     return d1;
 }

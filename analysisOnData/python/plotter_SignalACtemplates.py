@@ -62,8 +62,8 @@ class plotter:
         self.yields["Wplus"] = {}
         self.yields["Wminus"] = {}
         self.bins = []
-        self.nBinsQt = 9#8
-        self.nBinsY = 6
+        self.nBinsQt = 13#9#29#8
+        self.nBinsY = 6#7
         
         for iY in range(1, self.nBinsY+1):
             for iQt in range(1, self.nBinsQt+1):
@@ -211,6 +211,7 @@ class plotter:
         # self.alphaVariations()
         # self.uncorrelatePtVars() ALWAYS COMMENTED, ROCHESTER CORR. NOT RUN
         self.closureMap()
+        # self.rescaleTempl() #1/6 UL, +1/6UL for the others
         self.writeHistos()
     def uncorrelatePtVars(self):
         for charge in self.charges:
@@ -340,6 +341,17 @@ class plotter:
             fout.cd()
             fout.Save()
             fout.Close()
+    # def rescaleTempl(self) :
+    #     for charge in self.charges:
+    #         for bin in self.bins: 
+    #             for sKind, sList in self.extSyst.items() :
+    #                 for hind in range(0, len(self.histoDict[charge]['UL'][bin][sKind])) :
+    #                     # print("UL main=", self.histoDict[charge]['UL'][bin][sKind][hind].GetName())
+    #                     self.histoDict[charge]['UL'][bin][sKind][hind].Scale(1/6.)
+    #                     for c in self.clist:
+    #                         if 'UL' not in c :
+    #                             # print(self.histoDict[charge][c][bin][sKind][hind].GetName(),self.histoDict[charge]['UL'][bin][sKind][hind].GetName())
+    #                             self.histoDict[charge][c][bin][sKind][hind].Add(self.histoDict[charge]['UL'][bin][sKind][hind])
 
 
 parser = argparse.ArgumentParser("")

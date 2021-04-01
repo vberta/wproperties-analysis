@@ -40,6 +40,7 @@ class bkg_prepareHistos:
                 "weight" : 1.020 
             }
         }
+        if not os.path.isdir(self.outDir+'/hadded'): os.system('mkdir '+self.outDir+'/hadded')
     
     
     def fileListBuilder(self) :
@@ -108,6 +109,7 @@ class bkg_prepareHistos:
                         if '_WQT' in sKind : 
                             h.SetName(h.GetName()+sKind.replace('LHEScaleWeight',''))   
                         outFile.cd('templates_'+r+'/'+sKind)
+                        # h.RebinY(4)#rebinned pt to have 2 GeV binning
                         h.Write()
                         
                 for sKind, sList in self.systDict.items():  #flat syst building
@@ -128,17 +130,31 @@ class bkg_prepareHistos:
                             if 'Down' in sName :
                                 h.Scale(1/self.flatDict[sKind]['weight'])
                         outFile.cd('templates_'+r+'/'+sKind)
+                        # h.RebinY(4)#rebinned pt to have 2 GeV binning (not decomment this line)
                         h.Write()
-                    
-                
+        
+        #data rebin
+        inFile =  ROOT.TFile.Open(self.inputDir+'SingleMuonData_plots.root')
+        outFile =  ROOT.TFile(self.outDir+"/hadded/Data.root", "recreate")
+        print("Data (rebin)")
+        for r in regList :
+            sKind = self.sKindNom
+            sName = self.sNameNom
+            regExtrapFlag = self.isExtrapReg(r)
+            if not outFile.GetDirectory('templates_'+r+'/'+sKind): 
+                outFile.mkdir('templates_'+r+'/'+sKind)
+            inFile.cd()
+            h = inFile.Get('templates_'+r+'/'+sKind+'/'+varName)  
+            # h.RebinY(4)#rebinned pt to have 2 GeV binning   
+            outFile.cd('templates_'+r+'/'+sKind)   
+            h.Write()         
                 
                         
     def h_add(self) :
         cmdList = []
-        if not os.path.isdir(self.outDir+'/hadded'): os.system('mkdir '+self.outDir+'/hadded')
         
         cmdList.append('hadd -f ./'+self.outDir+'hadded/WToMuNu.root ./'+self.outDir+'*.root')
-        cmdList.append('cp  ./'+self.inputDir+'SingleMuonData_plots.root ./'+self.outDir+'hadded/Data.root')
+        # cmdList.append('cp  ./'+self.inputDir+'SingleMuonData_plots.root ./'+self.outDir+'hadded/Data.root')
                 
         for i in cmdList :
             os.system(i)

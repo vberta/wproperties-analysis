@@ -31,6 +31,7 @@ if regularize : CTFmodifier+= ' --regularizationTau='+tau
 charges = ["Wplus","Wminus"]
 for charge in charges:
     fmap = '../../analysisOnGen/genInput_{}.root'.format(charge)
+    # fmap = '../../analysisOnGen/genInput_{}_2GeV_qt80_y28.root'.format(charge)
     f = fitUtils(fmap, channel=charge+"_reco", doSyst=True)
     f.fillProcessList()
     f.shapeFile()
@@ -49,10 +50,12 @@ for charge in charges:
     # combinetf = 'combinetf.py --allowNegativePOI --binByBinStat --doRegularization --regularizationTau=1e4 --doImpacts --saveHists -t -1 {}.pkl.hdf5 -o fit_{}.root'.format(
         # f.channel, f.channel)
     
-    #WITH PARAMS
-    combinetf = 'combinetf.py --allowNegativePOI --binByBinStat -t {} {}.pkl.hdf5 -o fit_{}.root {} --nThreads {} --correlateXsecStat'.format(toy, f.channel, f.channel, CTFmodifier,cores)
+    #good one (with and without BBB)
+    #combinetf = 'combinetf.py --allowNegativePOI --binByBinStat -t {} {}.pkl.hdf5 -o fit_{}.root {} --nThreads {} --correlateXsecStat'.format(toy, f.channel, f.channel, CTFmodifier,cores) # --fitverbose 9
+    combinetf = 'combinetf.py --allowNegativePOI -t {} {}.pkl.hdf5 -o fit_{}.root {} --nThreads {}'.format(toy, f.channel, f.channel, CTFmodifier,cores)
+
+    #other config
     # combinetf = 'combinetf.py --allowNegativePOI --binByBinStat -t {} {}.pkl.hdf5 -o fit_{}.root {} --nThreads {} --correlateXsecStat --yieldProtectionCutoff 1'.format(toy, f.channel, f.channel, CTFmodifier,cores)
-    # combinetf = 'combinetf.py --allowNegativePOI -t {} {}.pkl.hdf5 -o fit_{}.root {} --nThreads {}'.format(toy, f.channel, f.channel, CTFmodifier,cores)
     # combinetf = 'combinetf.py --binByBinStat -t {} {}.pkl.hdf5 -o fit_{}.root {} --nThreads {} --correlateXsecStat'.format(toy, f.channel, f.channel, CTFmodifier,cores)
     # combinetf = 'combinetf.py --binByBinStat -t {} {}.pkl.hdf5 -o fit_{}.root {} --nThreads {} --correlateXsecStat'.format(toy, f.channel, f.channel, CTFmodifier,cores)
     # combinetf = 'combinetf.py --allowNegativePOI -t {} {}.pkl.hdf5 -o fit_{}.root {} --nThreads {}'.format(toy, f.channel, f.channel, CTFmodifier,cores)

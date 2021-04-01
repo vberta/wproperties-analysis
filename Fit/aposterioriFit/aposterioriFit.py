@@ -390,7 +390,7 @@ coeffList = []#y plus, qt plus, y minus, qt minus, constraint y, constraint qt,c
 # coeffList.append(['A3', 3,4,3,3, 0,1,0, 0])
 # coeffList.append(['A4', 4,5,4,6, 1,0,0, 0]) #5-->7 but no convergence! and last number=1
 
-coeffList.append(['unpolarizedxsec', 3,3,-999,-999,  0,0,0, 1])
+coeffList.append(['unpolarizedxsec', 3,3,-999,-999,  0,0,0, 1]) #this is the fist degree excluded, not sure to be properly implemented. Check!
 coeffList.append(['A0', 3,4,3,4, 0,1,1, 0])
 coeffList.append(['A1', 4,4,3,4, 1,1,0, 0])
 coeffList.append(['A2', 2,5,2,4, 0,1,1, 0])

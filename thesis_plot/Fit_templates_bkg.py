@@ -9,7 +9,7 @@ output = ROOT.TFile("Fit_templates_bkg.root", "recreate")
 
 
 for s in signList :
-    inFile = ROOT.TFile.Open('../../Fit/test_4Mar_SB_reb4/W'+s+'_reco.root')
+    inFile = ROOT.TFile.Open('../../Fit/test_28Mar_aLaCombine/W'+s+'_reco.root')
     QCDtemplate = inFile.Get('Fake') 
     can = ROOT.TCanvas('c_QCDtemplate_'+s,'c_QCDtemplate_'+s,1600,1200)
     can.cd()

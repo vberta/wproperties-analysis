@@ -66,7 +66,7 @@ SBana = args.SBana
 
 
 #internal parameters:
-CORRFITFINAL= True #correlated fit in the final plots
+CORRFITFINAL= False #correlated fit in the final plots
 STATANA = CORRFITFINAL  #or False or CORRFITFINAL
 TEMPLATE = True
 NOM = ['Nominal','']

@@ -11,12 +11,13 @@ ROOT.gROOT.SetBatch(True)
 gStyle.SetOptStat(0)
 
 parser = argparse.ArgumentParser("")
-parser.add_argument('-i','--input', type=str, default='../bkgAnalysis/test',help="name of the input direcory")
+parser.add_argument('-i','--input', type=str, default='../../bkgAnalysis/OUTPUT_1Apr_noCF',help="name of the input direcory")
 
 args = parser.parse_args()
 inputDir = args.input
 
-inFile = ROOT.TFile.Open(inputDir+'/final_plots_CFstatAna.root')
+# inFile = ROOT.TFile.Open(inputDir+'/final_plots_CFstatAna.root')
+inFile = ROOT.TFile.Open(inputDir+'/final_plots.root')
 
 canvasDict = {}
 legDict = {}
@@ -205,6 +206,7 @@ mainhisto['group_fr'] = canvasDict['group_fr'].GetPrimitive('comparison_hFakes_p
 mainhisto['group_fr'].SetStats(0)
 mainhisto['group_fr'].SetTitle('Systematic uncertainties shift (Fake Rate), 0<#eta<0.1, W^{+}')
 mainhisto['group_fr'].GetYaxis().SetTitle('|Var-Nom| / Nom')
+mainhisto['group_fr'].GetYaxis().SetRangeUser(0.000002,20)
 canvasDict['group_fr'].SaveAs("bkg_CF_groupSyst_fr.png")
 canvasDict['group_fr'].SaveAs("bkg_CF_groupSyst_fr.pdf")
 
@@ -214,6 +216,7 @@ mainhisto['group_pr'] = canvasDict['group_pr'].GetPrimitive('comparison_hFakes_p
 mainhisto['group_pr'].SetStats(0)
 mainhisto['group_pr'].SetTitle('Systematic uncertainties shift (Prompt Rate), 0<#eta<0.1, W^{+}')
 mainhisto['group_pr'].GetYaxis().SetTitle('|Var-Nom| / Nom')
+mainhisto['group_pr'].GetYaxis().SetRangeUser(0.000002,20)
 canvasDict['group_pr'].SaveAs("bkg_CF_groupSyst_pr.png")
 canvasDict['group_pr'].SaveAs("bkg_CF_groupSyst_pr.pdf")
 
@@ -223,6 +226,7 @@ mainhisto['group_template'] = canvasDict['group_template'].GetPrimitive('templat
 mainhisto['group_template'].SetStats(0)
 mainhisto['group_template'].SetTitle('Systematic uncertainties shift (QCD p_{T} spectrum), 0<#eta<0.1, W^{+}')
 mainhisto['group_template'].GetYaxis().SetTitle('|Var-Nom| / Nom')
+mainhisto['group_template'].GetYaxis().SetRangeUser(0.000002,20)
 canvasDict['group_template'].SaveAs("bkg_CF_groupSyst_template.png")
 canvasDict['group_template'].SaveAs("bkg_CF_groupSyst_template.pdf")
 
@@ -232,7 +236,7 @@ mainhisto['group_fr_unrolled'] = canvasDict['group_fr_unrolled'].GetPrimitive('c
 mainhisto['group_fr_unrolled'].SetStats(0)
 mainhisto['group_fr_unrolled'].SetTitle('Systematic uncertainties shift (Fake Rate), unrolled #eta,p_{T} , W^{+}')
 mainhisto['group_fr_unrolled'].GetYaxis().SetTitle('|Var-Nom| / Nom')
-mainhisto['group_fr_unrolled'].GetYaxis().SetRangeUser(0,0.22)
+mainhisto['group_fr_unrolled'].GetYaxis().SetRangeUser(0,0.30)
 canvasDict['group_fr_unrolled'].SaveAs("bkg_CF_groupSyst_fr_unrolled.png")
 canvasDict['group_fr_unrolled'].SaveAs("bkg_CF_groupSyst_fr_unrolled.pdf")
 
@@ -252,9 +256,203 @@ mainhisto['group_template_unrolled'] = canvasDict['group_template_unrolled'].Get
 mainhisto['group_template_unrolled'].SetStats(0)
 mainhisto['group_template_unrolled'].SetTitle('Systematic uncertainties shift (QCD spectrum), unrolled #eta,p_{T} , W^{+}')
 mainhisto['group_template_unrolled'].GetYaxis().SetTitle('|Var-Nom| / Nom')
-mainhisto['group_template_unrolled'].GetYaxis().SetRangeUser(0,0.4)
+mainhisto['group_template_unrolled'].GetYaxis().SetRangeUser(0,0.55)
 canvasDict['group_template_unrolled'].SaveAs("bkg_CF_groupSyst_template_unrolled.png")
 canvasDict['group_template_unrolled'].SaveAs("bkg_CF_groupSyst_template_unrolled.pdf")
+
+
+
+# -------------------------------- fake unrolled ---------------------------
+
+can_fr = inFile.Get('Plus_unrolled/c_unrolled_comparison_Plus')
+fr = can_fr.GetPrimitive('comparison_hFakes_pt_fake_Plus_0_unrolled')
+frFit = can_fr.GetPrimitive('comparison_hFakes_pt_fakeFit_Plus_0_unrolled')
+pr = can_fr.GetPrimitive('comparison_hFakes_pt_prompt_Plus_0_unrolled')
+prFit = can_fr.GetPrimitive('comparison_hFakes_pt_promptFit_Plus_0_unrolled')
+fr_err = can_fr.GetPrimitive('comparison_hFakes_pt_fake_Plus_0_unrolled_error')
+frFit_err = can_fr.GetPrimitive('comparison_hFakes_pt_fakeFit_Plus_0_unrolled_error')
+pr_err = can_fr.GetPrimitive('comparison_hFakes_pt_prompt_Plus_0_unrolled_error')
+prFit_err = can_fr.GetPrimitive('comparison_hFakes_pt_promptFit_Plus_0_unrolled_error')
+
+canvasDict['fakerate_unr'] = ROOT.TCanvas('c_fakerate_unr','c_fakerate_unr',4800,2400)
+legDict['fakerate_unr'] = ROOT.TLegend(0.4,0.75,0.9,0.9)
+canvasDict['fakerate_unr'].cd()
+canvasDict['fakerate_unr'].SetGridx()
+canvasDict['fakerate_unr'].SetGridy()
+canvasDict['fakerate_unr'].SetRightMargin(0.02)
+canvasDict['fakerate_unr'].SetLeftMargin(0.05)
+canvasDict['fakerate_unr'].SetBottomMargin(0.25)
+
+
+frFit.SetLineWidth(2)
+frFit.SetLineStyle(1)
+frFit.SetFillStyle(1)
+frFit.SetFillColor(ROOT.kRed+4)
+prFit.SetLineWidth(2)
+prFit.SetLineStyle(1)
+prFit.SetFillStyle(1)
+prFit.SetFillColor(ROOT.kBlue-4)
+# fr.GetFunction('fitFake').SetLineWidth(0)
+# pr.GetFunction('fitFake').SetLineWidth(0)
+fr.GetYaxis().SetRangeUser(0,1.4)
+fr.SetTitle('Fake and Prompt Rate, unrolled #eta^{#mu}(p_T^{#mu}), W^{+}')
+fr.SetFillStyle(0)
+pr.SetFillStyle(0)
+fr.SetLineWidth(1)
+fr.SetLineColor(ROOT.kRed-6)
+pr.SetLineWidth(1)
+fr_err.SetFillStyle(3244)
+fr_err.SetFillColor(fr.GetLineColor())
+fr_err.SetLineColor(fr.GetLineColor())
+pr_err.SetFillStyle(3244)
+pr_err.SetFillColor(pr.GetLineColor())
+pr_err.SetLineColor(pr.GetLineColor())
+frFit_err.SetFillStyle(3001)
+frFit_err.SetFillColor(ROOT.kRed)
+frFit_err.SetLineColor(ROOT.kRed)
+prFit_err.SetFillStyle(3001)
+prFit_err.SetFillColor(ROOT.kBlue-7)
+prFit_err.SetLineColor(ROOT.kBlue-7)
+
+fr.Draw()
+fr.SetStats(0)
+fr_err.Draw("same OP5")
+frFit_err.Draw("same E3L")
+frFit.Draw("same E3")
+pr.Draw("same")
+pr_err.Draw("same OP5")
+prFit.Draw("same E3")
+prFit_err.Draw("same E3L")
+
+
+legDict['fakerate_unr'].SetFillStyle(0)
+legDict['fakerate_unr'].SetBorderSize(0)
+legDict['fakerate_unr'].SetNColumns(2)
+legDict['fakerate_unr'].AddEntry(fr,'Fake Rate')
+legDict['fakerate_unr'].AddEntry(fr_err,'Fake Rate (syst. unc.)')
+legDict['fakerate_unr'].AddEntry(frFit,'Fake Rate fitted')
+legDict['fakerate_unr'].AddEntry(frFit_err,'Fake Rate fitted (syst. unc.)')
+legDict['fakerate_unr'].AddEntry(pr,'Prompt Rate')
+legDict['fakerate_unr'].AddEntry(pr_err,'Prompt Rate (syst. unc.)')
+legDict['fakerate_unr'].AddEntry(prFit,'Prompt Rate fitted')
+legDict['fakerate_unr'].AddEntry(prFit_err,'Prompt Rate fitted (syst. unc.)')
+legDict['fakerate_unr'].Draw("same")
+
+canvasDict['fakerate_unr'].SaveAs("bkg_CF_fakerate_unr.png")
+canvasDict['fakerate_unr'].SaveAs("bkg_CF_fakerate_unr.pdf")
+
+
+
+
+
+
+# -------------------------- plot slope ----------------------------------------
+
+slope_fr_Plus = inFile.Get('Plus_Fit_parameters/c_parameters_Plus_fake_slope').GetPrimitive('parameters_fake_slope_Plus')
+slope_fr_Minus = inFile.Get('Minus_Fit_parameters/c_parameters_Minus_fake_slope').GetPrimitive('parameters_fake_slope_Minus')
+slope_fr_Plus_err = inFile.Get('Plus_Fit_parameters/c_parameters_Plus_fake_slope').GetPrimitive('parameters_fake_slope_Plus_error')
+slope_fr_Minus_err = inFile.Get('Minus_Fit_parameters/c_parameters_Minus_fake_slope').GetPrimitive('parameters_fake_slope_Minus_error')
+
+canvasDict['slope'] = ROOT.TCanvas('c_slope','c_slope',1600,1200)
+legDict['slope'] = ROOT.TLegend(0.32,0.72,0.9,0.9)
+canvasDict['slope'].cd()
+canvasDict['slope'].SetGridx()
+canvasDict['slope'].SetGridy()
+
+slope_fr_Plus.SetLineColor(ROOT.kRed+2) #red
+slope_fr_Minus.SetLineColor(ROOT.kBlue-4) #orange
+slope_fr_Plus.SetStats(0)
+slope_fr_Minus.SetStats(0)
+slope_fr_Plus.SetFillStyle(0)
+slope_fr_Minus.SetFillStyle(0)
+slope_fr_Plus_err.SetFillStyle(3005)
+slope_fr_Plus.GetYaxis().SetTitle("Fake rate slope")
+slope_fr_Plus.SetTitle('Slope parameter of the fake rate')
+slope_fr_Plus_err.SetFillColor(slope_fr_Plus.GetLineColor())
+slope_fr_Minus_err.SetFillColor(slope_fr_Minus.GetLineColor())
+slope_fr_Plus_err.SetLineColor(slope_fr_Plus.GetLineColor())
+slope_fr_Minus_err.SetLineColor(slope_fr_Minus.GetLineColor())
+slope_fr_Plus.GetYaxis().SetRangeUser(-0.004,0.008)
+slope_fr_Plus.GetYaxis().SetTitleOffset(1.4)
+
+slope_fr_Plus.Draw("same")
+slope_fr_Plus_err.Draw("same 0P5")
+slope_fr_Minus.Draw("same")
+slope_fr_Minus_err.Draw("same 0P5")
+
+
+legDict['slope'].SetFillStyle(0)
+legDict['slope'].SetBorderSize(0)
+legDict['slope'].AddEntry(slope_fr_Plus,'W^{+}')
+legDict['slope'].AddEntry(slope_fr_Plus_err,'W^{+} (syst. unc.)')
+legDict['slope'].AddEntry(slope_fr_Minus,'W^{-}')
+legDict['slope'].AddEntry(slope_fr_Minus_err,'W^{-} (syst. unc.)')
+legDict['slope'].Draw("same")
+
+canvasDict['slope'].SaveAs("bkg_CF_slope.png")
+canvasDict['slope'].SaveAs("bkg_CF_slope.pdf")
+
+
+# -------------------------- plot offset ----------------------------------------
+
+offset_fr_Plus = inFile.Get('Plus_Fit_parameters/c_parameters_Plus_fake_offset').GetPrimitive('parameters_fake_offset_Plus')
+offset_fr_Minus = inFile.Get('Minus_Fit_parameters/c_parameters_Minus_fake_offset').GetPrimitive('parameters_fake_offset_Minus')
+offset_fr_Plus_err = inFile.Get('Plus_Fit_parameters/c_parameters_Plus_fake_offset').GetPrimitive('parameters_fake_offset_Plus_error')
+offset_fr_Minus_err = inFile.Get('Minus_Fit_parameters/c_parameters_Minus_fake_offset').GetPrimitive('parameters_fake_offset_Minus_error')
+
+canvasDict['offset'] = ROOT.TCanvas('c_offset','c_offset',1600,1200)
+legDict['offset'] = ROOT.TLegend(0.32,0.72,0.9,0.9)
+canvasDict['offset'].cd()
+canvasDict['offset'].SetGridx()
+canvasDict['offset'].SetGridy()
+
+offset_fr_Plus.SetLineColor(ROOT.kRed+2) #red
+offset_fr_Minus.SetLineColor(ROOT.kBlue-4) #orange
+offset_fr_Plus.SetStats(0)
+offset_fr_Minus.SetStats(0)
+offset_fr_Plus.SetFillStyle(0)
+offset_fr_Minus.SetFillStyle(0)
+offset_fr_Plus_err.SetFillStyle(3005)
+offset_fr_Plus.GetYaxis().SetTitle("Fake rate offset")
+offset_fr_Plus.SetTitle('Offset parameter of the fake rate')
+offset_fr_Plus_err.SetFillColor(offset_fr_Plus.GetLineColor())
+offset_fr_Minus_err.SetFillColor(offset_fr_Minus.GetLineColor())
+offset_fr_Plus_err.SetLineColor(offset_fr_Plus.GetLineColor())
+offset_fr_Minus_err.SetLineColor(offset_fr_Minus.GetLineColor())
+# offset_fr_Plus.GetYaxis().SetRangeUser(-0.004,0.008)
+
+offset_fr_Plus.Draw("same")
+offset_fr_Plus_err.Draw("same 0P5")
+offset_fr_Minus.Draw("same")
+offset_fr_Minus_err.Draw("same 0P5")
+
+
+legDict['offset'].SetFillStyle(0)
+legDict['offset'].SetBorderSize(0)
+legDict['offset'].AddEntry(offset_fr_Plus,'W^{+}')
+legDict['offset'].AddEntry(offset_fr_Plus_err,'W^{+} (syst. unc.)')
+legDict['offset'].AddEntry(offset_fr_Minus,'W^{-}')
+legDict['offset'].AddEntry(offset_fr_Minus_err,'W^{-} (syst. unc.)')
+legDict['offset'].Draw("same")
+
+canvasDict['offset'].SaveAs("bkg_CF_offset.png")
+canvasDict['offset'].SaveAs("bkg_CF_offset.pdf")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

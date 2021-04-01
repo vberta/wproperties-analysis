@@ -33,7 +33,8 @@ def RDFprocessWJetsMCSignalACtempl(fvec, outputDir, sample, xsec, fileSF, fileSc
     region = 'Signal'
     weight = 'float(puWeight*PrefireWeight*lumiweight*WHSF*weightPt)'
     wtomu_cut =  selections_bkg[region] + wdecayselections['WToMu']
-    wtomu_lowAcc_cut = wtomu_cut + "&& (Wpt_preFSR>32. || Wrap_preFSR_abs>2.4)"
+    # wtomu_lowAcc_cut = wtomu_cut + "&& (Wpt_preFSR>32. || Wrap_preFSR_abs>2.4)"
+    wtomu_lowAcc_cut = wtomu_cut + "&& (Wpt_preFSR>80. || Wrap_preFSR_abs>2.4)"
     #print weight, "NOMINAL WEIGHT"
     nom = ROOT.vector('string')()
     nom.push_back("")
@@ -99,7 +100,8 @@ def RDFprocessWJetsMCSignalACtempl(fvec, outputDir, sample, xsec, fileSF, fileSc
         #reco templates for out of acceptance events
         print('low Acc')
         for cut in wtomu_cut_vec:
-            cut+= "&& (Wpt_preFSR>32. || Wrap_preFSR_abs>2.4)"
+            # cut+= "&& (Wpt_preFSR>32. || Wrap_preFSR_abs>2.4)"
+            cut+= "&& (Wpt_preFSR>80. || Wrap_preFSR_abs>2.4)"
             #print "Low acc cut vec vars:", wtomu_cut_vec
         p.branch(nodeToStart = 'defsAC', nodeToEnd = 'templatesLowAcc_{}/{}'.format(region,vartype), modules = [ROOT.templates(wtomu_cut_vec, weight, nom,"Nom",hcat,wtomu_var_vec)])
     p.getOutput()

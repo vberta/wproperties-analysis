@@ -14,7 +14,7 @@ RNode accMap::run(RNode d){
 
     auto mapTot = d1.Histo2D(TH2D("mapTot", "mapTot", _nBinsY, _yArr.data(), _nBinsPt, _ptArr.data()), "Wrap_preFSR_abs", "Wpt_preFSR", "weight");
     auto mapAccEta = d1.Filter("fabs(Mueta_preFSR)<2.4").Histo2D(TH2D("mapAccEta", "mapAccEta", _nBinsY, _yArr.data(), _nBinsPt, _ptArr.data()), "Wrap_preFSR_abs", "Wpt_preFSR", "weight");
-    auto mapAcc = d1.Filter("fabs(Mueta_preFSR)<2.4 && Mupt_preFSR>25. && Mupt_preFSR<65.").Histo2D(TH2D("mapAcc", "mapAcc", _nBinsY, _yArr.data(), _nBinsPt, _ptArr.data()), "Wrap_preFSR_abs", "Wpt_preFSR", "weight");
+    auto mapAcc = d1.Filter("fabs(Mueta_preFSR)<2.4 && Mupt_preFSR>25. && Mupt_preFSR<55.").Histo2D(TH2D("mapAcc", "mapAcc", _nBinsY, _yArr.data(), _nBinsPt, _ptArr.data()), "Wrap_preFSR_abs", "Wpt_preFSR", "weight");
     // auto sumw = d1.Define("genratio", "Generator_weight/genEventSumw").Define("genratioRew", "genratio*weightPt*weightY").Histo2D(TH2D("sumw", "sumw", _nBinsY, _yArr.data(), _nBinsPt, _ptArr.data()), "Wrap_preFSR_abs", "Wpt_preFSR", "genratioRew");
     auto sumw = d1.Define("genratio", "Generator_weight/genEventSumw").Define("genratioRew", "genratio*weightPt").Histo2D(TH2D("sumw", "sumw", _nBinsY, _yArr.data(), _nBinsPt, _ptArr.data()), "Wrap_preFSR_abs", "Wpt_preFSR", "genratioRew");
 
@@ -22,6 +22,15 @@ RNode accMap::run(RNode d){
     _h2List.push_back(mapAccEta);
     _h2List.push_back(mapAcc);
     _h2List.push_back(sumw);
+    
+        
+    // auto mapTotLowPtCut = d1.Filter("Mupt_preFSR>25.").Histo2D(TH2D("mapTotLowPtCut", "mapTotLowPtCut", _nBinsY, _yArr.data(), _nBinsPt, _ptArr.data()), "Wrap_preFSR_abs", "Wpt_preFSR", "weight");
+    // auto mapQtPt = d1.Filter("fabs(Mueta_preFSR)<2.4 && Mupt_preFSR>25. && Mupt_preFSR<55.").Histo2D(TH2D("mapQtPt", "mapQtPt", _nBinsPt, _ptArr.data(), _nBinsPtMu, _ptMuArr.data()), "Wpt_preFSR", "Mupt_preFSR", "weight");
+    // auto mapTotYEta = d1.Define("absEtaMu","fabs(Mueta_preFSR)").Filter("fabs(Mueta_preFSR)<2.4 && Mupt_preFSR>25. && Mupt_preFSR<55.").Histo2D(TH2D("mapTotYEta", "mapTotYEta", _nBinsY, _yArr.data(), _nBinsEtaMu, _etaMuArr.data()), "Wrap_preFSR_abs", "absEtaMu", "weight");
+    // _h2List.push_back(mapTotLowPtCut);
+    // _h2List.push_back(mapQtPt);
+    // _h2List.push_back(mapTotYEta);
+    
     
     return d;
 
