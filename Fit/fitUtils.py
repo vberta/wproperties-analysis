@@ -11,7 +11,7 @@ import numpy as np
 class fitUtils:
     def __init__(self, fmap, channel ="WPlus", doSyst=False):
         
-        self.nBinsQt = 13#9#8#29
+        self.nBinsQt = 11#13#9#8#29
         self.nBinsY = 6#7
         
         self.doSyst = doSyst
@@ -420,7 +420,8 @@ class fitUtils:
         etas = np.array([0.2, 0.6, 1.0, 1.4, 1.8, 2.2])
         # etas = np.array([0.2, 0.6, 1.0, 1.4, 1.8, 2.2, 2.6])
         # pts = np.array([1., 3., 5., 7., 9., 11., 14., 19., 27.])
-        pts = np.array([1., 3., 5., 7., 9., 11., 13., 15., 18., 22., 28., 38., 60.])#Extended
+        # pts = np.array([1., 3., 5., 7., 9., 11., 13., 15., 18., 22., 28., 38., 60.])#Extended
+        pts = np.array([1., 3., 5., 7., 9., 11., 14., 18., 23., 30., 46.])#Extended-reduced
         # pts =np.array([0.5, 1.25, 1.75, 2.25, 2.75, 3.25, 3.75, 4.25, 4.75, 5.25, 5.75, 6.25, 6.75, 7.25, 7.75, 8.25, 8.75, 9.25, 9.75, 10.25, 10.75, 11.25, 11.75, 12.5, 13.5, 14.5, 15.5,19.,27.])   # len=32-->29 fitted bin
 
         

@@ -19,7 +19,9 @@ private:
   // std::vector<float> _ptArr;
   // std::vector<float> _yArr;
   std::vector<float> _yArr ={0, 0.4, 0.8, 1.2 ,1.6, 2.0, 2.4, 2.8, 6.}; //Extended
-  std::vector<float> _ptArr = {0.,  2.,  4., 6.,  8., 10., 12., 14., 16., 20., 25., 32., 45., 80., 200.};//Extended
+  // std::vector<float> _ptArr = {0.,  2.,  4., 6.,  8., 10., 12., 14., 16., 20., 25., 32., 45., 80., 200.};//Extended
+  std::vector<float> _ptArr = {0.,  2.,  4., 6.,  8., 10., 12., 16., 20., 26., 36., 60., 200.};//exteded-small
+  // std::vector<float> _ptArr = {0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,48,50,52,54,56,58,60,62,64,66,68,70,72,74,76,78,80.,200};
 
   int _nBinsY = _yArr.size()-1;
   int _nBinsPt = _ptArr.size()-1;

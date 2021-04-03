@@ -32,7 +32,9 @@ private:
   
   // std::vector<float> _yArr ={0, 0.4, 0.8, 1.2 ,1.6, 2.0, 2.4, 2.8}; //Extended
   std::vector<float> _yArr ={0, 0.4, 0.8, 1.2 ,1.6, 2.0, 2.4}; //Extended
-  std::vector<float> _qTArr = {0.,  2.,  4., 6.,  8., 10., 12., 14., 16., 20., 25., 32., 45., 80};//Extended
+  // std::vector<float> _qTArr = {0.,  2.,  4., 6.,  8., 10., 12., 14., 16., 20., 25., 32., 45., 80};//Extended
+  std::vector<float> _qTArr = {0.,  2.,  4., 6.,  8., 10., 12., 16., 20., 26., 36., 60.};//exteded-small
+
   
   const int nBinsY = _yArr.size()-1;
   const int nBinsQt = _qTArr.size()-1;

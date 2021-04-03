@@ -74,7 +74,8 @@ binQtcut=-1
 if YCUT : binYcut = h2['Plus'].GetXaxis().FindBin(2.39)
 # if QTCUT : binQtcut = h2['Plus'].GetYaxis().FindBin(31.99)
 # if YCUT : binYcut = h2['Plus'].GetXaxis().FindBin(2.79)
-if QTCUT : binQtcut = h2['Plus'].GetYaxis().FindBin(79.99)
+# if QTCUT : binQtcut = h2['Plus'].GetYaxis().FindBin(79.99)
+if QTCUT : binQtcut = h2['Plus'].GetYaxis().FindBin(59.99)
 
 print("binYcut=",binYcut, "  binQtcut=",binQtcut)
 h1 = {}

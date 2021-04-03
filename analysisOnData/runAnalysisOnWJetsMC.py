@@ -34,7 +34,7 @@ def RDFprocessWJetsMCSignalACtempl(fvec, outputDir, sample, xsec, fileSF, fileSc
     weight = 'float(puWeight*PrefireWeight*lumiweight*WHSF*weightPt)'
     wtomu_cut =  selections_bkg[region] + wdecayselections['WToMu']
     # wtomu_lowAcc_cut = wtomu_cut + "&& (Wpt_preFSR>32. || Wrap_preFSR_abs>2.4)"
-    wtomu_lowAcc_cut = wtomu_cut + "&& (Wpt_preFSR>80. || Wrap_preFSR_abs>2.4)"
+    wtomu_lowAcc_cut = wtomu_cut + "&& (Wpt_preFSR>60. || Wrap_preFSR_abs>2.4)"
     #print weight, "NOMINAL WEIGHT"
     nom = ROOT.vector('string')()
     nom.push_back("")

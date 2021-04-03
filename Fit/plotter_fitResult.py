@@ -26,7 +26,8 @@ class plotter :
         # self.qtArr = [0., 4., 8., 12., 16., 20., 24., 28., 32.] #equal size
         # self.qtArr = [0.,   3.1,  5.,   7.,   9.4, 12.4, 16.5, 22.3, 32.]#quantile
         # self.qtArr = [0.,  2.,  4., 6.,  8., 10., 12., 16., 22., 32.] #2GeV
-        self.qtArr = [0.,  2.,  4., 6.,  8., 10., 12., 14., 16., 20., 25., 32., 45., 80] #Extended
+        # self.qtArr = [0.,  2.,  4., 6.,  8., 10., 12., 14., 16., 20., 25., 32., 45., 80] #Extended
+        self.qtArr =[0.,  2.,  4., 6.,  8., 10., 12., 16., 20., 26., 36., 60.,]
         # self.qtArr = [0, 1., 1.5, 2., 2.5, 3., 3.5, 4., 4.5, 5., 5.5, 6., 6.5, 7., 7.5, 8., 8.5, 9., 9.5, 10., 10.5, 11., 11.5, 12., 13., 14., 15., 16.,22,32] #05GeV
 
         self.coeffArr = [0,1,2,3,4,5,6]
@@ -401,6 +402,8 @@ class plotter :
         if apoFile!='' :
             for c in self.coeffDict:   
                 self.histos[suff+'apo'+c] = apoFile.Get('post-fit-regularization_'+c)
+                self.histos[suff+'apo'+'qt'+c] = apoFile.Get('post-fit-regularization_'+c+'_qt')
+                self.histos[suff+'apo'+'y'+c] = apoFile.Get('post-fit-regularization_'+c+'_y')
                 
         if impact :
             self.histos[suff+'impact2D'+'group'+'UNR']=FitFile.Get('nuisance_group_impact_'+covString[0])
@@ -694,7 +697,7 @@ class plotter :
                     # toyLim[0] = 1.1*toyPullLim[0]
                     # toyPullLim[1] = 1.1*toyPullLim[1]
     
-    def varBinWidth_modifier(self) :
+    def varBinWidth_modifier(self,suff) :
         for k,histo in self.histos.items() :
             
             if 'A0' in k or 'A1' in k  or 'A2' in k or 'A3' in k or 'A4' in k: continue 
@@ -704,6 +707,7 @@ class plotter :
             if 'impact' in k : continue 
             if 'NuiConstr' in k : continue
             if 'mass' in k : continue
+            if suff+'apo' in k : continue 
                         
             if not (type(histo)==ROOT.TH1F or type(histo)==ROOT.TH1D or type(histo)==ROOT.TH2F or type(histo)==ROOT.TH2D) : continue
             # print(k)
@@ -809,7 +813,7 @@ class plotter :
         else :
             toyFile = ''
         self.getHistos(inFile=inFile, FitFile=FitFile, uncorrelate=uncorrelate,suff=suff,apoFile=apoFile,toyFile=toyFile,impact=impact, postfit=postfit)
-        self.varBinWidth_modifier()
+        self.varBinWidth_modifier(suff=suff)
         
 
 
@@ -1640,6 +1644,7 @@ class plotter :
                     self.histos[suff+'apo'+'y'+str(j)+c].SetLineWidth(5)
                     self.histos[suff+'apo'+'y'+str(j)+c].SetMarkerStyle(20)
                     self.histos[suff+'apo'+'y'+str(j)+c].Draw("EX0 same")
+                    
 
                 self.leg[suff+'FitAC'+'y'+str(j)+c].Draw("same")
                 
@@ -2148,6 +2153,16 @@ class plotter :
             self.histos[suff+'FitBand'+'qt'+c].Draw("E2 same")
             self.histos[suff+'FitAC'+'qt'+c].DrawCopy("same") #to have foreground
             
+            if aposteriori!='' :
+                self.histos[suff+'apo'+'qt'+c].SetLineColor(ROOT.kAzure+1)
+                self.histos[suff+'apo'+'qt'+c].SetLineWidth(1)
+                self.histos[suff+'apo'+'qt'+c].SetMarkerStyle(20)
+                # self.histos[suff+'apo'+'qt'+c].Draw("EX0 same")
+                self.histos[suff+'apo'+'qt'+c].DrawCopy("Lhist same")
+                self.histos[suff+'apo'+'qt'+c].SetFillColor(ROOT.kAzure+1)
+                self.histos[suff+'apo'+'qt'+c].SetFillStyle(3002)
+                self.histos[suff+'apo'+'qt'+c].Draw("E3 same")
+            
             if toy!='' and not self.helXsec :
                 self.histos[suff+'FitAC'+'qt'+c+'toy'].SetLineColor(ROOT.kViolet+1)
                 self.histos[suff+'FitAC'+'qt'+c+'toy'].SetFillStyle(0)
@@ -2208,6 +2223,8 @@ class plotter :
             self.leg[suff+'FitAC'+'qt'+c].SetNColumns(2) 
             if toy!='' and not self.helXsec :  
                 self.leg[suff+'FitAC'+'qt'+c].AddEntry(self.histos[suff+'FitAC'+'qt'+c+'toy'], "MC toys  #mu#pm#sigma")
+            if aposteriori!='' :
+                    self.leg[suff+'FitAC'+'qt'+c].AddEntry(self.histos[suff+'apo'+'qt'+c], "Post-fit-regularized")
             # self.histos[suff+'FitBandPDF'+'qt'+c].SetFillColor(self.groupedSystColors['LHEPdfWeightVars'][0])
             # self.histos[suff+'FitBandPDF'+'qt'+c].SetFillStyle(0)
             # self.histos[suff+'FitBandPDF'+'qt'+c].SetLineColor(self.groupedSystColors['LHEPdfWeightVars'][0])
@@ -2269,6 +2286,17 @@ class plotter :
             self.histos[suff+'FitBand'+'y'+c].SetFillStyle(3001)
             self.histos[suff+'FitBand'+'y'+c].Draw("E2 same")
             self.histos[suff+'FitAC'+'y'+c].DrawCopy("same") #to have foreground
+            
+            if aposteriori!='' :
+                self.histos[suff+'apo'+'y'+c].SetLineColor(ROOT.kAzure+1)
+                self.histos[suff+'apo'+'y'+c].SetLineWidth(1)
+                self.histos[suff+'apo'+'y'+c].SetMarkerStyle(20)
+                # self.histos[suff+'apo'+'y'+c].Draw("EX0 same")
+                self.histos[suff+'apo'+'y'+c].DrawCopy("Lhist same")
+                self.histos[suff+'apo'+'y'+c].SetFillColor(ROOT.kAzure+1)
+                self.histos[suff+'apo'+'y'+c].SetFillStyle(3002)
+                self.histos[suff+'apo'+'y'+c].Draw("E3 same")
+
                         
             if toy!='' and not self.helXsec :
                 self.histos[suff+'FitAC'+'y'+c+'toy'].SetLineColor(ROOT.kViolet+1)
@@ -2330,6 +2358,8 @@ class plotter :
             self.leg[suff+'FitAC'+'y'+c].SetNColumns(2)    
             if toy!='' and not self.helXsec :  
                 self.leg[suff+'FitAC'+'y'+c].AddEntry(self.histos[suff+'FitAC'+'y'+c+'toy'], "MC toys  #mu#pm#sigma")
+            if aposteriori!='' :
+                    self.leg[suff+'FitAC'+'y'+c].AddEntry(self.histos[suff+'apo'+'y'+c], "Post-fit-regularized")
             # self.histos[suff+'FitBandPDF'+'y'+c].SetFillColor(self.groupedSystColors['LHEPdfWeightVars'][0])#kMagenta-7)
             # self.histos[suff+'FitBandPDF'+'y'+c].SetFillStyle(0)
             # self.histos[suff+'FitBandPDF'+'y'+c].SetLineColor(self.groupedSystColors['LHEPdfWeightVars'][0])#kMagenta-7)
@@ -3277,6 +3307,7 @@ class plotter :
             for mtx in ['corr','cov'] :
                 try : 
                     self.histos[suff+mtx+'Mat'].Write()
+                    self.histos[suff+mtx+'MatIntegrated'].Write()
                 except :
                     print("missing total matrix in writing")
                 for c in self.coeffDict:
@@ -3292,6 +3323,7 @@ class plotter :
             dirFinalDict['nuisance'+suff].cd()
             for nuiDict_key, nuiDict_val in self.NuiConstrDict.items() :
                 self.canvas[suff+'NuiConstr'+nuiDict_key].Write()
+                self.histos[suff+'NuiConstr'+nuiDict_key].Write()
             self.histos[suff+'mass'].Write()
             
             if postfit : 
