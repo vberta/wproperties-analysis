@@ -189,13 +189,18 @@ if step7 :
     s7start=time.time()
     print("step7: fit result plotting...")
     os.chdir('Fit/'+outputDir)
-    os.system("python ../plotter_fitResult.py --output fitPlots_Wplus --fitFile fit_Wplus_reco.root --suff reco --input ../../analysisOnGen/genInput_Wplus.root --impact 1")
+    os.system("python ../plotter_fitResult.py --output fitPlots_Wplus --fitFile fit_Wplus_reco.root --suff reco --input ../../analysisOnGen/genInput_Wplus.root --impact 1 --postfit 1")
     if regFit :
-        os.system('python ../rebuild_regulFunc.py -o fitRegulFunc_Wplus -f fit_Wplus_reco.root -i fitPlots_Wplus.root')
+        os.system('python ../rebuild_regulFunc.py -o fitRegulFunc_Wplus -f fit_Wplus_reco.root -i fitPlots_Wplus_angCoeff.root')
         os.system('python ../plotter_fitResult.py --output fitPlots_Wplus_rebuild --fitFile fit_Wplus_reco.root --suff reco --input ../../analysisOnGen/genInput_Wplus.root --impact 1 --aposteriori fitRegulFunc_Wplus.root')
     os.chdir('../../')
     s7end=time.time()
     runTimes.append(s7end - s7start)
+    print("note: to have resonable impact for the mass additional procedure must be done. see comments in runTheMatrix")
+    # - the mass nuisance type must be changed to "shapeNoConstraint" and the fit must be repeated --> [FIT1]
+    # - to obtain the statistical uncertainity on the mass another run of the fit is needed, without all the syst but "mass" --> [FIT2]
+    # - then the plotter_fitResult.py must be runned on [FIT2] --> [OUT2]
+    # - then the output of this plotter must be used as "--mass [OUT2]" parameter to plot [FIT1]
 else :   runTimes.append(0.)
 
 if step8 :
@@ -207,9 +212,9 @@ if step8 :
         os.chdir('CMSSW_11_2_0_pre8/src/')
         os.system('cmsenv')
         os.chdir('../../')
-    os.system('python aposterioriFit.py --fitInput ../'+outputDir+'/fitPlots_Wplus.root --output ../'+outputDir+'/aposterioriFit_Wplus')
+    os.system('python aposterioriFit.py --fitInput ../'+outputDir+'/fitPlots_Wplus_angCoeff.root --output ../'+outputDir+'/aposterioriFit_Wplus')
     os.chdir('../'+outputDir)
-    os.system('python ../plotter_fitResult.py --output fitPlots_Wplus_aposteriori --fitFile fit_Wplus_reco.root --suff reco --input ../../analysisOnGen/genInput_Wplus.root --impact 1 --aposteriori aposterioriFit_Wplus.root')
+    os.system('python ../plotter_fitResult.py --output fitPlots_Wplus_aposteriori --fitFile fit_Wplus_reco.root --suff reco --input ../../analysisOnGen/genInput_Wplus.root --impact 1 --postfit 1 --aposteriori aposterioriFit_Wplus.root')
     os.chdir('../../')
     s8end=time.time()
     runTimes.append(s8end - s8start)

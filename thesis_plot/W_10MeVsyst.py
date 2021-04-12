@@ -16,13 +16,14 @@ ROOT.gStyle.SetOptStat(0)
 
 class plotter:
     
-    def __init__(self, outFile, inFile,ms,qts,qtr):
+    def __init__(self, outFile, inFile,ms,qts,qtr,qtName=[]):
         
         self.ms = ms
         self.qts = qts
         self.qtr = qtr
         self.inFile = inFile # indir containig the various output
         self.outFile = outFile+'_m'+self.ms+'_qt'+self.qts+'_cut'+self.qtr
+        self.qtName = qtName
 
         
         self.dir ='WToMu/prefit_Signal/'
@@ -38,7 +39,10 @@ class plotter:
             "LHEPdfWeight" : ["_LHEPdfWeightHess{}".format(i+1) for i in range(60)],
             "alphaS"       : ["_alphaSUp", "_alphaSDown"],
             "mass"         : ["_massUp","_massDown"],
-            "Qt"          : ["_QtUp","_QtDown"], 
+            "Qt"          : ["_QtUp","_QtDown"], #old
+            # "Qt"          : ["_QtTheoryUp","_QtTheoryDown"], 
+            # "Qt"          : ["_QtCMSUp","_QtCMSDown"], 
+            # "Qt"          : ["_QtTheoryUp","_QtTheoryDown","_Qt8Up","_Qt8Down","_Qt3Up","_Qt3Down","_Qt1Up","_Qt1Down","_QtCMSUp","_QtCMSDown"   ], 
             "Nominal"    : ['']
 }
         
@@ -50,6 +54,9 @@ class plotter:
             "mass" : [ROOT.kBlue-4, 'm_{W} #pm '+self.ms+' MeV', 35],
             "PDF" : [ROOT.kRed+1, 'PDF+#alpha_{s}']
         }
+        
+        if len(self.qtName)!=0 :
+            self.extSyst['Qt'] = self.qtName
         
         # self.doNotPlotGroup = ["alphaS" ] #already included in other groups (summed)
 
@@ -71,7 +78,6 @@ class plotter:
         for sKind, sList in self.extSyst.items():
              for sName in sList :
                  h2 = inFile.Get(self.dir+sKind+"/Mu1_pt"+sName)
-                 
                  for s,sInfo in self.signDict.items() :
                     self.histoDict[s+sName] = h2.ProjectionX(h2.GetName() + s,sInfo[0],sInfo[0])
                     self.varBinWidth_modifier(self.histoDict[s+sName])
@@ -229,7 +235,59 @@ class plotter:
             
             outFile.cd()
             can.Write()
+
+def summary_table(qtDict) :
+    #wplus is used only
+    totGraph = ROOT.TGraph()
+    it = 0 
+    for varInd, varVal in qtDict.items() : 
+
+        totGraph.SetPoint(it,float(varVal[1]),float(varVal[2])) 
         
+        filename = varVal[3]+'_m'+'10'+'_qt'+varVal[1]+'_cut'+varVal[2]
+        inFile = ROOT.TFile.Open(filename+'.root')
+        can = inFile.Get('pT_plus')
+        pad = can.GetPrimitive('pad_histo_plus')
+        hvar = pad.GetPrimitive("Mu1_pt"+varVal[0][0]+"plus")
+        hnom = pad.GetPrimitive("Mu1_ptplus")
+        value = 1000*abs(hvar.GetMean()-hnom.GetMean())
+        
+        # valString = "%.0f"%(value)
+        # totString = '\splitline{'+varVal[4]+'}{\Delta\mu='+valString+ '\, MeV}'
+        
+        latex_value = ROOT.TLatex(totGraph.GetX()[it]+0.1,totGraph.GetY()[it]-0.12,"#splitline{#bf{%s}}{#bf{#Delta#mu=%.0f MeV}}"%(varVal[4],value) )   
+        latex_value.SetTextSize(0.035) 
+        # latex_value.SetTextFont(4) 
+        latex_value.SetTextAlign(11) 
+        # latex_target.SetTextColor(2)
+        totGraph.GetListOfFunctions().Add(latex_value)
+        
+        it+=1
+    # totGraph.SetPoint(it+1,11,1) #dummy for draw with the correct range, because root is terrible
+        
+    can = ROOT.TCanvas('W_qt_uncertainty_summary','W_qt_uncertainty_summary', 1600,1200)
+    can.cd()
+    can.SetGridx()
+    can.SetGridy()
+    totGraph.Draw("ap")
+    
+    totGraph.GetXaxis().SetTitle("q_{T}^{W} uncertainty [%]")
+    totGraph.GetYaxis().SetTitle("Bin width [GeV]")
+    totGraph.GetYaxis().SetRangeUser(0,10)
+    # totGraph.GetXaxis().SetCanExtend(1)
+    totGraph.GetXaxis().SetLimits(0,10)
+    totGraph.GetXaxis().SetRangeUser(0,10)
+    totGraph.SetMarkerStyle(20)
+    totGraph.SetMarkerColor(ROOT.kRed+1)
+    totGraph.SetMarkerSize(2)
+
+    
+    outF =  ROOT.TFile('Fit_Wqt_uncertainty_summary.root', "RECREATE")
+    outF.cd()
+    can.Write()  
+    can.SaveAs("Fit_Wqt_uncertainty_summary.pdf")  
+    can.SaveAs("Fit_Wqt_uncertainty_summary.png")  
+    
         
         
 
@@ -240,6 +298,7 @@ parser.add_argument('-i','--input', type=str, default='TEST',help="name of the i
 parser.add_argument('-m','--mShift', type=str, default='10',help="mass shift (meV)")
 parser.add_argument('-q','--qtShift', type=str, default='4',help="qt shift (per cent)")
 parser.add_argument('-r','--qtrange', type=str, default='5',help="qt shift range (GeV)")
+parser.add_argument('-v','--variation', type=int, default=False,help="if true uses hardoced variation (ignored -q,-r,-o)")
 
 args = parser.parse_args()
 OUTPUT = args.output
@@ -247,7 +306,25 @@ INPUT = args.input
 MSHIFT = args.mShift
 QTSHIFT = args.qtShift
 QTRANGE = args.qtrange
+VARIATION = args.variation
 
-p=plotter(outFile=OUTPUT, inFile = INPUT, ms=MSHIFT, qts = QTSHIFT, qtr=QTRANGE)
-p.plotStack()
+qtVarDict = {
+    'Theory' : [["_QtTheoryUp","_QtTheoryDown"], '4', '5', 'W_10MeVSyst__AKAtheory_', 'Theory unc.'],
+    'CMS' : [["_QtCMSUp","_QtCMSDown"], '2', '7.5', 'W_10MeVSyst__AKAcms__', 'CMS Run 1'],
+    'Stage1' : [["_Qt8Up","_Qt8Down"], '8', '2', 'W_10MeVSyst__AKAstage1__', 'Stage 1'],
+    'Stage2' : [["_Qt3Up","_Qt3Down"], '3', '2', 'W_10MeVSyst__AKAstage2__', 'Stage 2'],
+    'Stage3' : [["_Qt1Up","_Qt1Down"], '1', '2', 'W_10MeVSyst__AKAstage3__', 'Stage 3']
+}
+
+if not VARIATION :
+    p=plotter(outFile=OUTPUT, inFile = INPUT, ms=MSHIFT, qts = QTSHIFT, qtr=QTRANGE)
+    p.plotStack()
+    
+else :
+    for varInd, varVal in qtVarDict.items() :
+        print("variation:",varInd, varVal[0])
+        p=plotter(outFile=varVal[3], inFile = INPUT, ms=MSHIFT, qts = varVal[1], qtr=varVal[2],qtName=varVal[0])
+        p.plotStack()  
+        
+    summary_table(qtVarDict)
 
