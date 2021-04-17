@@ -80,7 +80,7 @@ class plotter:
                  h2 = inFile.Get(self.dir+sKind+"/Mu1_pt"+sName)
                  for s,sInfo in self.signDict.items() :
                     self.histoDict[s+sName] = h2.ProjectionX(h2.GetName() + s,sInfo[0],sInfo[0])
-                    self.varBinWidth_modifier(self.histoDict[s+sName])
+                    # self.varBinWidth_modifier(self.histoDict[s+sName]) #I want to express the result in term of Events
 
 
     def plotStack(self,skipSyst=[]):
@@ -149,37 +149,39 @@ class plotter:
             self.histoDict['ratio'+s].SetFillColor(1)
             self.histoDict['ratio'+s].SetFillStyle(3002)
             self.histoDict['ratio'+s].GetXaxis().SetTitle('p_{T}^{#mu} [GeV]')
-            self.histoDict['ratio'+s].GetYaxis().SetTitle('Var/Nom')
+            self.histoDict['ratio'+s].GetYaxis().SetTitle('Var./Nom.')
             self.histoDict['ratio'+s].SetTitle('')
-            self.histoDict['ratio'+s].GetYaxis().SetTitleOffset(0.50)#0.25
+            self.histoDict['ratio'+s].GetYaxis().SetTitleOffset(0.65)#0.25
             self.histoDict['ratio'+s].GetYaxis().SetNdivisions(506)
-            self.histoDict['ratio'+s].SetTitleSize(0.10,'y')#0.15
+            self.histoDict['ratio'+s].SetTitleSize(0.08,'y')#0.15
             self.histoDict['ratio'+s].SetLabelSize(0.08,'y')#0.12
-            self.histoDict['ratio'+s].GetXaxis().SetTitleOffset(0.8)
-            self.histoDict['ratio'+s].SetTitleSize(0.11,'x')#0.18
+            self.histoDict['ratio'+s].GetXaxis().SetTitleOffset(0.85)
+            self.histoDict['ratio'+s].SetTitleSize(0.10,'x')#0.18
             self.histoDict['ratio'+s].SetLabelSize(0.08,'x')#0.16
             self.histoDict['ratio'+s].GetYaxis().SetRangeUser(0.975,1.025)
             
             self.histoDict[s].GetXaxis().SetTitle('p_{T}^{#mu} [GeV]')
-            self.histoDict[s].GetYaxis().SetTitle('dN/dp_{T} [GeV^{-1}]')
+            self.histoDict[s].GetYaxis().SetTitle('Events / '+str(self.histoDict[s].GetBinWidth(1))+' GeV')
             # self.histoDict[s].SetTitle('Muon trasverse momentum,'+sInfo[2])
             self.histoDict[s].SetTitle('')
             # self.histoDict[s].SetMaximum(1.3*self.histoDict[s].GetMaximum()) 
-            self.histoDict[s].GetYaxis().SetTitleOffset(1.3)
             self.histoDict[s].GetXaxis().SetTitleOffset(3)
             self.histoDict[s].GetXaxis().SetLabelOffset(3)
-            self.histoDict[s].GetYaxis().SetTitleOffset(0.55)#0.25
-            self.histoDict[s].SetTitleSize(0.09,'y')#0.15
+            self.histoDict[s].GetYaxis().SetTitleOffset(0.65)#0.25
+            self.histoDict[s].SetTitleSize(0.08,'y')#0.15
             self.histoDict[s].SetLabelSize(0.06,'y')#0.12
+            self.histoDict[s].SetMaximum(1.3*self.histoDict[s].GetMaximum())
+            # self.histoDict[s].SetMinimum(0)
 
             
             
         #legend
         legDict = {}
         for s,sInfo in self.signDict.items() : 
-            legDict[s] = ROOT.TLegend(0.59, 0.45, 0.988, 0.97)
-            # legDict[s].SetFillStyle(0)
-            # legDict[s].SetBorderSize(0)
+            # legDict[s] = ROOT.TLegend(0.59, 0.45, 0.988, 0.97)
+            legDict[s] = ROOT.TLegend(0.55, 0.40, 0.89, 0.9)
+            legDict[s].SetFillStyle(0)
+            legDict[s].SetBorderSize(0)
             legDict[s].AddEntry(self.histoDict[s],self.groupedSystColors['Nominal'][1]+", #mu="+str(round(self.histoDict[s].GetMean(),3))+' GeV')
             legDict[s].SetMargin(0.1)
             legDict[s].SetHeader(" "+sInfo[2])
@@ -193,6 +195,13 @@ class plotter:
         
         
         #canvas
+        
+        cmslab = "#bf{CMS} #scale[0.7]{#it{Simulation Work in progress}}"
+        lumilab = " #scale[0.7]{35.9 fb^{-1} (13 TeV)}"
+        # lumilab = " #scale[0.7]{13 TeV}"
+        cmsLatex = ROOT.TLatex()
+        
+        
         for s,sInfo in self.signDict.items() :
             can = ROOT.TCanvas('pT_'+s,'pT_'+s,1600,1400)
             can.cd()
@@ -230,6 +239,16 @@ class plotter:
                 for sName in sList : 
                     self.histoDict['ratio'+s+sName].Draw("hist same")
             
+            pad_histo.cd() 
+            cmsLatex.SetNDC()
+            cmsLatex.SetTextFont(42)
+            cmsLatex.SetTextColor(ROOT.kBlack)
+            cmsLatex.SetTextAlign(31) 
+            cmsLatex.SetTextSize(1.3*cmsLatex.GetTextSize())
+            cmsLatex.DrawLatex(1-pad_histo.GetRightMargin(),1-0.8*pad_histo.GetTopMargin(),lumilab)
+            cmsLatex.SetTextAlign(11)
+            cmsLatex.DrawLatex(0.07+pad_histo.GetLeftMargin(),1-0.8*pad_histo.GetTopMargin(),cmslab)
+            
             can.SaveAs("{name}_{sign}.pdf".format(name=self.outFile,sign=s))
             can.SaveAs("{name}_{sign}.png".format(name=self.outFile,sign=s))
             
@@ -264,7 +283,7 @@ def summary_table(qtDict) :
         
         it+=1
     # totGraph.SetPoint(it+1,11,1) #dummy for draw with the correct range, because root is terrible
-        
+            
     can = ROOT.TCanvas('W_qt_uncertainty_summary','W_qt_uncertainty_summary', 1600,1200)
     can.cd()
     can.SetGridx()
@@ -280,6 +299,15 @@ def summary_table(qtDict) :
     totGraph.SetMarkerStyle(20)
     totGraph.SetMarkerColor(ROOT.kRed+1)
     totGraph.SetMarkerSize(2)
+    
+    cmslab = "#bf{CMS} #scale[0.7]{#it{Simulation Work in progress}}"
+    # lumilab = " #scale[0.7]{13 TeV}"
+    cmsLatex = ROOT.TLatex()
+    cmsLatex.SetNDC()
+    cmsLatex.SetTextFont(42)
+    cmsLatex.SetTextColor(ROOT.kBlack)
+    cmsLatex.SetTextAlign(11)
+    cmsLatex.DrawLatex(can.GetLeftMargin(),1-0.8*can.GetTopMargin(),cmslab)
 
     
     outF =  ROOT.TFile('Fit_Wqt_uncertainty_summary.root', "RECREATE")
@@ -317,7 +345,7 @@ qtVarDict = {
 }
 
 if not VARIATION :
-    p=plotter(outFile=OUTPUT, inFile = INPUT, ms=MSHIFT, qts = QTSHIFT, qtr=QTRANGE)
+    p=plotter(outFile=OUTPUT, inFile = INPUT, ms=MSHIFT, qts = QTSHIFT, qtr=QTRANGE, qtName=["_QtTheoryUp","_QtTheoryDown"])
     p.plotStack()
     
 else :

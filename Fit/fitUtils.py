@@ -64,6 +64,7 @@ class fitUtils:
                     if not "helXsecs7" in proc and not "helXsecs8" in proc and not "helXsecs9" in proc:
                         self.signals.append(proc)
         bkg_list = ["DYJets","DiBoson","Top","Fake","WtoTau","LowAcc"] 
+        # bkg_list = ["DiBoson","Top","Fake","WtoTau"] 
         self.processes.extend(bkg_list)
     def shapeFile(self):
         
@@ -285,15 +286,15 @@ class fitUtils:
 
                     self.DC.systs.append((var, False, self.templSystematics[syst]["type"], [], aux))
         
-        self.DC.groups = {'mass': ['mass'],
+        self.DC.groups = {'mass': set(['mass']),
                          'pdfs': set(['LHEPdfWeightHess{}'.format(i+1) for i in range(60)]+['alphaS']),
                          'WHSFStat': set(["WHSFSyst0Eta{}".format(i) for i in range(1, 49)]+["WHSFSyst1Eta{}".format(i) for i in range(1, 49)]+["WHSFSyst2Eta{}".format(i) for i in range(1, 49)]),
-                         'WHSFSyst': ['WHSFSystFlat'],
+                         'WHSFSyst': set(['WHSFSystFlat']),
                          'jme': set(['jesTotal', 'unclustEn']),
                          'PrefireWeight':['PrefireWeight'],
-                          'CMSlumi' :['CMSlumi','lumi'],
+                          'CMSlumi' :set(['CMSlumi','lumi']),
                           "ewkXsec" : set(["Topxsec","Dibosonxsec","Tauxsec"]),
-                          "LeptonVeto" : ["LeptonVeto"],
+                          "LeptonVeto" : set(["LeptonVeto"]),
                           "WQT" : set(["LHEScaleWeight_muR0p5_muF0p5_WQTlow", "LHEScaleWeight_muR0p5_muF1p0_WQTlow","LHEScaleWeight_muR1p0_muF0p5_WQTlow","LHEScaleWeight_muR1p0_muF2p0_WQTlow","LHEScaleWeight_muR2p0_muF1p0_WQTlow","LHEScaleWeight_muR2p0_muF2p0_WQTlow", 
                                 "LHEScaleWeight_muR0p5_muF0p5_WQTmid", "LHEScaleWeight_muR0p5_muF1p0_WQTmid","LHEScaleWeight_muR1p0_muF0p5_WQTmid","LHEScaleWeight_muR1p0_muF2p0_WQTmid","LHEScaleWeight_muR2p0_muF1p0_WQTmid","LHEScaleWeight_muR2p0_muF2p0_WQTmid", 
                                 "LHEScaleWeight_muR0p5_muF0p5_WQThigh", "LHEScaleWeight_muR0p5_muF1p0_WQThigh","LHEScaleWeight_muR1p0_muF0p5_WQThigh","LHEScaleWeight_muR1p0_muF2p0_WQThigh","LHEScaleWeight_muR2p0_muF1p0_WQThigh","LHEScaleWeight_muR2p0_muF2p0_WQThigh",
@@ -301,6 +302,13 @@ class fitUtils:
                           'ptScale':set(["corrected","corrected"]), 
                           'QCDnorm' : set(['QCDnorm'])
                          }  # <type 'dict'>
+        self.DC.groups['other'] = set()
+        for k,vals in self.DC.groups.items() :
+            if k=='pdfs' or k=='WHSFStat' or k=='CMSlumi' or k=='WQT' : 
+                continue
+            else : 
+                for val in vals  :
+                    self.DC.groups['other'].add(val)
         
         self.DC.shapeMap = 	{self.channel: {'*': [self.channel+'.root', '$PROCESS', '$PROCESS_$SYSTEMATIC']},\
         self.channel+'_xsec': {'*': [self.channel+'_xsec.root', '$PROCESS', '$PROCESS_$SYSTEMATIC']}} # <type 'dict'>
@@ -428,7 +436,7 @@ class fitUtils:
         # etas = etas/2.4
         # pts = pts/32.
         
-        
+                
         testnames = []
         bincenters = []
         for i in range(self.nBinsY):
@@ -436,7 +444,7 @@ class fitUtils:
                 testnames.append("y_%i_qt_%i_A0" % (i+1, j+1))
                 bincenters.append([etas[i], pts[j]])
 
-        self.poly2DRegGroups["poly2dA0"] = {"names": testnames, "bincenters": bincenters, "firstorder": (0, 1), "lastorder": (2, 3), "fullorder": (5, 12)}#full=max number of pars=nbins-1
+        self.poly2DRegGroups["poly2dA0"] = {"names": testnames, "bincenters": bincenters, "firstorder": (0, 1), "lastorder": (2, 3), "fullorder": (len(etas)-1, len(pts)-1)}#full=max number of pars=nbins-1
         # self.poly2DRegGroups["poly2dA0"] = {"names": testnames, "bincenters": bincenters, "firstorder": (0, 1), "lastorder": (2, 3), "fullorder": (5, 8)}#full=max number of pars=nbins-1
 
 
@@ -448,7 +456,7 @@ class fitUtils:
                 testnames.append("y_%i_qt_%i_A1" % (i+1, j+1))
                 bincenters.append([etas[i], pts[j]])
 
-        self.poly2DRegGroups["poly2dA1"] = {"names": testnames, "bincenters": bincenters, "firstorder": (1, 1), "lastorder": (3, 3), "fullorder": (5, 12)} 
+        self.poly2DRegGroups["poly2dA1"] = {"names": testnames, "bincenters": bincenters, "firstorder": (1, 1), "lastorder": (2, 5), "fullorder": (len(etas)-1, len(pts)-1)} 
         # self.poly2DRegGroups["poly2dA1"] = {"names": testnames, "bincenters": bincenters, "firstorder": (1, 1), "lastorder": (3, 3), "fullorder": (5, 8)} 
         
         testnames = []
@@ -458,7 +466,7 @@ class fitUtils:
                 testnames.append("y_%i_qt_%i_A2" % (i+1, j+1))
                 bincenters.append([etas[i], pts[j]])
 
-        self.poly2DRegGroups["poly2dA2"] = {"names": testnames, "bincenters": bincenters, "firstorder": (0, 1), "lastorder": (2, 4), "fullorder": (5, 12)} 
+        self.poly2DRegGroups["poly2dA2"] = {"names": testnames, "bincenters": bincenters, "firstorder": (0, 1), "lastorder": (2, 4), "fullorder": (len(etas)-1, len(pts)-1)} 
         # self.poly2DRegGroups["poly2dA2"] = {"names": testnames, "bincenters": bincenters, "firstorder": (0, 1), "lastorder": (2, 4), "fullorder": (5, 8)} 
         
         testnames = []
@@ -468,7 +476,7 @@ class fitUtils:
                 testnames.append("y_%i_qt_%i_A3" % (i+1, j+1))
                 bincenters.append([etas[i], pts[j]])
 
-        self.poly2DRegGroups["poly2dA3"] = {"names": testnames, "bincenters": bincenters, "firstorder": (0, 1), "lastorder": (2, 3), "fullorder": (5, 12)} 
+        self.poly2DRegGroups["poly2dA3"] = {"names": testnames, "bincenters": bincenters, "firstorder": (0, 1), "lastorder": (2, 4), "fullorder": (len(etas)-1, len(pts)-1)} 
         # self.poly2DRegGroups["poly2dA3"] = {"names": testnames, "bincenters": bincenters, "firstorder": (0, 1), "lastorder": (2, 3), "fullorder": (5, 8)} 
 
         testnames = []
@@ -478,7 +486,7 @@ class fitUtils:
                 testnames.append("y_%i_qt_%i_A4" % (i+1, j+1))
                 bincenters.append([etas[i], pts[j]])
 
-        self.poly2DRegGroups["poly2dA4"] = {"names": testnames, "bincenters": bincenters, "firstorder": (1, 0), "lastorder": (3, 4), "fullorder": (5, 12)} 
+        self.poly2DRegGroups["poly2dA4"] = {"names": testnames, "bincenters": bincenters, "firstorder": (1, 0), "lastorder": (3, 5), "fullorder": (len(etas)-1, len(pts)-1)} 
         # self.poly2DRegGroups["poly2dA4"] = {"names": testnames, "bincenters": bincenters, "firstorder": (1, 0), "lastorder": (3, 4), "fullorder": (5, 8)} 
 
         self.DC.poly2DRegGroups = self.poly2DRegGroups

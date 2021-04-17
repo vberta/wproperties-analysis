@@ -42,13 +42,22 @@ class plotter:
             "Data"        : ['Data_plots.root',         dirMC,         1,                 "Data"]
             }    
         
+        # self.variableDict = {
+        #     "Mu1_pt_plus"   :  ["Mu1_pt",   "p_{T}^{#mu} distribution, W^{+}",    "dN/dp_{T}^{#mu} [GeV^{-1}]", "p_{T}^{#mu} [GeV]"],
+        #     "Mu1_pt_minus"  :  ["Mu1_pt",   "p_{T}^{#mu} distribution, W^{-}",    "dN/dp_{T}^{#mu} [GeV^{-1}]", "p_{T}^{#mu} [GeV]"],
+        #     "Mu1_eta_plus"  :  ["Mu1_eta",  "#eta distribution, W^{+}",            "dN/d#eta", "#eta^{#mu}"],
+        #     "Mu1_eta_minus" :  ["Mu1_eta",  "#eta distribution, W^{-}",            "dN/d#eta", "#eta^{#mu}"],
+        #     "MT_plus"       :  ["MT",       "m_{T} distribution, W^{+}",           "dN/dm_{T} [GeV^{-1}]", "m_{T} [GeV]"],      
+        #     "MT_minus"      :  ["MT",       "m_{T} distribution, W^{-}",           "dN/dm_{T} [GeV^{-1}]", "m_{T} [GeV]"],      
+        # }
+        
         self.variableDict = {
-            "Mu1_pt_plus"   :  ["Mu1_pt",   "p_{T}^{#mu} distribution, W^{+}",    "dN/dp_{T}^{#mu} [GeV^{-1}]", "p_{T}^{#mu} [GeV]"],
-            "Mu1_pt_minus"  :  ["Mu1_pt",   "p_{T}^{#mu} distribution, W^{-}",    "dN/dp_{T} [GeV^{-1}]", "p_{T}^{#mu} [GeV]"],
-            "Mu1_eta_plus"  :  ["Mu1_eta",  "#eta distribution, W^{+}",            "dN/d#eta", "#eta^{#mu}"],
-            "Mu1_eta_minus" :  ["Mu1_eta",  "#eta distribution, W^{-}",            "dN/d#eta", "#eta^{#mu}"],
-            "MT_plus"       :  ["MT",       "m_{T} distribution, W^{+}",           "dN/dm_{T} [GeV^{-1}]", "m_{T} [GeV]"],      
-            "MT_minus"      :  ["MT",       "m_{T} distribution, W^{-}",           "dN/dm_{T} [GeV^{-1}]", "m_{T} [GeV]"],      
+            "Mu1_pt_plus"   :  ["Mu1_pt",   "p_{T}^{#mu} distribution, W^{+}",    "Events / ", "p_{T}^{#mu} [GeV]", " GeV"],
+            "Mu1_pt_minus"  :  ["Mu1_pt",   "p_{T}^{#mu} distribution, W^{-}",    "Events / ", "p_{T}^{#mu} [GeV]", " GeV"],
+            "Mu1_eta_plus"  :  ["Mu1_eta",  "#eta distribution, W^{+}",            "Events / ", "#eta^{#mu}", ""],
+            "Mu1_eta_minus" :  ["Mu1_eta",  "#eta distribution, W^{-}",            "Events / ", "#eta^{#mu}", ""],
+            "MT_plus"       :  ["MT",       "m_{T} distribution, W^{+}",           "Events / ", "m_{T} [GeV]", " GeV"],      
+            "MT_minus"      :  ["MT",       "m_{T} distribution, W^{-}",           "Events / ", "m_{T} [GeV]", " GeV"],      
         }
         
         self.signDict = {
@@ -175,7 +184,7 @@ class plotter:
                         
                         for s,sInfo in self.signDict.items() :
                             self.histoDict[f+s+var+sName] = h2.ProjectionX(h2.GetName() + s, sInfo[0],sInfo[0])
-                            self.varBinWidth_modifier(self.histoDict[f+s+var+sName])
+                            # self.varBinWidth_modifier(self.histoDict[f+s+var+sName])
             
             for sKind, sList in self.extSyst.items():  #flat syst building
                 if sKind not in self.flatDict : continue 
@@ -195,13 +204,17 @@ class plotter:
                                 h2.Scale(1/self.flatDict[sKind]['weight'])
                         for s,sInfo in self.signDict.items() :
                             self.histoDict[f+s+var+sName] = h2.ProjectionX(h2.GetName() + s, sInfo[0],sInfo[0])
-                            self.varBinWidth_modifier(self.histoDict[f+s+var+sName])         
+                            # self.varBinWidth_modifier(self.histoDict[f+s+var+sName])         
                                             
     def plotStack(self,skipSyst=[]):
 
         self.getHistos()
         fname = "{dir}/stackPlots{suff}.root".format(dir=self.outdir,suff=self.SBsuff)
         outFile =  ROOT.TFile(fname, "RECREATE")
+        
+        cmslab = "#bf{CMS} #scale[0.7]{#it{Work in progress}}"
+        lumilab = " #scale[0.7]{35.9 fb^{-1} (13 TeV)}"
+        cmsLatex = ROOT.TLatex()
         
         for var,varInfo in self.variableDict.items() :
             
@@ -220,12 +233,15 @@ class plotter:
                 self.histoDict[sample+s+var].SetFillColor(self.sampleDict[sample][2])
                 hStack.Add(self.histoDict[sample+s+var])
                 hSum.Add(self.histoDict[sample+s+var])
+            
+            legend.AddEntry(hData, 'Data', "PE1")
+            for sample in self.sampleOrder[::-1]: #reverse order
                 if sample =='WToMu' : #signal has different color and legend entry
                     self.histoDict[sample+s+var].SetFillColor(self.signDict[s][1])
                     legTag = self.signDict[s][2]
                 else : legTag = self.sampleDict[sample][3]
                 legend.AddEntry(self.histoDict[sample+s+var],legTag,  "f")                    
-            legend.AddEntry(hData, 'Data', "PE1")
+            
             
             #build ratio plot Data/pred
             hRatio = hData.Clone('hRatio_'+var)
@@ -325,11 +341,16 @@ class plotter:
             legend.SetNColumns(2)
             
             hStack.SetMaximum(1.7*max(hData.GetMaximum(),hStack.GetMaximum())) 
-            hStack.GetYaxis().SetTitle(varInfo[2])
+            # hStack.GetYaxis().SetTitle(varInfo[2])
+            if 'MT' in var :
+                hStack.GetYaxis().SetTitle(varInfo[2]+str(int(hStack.GetXaxis().GetBinWidth(1)))+varInfo[4])
+            else :
+                hStack.GetYaxis().SetTitle(varInfo[2]+str(round(hStack.GetXaxis().GetBinWidth(1),1))+varInfo[4])
             hStack.GetYaxis().SetTitleOffset(1.3)
             hStack.GetXaxis().SetTitle(varInfo[3])
             hStack.GetXaxis().SetTitleOffset(3)
             hStack.GetXaxis().SetLabelOffset(3)
+            hStack.SetTitle("")
             
             hData.SetMarkerStyle(20)
             hData.SetMarkerColor(self.sampleDict['Data'][2])
@@ -359,6 +380,16 @@ class plotter:
             else :
                 hRatioBand.GetYaxis().SetRangeUser(0.9,1.13)
             
+            pad_histo.cd()
+            cmsLatex.SetNDC()
+            cmsLatex.SetTextFont(42)
+            cmsLatex.SetTextColor(ROOT.kBlack)
+            cmsLatex.SetTextAlign(31) 
+            cmsLatex.SetTextSize(cmsLatex.GetTextSize())
+            cmsLatex.DrawLatex(1-pad_histo.GetRightMargin(),1-0.8*pad_histo.GetTopMargin(),lumilab)
+            cmsLatex.SetTextAlign(11)
+            cmsLatex.DrawLatex(0.07+pad_histo.GetLeftMargin(),1-0.8*pad_histo.GetTopMargin(),cmslab)
+            
             # can.Update()
             can.SaveAs("{dir}/{c}{suff}.pdf".format(dir=self.outdir,c=can.GetName(),suff=self.SBsuff))
             can.SaveAs("{dir}/{c}{suff}.png".format(dir=self.outdir,c=can.GetName(),suff=self.SBsuff))
@@ -376,6 +407,10 @@ class plotter:
     def plotSyst(self,skipSyst=[]) :
         fname = "{dir}/systPlots{suff}.root".format(dir=self.outdir,suff=self.SBsuff)
         outFile =  ROOT.TFile(fname, "RECREATE")
+        
+        cmslab = "#bf{CMS} #scale[0.7]{#it{Work in progress}}"
+        lumilab = " #scale[0.7]{35.9 fb^{-1} (13 TeV)}"
+        cmsLatex = ROOT.TLatex()
         
         for var,varInfo in self.variableDict.items() :
             if var.endswith('minus') : s='minus'  
@@ -554,11 +589,14 @@ class plotter:
             hdict['Nominal'].SetLineColor(1)
             # hdict['Nominal'].Draw()
             # hdict['Nominal'].Draw()# same 0P5
-            if not self.bkgOnlySyst :
-                hdict['Nominal'].SetTitle(varInfo[1]+', systematics breakdown')
-            else :
-                hdict['Nominal'].SetTitle(varInfo[1]+', systematics breakdown (QCD syst only)')
-            hdict['Nominal'].GetYaxis().SetTitle('|Var-Nom| / Nom')
+            # if not self.bkgOnlySyst :
+            #     hdict['Nominal'].SetTitle(varInfo[1]+', systematics breakdown')
+            # else :
+            #     hdict['Nominal'].SetTitle(varInfo[1]+', systematics breakdown (QCD syst only)')
+            hdict['Nominal'].SetTitle('')
+            hdict['Nominal'].GetYaxis().SetTitle('|Var-Nom| / Nom (Event yield)')
+            if self.bkgOnlySyst :
+                hdict['Nominal'].GetYaxis().SetTitle('|Var-Nom| / Nom (Event yield, QCD var. only)')
             hdict['Nominal'].GetXaxis().SetTitle(varInfo[3])
             # if 'MT' in var :
             hdict['Nominal'].GetYaxis().SetRangeUser(0.0001,1)
@@ -605,7 +643,22 @@ class plotter:
                     legend2.AddEntry(hdict[sKind],self.groupedSystColors[sKind][1])
                     
             legend2.Draw("SAME")
-        
+            
+            cmsLatex.SetNDC()
+            cmsLatex.SetTextFont(42)
+            cmsLatex.SetTextColor(ROOT.kBlack)
+            cmsLatex.SetTextAlign(31) 
+            cmsLatex.SetTextSize(cmsLatex.GetTextSize())
+            cmsLatex.DrawLatex(1-can2.GetRightMargin(),1-0.8*can2.GetTopMargin(),lumilab)
+            cmsLatex.SetTextAlign(11)
+            cmsLatex.DrawLatex(can2.GetLeftMargin(),1-0.8*can2.GetTopMargin(),cmslab)
+            if s=='plus' :     
+                proclab = "W^{+}#rightarrow #mu^{+}#nu_{#mu}"
+            else :
+                proclab = "W^{-}#rightarrow #mu^{-}#bar#nu_{#mu}"
+            cmsLatex.SetTextAlign(31)
+            cmsLatex.DrawLatex(1-can2.GetRightMargin()-0.02,1-can2.GetTopMargin()-0.05,proclab)
+            
             can2.SaveAs("{dir}/{c}{suff}.pdf".format(dir=self.outdir,c=can2.GetName(),suff=self.SBsuff))
             can2.SaveAs("{dir}/{c}{suff}.png".format(dir=self.outdir,c=can2.GetName(),suff=self.SBsuff))
             

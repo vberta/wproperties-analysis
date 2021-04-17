@@ -137,11 +137,12 @@ def chi2PolyFit(modelPars,npFitRes, npCovMatInv, coeffList, npBinCenters,parNum,
     fitModel = par2polyModel(modelPars= modelPars, coeffList= coeffList, npBinCenters= npBinCenters,parNum= parNum,dimYQt= dimYQt,npFitRes=npFitRes,numNui=numNui)
     diff = npFitRes-fitModel
     chi2 = jnp.matmul(diff.T, jnp.matmul(npCovMatInv, diff) )
+    print("chi2=",chi2)
 
     return chi2
     
 
-def polyFit(fitRes, coeffList,nUL) :
+def polyFit(fitRes, coeffList,nUL,inPar='') :
     
     dimY = fitRes[coeffList[0][0]].GetNbinsX()
     dimQt = fitRes[coeffList[0][0]].GetNbinsY()
@@ -203,6 +204,7 @@ def polyFit(fitRes, coeffList,nUL) :
     #model init
     modelParsList = []
     parNum = []
+    parCounter=0
     for li in coeffList :
         if not li[8] : 
             if li[0]=='unpolarizedxsec' : 
@@ -221,9 +223,13 @@ def polyFit(fitRes, coeffList,nUL) :
                 if li[6] : effQt-= 1
                 if li[7] : effQt-= 1
                 modelParsC=np.zeros((effY,effQt))
-                for qt in range(0, effQt) :
-                    for y in range(0, effY) :
-                        modelParsC[y,qt] = 1.
+                for y in range(0, effY) :
+                    for qt in range(0, effQt) :
+                        if inPar!='' :
+                            modelParsC[y,qt] = inPar[0][parCounter]
+                            parCounter+=1
+                        else :
+                            modelParsC[y,qt] = 1.
                 modelParsList.append(modelParsC.copy())
                 print(li[0], "pars (y,qt)=", effY, effQt)
                 parNum.append(effY*effQt)
@@ -231,8 +237,16 @@ def polyFit(fitRes, coeffList,nUL) :
         else : #li[8]=not regularize this
             # modelParsC = rootnp.hist2array(fitRes[li[0]])
             # modelParsList.append(modelParsC.copy())
-            modelParsList.append(np.full((dimY,dimQt),1.))
-            print(li[0], "pars (y,qt)=", np.shape(modelParsList[-1]))
+            if inPar!='' :
+                modelParsC=np.zeros((dimY,dimQt))
+                for y in range(0, dimY) :
+                    for qt in range(0, dimQt) : 
+                        modelParsC[y,qt] = inPar[0][parCounter]
+                        parCounter+=1
+                modelParsList.append(modelParsC.copy())        
+            else :
+                modelParsList.append(np.full((dimY,dimQt),1.))
+                print(li[0], "pars (y,qt)=", np.shape(modelParsList[-1]))
             parNum.append( dimY*dimQt)
             modelParsList[-1]=modelParsList[-1].flatten()
             
@@ -286,6 +300,8 @@ def polyFit(fitRes, coeffList,nUL) :
 
     print("par num", parNum)
     print("everything initialized, minimizer call...")
+    print("prefit pars:")
+    print(modelPars[:-numNui])  
     modelPars = pmin(chi2PolyFit, modelPars, args=(npFitRes, npCovMatInv, coeffListJAX, npBinCenters,parNum,dimYQt), doParallel=False)
     # modelPars = pmin(chi2MassOnlyFit, modelPars[-1], args=(npFitRes[-1], npCovMatInv[-1][-1]), doParallel=False)
     print ("fit ended, post fit operation...")
@@ -324,7 +340,10 @@ def polyFit(fitRes, coeffList,nUL) :
     # print("mass uncertainity if everything fixed=", math.sqrt(npCovMatInv[-1][-1]))
     print("*-------------------------------------------*")
     
-    outFit = (modelPars,modelCov,dimYQt, npBinCenters,parNum,modelJac,npFitRes,numNui,massPosition)        
+    outFit = (modelPars,modelCov,dimYQt, npBinCenters,parNum,modelJac,npFitRes,numNui,massPosition)
+    
+    print("postfit pars:")
+    print(modelPars[:-numNui])        
     return outFit
     
     
@@ -1364,6 +1383,7 @@ parser.add_argument('-f','--fitInput', type=str, default='fitPlots_Wplus.root',h
 # parser.add_argument('-r','--regInput', type=str, default='../../regularization/OUTPUT_poly/regularizationFit_range11_rebuild____nom_nom.root',help="name of the regularization study result root file")
 parser.add_argument('-s','--save', type=int, default=False,help="save .png and .pdf canvas")
 parser.add_argument('-nUL','--notUnpol', type=int, default=False,help="exclude unpol and nuisances from the fit")
+parser.add_argument('-af','--asimovFile', type=str, default='',help="name of the asimov file, if not empty run first the fit on the asimov, use the pars. as initial par and then on the real file ")
 
 args = parser.parse_args()
 OUTPUT = args.output
@@ -1371,6 +1391,7 @@ FITINPUT = args.fitInput
 # REGINPUT = args.regInput
 SAVE= args.save
 NUL= args.notUnpol
+ASIMOV= args.asimovFile
 
 print("have you done cmsenv in CMSSW_11_2_0_pre8 instead of nightlies? (jax incomatibility)")
 print("WARNING: the degree written in the dictionary is the first excluded--> N-1 used")
@@ -1396,7 +1417,7 @@ coeffList.append(['unpolarizedxsec', 3,3,-999,-999,  0,0,0, 1]) #---------------
 # coeffList.append(['A3', 3,6,3,6, 0,1,0, 0])
 # coeffList.append(['A4', 4,6,4,6, 1,0,0, 0]) 
 
-#optimal 60
+# #optimal 60
 # coeffList.append(['A0', 3,4,3,5, 0,1,0, 0])
 # coeffList.append(['A1', 3,6,3,6, 1,1,0, 0])
 # coeffList.append(['A2', 2,5,2,4, 0,1,0, 0])
@@ -1421,7 +1442,7 @@ coeffList.append(['A4', 4,4,4,5, 1,0,0, 0])
 if NUL : 
     del coeffList[0]
 
-plusOnly=False
+plusOnly=True
 if plusOnly :
     signList = ['plus']
 else :
@@ -1431,11 +1452,18 @@ print("WARNING: used wplus parameterization also for wminus, and not the diction
 for s in signList : 
     FITINPUT_s = FITINPUT.replace('plus',s)
     OUTPUT_s = OUTPUT.replace('plus',s)
+    ASIMOV_s = ASIMOV.replace('plus',s)
+    
+    fitPostRegResult_asimov=''
+    
+    if ASIMOV!='' :
+        fitResDict_asimov = getFitRes(inFile=ASIMOV_s, coeffList=coeffList)
+        fitPostRegResult_asimov = polyFit(fitRes=fitResDict_asimov, coeffList=coeffList, nUL =NUL)
     
     fitResDict = getFitRes(inFile=FITINPUT_s, coeffList=coeffList)
     # regFuncDict = getRegFunc(inFile=REGINPUT, coeffList=coeffList)
     # fitPostRegResult = polyFit(fitRes=fitResDict, regFunc=regFuncDict, coeffList=coeffList)
-    fitPostRegResult = polyFit(fitRes=fitResDict, coeffList=coeffList, nUL =NUL)
+    fitPostRegResult = polyFit(fitRes=fitResDict, coeffList=coeffList, nUL =NUL, inPar=fitPostRegResult_asimov)
     # fitPostRegResult1D = polyFit1D(fitRes=fitResDict, coeffList=coeffList1D) #works but is without unpolarized and with lower degrees of polynomals
     
     # plotterPostReg(fitResult = fitPostRegResult, fitReult1D= fitPostRegResult1D, output=OUTPUT_s, save=SAVE, coeffList=coeffList,coeffList1D=coeffList1D, histo=fitResDict)

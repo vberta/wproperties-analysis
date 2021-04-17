@@ -66,6 +66,10 @@ if PROJECT :
 step2input = ROOT.TFile.Open('bkg_ABCD_plotter.root')
 step2output = ROOT.TFile("bkg_ABCD_plotter_added.root", "recreate")
 
+cmslab = "#bf{CMS} #scale[0.7]{#it{Work in progress}}"
+lumilab = " #scale[0.7]{35.9 fb^{-1} (13 TeV)}"
+cmsLatex = ROOT.TLatex()
+
 addedDict = {}  
 for sample, info in sampleDict.items() :
     for s,sstring in signDict.items() :
@@ -73,7 +77,7 @@ for sample, info in sampleDict.items() :
         for part in info[3:] : 
             temph = step2input.Get('h_RelIso_vs_Mt'+sample+part+s).Clone('h_RelIso_vs_Mt'+sample+s+part)
             addedDict[sample+s].Add(temph)
-        addedDict[sample+s].GetXaxis().SetTitle("M_{T} [GeV]")
+        addedDict[sample+s].GetXaxis().SetTitle("m_{T} [GeV]")
         addedDict[sample+s].GetYaxis().SetTitle("RelIso")
         addedDict[sample+s].SetTitle("Base-selection ("+sample+")")
         step2output.cd()
@@ -85,6 +89,21 @@ for sample, info in sampleDict.items() :
             addedDict[sample+s].SetMarkerColorAlpha(1,0.2)
             addedDict[sample+s].GetYaxis().SetRangeUser(0.0012,0.4)
             addedDict[sample+s].Draw()
+            addedDict[sample+s].SetTitle('')
+            addedDict[sample+s].SetStats(0)
+            
+            cmsLatex.SetNDC()
+            cmsLatex.SetTextFont(42)
+            cmsLatex.SetTextColor(ROOT.kBlack)
+            cmsLatex.SetTextAlign(31) 
+            cmsLatex.DrawLatex(1-can.GetRightMargin(),1-0.8*can.GetTopMargin(),lumilab)
+
+            cmsLatex.SetTextAlign(11) 
+            cmsLatex.DrawLatex(can.GetLeftMargin(),1-0.8*can.GetTopMargin(),cmslab)
+            
+            cmsLatex.SetTextAlign(31) 
+            cmsLatex.DrawLatex(1-1.03*can.GetRightMargin(),1-1.6*can.GetTopMargin(),"W^{+}#rightarrow#mu^{+}#nu data")
+            
             can.SaveAs('bkg_ABCD_dataPlus.pdf')
             can.SaveAs('bkg_ABCD_dataPlus.png')
             

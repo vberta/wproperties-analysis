@@ -5,6 +5,15 @@ ROOT.gROOT.SetBatch(True)
 gStyle.SetOptStat(0)
 gStyle.SetOptStat(0)
 
+cmslab = "#bf{CMS} #scale[0.7]{#it{Work in progress}}"
+cmslabSim = "#bf{CMS} #scale[0.7]{#it{Simulation Work in progress}}"
+cmslabonly = "#scale[0.55]{#bf{CMS}}"
+cmslabSIMonly= "#scale[0.35]{#it{Simulation}}"
+cmslabWOPonly= "#scale[0.35]{#it{Work in progress}}"
+lumilab = " #scale[0.7]{35.9 fb^{-1} (13 TeV)}"
+lumilabScale = "#scale[0.35]{35.9 fb^{-1} (13 TeV)}"
+cmsLatex = ROOT.TLatex()
+
 
 hDict = {}
 canDict = {}
@@ -108,6 +117,30 @@ for hi,hval in hDict.items() :
     canDict[hi].SetGridy()
     canDict[hi].SetRightMargin(0.15)
     hval.Draw("colz")
+    # hval.SetTitle('')
+    
+    canDict[hi].Update()
+    palette = hval.GetListOfFunctions().FindObject("palette")
+    palette.SetX1NDC(0.875)
+    
+    cmsLatex.SetNDC()
+    cmsLatex.SetTextFont(42)
+    cmsLatex.SetTextColor(ROOT.kBlack)
+    cmsLatex.SetTextAlign(31) 
+    cmsLatex.DrawLatex(1-canDict[hi].GetRightMargin(),1-0.8*canDict[hi].GetTopMargin(),lumilab)
+
+    cmsLatex.SetTextAlign(11) 
+    if 'Data' in hi or 'QCD' in hi :
+        cmsLatex.DrawLatex(canDict[hi].GetLeftMargin(),1-0.8*canDict[hi].GetTopMargin(),cmslab)
+    else :
+        cmsLatex.DrawLatex(canDict[hi].GetLeftMargin(),1-0.8*canDict[hi].GetTopMargin(),cmslabSim)
+    cmsLatex.SetTextAlign(31) 
+    cmsLatex.SetTextColor(ROOT.kWhite)
+    # cmsLatex.SetTextFont(61) 
+    cmsLatex.DrawLatex(1-1.03*canDict[hi].GetRightMargin(),1-canDict[hi].GetTopMargin()-0.05,hval.GetTitle())
+    hval.SetTitle('')
+
+    
     
 outfile.cd()
 for s,f in fileDict.items() :  
@@ -196,6 +229,10 @@ for s,f in fileDict.items() :
             gPad.SetTopMargin(0.05)
             gPad.SetLeftMargin(0.18)
             gPad.SetRightMargin(0.18)
+            
+            canDict[s+'signal'].Update()
+            palette = hDict[s+'signal'+xs+kind].GetListOfFunctions().FindObject("palette")
+            palette.SetX1NDC(0.84)
 
     canDict[s+'signal'+'extra'] = ROOT.TCanvas("c_"+s+"signal"+"extra","c_"+s+"signal"+"extra", 1000,1400)
     canDict[s+'signal'+'extra'].cd()
@@ -209,6 +246,16 @@ for s,f in fileDict.items() :
     canDict[s+'signal'+'extra'].cd()
     for t, tlat in titleDict.items() :
         tlat.Draw("same")       
+    
+    cmsLatex.SetNDC()
+    cmsLatex.SetTextFont(42)
+    cmsLatex.SetTextColor(ROOT.kBlack)
+    cmsLatex.SetTextAlign(11) 
+    cmsLatex.DrawLatex(0,1-0.017,cmslabonly)
+    cmsLatex.DrawLatex(0,1-0.028,cmslabSIMonly)
+    cmsLatex.DrawLatex(0,1-0.040,cmslabWOPonly)
+    cmsLatex.DrawLatex(0,1-0.057,lumilabScale)
+   
     
 
 # -------------- other background + data -------------------#
