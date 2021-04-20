@@ -78,6 +78,10 @@ timeDict ={
     }
 }
 
+cmslab = "#bf{CMS} #scale[0.7]{#it{Work in progress}}"
+lumilab = " #scale[0.7]{13 TeV}"
+cmsLatex = ROOT.TLatex()
+
 
 graphDict = {}
 
@@ -101,7 +105,8 @@ for k, val in timeDict.items() :
 
     graphDict[k]=ROOT.TGraph( len(val['cores']), val['cores'], val['rates'])
     graphDict[k].SetName("scaling")
-    graphDict[k].SetTitle( "Compared processing rate scaling ;N_{cores};Event processing rate [kHz] ")
+    # graphDict[k].SetTitle( "Compared processing rate scaling ;N_{cores};Event processing rate [kHz] ")
+    graphDict[k].SetTitle( " ;N_{cores};Event processing rate [kHz] ")
     graphDict[k].GetXaxis().SetTitleSize(0.06)
     graphDict[k].GetXaxis().SetTitleOffset(0.7)
     graphDict[k].GetYaxis().SetTitleSize(0.05)
@@ -125,12 +130,21 @@ graphDict['Data'].Draw('apL')
 graphDict['Signal'].Draw('pL same')
 graphDict['Data'].GetYaxis().SetRangeUser(0,1800)
 leg.Draw("same")
+
+cmsLatex.SetNDC()
+cmsLatex.SetTextFont(42)
+cmsLatex.SetTextColor(ROOT.kBlack)
+cmsLatex.SetTextAlign(31) 
+cmsLatex.DrawLatex(1-c.GetRightMargin(),1-0.8*c.GetTopMargin(),lumilab)
+cmsLatex.SetTextAlign(11) 
+cmsLatex.DrawLatex(c.GetLeftMargin(),1-0.8*c.GetTopMargin(),cmslab)
+
    
 c.Update()
 c.Modified()
-c.SaveAs("fw_time_scaling.pdf")
-c.SaveAs("fw_time_scaling.png")
-c.SaveAs("fw_time_scaling.root")
+c.SaveAs("FW_time_scaling.pdf")
+c.SaveAs("FW_time_scaling.png")
+c.SaveAs("FW_time_scaling.root")
 
 
 

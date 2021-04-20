@@ -1383,7 +1383,7 @@ parser.add_argument('-f','--fitInput', type=str, default='fitPlots_Wplus.root',h
 # parser.add_argument('-r','--regInput', type=str, default='../../regularization/OUTPUT_poly/regularizationFit_range11_rebuild____nom_nom.root',help="name of the regularization study result root file")
 parser.add_argument('-s','--save', type=int, default=False,help="save .png and .pdf canvas")
 parser.add_argument('-nUL','--notUnpol', type=int, default=False,help="exclude unpol and nuisances from the fit")
-parser.add_argument('-af','--asimovFile', type=str, default='',help="name of the asimov file, if not empty run first the fit on the asimov, use the pars. as initial par and then on the real file ")
+parser.add_argument('-af','--asimovFile', type=str, default='',help="name of the asimov file, if not empty run first the fit on the asimov, use the pars. as initial par and then on the real file.if empty initialized the pars=1 ")
 
 args = parser.parse_args()
 OUTPUT = args.output
@@ -1417,7 +1417,7 @@ coeffList.append(['unpolarizedxsec', 3,3,-999,-999,  0,0,0, 1]) #---------------
 # coeffList.append(['A3', 3,6,3,6, 0,1,0, 0])
 # coeffList.append(['A4', 4,6,4,6, 1,0,0, 0]) 
 
-# #optimal 60
+#optimal 60
 # coeffList.append(['A0', 3,4,3,5, 0,1,0, 0])
 # coeffList.append(['A1', 3,6,3,6, 1,1,0, 0])
 # coeffList.append(['A2', 2,5,2,4, 0,1,0, 0])
@@ -1442,7 +1442,7 @@ coeffList.append(['A4', 4,4,4,5, 1,0,0, 0])
 if NUL : 
     del coeffList[0]
 
-plusOnly=True
+plusOnly=False
 if plusOnly :
     signList = ['plus']
 else :
