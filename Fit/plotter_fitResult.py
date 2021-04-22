@@ -197,7 +197,27 @@ class plotter :
             self.ptArr.append(25. + ipt*(55.-25.)/60.)
         for ieta in range(0,49) :
             self.etaArr.append(-2.4 + ieta * (4.8) / 48.)
+        
+        self.SPLITSIG=False  
+        self.hxsecList = ['L', 'I', 'T', 'A', 'P', 'UL']
+        if self.SPLITSIG: 
+            self.processDict_sigSplit = copy.deepcopy(self.processDict)
+            del self.processDict_sigSplit['sig'] 
+            self.processDict_sigSplit['sig_L'] = [ROOT.kPink-9, "W^{+}#rightarrow #mu^{+}#nu_{#mu} #sigma_{L}",   ROOT.kPink-9, "W^{-}#rightarrow #mu^{-}#bar{#nu}_{#mu} #sigma_{L}", ]
+            self.processDict_sigSplit['sig_I'] = [ROOT.kRed-8, "W^{+}#rightarrow #mu^{+}#nu_{#mu} #sigma_{I}",   ROOT.kRed-8, "W^{-}#rightarrow #mu^{-}#bar{#nu}_{#mu} #sigma_{I}", ]
+            self.processDict_sigSplit['sig_T'] = [ROOT.kOrange+3, "W^{+}#rightarrow #mu^{+}#nu_{#mu} #sigma_{T}",  ROOT.kOrange+3, "W^{-}#rightarrow #mu^{-}#bar{#nu}_{#mu} #sigma_{T}", ]
+            self.processDict_sigSplit['sig_A'] = [ROOT.kYellow+2, "W^{+}#rightarrow #mu^{+}#nu_{#mu} #sigma_{A}",  ROOT.kYellow+2, "W^{-}#rightarrow #mu^{-}#bar{#nu}_{#mu} #sigma_{A}", ]
+            self.processDict_sigSplit['sig_P'] = [ROOT.kOrange-3, "W^{+}#rightarrow #mu^{+}#nu_{#mu} #sigma_{P}",  ROOT.kOrange-3, "W^{-}#rightarrow #mu^{-}#bar{#nu}_{#mu} #sigma_{P}", ]
+            self.processDict_sigSplit['sig_UL'] = [ROOT.kRed+1, "W^{+}#rightarrow #mu^{+}#nu_{#mu} #sigma_{UL}",  ROOT.kRed+1, "W^{-}#rightarrow #mu^{-}#bar{#nu}_{#mu} #sigma_{UL}", ]
+            self.processOrder_sigSplit = copy.deepcopy(self.processOrder)
+            self.processOrder_sigSplit.remove('sig')
+            self.processOrder_sigSplit.extend(['sig_L','sig_I','sig_T','sig_A','sig_P','sig_UL'])
             
+            self.processDict = self.processDict_sigSplit
+            self.processOrder  = self.processOrder_sigSplit
+             
+                
+    
         #unrolled binning: qt large, y fine
         self.unrolledQtY= list(self.yArr)
         intervalYBin = []
@@ -247,7 +267,13 @@ class plotter :
         # print "unrolledYQt", self.unrolledYQt
         # print "unrolledAY", self.unrolledAY
         # print "unrolledAQt", self.unrolledAQt
-        
+    
+    def CloneEmpty(self, histo,name) :
+        hout = histo.Clone(name)
+        for i in range(0, histo.GetNbinsX()+2) :
+            hout.SetBinContent(i,0)
+            hout.SetBinError(i,0)
+        return hout     
         
         
     def getHistos(self,inFile, FitFile, uncorrelate,suff,apoFile='',toyFile='',impact=False,postfit=False,data='') :
@@ -524,11 +550,25 @@ class plotter :
                     if p in ["DYJets", "DiBoson", "Top", "Fake", "WtoTau", "LowAcc"] :
                         procS = 'proc_'
                     else : procS = ''
-                    self.histos[suff+'prefit'+p] = FitFile.Get('exp'+procS+p+'_prefit')  
-                    self.histos[suff+'postfit'+p] = FitFile.Get('exp'+procS+p+'_postfit')  
+                    if not p.replace('sig_','') in self.hxsecList :
+                        self.histos[suff+'prefit'+p] = FitFile.Get('exp'+procS+p+'_prefit')  
+                        self.histos[suff+'postfit'+p] = FitFile.Get('exp'+procS+p+'_postfit')  
+                    else : # SPLITSIG
+                        # for hxsec in self.hxsecList :
+                        hrefdy = FitFile.Get('exp'+ 'proc_'+'DYJets'+'_prefit')  
+                        self.histos[suff+'prefit'+p] = self.CloneEmpty(hrefdy, 'prefit'+p)
+                        self.histos[suff+'postfit'+p] = self.CloneEmpty(hrefdy, 'postfit'+p)
+                        for y in range(1,len(self.yArr)) :
+                            for qt in range(1,len(self.qtArr)) :
+                                fullprocname = 'expproc_helXsecs'+p.replace('sig_','')+'_y_'+str(y)+'_qt_'+str(qt)
+                                htemp_prefit = FitFile.Get(fullprocname+'_prefit')  
+                                htemp_postfit = FitFile.Get(fullprocname+'_postfit')  
+                                self.histos[suff+'prefit'+p].Add(htemp_prefit)
+                                self.histos[suff+'postfit'+p].Add(htemp_postfit)
                                         
                     #removal of the last bin in the unrolled plots
                 for k in ['prefit','postfit'] :
+                    # print(k,p,  self.histos[suff+k+p])
                     hpostfittemp = self.histos[suff+k+p].Clone()
                     self.histos[suff+k+p] = ROOT.TH1F(self.histos[suff+k+p].GetName(), self.histos[suff+k+p].GetTitle(), len(self.unrolledEtaPt)-1, array('f',self.unrolledEtaPt))
                     for ietapt in range(1,self.histos[suff+k+p].GetNbinsX()+1) :
@@ -1622,6 +1662,7 @@ class plotter :
         self.histos[suff+'impact'+'qt'+c+'poiss'] = ROOT.TH1D('impact_'+c+'_'+'poiss'+'_qt', 'impact_'+c+'_'+'poiss'+'_qt', len(self.qtArr)-1, array('f',self.qtArr))
         for qt in range(1, len(self.qtArr)) :
             if skipIntImpact : continue  
+            if not self.anaKind['angNames'] : continue
             nev = self.histos[suff+'FitACqt'+c].GetBinContent(qt)* (self.lumi*3./16./math.pi) *self.histos[suff+'FitACqt'+c].GetXaxis().GetBinWidth(qt)  
             self.histos[suff+'impact'+'qt'+c+'poiss'].SetBinContent(qt,math.sqrt(nev)/nev)        
                 
@@ -1711,6 +1752,7 @@ class plotter :
                         self.histos[suff+k+p+var].SetFillStyle(1001)
                         self.histos[suff+k+p+var].SetLineWidth(1)
                         self.histos[suff+k+p+var].SetFillColor(self.processDict[p][0])
+                        # self.histos[suff+k+p+var].SetLineColor(self.processDict[p][0])
                         self.histos[suff+k+var+'stack'].Add(self.histos[suff+k+p+var])
                         # hSum.Add(self.histos[suff+k+p+var])
                     self.leg[suff+k+var].AddEntry(self.histos[suff+k+'obs'+var], 'Data', "PE1")
@@ -1889,7 +1931,7 @@ class plotter :
                 self.leg[suff+'FitAC'+'qt'+str(i)+c].AddEntry(self.histos[suff+'FitRatioScale'+'qt'+str(i)+'up'+c], self.groupedSystColors['LHEScaleWeightVars'][1])
                 self.leg[suff+'FitAC'+'qt'+str(i)+c].SetNColumns(2)
                 if aposteriori!='' :
-                    self.leg[suff+'FitAC'+'qt'+str(i)+c].AddEntry(self.histos[suff+'apo'+'qt'+str(i)+c], "Post-fit-regularized")
+                    self.leg[suff+'FitAC'+'qt'+str(i)+c].AddEntry(self.histos[suff+'apo'+'qt'+str(i)+c], "Post-fit regularized")
                 
                 #Additional block for scale-pdf splitted
                 # self.histos[suff+'FitBandPDF'+'qt'+str(i)+c].SetFillColor(self.groupedSystColors['LHEPdfWeightVars'][0])
@@ -2046,7 +2088,7 @@ class plotter :
                 self.leg[suff+'FitAC'+'y'+str(j)+c].AddEntry(self.histos[suff+'FitRatioScale'+'y'+str(j)+'up'+c], self.groupedSystColors['LHEScaleWeightVars'][1])
                 self.leg[suff+'FitAC'+'y'+str(j)+c].SetNColumns(2)
                 if aposteriori!='' :
-                    self.leg[suff+'FitAC'+'y'+str(j)+c].AddEntry(self.histos[suff+'apo'+'y'+str(j)+c], "Post-fit-regularized")
+                    self.leg[suff+'FitAC'+'y'+str(j)+c].AddEntry(self.histos[suff+'apo'+'y'+str(j)+c], "Post-fit regularized")
                 
                 
                 #Additional block for scale-pdf splitted
@@ -2277,7 +2319,7 @@ class plotter :
             self.leg[suff+'FitAC'+'UNRqty'+c].AddEntry(self.histos[suff+'FitRatioScale'+'UNRqty'+'up'+c], self.groupedSystColors['LHEScaleWeightVars'][1])
             self.leg[suff+'FitAC'+'UNRqty'+c].SetNColumns(2)
             if aposteriori!='' :
-                    self.leg[suff+'FitAC'+'UNRqty'+c].AddEntry(self.histos[suff+'apo'+'UNRqty'+c], "Post-fit-regularized")
+                    self.leg[suff+'FitAC'+'UNRqty'+c].AddEntry(self.histos[suff+'apo'+'UNRqty'+c], "Post-fit regularized")
             if toy!='' :
                     self.leg[suff+'FitAC'+'UNRqty'+c].AddEntry(self.histos[suff+'FitAC'+'UNRqty'+c+'toy'], "MC toys  #mu#pm#sigma")
             
@@ -2510,7 +2552,7 @@ class plotter :
             self.leg[suff+'FitAC'+'UNRyqt'+c].AddEntry(self.histos[suff+'FitRatioPDF'+'UNRyqt'+'up'+c], self.groupedSystColors['LHEPdfWeightVars'][1])
             self.leg[suff+'FitAC'+'UNRyqt'+c].AddEntry(self.histos[suff+'FitRatioScale'+'UNRyqt'+'up'+c], self.groupedSystColors['LHEScaleWeightVars'][1])
             if aposteriori!='' :
-                self.leg[suff+'FitAC'+'UNRyqt'+c].AddEntry(self.histos[suff+'apo'+'UNRyqt'+c], "Post-fit-regularized")
+                self.leg[suff+'FitAC'+'UNRyqt'+c].AddEntry(self.histos[suff+'apo'+'UNRyqt'+c], "Post-fit regularized")
             if toy!='' :
                 self.leg[suff+'FitAC'+'UNRyqt'+c].AddEntry(self.histos[suff+'FitAC'+'UNRyqt'+c+'toy'], "MC toys  #mu#pm#sigma")
                 
@@ -2679,7 +2721,7 @@ class plotter :
             if toy!='' :  
                 self.leg[suff+'FitAC'+'qt'+c].AddEntry(self.histos[suff+'FitAC'+'qt'+c+'toy'], "MC toys  #mu#pm#sigma")
             if aposteriori!='' :
-                    self.leg[suff+'FitAC'+'qt'+c].AddEntry(self.histos[suff+'apo'+'qt'+c], "Post-fit-regularized")
+                    self.leg[suff+'FitAC'+'qt'+c].AddEntry(self.histos[suff+'apo'+'qt'+c], "Post-fit regularized")
                     
             self.canvas['ph'+suff+'FitAC'+'qt'+c].cd()
             cmsLatex.SetNDC()
@@ -2857,7 +2899,7 @@ class plotter :
             if toy!='' :  
                 self.leg[suff+'FitAC'+'y'+c].AddEntry(self.histos[suff+'FitAC'+'y'+c+'toy'], "MC toys  #mu#pm#sigma")
             if aposteriori!='' :
-                    self.leg[suff+'FitAC'+'y'+c].AddEntry(self.histos[suff+'apo'+'y'+c], "Post-fit-regularized")
+                    self.leg[suff+'FitAC'+'y'+c].AddEntry(self.histos[suff+'apo'+'y'+c], "Post-fit regularized")
             
             self.canvas['ph'+suff+'FitAC'+'y'+c].cd()
             cmsLatex.SetNDC()
@@ -3226,6 +3268,7 @@ class plotter :
                     # self.histos[suff+k+var+'stack'].SetTitle(varInfo[0]+", "+kName+", "+self.signDict[self.sign])
                     self.histos[suff+k+var+'stack'].SetTitle()
                     self.histos[suff+k+var+'stack'].Draw("HIST")
+                    # self.histos[suff+k+var+'stack'].Draw("nostack")
                     self.histos[suff+k+'obs'+var].Draw("PE1SAME")
                     self.leg[suff+k+var].Draw("SAME")
                     
@@ -3574,7 +3617,7 @@ class plotter :
                 self.leg[suff+'impact'+'UNRqty'+c] = ROOT.TLegend(0.3,0.15,0.85,0.35)
                 if cleanNuisance :
                     # if 'unpol' in c :
-                    self.leg[suff+'impact'+'UNRqty'+c] = ROOT.TLegend(0.15,0.72,0.5,0.88)
+                    self.leg[suff+'impact'+'UNRqty'+c] = ROOT.TLegend(0.25,0.72,0.6,0.88)
                     # else :
                     #     self.leg[suff+'impact'+'UNRqty'+c] = ROOT.TLegend(0.50,0.72,0.85,0.88)
                     self.leg[suff+'impact'+'UNRqty'+c].SetNColumns(2)
@@ -3619,9 +3662,12 @@ class plotter :
                 if 'unpol' in c :  
                     self.histos[suff+'impact'+'UNRqty'+c].SetMinimum(0.002)
                     self.histos[suff+'impact'+'UNRqty'+c].SetMaximum(0.4)
-                else :
+                elif 'A4' in c:
                     self.histos[suff+'impact'+'UNRqty'+c].SetMinimum(0.0005)
                     self.histos[suff+'impact'+'UNRqty'+c].SetMaximum(3)
+                else :
+                    self.histos[suff+'impact'+'UNRqty'+c].SetMinimum(0.0005)
+                    self.histos[suff+'impact'+'UNRqty'+c].SetMaximum(9)
                 
                 cmsLatex.SetNDC()
                 cmsLatex.SetTextFont(42)
@@ -3638,7 +3684,7 @@ class plotter :
                 self.leg[suff+'impact'+'UNRyqt'+c] = ROOT.TLegend(0.3,0.15,0.85,0.35)
                 if cleanNuisance :
                     #  if 'unpol' in c :
-                     self.leg[suff+'impact'+'UNRyqt'+c] = ROOT.TLegend(0.15,0.72,0.5,0.88)
+                     self.leg[suff+'impact'+'UNRyqt'+c] = ROOT.TLegend(0.25,0.72,0.6,0.88)
                     #  else : 
                         # self.leg[suff+'impact'+'UNRyqt'+c] = ROOT.TLegend(0.50,0.72,0.85,0.88)
                      self.leg[suff+'impact'+'UNRyqt'+c].SetNColumns(2)
@@ -3685,11 +3731,16 @@ class plotter :
                     self.histos[suff+'impact'+'UNRyqt'+c].SetMaximum(0.4)
                     bottomY4line = 0.002
                     topY4line = 0.4
-                else :
+                elif 'A4' in c :
                     self.histos[suff+'impact'+'UNRyqt'+c].SetMinimum(0.0005)
                     self.histos[suff+'impact'+'UNRyqt'+c].SetMaximum(3)
                     bottomY4line = 0.0005
                     topY4line = 3
+                else :
+                    self.histos[suff+'impact'+'UNRyqt'+c].SetMinimum(0.0005)
+                    self.histos[suff+'impact'+'UNRyqt'+c].SetMaximum(9)
+                    bottomY4line = 0.0005
+                    topY4line = 9
                 
                 vImpLines = []
                 # ROOT.gPad.Update()
@@ -3698,8 +3749,8 @@ class plotter :
                 # self.canvas[suff+'impact'+'UNRyqt'+c].Range(0,0.001,1,200)
                 
                 # print(c, bottomY4line, topY4line)
-                if 'A4' in c or 'unpol' in c : 
-                    for yqt in self.unrolledYQt :
+                # if 'A4' in c or 'unpol' in c : 
+                for yqt in self.unrolledYQt :
                         if yqt%(self.qtArr[-1])==0 :
                             if yqt==0 :continue
                             if yqt==len(self.unrolledYQt)-1 : continue 
@@ -3733,7 +3784,7 @@ class plotter :
                 self.leg[suff+'impact'+'y'+c] = ROOT.TLegend(0.3,0.15,0.85,0.35)
                 if cleanNuisance :
                     # if 'unpol' in c :
-                    self.leg[suff+'impact'+'y'+c] = ROOT.TLegend(0.15,0.72,0.5,0.88)
+                    self.leg[suff+'impact'+'y'+c] = ROOT.TLegend(0.25,0.72,0.6,0.88)
                     # else :
                         # self.leg[suff+'impact'+'y'+c] = ROOT.TLegend(0.50,0.72,0.85,0.88)
                     self.leg[suff+'impact'+'y'+c].SetNColumns(2)
@@ -3768,11 +3819,13 @@ class plotter :
                 if 'unpol' in c :  
                     self.histos[suff+'impact'+'y'+c].SetMinimum(0.002)
                     self.histos[suff+'impact'+'y'+c].SetMaximum(0.4)
-                else : 
+                elif 'A4' in c : 
                     self.histos[suff+'impact'+'y'+c].SetMinimum(0.0005)
                     self.histos[suff+'impact'+'y'+c].SetMaximum(3)
-                    # hempty.GetYaxis().SetRangeUser(0.004,20)
-                
+                else :
+                   self.histos[suff+'impact'+'y'+c].SetMinimum(0.0005)
+                   self.histos[suff+'impact'+'y'+c].SetMaximum(9)  
+                                  
                 cmsLatex.SetNDC()
                 cmsLatex.SetTextFont(42)
                 cmsLatex.SetTextColor(ROOT.kBlack)
@@ -3788,7 +3841,7 @@ class plotter :
                 self.leg[suff+'impact'+'qt'+c] = ROOT.TLegend(0.3,0.15,0.85,0.35)
                 if cleanNuisance :
                     # if 'unpol' in c :
-                    self.leg[suff+'impact'+'qt'+c] = ROOT.TLegend(0.15,0.72,0.5,0.88)
+                    self.leg[suff+'impact'+'qt'+c] = ROOT.TLegend(0.25,0.72,0.6,0.88)
                     # else :
                         # self.leg[suff+'impact'+'qt'+c] = ROOT.TLegend(0.50,0.72,0.85,0.88)
                     self.leg[suff+'impact'+'qt'+c].SetNColumns(2)
@@ -3823,9 +3876,12 @@ class plotter :
                 if 'unpol' in c :  
                     self.histos[suff+'impact'+'qt'+c].SetMinimum(0.002)
                     self.histos[suff+'impact'+'qt'+c].SetMaximum(0.4)
-                else :
+                elif 'A4' in c :
                     self.histos[suff+'impact'+'qt'+c].SetMinimum(0.0005)
                     self.histos[suff+'impact'+'qt'+c].SetMaximum(3)
+                else :
+                   self.histos[suff+'impact'+'qt'+c].SetMinimum(0.0005)
+                   self.histos[suff+'impact'+'qt'+c].SetMaximum(9) 
                 
                 cmsLatex.SetNDC()
                 cmsLatex.SetTextFont(42)
@@ -4512,7 +4568,9 @@ class plotter :
                 'matrices' : [1, 'corrMat'],
                 'matricesInt': [0, 'corrMatIntegratedqt', 'corrMatIntegratedy'],
                 'nuisance' : [0, 'NuiConstrall'],
-                'impact' : [0, 'impactUNRyqtA4', 'impactyA4','impactqtA4', 'impactUNRyqtunpolarizedxsec', 'impactyunpolarizedxsec','impactqtunpolarizedxsec', 'impactmass'],
+                # 'impact' : [0, 'impactUNRyqtA4', 'impactyA4','impactqtA4', 'impactUNRyqtunpolarizedxsec', 'impactyunpolarizedxsec','impactqtunpolarizedxsec', 'impactmass'],
+                'impact' : [1, 'impactUNRyqt', 'impacty','impactqt'],
+                'impactmass' : [0, 'impactmass'],
                 'prefit' : [0, 'prefit', 'postfit'],
                 'toy' : [0,'FitAC'+'UNRyqt'+'toyPull','FitAC'+'qt'+'toyPull','FitAC'+'y'+'toyPull'],
                 'coeffErr' : [0,'FitErr'+'UNRyqt'+'unpolarizedxsec', 'FitErr'+'y'+'unpolarizedxsec','FitErr'+'qt'+'unpolarizedxsec'],

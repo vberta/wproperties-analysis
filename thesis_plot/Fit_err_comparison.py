@@ -7,14 +7,14 @@ ROOT.gROOT.SetBatch(True)
 gStyle.SetOptStat(0)
 
 #------------------------- init
-# inDir = '../../Fit/OUTPUT_1Apr_noCF_qtMax60/'
-inDir = '../../../Fit/OUTPUT_1Apr_noCF_qtMax60/'
+inDir = '../../Fit/OUTPUT_1Apr_noCF_qtMax60/'
+# inDir = '../../../Fit/OUTPUT_1Apr_noCF_qtMax60/'
 
 fitDict = {
-    'fit' :     ['fullFit_asimov_noBBB_noFittedMass/',          'fitPlots_Wplus_angCoeff.root'        ,'FitRatioAC',     'coeff_UNRyqt_RatioAC'    , ROOT.kBlack, 'Not regularized'],
-    # 'gauss' :   ['full_fit_asimov_tau100_noBBB_noFittedMass/',  'fitPlots_Wplus_angCoeff.root'        ,'FitRatioAC',     'coeff_UNRyqt_RatioAC'    , ROOT.kRed-4, 'Simult. Gaussian constraint regul.'],
-    'gauss' :   ['full_fit_asimov_tau500_noBBB_noFittedMass/',  'fitPlots_Wplus_angCoeff.root'        ,'FitRatioAC',     'coeff_UNRyqt_RatioAC'    , ROOT.kRed-4, 'Simult. Gaussian constraint regul.'],
-    'poly' :    ['fullFit_asimov_noBBB_noFittedMass/',          'fitPlots_Wplus_APO_angCoeff.root'    , 'apoRatio' ,     'apoRatio_UNRyqt'    , ROOT.kAzure+1, 'Post-fit regul.'],
+    'fit' :     ['fullFit_asimov_noBBB_noFittedMass/',          'fitPlots_Wplus_angCoeff.root'        ,'FitRatioAC',     'coeff_UNRyqt_RatioAC'    , ROOT.kBlack, 'Non-regularized'],
+    'gauss' :   ['full_fit_asimov_tau100_noBBB_noFittedMass/',  'fitPlots_Wplus_angCoeff.root'        ,'FitRatioAC',     'coeff_UNRyqt_RatioAC'    , ROOT.kRed-4, 'Simult. Gaussian constraint regul.'],
+    # 'gauss' :   ['full_fit_asimov_tau500_noBBB_noFittedMass/',  'fitPlots_Wplus_angCoeff.root'        ,'FitRatioAC',     'coeff_UNRyqt_RatioAC'    , ROOT.kRed-4, 'Simult. Gaussian constraint regul.'],
+    'poly' :    ['fullFit_asimov_noBBB_noFittedMass/',          'fitPlots_Wplus_APO_angCoeff.root'    , 'apoRatio' ,     'apoRatio_UNRyqt'    , ROOT.kAzure+1, 'Post-fit regularized'],
 }
 
 coeffList = ['A0','A1','A2','A3','A4', 'unpolarizedxsec']
