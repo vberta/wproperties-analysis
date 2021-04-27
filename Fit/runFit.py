@@ -52,9 +52,10 @@ for charge in charges:
         # f.channel, f.channel)
     
     #good one (with and without BBB)
-    #combinetf = 'combinetf.py --allowNegativePOI --binByBinStat -t {} {}.pkl.hdf5 -o fit_{}.root {} --nThreads {} --correlateXsecStat'.format(toy, f.channel, f.channel, CTFmodifier,cores) # --fitverbose 9
-    # combinetf = 'combinetf.py --allowNegativePOI -t {} {}.pkl.hdf5 -o fit_{}.root {} --nThreads {} --seed 7031993'.format(toy, f.channel, f.channel, CTFmodifier,cores)
+    # combinetf = 'combinetf.py --allowNegativePOI --binByBinStat -t {} {}.pkl.hdf5 -o fit_{}.root {} --nThreads {} --correlateXsecStat'.format(toy, f.channel, f.channel, CTFmodifier,cores) # --fitverbose 9
+    # combinetf = 'combinetf.py --allowNegativePOI -t {} {}.pkl.hdf5 -o fit_{}.root {} --nThreads {} --seed 7031993'.format(toy, f.channel, f.channel, CTFmodifier,cores) #working toy
     combinetf = 'combinetf.py --allowNegativePOI -t {} {}.pkl.hdf5 -o fit_{}.root {} --nThreads {}'.format(toy, f.channel, f.channel, CTFmodifier,cores)
+    # combinetf = 'combinetf.py --allowNegativePOI -t {} {}.pkl.hdf5 -o fit_{}.root {} --nThreads {} --POIMode none'.format(toy, f.channel, f.channel, CTFmodifier,cores)
 
     #other config
     # combinetf = 'combinetf.py --allowNegativePOI --binByBinStat -t {} {}.pkl.hdf5 -o fit_{}.root {} --nThreads {} --correlateXsecStat --yieldProtectionCutoff 1'.format(toy, f.channel, f.channel, CTFmodifier,cores)
@@ -66,4 +67,4 @@ for charge in charges:
     # combinetf = 'combinetf.py --allowNegativePOI --binByBinStat -t {} {}.pkl.hdf5 -o fit_{}.root {} --nThreads {} --POIMode none'.format(toy, f.channel, f.channel, CTFmodifier,cores)
     print('executing', combinetf)
     os.system(combinetf)
-    assert(0)
+    # assert(0)

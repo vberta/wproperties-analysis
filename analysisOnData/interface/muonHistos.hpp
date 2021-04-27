@@ -27,6 +27,7 @@ class muonHistos : public Module {
     //0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.5, 1.7, 1.9, 2.1, 2.4};
 
     std::vector<float> _pTArr = std::vector<float>(61);
+    // std::vector<float> _pTArr = std::vector<float>(121);#CHANGEBIN
     std::vector<float> _etaArr = std::vector<float>(49);
     std::vector<float> _MTArr = std::vector<float>(31);
     std::vector<float> _chargeArr = std::vector<float>(3);

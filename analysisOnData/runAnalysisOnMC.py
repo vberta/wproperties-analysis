@@ -4,6 +4,7 @@ import ROOT
 import json
 import argparse
 import copy
+sys.path.append('../RDFprocessor/framework')
 from RDFtree import RDFtree
 from multiprocessing import Process
 
@@ -93,7 +94,7 @@ def RDFprocessMC(fvec, outputDir, sample, xsec, fileSF, ncores, systType, preten
             p.branch(nodeToStart = 'defs', nodeToEnd = 'templates_{}/{}'.format(region,vartype), modules = [ROOT.templates(cut_vec, weight, nom,"Nom",hcat,var_vec)])  
 
     p.getOutput()
-    p.saveGraph()
+    # p.saveGraph()
 
 
 def main():

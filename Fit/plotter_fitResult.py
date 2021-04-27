@@ -53,6 +53,7 @@ class plotter :
         
         self.lumi=35.9
         self.mass = 80.419 
+        self.toyPullFit = True
         
         self.systDict = {
             "_LHEScaleWeight" : ["_LHEScaleWeight_muR0p5_muF0p5", "_LHEScaleWeight_muR0p5_muF1p0","_LHEScaleWeight_muR1p0_muF0p5","_LHEScaleWeight_muR1p0_muF2p0","_LHEScaleWeight_muR2p0_muF1p0", "_LHEScaleWeight_muR2p0_muF2p0"],
@@ -119,25 +120,27 @@ class plotter :
         self.nuisanceDict = {
             "mass"      : [ROOT.kBlue-4, 'm_{W}', 29],
             "WHSFSyst"  : [ROOT.kGreen-4, 'SF syst.', 36],
-            # "alphaS"    : [ROOT.kOrange-3, '#alpha_{s}', 38],
             "pdfs"      : [ROOT.kRed+1, 'PDF+#alpha_{s}', 21],
             "WHSFStat"  : [ROOT.kGreen+1, 'SF stat.', 22],
             "stat"      : [ROOT.kGray+2, 'Statistical', 43],
             "PrefireWeight" : [ROOT.kSpring+10, 'Prefire weight', 28],
             "jme"       : [ROOT.kAzure+10, 'MET uncert.',45],
             "ptScale"       : [ROOT.kYellow+2, 'p_{T} Scale',43],
-            # "binByBinStat" : [ROOT.kGray+1, 'Bin stat', 46],
+            # "binByBinStat" : [ROOT.kGray, 'BBB', 46],
             "QCDnorm" : [ROOT.kViolet, 'QCD norm.', 22],
             "CMSlumi" : [ROOT.kOrange-7,"Luminosity",33],
+            "ewkXsec" : [ROOT.kTeal,"#sigma_{W#rightarrow#tau#nu}+#sigma_{t}+#sigma_{diboson}",3],
+            "LeptonVeto" : [ROOT.kMagenta-7,"Lepton veto",23],
+            "WQT": [ROOT.kViolet+7,"q_{T}^{V}",20],
+            "tot" : [ROOT.kBlack, 'Total unc.',1]
+            
+            
+            # "alphaS"    : [ROOT.kOrange-3, '#alpha_{s}', 38],
+            # "LHEScaleWeight" : [ROOT.kViolet-2,"MC Scales",43],  
             # "DYxsec" : [ROOT.kCyan+2,"#sigma_{DY}",3],
             # "Topxsec" : [ROOT.kCyan-6,"#sigma_{t}",3],
             # "Dibosonxsec" : [ROOT.kCyan-1,"#sigma_{diboson}",3],
             # "Tauxsec" : [ROOT.kTeal,"#sigma_{W#rightarrow#tau#nu}",3],
-            "ewkXsec" : [ROOT.kTeal,"#sigma_{W#rightarrow#tau#nu}+#sigma_{t}+#sigma_{diboson}",3],
-            "LeptonVeto" : [ROOT.kMagenta-7,"Lepton veto",23],
-            "WQT": [ROOT.kViolet+7,"q_{T}^{V}",20],
-            # "LHEScaleWeight" : [ROOT.kViolet-2,"MC Scales",43],  
-            "tot" : [ROOT.kBlack, 'Total unc.',1]
         }
         
         self.NuiConstrLabels = {
@@ -1634,9 +1637,9 @@ class plotter :
             
         #sqrt(N) plot as additional nuisances to extra comparison
         c='unpolarizedxsec'
-        self.histos[suff+'impact'+'UNRqty'+c+'poiss'] = ROOT.TH1D('impact_'+c+'_'+nui+'_UNRqty', 'impact_'+c+'_'+'poiss'+'_UNRqty', len(self.unrolledQtY)-1, array('f',self.unrolledQtY))
+        self.histos[suff+'impact'+'UNRqty'+c+'poiss'] = ROOT.TH1D('impact_'+c+'_'+'poiss'+'_UNRqty', 'impact_'+c+'_'+'poiss'+'_UNRqty', len(self.unrolledQtY)-1, array('f',self.unrolledQtY))
         for q in range(1, len(self.qtArr)) :
-            if skipDiffImpact : continue 
+            if impact and skipDiffImpact : continue 
             if not self.anaKind['angNames'] : continue 
             for y in range(1, len(self.yArr)): 
                 indexUNRqty = (q-1)*(len(self.yArr)-1)+y
@@ -1645,7 +1648,7 @@ class plotter :
         
         self.histos[suff+'impact'+'UNRyqt'+c+'poiss'] = ROOT.TH1D('impact_'+c+'_'+'poiss'+'_UNRyqt', 'impact_'+c+'_'+'poiss'+'_UNRyqt', len(self.unrolledYQt)-1, array('f',self.unrolledYQt))
         for y in range(1, len(self.yArr)): 
-                if skipDiffImpact : continue 
+                if impact and skipDiffImpact : continue 
                 if not self.anaKind['angNames'] : continue
                 for q in range(1, len(self.qtArr)) :
                     indexUNRyqt = (y-1)*(len(self.qtArr)-1)+q
@@ -1654,14 +1657,14 @@ class plotter :
         
         self.histos[suff+'impact'+'y'+c+'poiss'] = ROOT.TH1D('impact_'+c+'_'+'poiss'+'_y', 'impact_'+c+'_'+'poiss'+'_y', len(self.yArr)-1, array('f',self.yArr))
         for y in range(1, len(self.yArr)):   
-            if skipIntImpact : continue
+            if impact and skipIntImpact : continue
             if not self.anaKind['angNames'] : continue
             nev = self.histos[suff+'FitACy'+c].GetBinContent(y)* (self.lumi*3./16./math.pi) *self.histos[suff+'FitACy'+c].GetXaxis().GetBinWidth(y)  
             self.histos[suff+'impact'+'y'+c+'poiss'].SetBinContent(y,math.sqrt(nev)/nev)
         
         self.histos[suff+'impact'+'qt'+c+'poiss'] = ROOT.TH1D('impact_'+c+'_'+'poiss'+'_qt', 'impact_'+c+'_'+'poiss'+'_qt', len(self.qtArr)-1, array('f',self.qtArr))
         for qt in range(1, len(self.qtArr)) :
-            if skipIntImpact : continue  
+            if impact and skipIntImpact : continue  
             if not self.anaKind['angNames'] : continue
             nev = self.histos[suff+'FitACqt'+c].GetBinContent(qt)* (self.lumi*3./16./math.pi) *self.histos[suff+'FitACqt'+c].GetXaxis().GetBinWidth(qt)  
             self.histos[suff+'impact'+'qt'+c+'poiss'].SetBinContent(qt,math.sqrt(nev)/nev)        
@@ -4028,6 +4031,41 @@ class plotter :
 
         
         if toy !='' :
+            
+            if self.toyPullFit :
+                #------------fit the toy pulls --------#
+                for c in self.coeffDict:       
+                    self.histos[suff+'FitAC'+c+'toyPull'+'Fit'] = ROOT.TH2D(suff+'FitAC{c}_toyPull_Fit'.format(c=c), suff+'FitAC{c}_toyPull_Fit'.format(c=c), len(self.yArr)-1, array('f',self.yArr), len(self.qtArr)-1, array('f',self.qtArr))
+                    self.histos[suff+'FitACqt'+c+'toyPull'+'Fit'] = ROOT.TH1D(suff+'FitACqt{c}_toyPull_Fit'.format(c=c), suff+'FitACqt{c}_toyPull_Fit'.format(c=c), len(self.qtArr)-1, array('f',self.qtArr))
+                    self.histos[suff+'FitACy'+c+'toyPull'+'Fit'] = ROOT.TH1D(suff+'FitACy{c}_toyPull_Fit'.format(c=c), suff+'FitACy{c}_toyPull_Fit'.format(c=c), len(self.yArr)-1, array('f',self.yArr))
+    
+                    for i in range(1, self.histos[suff+'FitAC'+c].GetNbinsX()+1): #loop over rapidity bins
+                        for j in range(1, self.histos[suff+'FitAC'+c].GetNbinsY()+1): #loop over pt bins
+                            self.histos[suff+'FitAC'+c+'toyPull'+'y'+str(i)+'_qt'+str(j)].Fit('gaus','Q')
+                            func = self.histos[suff+'FitAC'+c+'toyPull'+'y'+str(i)+'_qt'+str(j)].GetFunction('gaus')
+                            # print(func.GetChisquare(), func.GetNDF())
+                            self.histos[suff+'FitAC'+c+'toyPull'+'Fit'].SetBinContent(i,j,func.GetParameter(1))
+                            self.histos[suff+'FitAC'+c+'toyPull'+'Fit'].SetBinError(i,j,func.GetParameter(2))
+                    
+                    for j in range(1, self.histos[suff+'FitAC'+c].GetNbinsY()+1): #loop over pt bins
+                        self.histos[suff+'FitACqt'+c+'toyPull'+'qt'+str(j)].Fit('gaus','Q')
+                        func = self.histos[suff+'FitACqt'+c+'toyPull'+'qt'+str(j)].GetFunction('gaus')
+                        # print(func.GetChisquare())
+                        self.histos[suff+'FitACqt'+c+'toyPull'+'Fit'].SetBinContent(j,func.GetParameter(1))
+                        self.histos[suff+'FitACqt'+c+'toyPull'+'Fit'].SetBinError(j,func.GetParameter(2))
+                    
+                    for i in range(1, self.histos[suff+'FitAC'+c].GetNbinsX()+1): #loop over rapidity bins
+                        self.histos[suff+'FitACy'+c+'toyPull'+'y'+str(i)].Fit('gaus','Q')
+                        func = self.histos[suff+'FitACy'+c+'toyPull'+'y'+str(i)].GetFunction('gaus')
+                        # print(func.GetChisquare())
+                        self.histos[suff+'FitACy'+c+'toyPull'+'Fit'].SetBinContent(i,func.GetParameter(1))
+                        self.histos[suff+'FitACy'+c+'toyPull'+'Fit'].SetBinError(i,func.GetParameter(2))
+                    
+                    self.histos[suff+'FitAC'+c+'toyPull'] = self.histos[suff+'FitAC'+c+'toyPull'+'Fit'] 
+                    self.histos[suff+'FitACqt'+c+'toyPull'] = self.histos[suff+'FitACqt'+c+'toyPull'+'Fit'] 
+                    self.histos[suff+'FitACy'+c+'toyPull'] = self.histos[suff+'FitACy'+c+'toyPull'+'Fit']            
+            
+            
             #---------------------------- Canvas pulls - unrolled: qt large, y small canvas (only unrolled produced for pulls) ------------------------------------
             for c in self.coeffDict:
                 self.histos[suff+'FitAC'+'UNRqty'+c+'toyPull'] = ROOT.TH1F(suff+'_coeff_toyPull_UNRqty'+c,suff+'_coeff_toyPull_UNRqty'+c,len(self.unrolledQtY)-1, array('f',self.unrolledQtY))
@@ -4578,6 +4616,7 @@ class plotter :
                         
             if not postfit : del nameDict['prefit']
             if not impact : del nameDict['impact']
+            if not impact : del nameDict['impactmass']
             if toy=='' : 
                 del nameDict['toy']
             

@@ -52,6 +52,9 @@ void templates::setAxisarrays()
   for (unsigned int i = 0; i < 61; i++){
       float binSize = (55. - 25.) / 60;
       _pTArr[i] = 25. + i*binSize;}
+//   for (unsigned int i = 0; i < 121; i++){#CHANGEBIN
+//       float binSize = (55. - 25.) / 120;
+//       _pTArr[i] = 25. + i*binSize;}
     for (unsigned int i = 0; i < 49; i++)
         _etaArr[i] = -2.4 + i * 4.8/48;
     for (int i = 0; i < 3; i++)

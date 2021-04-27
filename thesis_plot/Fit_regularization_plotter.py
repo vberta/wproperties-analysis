@@ -137,7 +137,7 @@ for dicc, name in zip([optDict,subDict],['opt','sub']) :
         meanfit = gussfit.GetParameter(1)
         varfit = gussfit.GetParameter(2)
         
-        labFitGauss = '#scale[1.5]{#mu='+str(round(mean,2))+', #sigma='+str(round(var,2))+'}'
+        labFitGauss = '#scale[1.5]{#mu='+str(round(meanfit,2))+', #sigma='+str(round(varfit,2))+'}'
         labDegOrder = "#scale[1.5]{~ Y^{%s} #times q_{T}^{%s}}"%(str(dicc[c][0]),str(dicc[c][1]))
         # cmsLatex.SetTextAlign(31) 
         # cmsLatex.DrawLatex(1-canv[name+'pull'+c].GetRightMargin()-0.02,1-canv[name+'pull'+c].GetTopMargin()-0.2,labFitGauss)

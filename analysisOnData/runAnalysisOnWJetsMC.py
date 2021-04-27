@@ -101,11 +101,11 @@ def RDFprocessWJetsMCSignalACtempl(fvec, outputDir, sample, xsec, fileSF, fileSc
         print('low Acc')
         for cut in wtomu_cut_vec:
             # cut+= "&& (Wpt_preFSR>32. || Wrap_preFSR_abs>2.4)"
-            cut+= "&& (Wpt_preFSR>80. || Wrap_preFSR_abs>2.4)"
+            cut+= "&& (Wpt_preFSR>60. || Wrap_preFSR_abs>2.4)"
             #print "Low acc cut vec vars:", wtomu_cut_vec
         p.branch(nodeToStart = 'defsAC', nodeToEnd = 'templatesLowAcc_{}/{}'.format(region,vartype), modules = [ROOT.templates(wtomu_cut_vec, weight, nom,"Nom",hcat,wtomu_var_vec)])
     p.getOutput()
-    p.saveGraph()
+    # p.saveGraph()
 
 
 def RDFprocessWJetsMC(fvec, outputDir, sample, xsec, fileSF, fileScale, ncores, pretendJob, bkg,SBana=False):
@@ -203,7 +203,7 @@ def RDFprocessWJetsMC(fvec, outputDir, sample, xsec, fileSF, fileScale, ncores, 
                 p.branch(nodeToStart = 'defs', nodeToEnd = '{}/prefit_{}/{}'.format('WToTau', region,vartype), modules = [ROOT.muonHistos(wtotau_cut_vec, weight, nom,"Nom",hcat,wtotau_var_vec)])
    
     p.getOutput()
-    p.saveGraph()
+    # p.saveGraph()
     #if not pretendJob:
     #split the output file into decay modes
     os.chdir(outputDir)

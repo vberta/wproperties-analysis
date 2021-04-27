@@ -3,7 +3,7 @@ import sys
 import ROOT
 import json
 import argparse
-
+sys.path.append('../RDFprocessor/framework')
 from RDFtree import RDFtree
 sys.path.append('python/')
 sys.path.append('data/')
@@ -31,7 +31,7 @@ def RDFprocessData(fvec, outputDir, ncores, pretendJob=True, SBana=False, outF="
         #nominal templates
         p.branch(nodeToStart = 'defs', nodeToEnd = 'templates_{}/Nominal'.format(region), modules = [ROOT.templates(cut, weight, nom,"Nom",0)])       
     p.getOutput()
-    p.saveGraph()
+    # p.saveGraph()
 
 #produces Fake contribution to prefit plots computed from data 
 def RDFprocessfakefromData(fvec, outputDir, bkgFile, ncores, pretendJob=True, SBana=False, outF="FakeFromData_plots.root"):
@@ -98,7 +98,7 @@ def RDFprocessfakefromData(fvec, outputDir, bkgFile, ncores, pretendJob=True, SB
 
     #save output
     p.getOutput()
-    p.saveGraph()
+    # p.saveGraph()
 
 def main():
     parser = argparse.ArgumentParser("")

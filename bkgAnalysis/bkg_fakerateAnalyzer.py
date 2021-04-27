@@ -39,10 +39,12 @@ class bkg_analyzer:
         for f in self.sampleList : 
              self.rootFiles.append(ROOT.TFile.Open(self.inputDir+'/'+f+'.root'))    
 
-        self.ptBinningS = ['{:.3g}'.format(x) for x in self.ptBinning[:-1]]
+        self.ptBinningS = ['{:.4g}'.format(x) for x in self.ptBinning[:-1]]
         self.etaBinningS = ['{:.2g}'.format(x) for x in self.etaBinning[:-1]]
         if self.nameSuff =='SideBand' :
             print("WARNING: special name used, SideBand, processed sideband clousure test")
+        print(self.ptBinningS)
+        print(self.ptBinning)
         
     def binNumb_calculator(self,histo, axis, lowEdge) : #axis can be X,Y,Z
         binout = 0

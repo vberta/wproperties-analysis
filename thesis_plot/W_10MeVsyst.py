@@ -48,7 +48,8 @@ class plotter:
         
         self.groupedSystColors = {
             "LHEPdfWeight" : [ROOT.kRed+1, 'PDF+#alpha_{s}'],
-            "Nominal" : [1, 'Stat. Unc. 4 fb^{-1}'],
+            # "Nominal" : [1, 'Stat. Unc. 4 fb^{-1}'],
+            "Nominal" : [1, 'Stat. Unc. 35.9 fb^{-1}'],
             "alphaS" : [ROOT.kOrange-3, '#alpha_{s}'],
             "Qt" : [ROOT.kGreen-3, "q_{T}^{W} #pm "+self.qts+"% [0,"+self.qtr+" GeV]"],
             "mass" : [ROOT.kBlue-4, 'm_{W} #pm '+self.ms+' MeV', 35],
@@ -190,7 +191,15 @@ class plotter:
                 if sKind =='LHEPdfWeight' : continue
                 if sKind =='Nominal' : continue
                 
-                dmu = round(abs(1000*(self.histoDict[s+sList[0]].GetMean()-self.histoDict[s].GetMean())),0)#in MeV
+                if sKind =='PDF' : #for pdf the shift must be evaluated for each component independently
+                    deltaMeanPdf = 0
+                    for sName in self.extSyst['LHEPdfWeight'] :
+                          deltaMeanPdf += (self.histoDict[s+sName].GetMean()-self.histoDict[s].GetMean())**2
+                    deltaMeanPdf+= (self.histoDict[s+'_alphaSUp'].GetMean()-self.histoDict[s].GetMean())**2
+                    dmu= round(abs(1000*math.sqrt(deltaMeanPdf)),0)
+                    
+                else :
+                    dmu = round(abs(1000*(self.histoDict[s+sList[0]].GetMean()-self.histoDict[s].GetMean())),0)#in MeV
                 legDict[s].AddEntry(self.histoDict[s+sList[0]],self.groupedSystColors[sKind][1]+", #Delta#mu="+str(dmu)+' MeV')
         
         
@@ -319,7 +328,7 @@ def summary_table(qtDict) :
         
         
 
-    
+#python ../W_10MeVsyst.py --input ../../analysisOnData/test_W10MeVsyst_multipleComparison/WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_plots.root --output W_10MeVsyst    
 parser = argparse.ArgumentParser("")
 parser.add_argument('-o','--output', type=str, default='TEST',help="name of the output file")
 parser.add_argument('-i','--input', type=str, default='TEST',help="name of the input file")

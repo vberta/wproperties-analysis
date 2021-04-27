@@ -303,7 +303,10 @@ class fitUtils:
                           'QCDnorm' : set(['QCDnorm'])
                          }  # <type 'dict'>
         self.DC.groups['other'] = set()
+        self.DC.groups['allSyst'] = set()
         for k,vals in self.DC.groups.items() :
+            for val in vals  :
+                    self.DC.groups['allSyst'].add(val)
             if k=='pdfs' or k=='WHSFStat' or k=='CMSlumi' or k=='WQT' : 
                 continue
             else : 
@@ -466,7 +469,7 @@ class fitUtils:
                 testnames.append("y_%i_qt_%i_A2" % (i+1, j+1))
                 bincenters.append([etas[i], pts[j]])
 
-        self.poly2DRegGroups["poly2dA2"] = {"names": testnames, "bincenters": bincenters, "firstorder": (0, 1), "lastorder": (2, 4), "fullorder": (len(etas)-1, len(pts)-1)} 
+        self.poly2DRegGroups["poly2dA2"] = {"names": testnames, "bincenters": bincenters, "firstorder": (0, 1), "lastorder": (1, 4), "fullorder": (len(etas)-1, len(pts)-1)} 
         # self.poly2DRegGroups["poly2dA2"] = {"names": testnames, "bincenters": bincenters, "firstorder": (0, 1), "lastorder": (2, 4), "fullorder": (5, 8)} 
         
         testnames = []

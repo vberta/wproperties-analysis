@@ -7,14 +7,14 @@ ROOT.gROOT.SetBatch(True)
 gStyle.SetOptStat(0)
 
 #------------------------- init
-inDir = '../../Fit/OUTPUT_1Apr_noCF_qtMax60/'
 # inDir = '../../../Fit/OUTPUT_1Apr_noCF_qtMax60/'
+inDir = '../../../Fit/OUTPUT_25Apr_noCF_qtMax60_fixLowAcc/'
 
 fitDict = {
-    'fit' :     ['fullFit_asimov_noBBB_noFittedMass/',          'fitPlots_Wplus_angCoeff.root'        ,'FitRatioAC',     'coeff_UNRyqt_RatioAC'    , ROOT.kBlack, 'Non-regularized'],
-    'gauss' :   ['full_fit_asimov_tau100_noBBB_noFittedMass/',  'fitPlots_Wplus_angCoeff.root'        ,'FitRatioAC',     'coeff_UNRyqt_RatioAC'    , ROOT.kRed-4, 'Simult. Gaussian constraint regul.'],
-    # 'gauss' :   ['full_fit_asimov_tau500_noBBB_noFittedMass/',  'fitPlots_Wplus_angCoeff.root'        ,'FitRatioAC',     'coeff_UNRyqt_RatioAC'    , ROOT.kRed-4, 'Simult. Gaussian constraint regul.'],
-    'poly' :    ['fullFit_asimov_noBBB_noFittedMass/',          'fitPlots_Wplus_APO_angCoeff.root'    , 'apoRatio' ,     'apoRatio_UNRyqt'    , ROOT.kAzure+1, 'Post-fit regularized'],
+    'fit' :     ['fullFit_asimov_noBBB_noFittedMass/',          'fitPlots_Wplus_angCoeff.root'        ,'FitRatioAC',     'coeff_UNRyqt_RatioAC'    , ROOT.kBlack, 'Non-regularized', 20],
+    # 'gauss' :   ['full_fit_asimov_tau100_noBBB_noFittedMass/',  'fitPlots_Wplus_angCoeff.root'        ,'FitRatioAC',     'coeff_UNRyqt_RatioAC'    , ROOT.kRed-4, 'Simult. Gaussian constraint regul.',22],
+    # 'gauss' :   ['full_fit_asimov_tau500_noBBB_noFittedMass/',  'fitPlots_Wplus_angCoeff.root'        ,'FitRatioAC',     'coeff_UNRyqt_RatioAC'    , ROOT.kRed-4, 'Simult. Gaussian constraint regul.',22],
+    'poly' :    ['fullFit_asimov_noBBB_noFittedMass/',          'fitPlots_Wplus_APO_angCoeff.root'    , 'apoRatio' ,     'apoRatio_UNRyqt'    , ROOT.kAzure+1, 'Post-fit regularized',21],
 }
 
 coeffList = ['A0','A1','A2','A3','A4', 'unpolarizedxsec']
@@ -50,7 +50,7 @@ canDict = {}
 legDict ={}
 filedict = {}
 #get histos:
-i=0
+# i=0
 for f,fval in fitDict.items() :
     filedict[f] = ROOT.TFile.Open(inDir+fval[0]+fval[1])
     for c in coeffList :
@@ -71,16 +71,17 @@ for f,fval in fitDict.items() :
             histoDict[f+c+cat].SetLineColor(fval[4])
             histoDict[f+c+cat].SetLineWidth(3)
             histoDict[f+c+cat].SetMarkerColor(fval[4])
-            histoDict[f+c+cat].SetMarkerStyle(20+i)
+            histoDict[f+c+cat].SetMarkerStyle(fval[6])
             histoDict[f+c+cat].SetMarkerSize(2)
             histoDict[f+c+cat].SetFillStyle(0)
-    i=i+1
+    # i=i+1
 
 #histo of ratio   
 for c in coeffList :
     for cat in catList :
         canDict[c+cat] = ROOT.TCanvas('fit_err_comp_'+c+'_'+cat,'fit_err_comp_'+c+'_'+cat,1600,1200)
-        legDict[c+cat] = ROOT.TLegend(0.25,0.7,0.75,0.9)
+        # legDict[c+cat] = ROOT.TLegend(0.25,0.7,0.75,0.9)
+        legDict[c+cat] = ROOT.TLegend(0.4,0.7,0.75,0.9)
         legDict[c+cat].SetLineWidth(0)
         legDict[c+cat].SetFillStyle(0)
         canDict[c+cat].cd()
@@ -201,6 +202,6 @@ for c in coeffList :
     for cat in catList :
        canDict[c+cat].Write()
        if 'unpol' in c or 'A4' in c : 
-            canDict[c+cat].SaveAs('Fit_err_comparison_'+c+'_'+cat+'_plus.png')
-            canDict[c+cat].SaveAs('Fit_err_comparison_'+c+'_'+cat+'_plus.pdf')
+            canDict[c+cat].SaveAs('Fit_err_comparison_'+c+'_'+cat+'_plus_nogauss.png')
+            canDict[c+cat].SaveAs('Fit_err_comparison_'+c+'_'+cat+'_plus_nogauss.pdf')
             

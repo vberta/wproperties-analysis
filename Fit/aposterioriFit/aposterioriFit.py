@@ -1405,8 +1405,8 @@ parser = argparse.ArgumentParser("")
 
 parser.add_argument('-o','--output', type=str, default='aposterioriFit_Wplus',help="name of the output file")
 parser.add_argument('-f','--fitInput', type=str, default='fitPlots_Wplus.root',help="name of the fit result root file, after plotter_fitResult")
-# parser.add_argument('-r','--regInput', type=str, default='../../regularization/OUTPUT_1Apr/regularizationFit_range11____nom_nom_qt7_y5_limqt60_noC1.root',help="name of the regularization study result root file")#input file which must be used here
-parser.add_argument('-r','--regInput', type=str, default='',help="name of the regularization study result root file") #to have empty default
+parser.add_argument('-r','--regInput', type=str, default='../../regularization/OUTPUT_1Apr/regularizationFit_range11____nom_nom_qt7_y5_limqt60_noC1.root',help="name of the regularization study result root file")#input file which must be used here
+# parser.add_argument('-r','--regInput', type=str, default='',help="name of the regularization study result root file") #to have empty default
 parser.add_argument('-s','--save', type=int, default=False,help="save .png and .pdf canvas")
 parser.add_argument('-nUL','--notUnpol', type=int, default=False,help="exclude unpol and nuisances from the fit")
 parser.add_argument('-af','--asimovFile', type=str, default='',help="name of the asimov file, if not empty run first the fit on the asimov, use the pars. as initial par and then on the real file.if empty initialized the pars=1 ")
