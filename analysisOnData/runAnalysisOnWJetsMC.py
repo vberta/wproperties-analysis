@@ -130,7 +130,6 @@ def RDFprocessWJetsMC(fvec, outputDir, sample, xsec, fileSF, fileScale, ncores, 
         #     weight = 'float(puWeight*lumiweight)'
         # else:
         #     weight = 'float(puWeight*lumiweight*WHSF)'
-            
         print(weight, "NOMINAL WEIGHT")
         nom = ROOT.vector('string')()
         nom.push_back("")

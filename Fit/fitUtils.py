@@ -9,7 +9,7 @@ from systToapply import systematicsDict
 import numpy as np
 
 class fitUtils:
-    def __init__(self, fmap, channel ="WPlus", doSyst=False):
+    def __init__(self, fmap, channel ="WPlus", doSyst=False, systDict=''):
         
         self.nBinsQt = 11#13#9#8#29
         self.nBinsY = 6#7
@@ -27,8 +27,11 @@ class fitUtils:
         self.poly1DRegGroups = OrderedDict()
         self.poly2DRegGroups = OrderedDict()
         
-        self.templSystematics = systematicsDict
-
+        if systDict == '' :
+            self.templSystematics = systematicsDict
+        else : 
+            self.templSystematics = systDict 
+            
         #all the files that are needed
         self.fmap = ROOT.TFile.Open(fmap) #file containing the angular coefficient values and inclusive pt-y map
         #get the inclusive pt-y map to unfold

@@ -218,9 +218,9 @@ void templateBuilder::setAxisarrays()
     float binSize = (55. - 25.) / 60;
     _pTArr[i] = 25. + i * binSize;
   }
-  // for (unsigned int i = 0; i < 121; i++)#CHANGEBIN
+  // for (unsigned int i = 0; i < 601; i++) //CHANGEBIN
   // {
-  //   float binSize = (55. - 25.) / 120;
+  //   float binSize = (55. - 25.) / 600;
   //   _pTArr[i] = 25. + i * binSize;
   // }
   for (unsigned int i = 0; i < 49; i++)

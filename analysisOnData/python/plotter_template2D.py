@@ -131,6 +131,54 @@ class plotter:
             if 'Flat' in hvar.GetName():  # leave syst uncertainty as it is
                 aux['WHSF'].append(hvar)
         self.histoDict[sample].update(aux)
+    def uncorrelateJME(self, sample):
+        aux = {}
+        aux['jme'] = []
+        for h in self.histoDict[sample]['Nominal']:
+            if 'mass' in h.GetName():
+                continue
+            for i in ['jesTotal','unclustEn']:
+                for hvar in self.histoDict[sample]['jme']:
+                    for updown in ['Up', 'Down']:
+                        #print h.GetName() + 'WHSFSyst{}{}'.format(i, updown), "match"
+                        if hvar.GetName() == h.GetName() + '_{}{}'.format(i, updown):
+                            for j in range(1, hvar.GetNbinsY()+1):  # loop over pt bins
+                                #create one histogram per eta bin
+                                haux = h.Clone()
+                                haux.SetName(
+                                    h.GetName() + '_{}pt{}{}'.format(i, j, updown))
+                                #print haux.GetName()
+                                for k in range(1, hvar.GetNbinsX()+1):  # loop over eta bins
+                                    bin1D = hvar.GetBin(k, j)
+                                    varcont = hvar.GetBinContent(bin1D)
+                                    haux.SetBinContent(bin1D, varcont)
+                                aux['jme'].append(haux)
+        self.histoDict[sample].update(aux)
+    
+    def uncorrelateJME_eta(self, sample):
+        aux = {}
+        aux['jme'] = []
+        for h in self.histoDict[sample]['Nominal']:
+            if 'mass' in h.GetName():
+                continue
+            for i in ['jesTotal','unclustEn']:
+                for hvar in self.histoDict[sample]['jme']:
+                    for updown in ['Up', 'Down']:
+                        #print h.GetName() + 'WHSFSyst{}{}'.format(i, updown), "match"
+                        if hvar.GetName() == h.GetName() + '_{}{}'.format(i, updown):
+                            for j in range(1, hvar.GetNbinsX()+1):  # loop over eta bins
+                                #create one histogram per eta bin
+                                haux = h.Clone()
+                                haux.SetName(
+                                    h.GetName() + '_{}eta{}{}'.format(i, j, updown))
+                                #print haux.GetName()
+                                for k in range(1, hvar.GetNbinsY()+1):  # loop over pt bins
+                                    bin1D = hvar.GetBin(j, k)
+                                    varcont = hvar.GetBinContent(bin1D)
+                                    haux.SetBinContent(bin1D, varcont)
+                                aux['jme'].append(haux)
+        self.histoDict[sample].update(aux)
+
     def symmetrisePDF(self,sample):
         if not self.histoDict[sample]['LHEPdfWeight']==[]:
             aux = {}
@@ -262,6 +310,7 @@ class plotter:
                 continue
             self.symmetrisePDF(sample)
             self.symmetriseSyst(sample)
+            # self.uncorrelateJME_eta(sample)
             # self.symmetriseSyst_shift(sample)
             self.uncorrelateEff(sample)
             # self.alphaVariations(sample)

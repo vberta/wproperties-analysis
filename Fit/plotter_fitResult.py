@@ -8,7 +8,7 @@ import os
 import sys
 # sys.path.append('../../')
 # sys.path.append('../')
-import systToapply
+from systToapply import systematicsDict
 
 
 
@@ -589,7 +589,7 @@ class plotter :
             'others' : [0, [],0]
         }
         
-        for gk,group in systToapply.systematicsDict.items() :
+        for gk,group in systematicsDict.items() :
             if gk=='Nominal' : continue
             flagOthers=True
             for nuiDict_key, nuiDict_val in self.NuiConstrDict.items() :
@@ -623,7 +623,7 @@ class plotter :
             if eval('ev.status')!= 0 :
                         print("status 0")
                         continue #not fully-converged fit
-            for gk,group in systToapply.systematicsDict.items() :
+            for gk,group in systematicsDict.items() :
                 if gk=='Nominal' : continue
                 for sName in group['vars'] :
                     for nuiDict_key, nuiDict_val in self.NuiConstrDict.items() : 
@@ -1644,6 +1644,9 @@ class plotter :
             for y in range(1, len(self.yArr)): 
                 indexUNRqty = (q-1)*(len(self.yArr)-1)+y
                 nev = self.histos[suff+'FitAC'+c].GetBinContent(y, q)* (self.lumi*3./16./math.pi) *self.histos[suff+'FitAC'+c].GetYaxis().GetBinWidth(q)*self.histos[suff+'FitAC'+c].GetXaxis().GetBinWidth(y)  
+                if nev<0 :
+                    print("WARNING: negative unpolarized cross section") 
+                    nev = 1
                 self.histos[suff+'impact'+'UNRqty'+c+'poiss'].SetBinContent(indexUNRqty,math.sqrt(nev)/nev)
         
         self.histos[suff+'impact'+'UNRyqt'+c+'poiss'] = ROOT.TH1D('impact_'+c+'_'+'poiss'+'_UNRyqt', 'impact_'+c+'_'+'poiss'+'_UNRyqt', len(self.unrolledYQt)-1, array('f',self.unrolledYQt))
@@ -1653,6 +1656,9 @@ class plotter :
                 for q in range(1, len(self.qtArr)) :
                     indexUNRyqt = (y-1)*(len(self.qtArr)-1)+q
                     nev = self.histos[suff+'FitAC'+c].GetBinContent(y, q)* (self.lumi*3./16./math.pi) *self.histos[suff+'FitAC'+c].GetYaxis().GetBinWidth(q)*self.histos[suff+'FitAC'+c].GetXaxis().GetBinWidth(y)  
+                    if nev<0 : 
+                        print("WARNING: negative unpolarized cross section")
+                        nev = 1
                     self.histos[suff+'impact'+'UNRyqt'+c+'poiss'].SetBinContent(indexUNRyqt,math.sqrt(nev)/nev)
         
         self.histos[suff+'impact'+'y'+c+'poiss'] = ROOT.TH1D('impact_'+c+'_'+'poiss'+'_y', 'impact_'+c+'_'+'poiss'+'_y', len(self.yArr)-1, array('f',self.yArr))
@@ -1660,6 +1666,9 @@ class plotter :
             if impact and skipIntImpact : continue
             if not self.anaKind['angNames'] : continue
             nev = self.histos[suff+'FitACy'+c].GetBinContent(y)* (self.lumi*3./16./math.pi) *self.histos[suff+'FitACy'+c].GetXaxis().GetBinWidth(y)  
+            if nev<0 :
+                print("WARNING: negative unpolarized cross section") 
+                nev = 1
             self.histos[suff+'impact'+'y'+c+'poiss'].SetBinContent(y,math.sqrt(nev)/nev)
         
         self.histos[suff+'impact'+'qt'+c+'poiss'] = ROOT.TH1D('impact_'+c+'_'+'poiss'+'_qt', 'impact_'+c+'_'+'poiss'+'_qt', len(self.qtArr)-1, array('f',self.qtArr))
@@ -1667,6 +1676,9 @@ class plotter :
             if impact and skipIntImpact : continue  
             if not self.anaKind['angNames'] : continue
             nev = self.histos[suff+'FitACqt'+c].GetBinContent(qt)* (self.lumi*3./16./math.pi) *self.histos[suff+'FitACqt'+c].GetXaxis().GetBinWidth(qt)  
+            if nev<0 : 
+                print("WARNING: negative unpolarized cross section")
+                nev = 1
             self.histos[suff+'impact'+'qt'+c+'poiss'].SetBinContent(qt,math.sqrt(nev)/nev)        
                 
             # print("DEBUG impact (sum in quadrature")

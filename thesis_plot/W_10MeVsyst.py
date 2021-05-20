@@ -47,13 +47,14 @@ class plotter:
 }
         
         self.groupedSystColors = {
-            "LHEPdfWeight" : [ROOT.kRed+1, 'PDF+#alpha_{s}'],
+            "LHEPdfWeight" : [ROOT.kRed+1, 'PDF+#alpha_{s}', ROOT.kOrange+7],
             # "Nominal" : [1, 'Stat. Unc. 4 fb^{-1}'],
-            "Nominal" : [1, 'Stat. Unc. 35.9 fb^{-1}'],
-            "alphaS" : [ROOT.kOrange-3, '#alpha_{s}'],
-            "Qt" : [ROOT.kGreen-3, "q_{T}^{W} #pm "+self.qts+"% [0,"+self.qtr+" GeV]"],
-            "mass" : [ROOT.kBlue-4, 'm_{W} #pm '+self.ms+' MeV', 35],
-            "PDF" : [ROOT.kRed+1, 'PDF+#alpha_{s}']
+            "Nominal" : [1, 'Stat. Unc. 35.9 fb^{-1}',1],
+            "alphaS" : [ROOT.kOrange-3, '#alpha_{s}',ROOT.kOrange-3 ],
+            "Qt" : [ROOT.kGreen-3, "q_{T}^{W} #pm "+self.qts+"% [0,"+self.qtr+" GeV]", ROOT.kGreen+3],
+            # "mass" : [ROOT.kBlue-4, 'm_{W} #pm '+self.ms+' MeV', 35, ],
+            "mass" : [ROOT.kBlue-4, 'm_{W} #pm '+self.ms+' MeV', ROOT.kAzure+1],
+            "PDF" : [ROOT.kRed+1, 'PDF+#alpha_{s}', ROOT.kOrange+10]
         }
         
         if len(self.qtName)!=0 :
@@ -81,7 +82,12 @@ class plotter:
                  h2 = inFile.Get(self.dir+sKind+"/Mu1_pt"+sName)
                  for s,sInfo in self.signDict.items() :
                     self.histoDict[s+sName] = h2.ProjectionX(h2.GetName() + s,sInfo[0],sInfo[0])
-                    # self.varBinWidth_modifier(self.histoDict[s+sName]) #I want to express the result in term of Events
+                    # self.varBinWidth_modifier(self.histoDict[s+sName]) #I want to express the result in term of Events, thus this is commented
+                
+        for sKind, sList in self.extSyst.items():
+             for sName in sList :    
+                for s,sInfo in self.signDict.items() :
+                    self.histoDict[s+sName].Scale(self.histoDict[s].Integral()/self.histoDict[s+sName].Integral()) #Normalize to unit integral
 
 
     def plotStack(self,skipSyst=[]):
@@ -144,10 +150,13 @@ class plotter:
                     self.histoDict[s+sName].SetLineColor(self.groupedSystColors[sKind][0])
                     self.histoDict[s+sName].SetLineWidth(2)
                     self.histoDict[s+sName].SetFillStyle(0)
-                    self.histoDict['ratio'+s+sName].SetLineColor(self.groupedSystColors[sKind][0])
+                    if 'Down' in sName :
+                        self.histoDict['ratio'+s+sName].SetLineColor(self.groupedSystColors[sKind][2])
+                    else :
+                        self.histoDict['ratio'+s+sName].SetLineColor(self.groupedSystColors[sKind][0])
                     self.histoDict['ratio'+s+sName].SetLineWidth(2)
         
-            self.histoDict['ratio'+s].SetFillColor(1)
+            self.histoDict['ratio'+s].SetFillColor(ROOT.kGray+2)
             self.histoDict['ratio'+s].SetFillStyle(3002)
             self.histoDict['ratio'+s].GetXaxis().SetTitle('p_{T}^{#mu} [GeV]')
             self.histoDict['ratio'+s].GetYaxis().SetTitle('Var./Nom.')
@@ -155,11 +164,12 @@ class plotter:
             self.histoDict['ratio'+s].GetYaxis().SetTitleOffset(0.65)#0.25
             self.histoDict['ratio'+s].GetYaxis().SetNdivisions(506)
             self.histoDict['ratio'+s].SetTitleSize(0.08,'y')#0.15
-            self.histoDict['ratio'+s].SetLabelSize(0.08,'y')#0.12
+            self.histoDict['ratio'+s].SetLabelSize(0.06,'y')#0.12
             self.histoDict['ratio'+s].GetXaxis().SetTitleOffset(0.85)
             self.histoDict['ratio'+s].SetTitleSize(0.10,'x')#0.18
             self.histoDict['ratio'+s].SetLabelSize(0.08,'x')#0.16
-            self.histoDict['ratio'+s].GetYaxis().SetRangeUser(0.975,1.025)
+            # self.histoDict['ratio'+s].GetYaxis().SetRangeUser(0.975,1.025)
+            self.histoDict['ratio'+s].GetYaxis().SetRangeUser(0.988,1.012)
             
             self.histoDict[s].GetXaxis().SetTitle('p_{T}^{#mu} [GeV]')
             self.histoDict[s].GetYaxis().SetTitle('Events / '+str(self.histoDict[s].GetBinWidth(1))+' GeV')
@@ -199,6 +209,8 @@ class plotter:
                     dmu= round(abs(1000*math.sqrt(deltaMeanPdf)),0)
                     
                 else :
+                #     self.histoDict[s+sList[0]].GetXaxis().SetRangeUser(25,50)
+                #     self.histoDict[s].GetXaxis().SetRangeUser(25,50)
                     dmu = round(abs(1000*(self.histoDict[s+sList[0]].GetMean()-self.histoDict[s].GetMean())),0)#in MeV
                 legDict[s].AddEntry(self.histoDict[s+sList[0]],self.groupedSystColors[sKind][1]+", #Delta#mu="+str(dmu)+' MeV')
         
@@ -247,6 +259,8 @@ class plotter:
                 if sKind =='LHEPdfWeight' : continue
                 for sName in sList : 
                     self.histoDict['ratio'+s+sName].Draw("hist same")
+            
+
             
             pad_histo.cd() 
             cmsLatex.SetNDC()

@@ -207,6 +207,7 @@ class plotter:
                             #assert(0)
         self.uncorrelateEff()
         self.symmetrisePDF()
+        # self.uncorrelateJME_eta()
         # self.symmetrisePDF_shift()
         # self.alphaVariations()
         # self.uncorrelatePtVars() ALWAYS COMMENTED, ROCHESTER CORR. NOT RUN
@@ -263,6 +264,50 @@ class plotter:
                         else:
                             hlist.append(hvar)
                     self.histoDict[charge][c][bin]['WHSF'] = hlist
+    def uncorrelateJME(self):
+        for charge in self.charges:
+            for c in self.clist:
+                for bin in self.bins:
+                    hlist = []
+                    hnom = [h for h in self.histoDict[charge][c][bin]['Nominal'] if not 'mass' in h.GetName()][0]
+                    for hvar in self.histoDict[charge][c][bin]['jme']:
+                        # hlist.append(hvar) #fully correlated variation
+                        for j in range(1, hvar.GetNbinsY()+1):  # loop over pt bins
+                            #create one histogram per eta bin
+                            haux = hnom.Clone()
+                            if 'Up' in hvar.GetName():
+                                haux.SetName(hvar.GetName().replace('Up', 'pt{}Up'.format(j)))
+                            else:
+                                haux.SetName(hvar.GetName().replace('Down', 'pt{}Down'.format(j)))
+                            #print haux.GetName()
+                            for k in range(1, hvar.GetNbinsX()+1):  # loop over eta bins
+                                bin1D = hvar.GetBin(k, j)
+                                varcont = hvar.GetBinContent(bin1D)
+                                haux.SetBinContent(bin1D, varcont)
+                            hlist.append(haux)
+                    self.histoDict[charge][c][bin]['jme'] = hlist
+    def uncorrelateJME_eta(self):
+        for charge in self.charges:
+            for c in self.clist:
+                for bin in self.bins:
+                    hlist = []
+                    hnom = [h for h in self.histoDict[charge][c][bin]['Nominal'] if not 'mass' in h.GetName()][0]
+                    for hvar in self.histoDict[charge][c][bin]['jme']:
+                        # hlist.append(hvar) #fully correlated variation
+                        for j in range(1, hvar.GetNbinsX()+1):  # loop over eta bins
+                            #create one histogram per eta bin
+                            haux = hnom.Clone()
+                            if 'Up' in hvar.GetName():
+                                haux.SetName(hvar.GetName().replace('Up', 'eta{}Up'.format(j)))
+                            else:
+                                haux.SetName(hvar.GetName().replace('Down', 'eta{}Down'.format(j)))
+                            #print haux.GetName()
+                            for k in range(1, hvar.GetNbinsY()+1):  # loop over pt bins
+                                bin1D = hvar.GetBin(j, k)
+                                varcont = hvar.GetBinContent(bin1D)
+                                haux.SetBinContent(bin1D, varcont)
+                            hlist.append(haux)
+                    self.histoDict[charge][c][bin]['jme'] = hlist
     def symmetrisePDF(self):
         for charge in self.charges:
             for c in self.clist:

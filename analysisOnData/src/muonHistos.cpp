@@ -1,6 +1,7 @@
 #include "interface/muonHistos.hpp"
 #include "interface/functions.hpp"
 #include "interface/TH2weightsHelper.hpp"
+#include "interface/TH3weightsHelper.hpp"
 
 RNode muonHistos::run(RNode d)
 {
@@ -30,6 +31,10 @@ RNode muonHistos::bookNominalhistos(RNode df)
   TH2weightsHelper helperMT(std::string("MT"), std::string(" ; M_{T} (Rochester corr./smear MET); muon charge "), _MTArr.size() -1, _MTArr, _chargeArr.size() - 1, _chargeArr, _syst_name);
   auto hMt = df.Filter(_filter).Filter("Mu1_pt>25.0 && Mu1_pt<55.0").Book<float, float, float, ROOT::VecOps::RVec<float>>(std::move(helperMT), {"MT", "Mu1_charge", "weight", _syst_weight});
   _h2Group.emplace_back(hMt);
+  
+  // TH3weightsHelper helperPtMT(std::string("PtvsMT"), std::string(" ; muon p_{T} (Rochester corr.); M_{T} (Rochester corr./smear MET); muon charge "),_pTArr.size() - 1, _pTArr, _MTArr.size() -1, _MTArr, _chargeArr.size() - 1, _chargeArr, _syst_name);
+  // auto hPtMt = df.Filter(_filter).Filter("Mu1_pt>25.0 && Mu1_pt<55.0").Book<float, float, float,float, ROOT::VecOps::RVec<float>>(std::move(helperPtMT), {"Mu1_pt", "MT", "Mu1_charge", "weight", _syst_weight});
+  // _h3Group.emplace_back(hPtMt);
 
   return df;
 }
@@ -65,6 +70,10 @@ RNode muonHistos::bookJMEvarhistos(RNode df)
   //Only this column is affected
     TH2weightsHelper helper_MT(std::string("MT" + _colvarvec[i]), std::string(" ; M_{T} (Rochester corr./smear MET); muon charge "), _MTArr.size() -1, _MTArr, _chargeArr.size() - 1, _chargeArr, _syst_name);
     _h2Group.emplace_back(df.Filter(_filtervec[i]).Filter("Mu1_pt>25.0 && Mu1_pt<55.0").Book<float, float, float, ROOT::VecOps::RVec<float>>(std::move(helper_MT), {"MT" + _colvarvec[i], "Mu1_charge", "weight", "Nom"}));
+  
+  //   TH3weightsHelper helperPtMT(std::string("PtvsMT" + _colvarvec[i]), std::string(" ; muon p_{T} (Rochester corr.); M_{T} (Rochester corr./smear MET); muon charge "),_pTArr.size() - 1, _pTArr, _MTArr.size() -1, _MTArr, _chargeArr.size() - 1, _chargeArr, _syst_name);
+  // _h3Group.emplace_back(df.Filter(_filtervec[i]).Filter("Mu1_pt>25.0 && Mu1_pt<55.0").Book<float, float, float,float, ROOT::VecOps::RVec<float>>(std::move(helperPtMT), {"Mu1_pt", "MT"+ _colvarvec[i], "Mu1_charge", "weight", "Nom"}));
+  
   }
   return df;
 }
@@ -74,8 +83,8 @@ void muonHistos::setAxisarrays()
   
   for (int i = 0; i < 61; i++)
     _pTArr[i] = 25. + i*(55.-25.)/60.;
-  // for (int i = 0; i < 121; i++)#CHANGEBIN
-  //   _pTArr[i] = 25. + i*(55.-25.)/120.;
+  // for (int i = 0; i < 601; i++)//CHANGEBIN
+  //   _pTArr[i] = 25. + i*(55.-25.)/600.;
   for (int i = 0; i < 49; i++)
     _etaArr[i] = -2.4 + i * (4.8) / 48; //eta -2.4 to 2.4
   for (int i = 0; i < 31; i++)
