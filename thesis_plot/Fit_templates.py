@@ -19,8 +19,8 @@ hDict = {}
 canDict = {}
 
 fileDict = {}
-fileDict['plus'] = ROOT.TFile.Open('/scratch/bertacch/wmass/wproperties-analysis/Fit/OUTPUT_1Apr_noCF_qtMax60/Wplus_reco.root')
-fileDict['minus'] = ROOT.TFile.Open('/scratch/bertacch/wmass/wproperties-analysis/Fit/OUTPUT_1Apr_noCF_qtMax60/Wminus_reco.root')
+fileDict['plus'] = ROOT.TFile.Open('/scratch/bertacch/wmass/wproperties-analysis/Fit/OUTPUT_25Apr_noCF_qtMax60_fixLowAcc/Wplus_reco.root')
+fileDict['minus'] = ROOT.TFile.Open('/scratch/bertacch/wmass/wproperties-analysis/Fit/OUTPUT_25Apr_noCF_qtMax60_fixLowAcc/Wminus_reco.root')
 
 xsecList = ["UL","L","I","T","A","P"]
 # coeffList = ["U+L","A_{0}","A_{1}","A_{2}","A_{3}","A_{4}"]
@@ -260,7 +260,6 @@ for s,f in fileDict.items() :
 
 # -------------- other background + data -------------------#
 
-     
 
 
     
@@ -272,6 +271,63 @@ for s,f in fileDict.items() :
     canDict[s+'signal'+'extra'].SaveAs("Fit_templates_signal"+s+".png")
     canDict[s+'signal'+'extra'].SaveAs("Fit_templates_signal"+s+".pdf")
 
+
+
+# -------------- QCD extra plot (projection)-------------------#
+
+for s,f in fileDict.items() :
+    hDict[s+'QCD'+'pt'] = hDict[s+'QCD'].ProjectionY(s+'QCD'+'pt',1,hDict[s+'QCD'].GetNbinsX())
+    hDict[s+'QCD'+'eta'] = hDict[s+'QCD'].ProjectionX(s+'QCD'+'eta',1,hDict[s+'QCD'].GetNbinsY())
+
+varDict = {
+    'pt' : ['p_{T}^{#mu} [GeV]', 'Events/0.5 GeV'],
+    'eta' : ['#eta^{#mu}', 'Events/0.1']
+}
+legDict = {}
+
+for var, varInfo in varDict.items() :
+    canDict['QCD'+var] = ROOT.TCanvas("c_"+'QCD'+var,"c_"+'QCD'+var, 1600,1200)
+    canDict['QCD'+var].cd()
+    canDict['QCD'+var].SetGridx()
+    canDict['QCD'+var].SetGridy()
+    hDict['plus'+'QCD'+var].GetXaxis().SetTitle(varInfo[0])
+    hDict['plus'+'QCD'+var].GetYaxis().SetTitle(varInfo[1])
+    hDict['plus'+'QCD'+var].SetLineWidth(3)
+    hDict['plus'+'QCD'+var].SetLineColor(ROOT.kRed+2)
+    hDict['plus'+'QCD'+var].SetTitle('')
+    hDict['plus'+'QCD'+var].SetFillStyle(0)
+    hDict['plus'+'QCD'+var].GetXaxis().SetLabelSize(0.04)
+    hDict['plus'+'QCD'+var].GetXaxis().SetTitleSize(0.05)
+    hDict['plus'+'QCD'+var].GetXaxis().SetTitleOffset(0.9)
+    if var=='eta' :
+        hDict['plus'+'QCD'+var].GetYaxis().SetRangeUser(0,hDict['plus'+'QCD'+var].GetMaximum()*1.3)
+    hDict['plus'+'QCD'+var].Draw()
+    hDict['minus'+'QCD'+var].SetLineWidth(3)
+    hDict['minus'+'QCD'+var].SetLineColor(ROOT.kBlue-4)
+    hDict['minus'+'QCD'+var].Draw("same")
+    hDict['minus'+'QCD'+var].SetFillStyle(0)
+    
+    
+    legDict[var] = ROOT.TLegend(0.7,0.75,0.9,0.9)
+    legDict[var].AddEntry( hDict['plus'+'QCD'+var],'QCD, W^{+}')
+    legDict[var].AddEntry( hDict['minus'+'QCD'+var],'QCD, W^{-}')
+    legDict[var].Draw("same")
+    legDict[var].SetFillStyle(0)
+    legDict[var].SetBorderSize(0)
+    
+    cmsLatex.SetNDC()
+    cmsLatex.SetTextFont(42)
+    cmsLatex.SetTextColor(ROOT.kBlack)
+    cmsLatex.SetTextAlign(31) 
+    cmsLatex.DrawLatex(1-canDict['QCD'+var].GetRightMargin(),1-0.8*canDict['QCD'+var].GetTopMargin(),lumilab)
+    cmsLatex.SetTextAlign(11) 
+    cmsLatex.DrawLatex(canDict['QCD'+var].GetLeftMargin()+0.05,1-0.8*canDict['QCD'+var].GetTopMargin(),cmslab)
+    
+    
+for var, varInfo in varDict.items() :
+    canDict['QCD'+var].Write()
+    canDict['QCD'+var].SaveAs("bkg_QCD_template_chargeComparison_"+var+".png")
+    canDict['QCD'+var].SaveAs("bkg_QCD_template_chargeComparison_"+var+".pdf")
 
 
 

@@ -307,7 +307,9 @@ class fitUtils:
                          }  # <type 'dict'>
         self.DC.groups['other'] = set()
         self.DC.groups['allSyst'] = set()
+        self.DC.groups['otherNoMass'] = set()
         for k,vals in self.DC.groups.items() :
+            if k=='otherNoMass' or k=='other' or k=='allSyst' : continue 
             for val in vals  :
                     self.DC.groups['allSyst'].add(val)
             if k=='pdfs' or k=='WHSFStat' or k=='CMSlumi' or k=='WQT' : 
@@ -315,6 +317,9 @@ class fitUtils:
             else : 
                 for val in vals  :
                     self.DC.groups['other'].add(val)
+                if k!='mass' :
+                    for val in vals  :
+                        self.DC.groups['otherNoMass'].add(val)
         
         self.DC.shapeMap = 	{self.channel: {'*': [self.channel+'.root', '$PROCESS', '$PROCESS_$SYSTEMATIC']},\
         self.channel+'_xsec': {'*': [self.channel+'_xsec.root', '$PROCESS', '$PROCESS_$SYSTEMATIC']}} # <type 'dict'>

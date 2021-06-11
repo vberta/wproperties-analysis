@@ -37,6 +37,7 @@ class plotter :
         # self.qtArr = [0, 1., 1.5, 2., 2.5, 3., 3.5, 4., 4.5, 5., 5.5, 6., 6.5, 7., 7.5, 8., 8.5, 9., 9.5, 10., 10.5, 11., 11.5, 12., 13., 14., 15., 16.,22,32] #05GeV
 
         self.coeffArr = [0,1,2,3,4,5,6]
+
         self.noiArr = ['mass']
         self.dirList = ['up','down']
         self.RatioPadYcut = 2.
@@ -279,7 +280,15 @@ class plotter :
         return hout     
         
         
-    def getHistos(self,inFile, FitFile, uncorrelate,suff,apoFile='',toyFile='',impact=False,postfit=False,data='') :
+    def getHistos(self,inFile, FitFile, acceptance, uncorrelate,suff,apoFile='',toyFile='',impact=False,postfit=False,data='') :
+        
+        acceptanceFile = ROOT.TFile.Open(acceptance)
+        if self.sign =='plus' :
+            self.histos[suff+'acceptance'] = acceptanceFile.Get('closPlus')
+            self.histos[suff+'acceptance'+'sumOfTemplate'] = acceptanceFile.Get('sumOfTemplatePlus')
+        elif self.sign =='minus' : 
+            self.histos[suff+'acceptance'] = acceptanceFile.Get('closMinus')
+            self.histos[suff+'acceptance'+'sumOfTemplate'] = acceptanceFile.Get('sumOfTemplateMinus')
         
         resFit = FitFile.fitresults
         genMod=''#_gen
@@ -288,6 +297,8 @@ class plotter :
         self.histos[suff+'MC'+'mapTot'] =  inFile.Get('angularCoefficients/mapTot')
         self.histos[suff+'MCy'+'mapTot'] =  inFile.Get('angularCoefficients/Y')
         self.histos[suff+'MCqt'+'mapTot'] =  inFile.Get('angularCoefficients/Pt')
+        self.histos[suff+'MCy'+'acceptance'] =  self.histos[suff+'MCy'+'mapTot'].Clone("acceptance"+'MCy')#to evaluate acceptance
+        self.histos[suff+'MCqt'+'acceptance'] =  self.histos[suff+'MCqt'+'mapTot'].Clone("acceptance"+'MCqt')#to evaluate acceptance
         
         for cat in self.category : #rescale maptot by lumi because mapTot=sigma_UL*Lumi
             self.histos[suff+'MC'+cat+'mapTot'].Scale(1/self.lumi)
@@ -890,6 +901,7 @@ class plotter :
             if '4apo' in k : continue 
             if 'toyPull' in k : continue 
             if 'prefit' in k or 'postfit' in k : continue 
+            if 'acceptance' in k : continue 
             if self.anaKind['name'] =='mu' : continue
                         
             if not (type(histo)==ROOT.TH1F or type(histo)==ROOT.TH1D or type(histo)==ROOT.TH2F or type(histo)==ROOT.TH2D) : continue
@@ -976,7 +988,7 @@ class plotter :
                 
                 
             
-    def AngCoeffPlots(self,inputFile, fitFile, uncorrelate,suff,aposteriori,toy,impact,postfit, cleanNuisance, massImp,data) :
+    def AngCoeffPlots(self,inputFile, fitFile, uncorrelate,suff,aposteriori,toy,impact,postfit, cleanNuisance, massImp,data,acceptance) :
         
         FitFile = ROOT.TFile.Open(fitFile)
         inFile = ROOT.TFile.Open(inputFile)
@@ -995,10 +1007,10 @@ class plotter :
             toyFile = ROOT.TFile.Open(toy)
         else :
             toyFile = ''
-        self.getHistos(inFile=inFile, FitFile=FitFile, uncorrelate=uncorrelate,suff=suff,apoFile=apoFile,toyFile=toyFile,impact=impact, postfit=postfit,data=data)
+        self.getHistos(inFile=inFile, FitFile=FitFile, uncorrelate=uncorrelate,suff=suff,apoFile=apoFile,toyFile=toyFile,impact=impact, postfit=postfit,data=data,acceptance=acceptance)
         self.varBinWidth_modifier(suff=suff)
         
-        if cleanNuisance :
+        if cleanNuisance:
             del self.nuisanceDict['WHSFSyst']
             del self.nuisanceDict['PrefireWeight']
             del self.nuisanceDict['jme']
@@ -1007,7 +1019,11 @@ class plotter :
             del self.nuisanceDict['ewkXsec']
             del self.nuisanceDict['LeptonVeto']
             del self.nuisanceDict['mass']
-            self.nuisanceDict["other"] = [ROOT.kGreen+10, "other",23] 
+            if massImp!='' :
+                self.nuisanceDict["otherNoMass"] = [ROOT.kGreen+10, "other",23] 
+            else : 
+                self.nuisanceDict["other"] = [ROOT.kGreen+10, "other",23] 
+             
         
 
 
@@ -1635,7 +1651,15 @@ class plotter :
             
             
             
-        #sqrt(N) plot as additional nuisances to extra comparison
+        #########sqrt(N) plot as additional nuisances to extra comparison
+        #building of acceptance maps integrated
+        # self.histos[suff+'acceptance'+'sumOfTemplate'+'y'] = self.histos[suff+'acceptance'+'sumOfTemplate'].ProjectionX('acceptance'+'sumOfTemplate'+'y')
+        # self.histos[suff+'acceptance'+'sumOfTemplate'+'qt'] = self.histos[suff+'acceptance'+'sumOfTemplate'].ProjectionY('acceptance'+'sumOfTemplate'+'qt')
+        self.histos[suff+'acceptance'+'y'] = self.histos[suff+'acceptance'+'sumOfTemplate'].ProjectionX('acceptance'+'y')
+        self.histos[suff+'acceptance'+'qt'] = self.histos[suff+'acceptance'+'sumOfTemplate'].ProjectionY('acceptance'+'qt')
+        self.histos[suff+'acceptance'+'y'].Divide(self.histos[suff+'MCy'+'acceptance'])
+        self.histos[suff+'acceptance'+'qt'].Divide(self.histos[suff+'MCqt'+'acceptance'])
+        
         c='unpolarizedxsec'
         self.histos[suff+'impact'+'UNRqty'+c+'poiss'] = ROOT.TH1D('impact_'+c+'_'+'poiss'+'_UNRqty', 'impact_'+c+'_'+'poiss'+'_UNRqty', len(self.unrolledQtY)-1, array('f',self.unrolledQtY))
         for q in range(1, len(self.qtArr)) :
@@ -1643,11 +1667,15 @@ class plotter :
             if not self.anaKind['angNames'] : continue 
             for y in range(1, len(self.yArr)): 
                 indexUNRqty = (q-1)*(len(self.yArr)-1)+y
-                nev = self.histos[suff+'FitAC'+c].GetBinContent(y, q)* (self.lumi*3./16./math.pi) *self.histos[suff+'FitAC'+c].GetYaxis().GetBinWidth(q)*self.histos[suff+'FitAC'+c].GetXaxis().GetBinWidth(y)  
+                # nev = self.histos[suff+'FitAC'+c].GetBinContent(y, q)* (self.lumi*3./16./math.pi) *self.histos[suff+'FitAC'+c].GetYaxis().GetBinWidth(q)*self.histos[suff+'FitAC'+c].GetXaxis().GetBinWidth(y)  
+                nev = self.histos[suff+'FitAC'+c].GetBinContent(y, q)* self.lumi *self.histos[suff+'FitAC'+c].GetYaxis().GetBinWidth(q)*self.histos[suff+'FitAC'+c].GetXaxis().GetBinWidth(y)*self.histos[suff+'acceptance'].GetBinContent(y,q)
                 if nev<0 :
                     print("WARNING: negative unpolarized cross section") 
                     nev = 1
-                self.histos[suff+'impact'+'UNRqty'+c+'poiss'].SetBinContent(indexUNRqty,math.sqrt(nev)/nev)
+                if nev!=0 : poisserr = math.sqrt(nev)/nev 
+                else : poisserr = 0 
+                self.histos[suff+'impact'+'UNRqty'+c+'poiss'].SetBinContent(indexUNRqty,poisserr)
+                    
         
         self.histos[suff+'impact'+'UNRyqt'+c+'poiss'] = ROOT.TH1D('impact_'+c+'_'+'poiss'+'_UNRyqt', 'impact_'+c+'_'+'poiss'+'_UNRyqt', len(self.unrolledYQt)-1, array('f',self.unrolledYQt))
         for y in range(1, len(self.yArr)): 
@@ -1655,31 +1683,40 @@ class plotter :
                 if not self.anaKind['angNames'] : continue
                 for q in range(1, len(self.qtArr)) :
                     indexUNRyqt = (y-1)*(len(self.qtArr)-1)+q
-                    nev = self.histos[suff+'FitAC'+c].GetBinContent(y, q)* (self.lumi*3./16./math.pi) *self.histos[suff+'FitAC'+c].GetYaxis().GetBinWidth(q)*self.histos[suff+'FitAC'+c].GetXaxis().GetBinWidth(y)  
+                    # nev = self.histos[suff+'FitAC'+c].GetBinContent(y, q)* (self.lumi*3./16./math.pi) *self.histos[suff+'FitAC'+c].GetYaxis().GetBinWidth(q)*self.histos[suff+'FitAC'+c].GetXaxis().GetBinWidth(y)  
+                    nev = self.histos[suff+'FitAC'+c].GetBinContent(y, q)*self.lumi*self.histos[suff+'FitAC'+c].GetYaxis().GetBinWidth(q)*self.histos[suff+'FitAC'+c].GetXaxis().GetBinWidth(y)*self.histos[suff+'acceptance'].GetBinContent(y,q)
                     if nev<0 : 
                         print("WARNING: negative unpolarized cross section")
                         nev = 1
-                    self.histos[suff+'impact'+'UNRyqt'+c+'poiss'].SetBinContent(indexUNRyqt,math.sqrt(nev)/nev)
+                    if nev!=0 : poisserr = math.sqrt(nev)/nev 
+                    else : poisserr = 0 
+                    self.histos[suff+'impact'+'UNRyqt'+c+'poiss'].SetBinContent(indexUNRyqt,poisserr)
         
         self.histos[suff+'impact'+'y'+c+'poiss'] = ROOT.TH1D('impact_'+c+'_'+'poiss'+'_y', 'impact_'+c+'_'+'poiss'+'_y', len(self.yArr)-1, array('f',self.yArr))
         for y in range(1, len(self.yArr)):   
             if impact and skipIntImpact : continue
             if not self.anaKind['angNames'] : continue
-            nev = self.histos[suff+'FitACy'+c].GetBinContent(y)* (self.lumi*3./16./math.pi) *self.histos[suff+'FitACy'+c].GetXaxis().GetBinWidth(y)  
+            # nev = self.histos[suff+'FitACy'+c].GetBinContent(y)* (self.lumi*3./16./math.pi) *self.histos[suff+'FitACy'+c].GetXaxis().GetBinWidth(y)  
+            nev = self.histos[suff+'FitACy'+c].GetBinContent(y) *self.lumi*self.histos[suff+'FitACy'+c].GetXaxis().GetBinWidth(y)*self.histos[suff+'acceptance'+'y'].GetBinContent(y)
             if nev<0 :
                 print("WARNING: negative unpolarized cross section") 
                 nev = 1
-            self.histos[suff+'impact'+'y'+c+'poiss'].SetBinContent(y,math.sqrt(nev)/nev)
+            if nev!=0 : poisserr = math.sqrt(nev)/nev 
+            else : poisserr = 0 
+            self.histos[suff+'impact'+'y'+c+'poiss'].SetBinContent(y,poisserr)
         
         self.histos[suff+'impact'+'qt'+c+'poiss'] = ROOT.TH1D('impact_'+c+'_'+'poiss'+'_qt', 'impact_'+c+'_'+'poiss'+'_qt', len(self.qtArr)-1, array('f',self.qtArr))
         for qt in range(1, len(self.qtArr)) :
             if impact and skipIntImpact : continue  
             if not self.anaKind['angNames'] : continue
-            nev = self.histos[suff+'FitACqt'+c].GetBinContent(qt)* (self.lumi*3./16./math.pi) *self.histos[suff+'FitACqt'+c].GetXaxis().GetBinWidth(qt)  
+            # nev = self.histos[suff+'FitACqt'+c].GetBinContent(qt)* (self.lumi*3./16./math.pi) *self.histos[suff+'FitACqt'+c].GetXaxis().GetBinWidth(qt)  
+            nev = self.histos[suff+'FitACqt'+c].GetBinContent(qt)*self.lumi*self.histos[suff+'FitACqt'+c].GetXaxis().GetBinWidth(qt) *self.histos[suff+'acceptance'+'qt'].GetBinContent(qt) 
             if nev<0 : 
                 print("WARNING: negative unpolarized cross section")
                 nev = 1
-            self.histos[suff+'impact'+'qt'+c+'poiss'].SetBinContent(qt,math.sqrt(nev)/nev)        
+            if nev!=0 : poisserr = math.sqrt(nev)/nev 
+            else : poisserr = 0 
+            self.histos[suff+'impact'+'qt'+c+'poiss'].SetBinContent(qt,poisserr)        
                 
             # print("DEBUG impact (sum in quadrature")
             # sumOfPdf = 0.
@@ -1805,6 +1842,8 @@ class plotter :
         cmslab = "#bf{CMS} #scale[0.7]{#it{Simulation Work in progress}}"
         lumilab = " #scale[0.7]{35.9 fb^{-1} (13 TeV)}"
         cmsLatex = ROOT.TLatex()
+        qtLab = "q_{T}^{W}<60 GeV"
+        yLab = "|Y_{W}|<2.4"
             
         #--------------- Ai 1D canvas -------------------#
         for c in self.coeffDict:
@@ -2618,15 +2657,15 @@ class plotter :
             self.histos[suff+'FitAC'+'qt'+c].SetLabelSize(0.05,'y')
             if not 'unpol' in c and self.anaKind['name']=='angCoeff':
                 # self.histos[suff+'FitAC'+'qt'+c].GetYaxis().SetRangeUser(-4,4)
-                self.histos[suff+'FitAC'+'qt'+c].GetYaxis().SetTitle(self.coeffDict[c][2])
+                self.histos[suff+'FitAC'+'qt'+c].GetYaxis().SetTitle(self.coeffDict[c][2]+', '+yLab)
             elif self.anaKind['name']=='helXsec':
-                    self.histos[suff+'FitAC'+'qt'+c].GetYaxis().SetTitle('d#sigma_'+c+'/dq_{T}^{W} [fb/GeV]')
+                    self.histos[suff+'FitAC'+'qt'+c].GetYaxis().SetTitle('d#sigma_'+c+'/dq_{T}^{W} [fb/GeV]'+', '+yLab)
             elif self.anaKind['name']=='normXsec':
-                self.histos[suff+'FitAC'+'qt'+c].GetYaxis().SetTitle('d#sigma_'+c+'/dq_{T}^{W}/#sigma_{tot} [1/GeV]')
+                self.histos[suff+'FitAC'+'qt'+c].GetYaxis().SetTitle('d#sigma_'+c+'/dq_{T}^{W}/#sigma_{tot} [1/GeV]'+', '+yLab)
             elif self.anaKind['name']=='mu':
-                self.histos[suff+'FitAC'+'qt'+c].GetYaxis().SetTitle('#mu_'+c)
+                self.histos[suff+'FitAC'+'qt'+c].GetYaxis().SetTitle('#mu_'+c+', '+yLab)
             else :
-                 self.histos[suff+'FitAC'+'qt'+c].GetYaxis().SetTitle('d#sigma^{U+L}/dq_{T} [fb/GeV]')
+                 self.histos[suff+'FitAC'+'qt'+c].GetYaxis().SetTitle('d#sigma^{U+L}/dq_{T} [fb/GeV]'+', '+yLab)
                 #  maxvalMain = self.histos[suff+'FitAC'+'qt'+c].GetMaximum()
                 #  self.histos[suff+'FitAC'+'qt'+c].GetYaxis().SetRangeUser(0,maxvalMain*1.5)
             
@@ -2746,6 +2785,7 @@ class plotter :
             cmsLatex.DrawLatex(1-self.canvas['ph'+suff+'FitAC'+'qt'+c].GetRightMargin(),1-0.8*self.canvas['ph'+suff+'FitAC'+'qt'+c].GetTopMargin(),lumilab)
             cmsLatex.SetTextAlign(11) 
             cmsLatex.DrawLatex(self.canvas['ph'+suff+'FitAC'+'qt'+c].GetLeftMargin()+0.07,1-0.8*self.canvas['ph'+suff+'FitAC'+'qt'+c].GetTopMargin(),cmslab)
+            # cmsLatex.DrawLatex(self.canvas['ph'+suff+'FitAC'+'qt'+c].GetLeftMargin()+0.07,1-self.canvas['ph'+suff+'FitAC'+'qt'+c].GetTopMargin()-0.02,yLab)
 
         
             # self.histos[suff+'FitBandPDF'+'qt'+c].SetFillColor(self.groupedSystColors['LHEPdfWeightVars'][0])
@@ -2792,15 +2832,15 @@ class plotter :
             self.histos[suff+'FitAC'+'y'+c].SetLabelSize(0.05,'y')
             if not 'unpol' in c and self.anaKind['name']=='angCoeff':
                 # self.histos[suff+'FitAC'+'y'+c].GetYaxis().SetRangeUser(-4,4)
-                self.histos[suff+'FitAC'+'y'+c].GetYaxis().SetTitle(self.coeffDict[c][2])
+                self.histos[suff+'FitAC'+'y'+c].GetYaxis().SetTitle(self.coeffDict[c][2]+', '+qtLab)
             elif self.anaKind['name']=='helXsec':
-                    self.histos[suff+'FitAC'+'y'+c].GetYaxis().SetTitle('d#sigma_'+c+'/d|Y_{W}| [fb]')
+                    self.histos[suff+'FitAC'+'y'+c].GetYaxis().SetTitle('d#sigma_'+c+'/d|Y_{W}| [fb]'+', '+qtLab)
             elif self.anaKind['name']=='normXsec':
-                self.histos[suff+'FitAC'+'y'+c].GetYaxis().SetTitle('d#sigma_'+c+'/d|Y_{W}|/#sigma_{tot}')
+                self.histos[suff+'FitAC'+'y'+c].GetYaxis().SetTitle('d#sigma_'+c+'/d|Y_{W}|/#sigma_{tot}'+', '+qtLab)
             elif self.anaKind['name']=='mu':
-                self.histos[suff+'FitAC'+'y'+c].GetYaxis().SetTitle('#mu_'+c)
+                self.histos[suff+'FitAC'+'y'+c].GetYaxis().SetTitle('#mu_'+c+', '+qtLab)
             else :
-                self.histos[suff+'FitAC'+'y'+c].GetYaxis().SetTitle('d#sigma^{U+L}/d|Y_{W}| [fb]')
+                self.histos[suff+'FitAC'+'y'+c].GetYaxis().SetTitle('d#sigma^{U+L}/d|Y_{W}| [fb]'+', '+qtLab)
                 # maxvalMain = self.histos[suff+'FitAC'+'y'+c].GetMaximum()
                 # self.histos[suff+'FitAC'+'y'+c].GetYaxis().SetRangeUser(0,maxvalMain*1.5)
             self.histos[suff+'FitBand'+'y'+c].SetFillColor(ROOT.kOrange)#kMagenta-7)
@@ -2924,6 +2964,7 @@ class plotter :
             cmsLatex.DrawLatex(1-self.canvas['ph'+suff+'FitAC'+'y'+c].GetRightMargin(),1-0.8*self.canvas['ph'+suff+'FitAC'+'y'+c].GetTopMargin(),lumilab)
             cmsLatex.SetTextAlign(11) 
             cmsLatex.DrawLatex(self.canvas['ph'+suff+'FitAC'+'y'+c].GetLeftMargin()+0.07,1-0.8*self.canvas['ph'+suff+'FitAC'+'y'+c].GetTopMargin(),cmslab)
+            # cmsLatex.DrawLatex(self.canvas['ph'+suff+'FitAC'+'qt'+c].GetLeftMargin()+0.07,1-self.canvas['ph'+suff+'FitAC'+'qt'+c].GetTopMargin()-0.02,qtLab)
 
             
             # self.histos[suff+'FitBandPDF'+'y'+c].SetFillColor(self.groupedSystColors['LHEPdfWeightVars'][0])#kMagenta-7)
@@ -3446,7 +3487,12 @@ class plotter :
                 cmsLatex.SetTextAlign(11) 
                 cmsLatex.DrawLatex(self.canvas[suff+mtx+'Mat'+c].GetLeftMargin(),1-0.8*self.canvas[suff+mtx+'Mat'+c].GetTopMargin(),cmslab)
                 # cmsLatex.SetTextColor(ROOT.kWhite)
-                cmsLatex.DrawLatex(self.canvas[suff+mtx+'Mat'+c].GetLeftMargin()+0.02,1-self.canvas[suff+mtx+'Mat'+c].GetTopMargin()-0.05,self.coeffDict[c][2]+", "+self.signDict[self.sign])
+                
+                self.leg[suff+mtx+'Mat'+c] = ROOT.TPaveText(self.canvas[suff+mtx+'Mat'+c].GetLeftMargin()+0.02, 1-self.canvas[suff+mtx+'Mat'+c].GetTopMargin()-0.02,self.canvas[suff+mtx+'Mat'+c].GetLeftMargin()+0.2,1-self.canvas[suff+mtx+'Mat'+c].GetTopMargin()-0.1,"NDC")
+                self.leg[suff+mtx+'Mat'+c].AddText(self.coeffDict[c][2]+", "+self.signDict[self.sign])
+                self.leg[suff+mtx+'Mat'+c].SetFillColorAlpha(ROOT.kWhite,0.6)
+                self.leg[suff+mtx+'Mat'+c].Draw("same")
+                # cmsLatex.DrawLatex(self.canvas[suff+mtx+'Mat'+c].GetLeftMargin()+0.02,1-self.canvas[suff+mtx+'Mat'+c].GetTopMargin()-0.05,self.coeffDict[c][2]+", "+self.signDict[self.sign])
     
                 
             for i in range(1, self.histos[suff+'FitAC'+self.coeffList[0]].GetNbinsX()+1): #loop over y bins
@@ -3565,8 +3611,12 @@ class plotter :
             cmsLatex.SetTextAlign(11) 
             cmsLatex.DrawLatex(self.canvas[suff+mtx+'Mat'+'Integrated'+'y'].GetLeftMargin(),1-0.8*self.canvas[suff+mtx+'Mat'+'Integrated'+'y'].GetTopMargin(),cmslab)
             # cmsLatex.SetTextColor(ROOT.kWhite)
-            cmsLatex.DrawLatex(self.canvas[suff+mtx+'Mat'+'Integrated'+'y'].GetLeftMargin()+0.02,1-self.canvas[suff+mtx+'Mat'+'Integrated'+'y'].GetTopMargin()-0.05,"q_{T}^{W} integrated, "+self.signDict[self.sign])
-    
+            # cmsLatex.DrawLatex(self.canvas[suff+mtx+'Mat'+'Integrated'+'y'].GetLeftMargin()+0.02,1-self.canvas[suff+mtx+'Mat'+'Integrated'+'y'].GetTopMargin()-0.05,"q_{T}^{W} integrated, "+self.signDict[self.sign])
+            
+            self.leg[suff+mtx+'Mat'+'Integrated'+'y'] = ROOT.TPaveText(self.canvas[suff+mtx+'Mat'+'Integrated'+'y'].GetLeftMargin()+0.02, 1-self.canvas[suff+mtx+'Mat'+'Integrated'+'y'].GetTopMargin()-0.02,self.canvas[suff+mtx+'Mat'+'Integrated'+'y'].GetLeftMargin()+0.3,1-self.canvas[suff+mtx+'Mat'+'Integrated'+'y'].GetTopMargin()-0.1,"NDC")
+            self.leg[suff+mtx+'Mat'+'Integrated'+'y'].AddText("q_{T}^{W} integrated, "+self.signDict[self.sign])
+            self.leg[suff+mtx+'Mat'+'Integrated'+'y'].SetFillColorAlpha(ROOT.kWhite,0.6)
+            self.leg[suff+mtx+'Mat'+'Integrated'+'y'].Draw("same")
     
             #------------------- y integrated-----------------------#
             self.canvas[suff+mtx+'Mat'+'Integrated'+'qt'] = ROOT.TCanvas(suff+'_c_'+mtx+'Mat_'+'Integrated_'+'qt',suff+'_'+mtx+'Mat_'+'Integrated_'+'qt',1200,900)
@@ -3619,8 +3669,12 @@ class plotter :
             cmsLatex.SetTextAlign(11) 
             cmsLatex.DrawLatex(self.canvas[suff+mtx+'Mat'+'Integrated'+'qt'].GetLeftMargin(),1-0.8*self.canvas[suff+mtx+'Mat'+'Integrated'+'qt'].GetTopMargin(),cmslab)
             # cmsLatex.SetTextColor(ROOT.kWhite)
-            cmsLatex.DrawLatex(self.canvas[suff+mtx+'Mat'+'Integrated'+'qt'].GetLeftMargin()+0.02,1-self.canvas[suff+mtx+'Mat'+'Integrated'+'qt'].GetTopMargin()-0.05,"|Y_{W}| integrated, "+self.signDict[self.sign])
-    
+            # cmsLatex.DrawLatex(self.canvas[suff+mtx+'Mat'+'Integrated'+'qt'].GetLeftMargin()+0.02,1-self.canvas[suff+mtx+'Mat'+'Integrated'+'qt'].GetTopMargin()-0.05,"|Y_{W}| integrated, "+self.signDict[self.sign])
+            
+            self.leg[suff+mtx+'Mat'+'Integrated'+'qt'] = ROOT.TPaveText(self.canvas[suff+mtx+'Mat'+'Integrated'+'qt'].GetLeftMargin()+0.02, 1-self.canvas[suff+mtx+'Mat'+'Integrated'+'qt'].GetTopMargin()-0.02,self.canvas[suff+mtx+'Mat'+'Integrated'+'qt'].GetLeftMargin()+0.3,1-self.canvas[suff+mtx+'Mat'+'Integrated'+'qt'].GetTopMargin()-0.1,"NDC")
+            self.leg[suff+mtx+'Mat'+'Integrated'+'qt'].AddText("|Y_{W}| integrated, "+self.signDict[self.sign])
+            self.leg[suff+mtx+'Mat'+'Integrated'+'qt'].SetFillColorAlpha(ROOT.kWhite,0.6)
+            self.leg[suff+mtx+'Mat'+'Integrated'+'qt'].Draw("same")
         
         #---------------------------- Canvas impact plots ------------------------
         if impact :
@@ -3932,7 +3986,7 @@ class plotter :
             sortNuiMass.sort(reverse=True)
             for nui in sortNuiMass: 
                 if nui=='mass' : continue 
-                val = '%.2f' % nui[0]
+                val = '%.1f' % nui[0]
                 self.leg[suff+'impact'+'mass'].AddEntry( nui[1], val+' MeV, '+nui[2])
                 
             
@@ -4782,6 +4836,8 @@ parser.add_argument('-cl','--cleanNuisance', type=int, default=False,help="plot 
 parser.add_argument('-mass','--mass', type=str, default='',help="plot the mass impact using external stat using this file, if empty not done")
 parser.add_argument('-data','--data', type=str, default='../Wplus_reco.root',help="data file used in the prefit, used MC if not provided")
 parser.add_argument('-asimov','--asimov', type=int, default=True,help="if asimov fit (for plotting ranges and naming)")
+parser.add_argument('-acc','--acceptanceFile', type=str, default='/scratch/bertacch/wmass/wproperties-analysis/Fit/OUTPUT_25Apr_noCF_qtMax60_fixLowAcc/accMap.root',help="file with acceptance info")
+
 
 
 
@@ -4802,6 +4858,7 @@ CLEANNUI = args.cleanNuisance
 MASS = args.mass
 DATA = args.data 
 ASIMOV = args.asimov
+ACCEPTANCE = args.acceptanceFile
 
 plusOnly=False
 if plusOnly :
@@ -4859,7 +4916,7 @@ for s in signList :
         if not kVal['apoFlag'] : APO_s = '' #we do not regularize helXsec, but Ai only
 
         p=plotter(anaKind=kVal, sign=s, asimov=ASIMOV)
-        p.AngCoeffPlots(inputFile=INPUT_s, fitFile=FITFILE_s, uncorrelate=UNCORR,suff=SUFFL[0],aposteriori=APO_s,toy=TOY,impact=IMPACT, postfit=POSTFIT, cleanNuisance=CLEANNUI, massImp=MASS_s,data=DATA_s)
+        p.AngCoeffPlots(inputFile=INPUT_s, fitFile=FITFILE_s, uncorrelate=UNCORR,suff=SUFFL[0],aposteriori=APO_s,toy=TOY,impact=IMPACT, postfit=POSTFIT, cleanNuisance=CLEANNUI, massImp=MASS_s,data=DATA_s,acceptance=ACCEPTANCE)
         if COMP :
             recoFit = FITFILE_s.replace('.root', '_'+str(SUFFL[1])+'.root')
             p.AngCoeffPlots(inputFile=INPUT_s, fitFile=recoFit, uncorrelate=UNCORR, suff=SUFFL[1])

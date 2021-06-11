@@ -80,6 +80,10 @@ for sample, info in sampleDict.items() :
         addedDict[sample+s].GetXaxis().SetTitle("m_{T} [GeV]")
         addedDict[sample+s].GetYaxis().SetTitle("RelIso")
         addedDict[sample+s].SetTitle("Base-selection ("+sample+")")
+        addedDict[sample+s].GetXaxis().SetTitleSize(0.05)
+        addedDict[sample+s].GetYaxis().SetTitleSize(0.05)
+        addedDict[sample+s].GetXaxis().SetTitleOffset(0.9)
+        addedDict[sample+s].GetYaxis().SetTitleOffset(0.9)
         step2output.cd()
         addedDict[sample+s].Write()
     
@@ -102,7 +106,9 @@ for sample, info in sampleDict.items() :
             cmsLatex.DrawLatex(can.GetLeftMargin(),1-0.8*can.GetTopMargin(),cmslab)
             
             cmsLatex.SetTextAlign(31) 
-            cmsLatex.DrawLatex(1-1.03*can.GetRightMargin(),1-1.6*can.GetTopMargin(),"W^{+}#rightarrow#mu^{+}#nu data")
+            namelab = " #scale[0.99]{Data (single #mu^{+})}"
+            # namelab = " #scale[0.7]{35.9 fb^{-1} (13 TeV)}"
+            cmsLatex.DrawLatex(1-1.05*can.GetRightMargin(),1-1.6*can.GetTopMargin(), namelab)
             
             can.SaveAs('bkg_ABCD_dataPlus.pdf')
             can.SaveAs('bkg_ABCD_dataPlus.png')

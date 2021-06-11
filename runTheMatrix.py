@@ -162,7 +162,7 @@ if step5 :
     os.system('python plotter_SignalACtemplates.py --input ../' + outputDir+'/plot/hadded/') 
     os.system('python plotter_template2D.py --input ../' + outputDir+'/plot/hadded/') 
     if not os.path.isdir('../../Fit/'+outputDir): os.system('mkdir ../../Fit/'+outputDir)
-    os.system('mv Wminus_reco.root Wplus_reco.root ../../Fit/'+outputDir)
+    os.system('mv Wminus_reco.root Wplus_reco.root accMap.root ../../Fit/'+outputDir)
     os.chdir('../../')
     s5end=time.time()
     runTimes.append(s5end - s5start)

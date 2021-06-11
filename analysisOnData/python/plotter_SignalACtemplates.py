@@ -180,6 +180,8 @@ class plotter:
             for iQt in range(1, self.nBinsQt+1):
                 self.closPlus.SetBinContent(iY,iQt, self.yields["Wplus"][(iY,iQt)])
                 self.closMinus.SetBinContent(iY,iQt, self.yields["Wminus"][(iY, iQt)])
+        self.sumOfTemplatePlus = self.closPlus.Clone("sumOfTemplatePlus")
+        self.sumOfTemplateMinus = self.closPlus.Clone("sumOfTemplateMinus")
         self.closPlus.Divide(self.imapPlus)
         self.closMinus.Divide(self.imapMinus)
         for iY in range(1, self.nBinsY+1):
@@ -191,6 +193,8 @@ class plotter:
         self.closMinus.Write()
         self.imapPlus.Write()
         self.imapMinus.Write()
+        self.sumOfTemplatePlus.Write()
+        self.sumOfTemplateMinus.Write()
         fout.Close()
     def getHistos(self) :
         basepath="templatesAC_Signal/"
