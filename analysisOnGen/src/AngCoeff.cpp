@@ -81,6 +81,10 @@ RNode AngCoeff::run(RNode d)
         TH1weightsHelper helperMapY(std::string("Y"), std::string("Y"), _nBinsY, _yArr, _syst_name);
         auto Y = d1.Filter("Wpt_preFSR<60. && Wrap_preFSR_abs<2.4").Book<float, float, ROOT::VecOps::RVec<float>>(std::move(helperMapY), {"Wrap_preFSR_abs", "weight", _syst_weight});
         _h1Group.push_back(Y);
+        
+        // TH1weightsHelper helperMass(std::string("Wmass_preFSR"), std::string("Wmass_preFSR"), _Marr.size() - 1, _Marr, _syst_name);
+        // auto Mass = d1.Book<float, float, ROOT::VecOps::RVec<float>>(std::move(helperMass), {"Wmass_preFSR", "weight", _syst_weight});
+        // _h1Group.push_back(Mass);
 
         return d1;
     }
@@ -112,7 +116,18 @@ RNode AngCoeff::run(RNode d)
 
         auto Y = d1.Filter("Wpt_preFSR<60. && Wrap_preFSR_abs<2.4").Histo1D(TH1D("Y", "Y", _nBinsY, _yArr.data()), "Wrap_preFSR_abs", "weight");
         _h1List.push_back(Y);
-
+        
+        // auto Mass = d1.Histo1D(TH1D("Wmass_preFSR", "Wmass_preFSR",_Marr.size() - 1, _Marr.data()), "Wmass_preFSR", "weight");
+        // _h1List.push_back(Mass);
+        
+        // auto YqTcT = d1.Histo3D(TH3D("YqTcT", "YqTcT", _nBinsY, _yArr.data(), _nBinsPt, _ptArr.data(),  _cosThetaArr.size() -1, _cosThetaArr.data()), "Wrap_preFSR_abs", "Wpt_preFSR","CStheta_preFSR","weight");
+        // _h3List.push_back(YqTcT);    
         return d1;
     }
 }
+
+// void AngCoeff::setAxisarrays()
+// {
+// //   for (int i=0; i<1001;i++) _Marr[i] = 75.+i*(85.-75.)/1000.;
+//   for (int i=0; i<101;i++) _cosThetaArr[i] = -1.+i*(1.+1.)/100.;
+// }

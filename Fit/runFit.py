@@ -61,6 +61,8 @@ for charge in charges:
 
     #other config
     # combinetf = 'combinetf.py --allowNegativePOI -t {} {}.pkl.hdf5 -o fit_{}.root {} --nThreads {} --scanRangeUsePrefit 1 --scanPoint 3 --scanRange 1 --scan helXsecsUL_y_1_qt_1_mu'.format(toy, f.channel, f.channel, CTFmodifier,cores)
+    # combinetf = 'combinetf.py --allowNegativePOI -t {} {}.pkl.hdf5 -o fit_{}.root {} --nThreads {} --scanRangeUsePrefit 1 --scanPoint 3 --scanRange 1 --scan mass --fitverbose 9'.format(toy, f.channel, f.channel, CTFmodifier,cores)
+    # combinetf = 'combinetf.py --allowNegativePOI -t {} {}.pkl.hdf5 -o fit_{}.root {} --nThreads {} --scanPoint 3 --scanRange 1 --scan mass --fitverbose 9'.format(toy, f.channel, f.channel, CTFmodifier,cores)
     # combinetf = 'combinetf.py --allowNegativePOI --binByBinStat -t {} {}.pkl.hdf5 -o fit_{}.root {} --nThreads {} --correlateXsecStat --yieldProtectionCutoff 1'.format(toy, f.channel, f.channel, CTFmodifier,cores)
     # combinetf = 'combinetf.py --binByBinStat -t {} {}.pkl.hdf5 -o fit_{}.root {} --nThreads {} --correlateXsecStat'.format(toy, f.channel, f.channel, CTFmodifier,cores)
     # combinetf = 'combinetf.py --binByBinStat -t {} {}.pkl.hdf5 -o fit_{}.root {} --nThreads {} --correlateXsecStat'.format(toy, f.channel, f.channel, CTFmodifier,cores)

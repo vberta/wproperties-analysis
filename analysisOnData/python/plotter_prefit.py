@@ -701,7 +701,7 @@ parser.add_argument('-i','--input', type=str, default='TEST',help="name of the i
 parser.add_argument('-s','--skipSyst', type=str, default='',nargs='*', help="list of skipped syst class as in bkgAnalysis/bkg_utils.py, separated by space")
 parser.add_argument('-c','--systComp', type=int, default=True,help="systematic uncertainity comparison plots")
 parser.add_argument('-sb', '--SBana',type=int, default=False, help="run also on the sideband (clousure test)")
-parser.add_argument('-bos', '--bkgOnlySyst',type=int, default=False, help="rrun with syst only for Bkg")
+parser.add_argument('-bos', '--bkgOnlySyst',type=int, default=False, help="run with syst only for Bkg")
 
 
 args = parser.parse_args()

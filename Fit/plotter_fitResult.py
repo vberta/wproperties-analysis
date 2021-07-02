@@ -37,6 +37,7 @@ class plotter :
         # self.qtArr = [0, 1., 1.5, 2., 2.5, 3., 3.5, 4., 4.5, 5., 5.5, 6., 6.5, 7., 7.5, 8., 8.5, 9., 9.5, 10., 10.5, 11., 11.5, 12., 13., 14., 15., 16.,22,32] #05GeV
 
         self.coeffArr = [0,1,2,3,4,5,6]
+        # self.coeffArr = [0,1,2,3,4,5]
 
         self.noiArr = ['mass']
         self.dirList = ['up','down']
@@ -77,6 +78,7 @@ class plotter :
                 'unpolarizedxsec' : [1,'unpolarizedxsec','#sigma^{U+L}', ROOT.kBlue-4]
             }
             self.coeffList = ['A0','A1','A2','A3','A4','unpolarizedxsec' ]
+            # self.coeffList = ['A1','A2','A3','A4','unpolarizedxsec' ]
         else :
             self.coeffDict = {
                 'L' : [2.,'A0', '#sigma_{L}'],
@@ -3577,8 +3579,11 @@ class plotter :
             self.histos[suff+mtx+'Mat'+'Integrated'+'y'].GetZaxis().SetTitle(htitle)
             self.canvas[suff+mtx+'Mat'+'Integrated'+'y'].SetRightMargin(0.15)
             self.canvas[suff+mtx+'Mat'+'Integrated'+'y'].Update()
-            palette = self.histos[suff+mtx+'Mat'+'Integrated'+'y'].GetListOfFunctions().FindObject("palette")
-            palette.SetX1NDC(0.875)
+            try : 
+                palette = self.histos[suff+mtx+'Mat'+'Integrated'+'y'].GetListOfFunctions().FindObject("palette")
+                palette.SetX1NDC(0.875)
+            except :
+                print("no palette")
             
             if mtx == 'corr' : 
                 self.histos[suff+mtx+'Mat'+'Integrated'+'y'].GetZaxis().SetCanExtend(1)
@@ -3636,8 +3641,11 @@ class plotter :
             self.histos[suff+mtx+'Mat'+'Integrated'+'qt'].GetZaxis().SetTitle(htitle)
             self.canvas[suff+mtx+'Mat'+'Integrated'+'qt'].SetRightMargin(0.15)
             self.canvas[suff+mtx+'Mat'+'Integrated'+'qt'].Update()
-            palette = self.histos[suff+mtx+'Mat'+'Integrated'+'qt'].GetListOfFunctions().FindObject("palette")
-            palette.SetX1NDC(0.875)
+            try :
+                palette = self.histos[suff+mtx+'Mat'+'Integrated'+'qt'].GetListOfFunctions().FindObject("palette")
+                palette.SetX1NDC(0.875)
+            except :
+                print("no palette")
             
             if mtx == 'corr' : 
                 self.histos[suff+mtx+'Mat'+'Integrated'+'qt'].GetZaxis().SetCanExtend(1)

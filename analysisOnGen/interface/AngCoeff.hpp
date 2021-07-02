@@ -22,6 +22,11 @@ private:
   // std::vector<float> _ptArr = {0.,  2.,  4., 6.,  8., 10., 12., 14., 16., 20., 25., 32., 45., 80., 200.};//Extended
   std::vector<float> _ptArr = {0.,  2.,  4., 6.,  8., 10., 12., 16., 20., 26., 36., 60., 200.};//exteded-small
   // std::vector<float> _ptArr = {0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,48,50,52,54,56,58,60,62,64,66,68,70,72,74,76,78,80.,200};
+  // std::vector<float> _Marr = std::vector<float>(1001);
+  // void setAxisarrays();
+  // std::vector<float> _cosThetaArr = std::vector<float>(101);
+  // std::vector<float> _ptArr = {0.,2.14725709,3.75887602,5.0176509,6.35604492,7.97738581,9.8266591,12.08973559,15.1689846,19.09257703,24.54519361,33.19566976,60.,200.};
+  // std::vector<float> _yArr = {0., 0.4, 0.8, 1.2, 1.6, 2.0, 2.4, 3.0, 10.0};
 
   int _nBinsY = _yArr.size()-1;
   int _nBinsPt = _ptArr.size()-1;
@@ -36,6 +41,7 @@ public:
   {
     _syst_weight = "";
     _filter = filter;
+    // setAxisarrays();
   };
 
   AngCoeff(std::string filter,std::vector<std::string> syst_name, std::string syst_weight)
@@ -44,6 +50,7 @@ public:
     _syst_name = syst_name;
     _syst_weight = syst_weight;
     _filter = filter;
+    // setAxisarrays();
   };
 
   ~AngCoeff(){};

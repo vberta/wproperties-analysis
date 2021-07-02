@@ -35,6 +35,10 @@ RNode muonHistos::bookNominalhistos(RNode df)
   // TH3weightsHelper helperPtMT(std::string("PtvsMT"), std::string(" ; muon p_{T} (Rochester corr.); M_{T} (Rochester corr./smear MET); muon charge "),_pTArr.size() - 1, _pTArr, _MTArr.size() -1, _MTArr, _chargeArr.size() - 1, _chargeArr, _syst_name);
   // auto hPtMt = df.Filter(_filter).Filter("Mu1_pt>25.0 && Mu1_pt<55.0").Book<float, float, float,float, ROOT::VecOps::RVec<float>>(std::move(helperPtMT), {"Mu1_pt", "MT", "Mu1_charge", "weight", _syst_weight});
   // _h3Group.emplace_back(hPtMt);
+  
+  // TH2weightsHelper helperMass(std::string("Wmass_preFSR"), std::string(" ; m_{W}; muon charge "),_Marr.size() - 1, _Marr,_chargeArr.size() - 1, _chargeArr, _syst_name);
+  // auto hMass = df.Filter(_filter).Filter("Mu1_pt>25.0 && Mu1_pt<55.0").Book<float, float, float, ROOT::VecOps::RVec<float>>(std::move(helperMass), {"Wmass_preFSR", "Mu1_charge", "weight", _syst_weight});
+  // _h2Group.emplace_back(hMass);
 
   return df;
 }
@@ -91,4 +95,6 @@ void muonHistos::setAxisarrays()
     _MTArr[i] = 0. + i*(150.-0.)/30;
   for (int i = 0; i < 3; i++)
     _chargeArr[i] = -2. +  i*2. ; //eta -1.5 to 1.5
+  
+  // for (int i=0; i<1001;i++) _Marr[i] = 75.+i*(85.-75.)/1000.;
 }
